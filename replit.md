@@ -8,18 +8,29 @@ This is a modern business website for Windows & Doors Near Me LLC, a window and 
 
 ### Frontend Architecture
 - **Framework**: React 18 with TypeScript
-- **Routing**: Wouter for client-side routing
-- **Styling**: Tailwind CSS with shadcn/ui component library
-- **State Management**: TanStack Query (React Query) for server state
+- **Routing**: Wouter for client-side routing with protected route authentication
+- **Styling**: Tailwind CSS with shadcn/ui component library and professional blue corporate theme
+- **State Management**: TanStack Query (React Query) for server state management
+- **Authentication**: JWT-based authentication with localStorage token storage
 - **Build Tool**: Vite for fast development and optimized builds
-- **UI Components**: Comprehensive shadcn/ui component system with Radix UI primitives
+- **UI Components**: Comprehensive shadcn/ui component system with project management dashboard
 
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript
 - **Runtime**: Node.js 20
-- **Database ORM**: Drizzle ORM for type-safe database operations
+- **Database**: PostgreSQL 16 with full project management schema
+- **ORM**: Drizzle ORM for type-safe database operations
+- **Authentication**: JWT tokens with bcryptjs password hashing
+- **Authorization**: Role-based access control (customer, employee, admin)
+- **Session Management**: Express sessions with PostgreSQL storage
 - **Schema Validation**: Zod for runtime type validation
-- **Session Management**: Built-in session handling for future authentication needs
+
+### Authentication & Authorization System
+- **User Roles**: Customer, Employee, Admin with different access levels
+- **JWT Authentication**: Secure token-based authentication system
+- **Password Security**: bcryptjs hashing with salt rounds
+- **Protected Routes**: Frontend route protection based on authentication status
+- **API Security**: Middleware-based endpoint protection with role verification
 
 ### Development Environment
 - **Platform**: Replit with PostgreSQL 16 module
@@ -30,14 +41,42 @@ This is a modern business website for Windows & Doors Near Me LLC, a window and 
 ## Key Components
 
 ### Database Schema (`shared/schema.ts`)
-- **Users Table**: Basic user authentication structure (id, username, password)
-- **Contact Submissions Table**: Stores form submissions (name, contact info, project details, timestamps)
-- **Type Safety**: Drizzle-zod integration for runtime validation and TypeScript types
+- **Users Table**: Complete user management with roles (customer, employee, admin), authentication, and profile data
+- **Projects Table**: Full project lifecycle management with status tracking, assignments, and cost estimates
+- **Tasks Table**: Project task management with assignments, priorities, and completion tracking
+- **Project Updates Table**: Communication and activity logging for project collaboration
+- **Contact Submissions Table**: Lead management system with status tracking and conversion capabilities
+- **Relations**: Comprehensive database relationships using Drizzle ORM relations for data integrity
+- **Type Safety**: Full Drizzle-zod integration for runtime validation and TypeScript types
 
 ### API Endpoints (`server/routes.ts`)
-- `POST /api/contact`: Handles contact form submissions with validation
-- `GET /api/contact-submissions`: Admin endpoint to retrieve all submissions
-- Error handling with proper HTTP status codes and validation feedback
+**Authentication Endpoints:**
+- `POST /api/auth/register`: User registration with role assignment
+- `POST /api/auth/login`: JWT-based authentication
+- `GET /api/auth/me`: Current user profile retrieval
+
+**Project Management Endpoints:**
+- `GET /api/projects`: List projects (filtered by user role and permissions)
+- `POST /api/projects`: Create new projects (admin/employee only)
+- `GET /api/projects/:id`: Retrieve specific project details
+- `PUT /api/projects/:id`: Update project information
+- `GET /api/projects/:projectId/tasks`: List tasks for a specific project
+- `POST /api/tasks`: Create new tasks (admin/employee only)
+- `PUT /api/tasks/:id`: Update task status and details
+
+**Communication & Updates:**
+- `GET /api/projects/:projectId/updates`: Project activity and communication log
+- `POST /api/project-updates`: Add project updates and comments
+
+**Lead Management:**
+- `POST /api/contact`: Public contact form submissions
+- `GET /api/contact-submissions`: Lead management (admin/employee only)
+- `PUT /api/contact-submissions/:id/status`: Update lead status
+
+**Employee Management:**
+- `GET /api/employees`: List all employees (admin/employee only)
+
+All endpoints include proper authentication middleware, role-based authorization, validation, and comprehensive error handling.
 
 ### Frontend Pages
 - **Home Page**: Single-page application with all business sections
