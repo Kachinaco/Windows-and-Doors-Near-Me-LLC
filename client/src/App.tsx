@@ -15,6 +15,9 @@ import ScottsdaleWindowsDoors from "@/pages/scottsdale-windows-doors";
 import QueenCreekWindowsDoors from "@/pages/queen-creek-windows-doors";
 import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard";
+import ProjectsPage from "@/pages/projects";
+import TasksPage from "@/pages/tasks";
+import LeadsPage from "@/pages/leads";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -49,14 +52,16 @@ function Router() {
       {isAuthenticated ? (
         <>
           <Route path="/dashboard" component={Dashboard} />
-          <Route path="/projects/:id?" component={Dashboard} />
-          <Route path="/tasks" component={Dashboard} />
-          <Route path="/leads" component={Dashboard} />
+          <Route path="/projects" component={ProjectsPage} />
+          <Route path="/projects/:id" component={ProjectsPage} />
+          <Route path="/tasks" component={TasksPage} />
+          <Route path="/leads" component={LeadsPage} />
         </>
       ) : (
         <>
           <Route path="/dashboard" component={AuthPage} />
-          <Route path="/projects/:id?" component={AuthPage} />
+          <Route path="/projects" component={AuthPage} />
+          <Route path="/projects/:id" component={AuthPage} />
           <Route path="/tasks" component={AuthPage} />
           <Route path="/leads" component={AuthPage} />
         </>

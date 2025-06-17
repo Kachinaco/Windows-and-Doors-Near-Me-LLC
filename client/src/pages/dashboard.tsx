@@ -17,6 +17,7 @@ import {
   User,
   Settings
 } from "lucide-react";
+import { Link } from "wouter";
 import { Project, Task, ContactSubmission } from "@shared/schema";
 
 export default function Dashboard() {
@@ -179,187 +180,65 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-            {(user?.role === 'admin' || user?.role === 'employee') && (
-              <TabsTrigger value="leads">Lead Management</TabsTrigger>
-            )}
-          </TabsList>
-
-          {/* Projects Tab */}
-          <TabsContent value="projects" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Projects</h2>
-              {(user?.role === 'admin' || user?.role === 'employee') && (
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  New Project
-                </Button>
-              )}
-            </div>
-
-            <div className="grid gap-6">
-              {projectsLoading ? (
-                <Card>
-                  <CardContent className="p-6">
-                    <p className="text-center text-gray-500">Loading projects...</p>
-                  </CardContent>
-                </Card>
-              ) : projects.length === 0 ? (
-                <Card>
-                  <CardContent className="p-6">
-                    <p className="text-center text-gray-500">No projects found</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                projects.map((project: Project) => (
-                  <Card key={project.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-xl">{project.title}</CardTitle>
-                          <CardDescription className="mt-2">
-                            {project.description}
-                          </CardDescription>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Badge className={`${getStatusColor(project.status)} text-white`}>
-                            {project.status.replace('_', ' ')}
-                          </Badge>
-                          <Badge className={`${getPriorityColor(project.priority)} text-white`}>
-                            {project.priority}
-                          </Badge>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <p className="font-medium text-gray-700 dark:text-gray-300">Service Type</p>
-                          <p className="text-gray-600 dark:text-gray-400">{project.serviceType}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-700 dark:text-gray-300">Estimated Cost</p>
-                          <p className="text-gray-600 dark:text-gray-400">{project.estimatedCost || 'TBD'}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-700 dark:text-gray-300">Start Date</p>
-                          <p className="text-gray-600 dark:text-gray-400">
-                            {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'Not set'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-700 dark:text-gray-300">Due Date</p>
-                          <p className="text-gray-600 dark:text-gray-400">
-                            {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'Not set'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-4 flex justify-end">
-                        <Button variant="outline" size="sm">
-                          View Details
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Tasks Tab */}
-          <TabsContent value="tasks" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Tasks</h2>
-              {(user?.role === 'admin' || user?.role === 'employee') && (
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  New Task
-                </Button>
-              )}
-            </div>
-
-            <Card>
+        {/* Quick Action Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Link href="/projects">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <CardContent className="p-6">
-                <p className="text-center text-gray-500">Task management coming soon...</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Projects</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Manage installations</p>
+                  </div>
+                  <Building2 className="h-8 w-8 text-blue-600" />
+                </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </Link>
 
-          {/* Lead Management Tab */}
+          <Link href="/tasks">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Tasks</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Track progress</p>
+                  </div>
+                  <CheckCircle className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
           {(user?.role === 'admin' || user?.role === 'employee') && (
-            <TabsContent value="leads" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Lead Management</h2>
-              </div>
-
-              <div className="grid gap-6">
-                {contactLoading ? (
-                  <Card>
-                    <CardContent className="p-6">
-                      <p className="text-center text-gray-500">Loading contact submissions...</p>
-                    </CardContent>
-                  </Card>
-                ) : contactSubmissions.length === 0 ? (
-                  <Card>
-                    <CardContent className="p-6">
-                      <p className="text-center text-gray-500">No contact submissions found</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  contactSubmissions.map((submission: ContactSubmission) => (
-                    <Card key={submission.id} className="hover:shadow-md transition-shadow">
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-lg">
-                              {submission.firstName} {submission.lastName}
-                            </CardTitle>
-                            <CardDescription>
-                              {submission.email} • {submission.phone}
-                            </CardDescription>
-                          </div>
-                          <Badge className={`${getStatusColor(submission.status)} text-white`}>
-                            {submission.status}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div>
-                            <p className="font-medium text-gray-700 dark:text-gray-300">Service Needed</p>
-                            <p className="text-gray-600 dark:text-gray-400">{submission.serviceNeeded}</p>
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-700 dark:text-gray-300">Project Details</p>
-                            <p className="text-gray-600 dark:text-gray-400">{submission.projectDetails}</p>
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-700 dark:text-gray-300">Submitted</p>
-                            <p className="text-gray-600 dark:text-gray-400">
-                              {new Date(submission.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="mt-4 flex justify-end space-x-2">
-                          <Button variant="outline" size="sm">
-                            Contact
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            Convert to Project
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
-              </div>
-            </TabsContent>
+            <Link href="/leads">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Leads</h3>
+                      <p className="text-gray-600 dark:text-gray-400">Manage inquiries</p>
+                    </div>
+                    <Users className="h-8 w-8 text-blue-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           )}
-        </Tabs>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Recent Activity</h2>
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center text-gray-500">
+                <p>No recent activity</p>
+                <p className="text-sm mt-2">Activity will appear here as you manage projects and tasks</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </main>
     </div>
   );
