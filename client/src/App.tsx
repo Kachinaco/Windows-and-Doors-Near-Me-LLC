@@ -15,12 +15,8 @@ import ScottsdaleWindowsDoors from "@/pages/scottsdale-windows-doors";
 import QueenCreekWindowsDoors from "@/pages/queen-creek-windows-doors";
 import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard";
-import ProjectsPage from "@/pages/projects";
-import TasksPage from "@/pages/tasks";
+import CatalogPage from "@/pages/catalog";
 import LeadsPage from "@/pages/leads";
-import ClientsPage from "@/pages/clients";
-import CreateProjectPage from "@/pages/create-project";
-import ConsultationsPage from "@/pages/consultations";
 import SubscriptionPage from "@/pages/subscription";
 
 function Router() {
@@ -52,27 +48,19 @@ function Router() {
       <Route path="/login" component={AuthPage} />
       <Route path="/auth" component={AuthPage} />
       
-      {/* Protected project management routes */}
+      {/* Protected user routes */}
       {isAuthenticated ? (
         <>
           <Route path="/dashboard" component={Dashboard} />
-          <Route path="/projects" component={ProjectsPage} />
-          <Route path="/projects/:id" component={ProjectsPage} />
-          <Route path="/tasks" component={TasksPage} />
+          <Route path="/catalog" component={CatalogPage} />
           <Route path="/leads" component={LeadsPage} />
-          <Route path="/clients" component={ClientsPage} />
-          <Route path="/consultations" component={ConsultationsPage} />
-          <Route path="/create-project" component={CreateProjectPage} />
           <Route path="/subscription" component={SubscriptionPage} />
         </>
       ) : (
         <>
           <Route path="/dashboard" component={AuthPage} />
-          <Route path="/projects" component={AuthPage} />
-          <Route path="/projects/:id" component={AuthPage} />
-          <Route path="/tasks" component={AuthPage} />
+          <Route path="/catalog" component={AuthPage} />
           <Route path="/leads" component={AuthPage} />
-          <Route path="/clients" component={AuthPage} />
         </>
       )}
       

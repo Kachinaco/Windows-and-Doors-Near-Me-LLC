@@ -16,7 +16,7 @@ import {
   type InsertContactSubmission,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 // Interface for storage operations - simplified for e-commerce
@@ -131,7 +131,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Cart operations
-  async getCartItems(userId: number): Promise<CartItem[]> {
+  async getCartItems(userId: number): Promise<any[]> {
     return await db
       .select({
         id: cartItems.id,
@@ -152,8 +152,10 @@ export class DatabaseStorage implements IStorage {
     const [existingItem] = await db
       .select()
       .from(cartItems)
-      .where(eq(cartItems.userId, insertCartItem.userId!))
-      .where(eq(cartItems.productId, insertCartItem.productId!));
+      .where(and(
+        eq(cartItems.userId, insertCartItem.userId!),
+        eq(cartItems.productId, insertCartItem.productId!)
+      ));
 
     if (existingItem) {
       // Update quantity if item exists
