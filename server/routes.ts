@@ -1,14 +1,18 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import type { Express } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
-import { storage } from "./storage";
-import { loginSchema, insertUserSchema, insertProjectSchema, insertTaskSchema, insertProjectUpdateSchema, insertContactSubmissionSchema, insertClientSchema } from "@shared/schema";
 import jwt from "jsonwebtoken";
-import { z } from "zod";
+import type { Request, Response, NextFunction } from "express";
+import { storage } from "./storage";
+import {
+  insertUserSchema,
+  loginSchema,
+  insertProductSchema,
+  insertCartItemSchema,
+  insertOrderSchema,
+  insertContactSubmissionSchema,
+} from "@shared/schema";
 
-const JWT_SECRET = process.env.JWT_SECRET || "windows-doors-project-management-secret-2025";
-
-// Authentication middleware
 interface AuthenticatedRequest extends Request {
   user?: {
     id: number;
@@ -17,6 +21,9 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+// Authentication middleware
 const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -89,22 +96,20 @@ const checkSubscriptionAccess = async (req: AuthenticatedRequest, res: Response,
 export async function registerRoutes(app: Express): Promise<Server> {
   // Session configuration
   app.use(session({
-    secret: process.env.SESSION_SECRET || 'windows-doors-session-secret-2025',
+    secret: process.env.SESSION_SECRET || 'your-session-secret',
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to true in production with HTTPS
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
   }));
 
-  // Authentication routes
+  // Auth routes
   app.post("/api/auth/register", async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
-      
-      // Check if user already exists
       const existingUser = await storage.getUserByUsername(userData.username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already exists" });
@@ -118,44 +123,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.createUser(userData);
       const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '24h' });
       
-      res.json({
-        message: "User registered successfully",
-        user: { id: user.id, username: user.username, email: user.email, role: user.role },
-        token
+      res.json({ 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          email: user.email, 
+          role: user.role,
+          subscriptionType: user.subscriptionType 
+        }, 
+        token 
       });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid registration data", errors: error.errors });
-      } else {
-        console.error("Registration error:", error);
-        res.status(500).json({ message: "Registration failed" });
-      }
+      console.error("Registration error:", error);
+      res.status(400).json({ message: "Registration failed" });
     }
   });
 
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password } = loginSchema.parse(req.body);
-      
       const user = await storage.authenticateUser(username, password);
+      
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
       const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '24h' });
       
-      res.json({
-        message: "Login successful",
-        user: { id: user.id, username: user.username, email: user.email, role: user.role },
-        token
+      res.json({ 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          email: user.email, 
+          role: user.role,
+          subscriptionType: user.subscriptionType 
+        }, 
+        token 
       });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid login data", errors: error.errors });
-      } else {
-        console.error("Login error:", error);
-        res.status(500).json({ message: "Login failed" });
-      }
+      console.error("Login error:", error);
+      res.status(401).json({ message: "Authentication failed" });
     }
   });
 
@@ -181,351 +188,146 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Project management routes
-  app.get("/api/projects", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  // Product catalog routes
+  app.get("/api/products", async (req, res) => {
     try {
-      let projects;
-      const allowedRoles = ['admin', 'employee', 'contractor_trial', 'contractor_paid'];
-      if (allowedRoles.includes(req.user!.role)) {
-        projects = await storage.getAllProjects();
-      } else {
-        projects = await storage.getProjectsByClient(req.user!.id);
-      }
-      res.json(projects);
+      const products = await storage.getAllProducts();
+      res.json(products);
     } catch (error) {
-      console.error("Error fetching projects:", error);
-      res.status(500).json({ message: "Failed to fetch projects" });
+      console.error("Error fetching products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
     }
   });
 
-  app.post("/api/projects", authenticateToken, requireRole(['admin', 'employee', 'contractor_trial', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+  app.get("/api/products/:id", async (req, res) => {
     try {
-      const projectData = insertProjectSchema.parse(req.body);
-      const project = await storage.createProject(projectData);
-      res.json(project);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid project data", errors: error.errors });
-      } else {
-        console.error("Error creating project:", error);
-        res.status(500).json({ message: "Failed to create project" });
+      const product = await storage.getProduct(parseInt(req.params.id));
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
       }
+      res.json(product);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch product" });
     }
   });
 
-  app.get("/api/projects/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  // Admin/contractor product management
+  app.post("/api/products", authenticateToken, requireRole(['admin', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
     try {
-      const projectId = parseInt(req.params.id);
-      const project = await storage.getProject(projectId);
+      const productData = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(productData);
+      res.json(product);
+    } catch (error) {
+      console.error("Error creating product:", error);
+      res.status(400).json({ message: "Failed to create product" });
+    }
+  });
+
+  // Shopping cart routes
+  app.get("/api/cart", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const cartItems = await storage.getCartItems(req.user!.id);
+      res.json(cartItems);
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+      res.status(500).json({ message: "Failed to fetch cart" });
+    }
+  });
+
+  app.post("/api/cart/add", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const cartData = { ...req.body, userId: req.user!.id };
+      const validatedData = insertCartItemSchema.parse(cartData);
+      const cartItem = await storage.addToCart(validatedData);
+      res.json(cartItem);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      res.status(400).json({ message: "Failed to add to cart" });
+    }
+  });
+
+  app.put("/api/cart/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const cartItem = await storage.updateCartItem(parseInt(req.params.id), req.body);
+      res.json(cartItem);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update cart item" });
+    }
+  });
+
+  app.delete("/api/cart/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      await storage.removeFromCart(parseInt(req.params.id));
+      res.json({ message: "Item removed from cart" });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to remove from cart" });
+    }
+  });
+
+  // Order routes
+  app.post("/api/orders", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      // Get current cart items
+      const cartItems = await storage.getCartItems(req.user!.id);
+      if (cartItems.length === 0) {
+        return res.status(400).json({ message: "Cart is empty" });
+      }
+
+      // Calculate total
+      const totalAmount = cartItems.reduce((total, item) => {
+        return total + (parseFloat(item.product?.price || "0") * item.quantity);
+      }, 0);
+
+      // Create order
+      const orderData = {
+        userId: req.user!.id,
+        orderNumber: `ORD-${Date.now()}`,
+        totalAmount: totalAmount.toString(),
+        items: cartItems,
+        customerInfo: req.body.customerInfo,
+        notes: req.body.notes || "",
+      };
+
+      const order = await storage.createOrder(orderData);
       
-      if (!project) {
-        return res.status(404).json({ message: "Project not found" });
-      }
-
-      // Check access permissions
-      if (req.user!.role === 'customer' && project.customerId !== req.user!.id) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      res.json(project);
-    } catch (error) {
-      console.error("Error fetching project:", error);
-      res.status(500).json({ message: "Failed to fetch project" });
-    }
-  });
-
-  app.put("/api/projects/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      const projectId = parseInt(req.params.id);
-      const updates = req.body;
+      // Clear cart after order creation
+      await storage.clearCart(req.user!.id);
       
-      // Check if user can update this project
-      const project = await storage.getProject(projectId);
-      if (!project) {
-        return res.status(404).json({ message: "Project not found" });
-      }
-
-      if (req.user!.role === 'customer' && project.customerId !== req.user!.id) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      const updatedProject = await storage.updateProject(projectId, updates);
-      res.json(updatedProject);
+      res.json(order);
     } catch (error) {
-      console.error("Error updating project:", error);
-      res.status(500).json({ message: "Failed to update project" });
+      console.error("Error creating order:", error);
+      res.status(400).json({ message: "Failed to create order" });
     }
   });
 
-  // Task management routes
-  app.get("/api/projects/:projectId/tasks", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/orders", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
-      const projectId = parseInt(req.params.projectId);
-      const tasks = await storage.getTasksByProject(projectId);
-      res.json(tasks);
+      const orders = await storage.getUserOrders(req.user!.id);
+      res.json(orders);
     } catch (error) {
-      console.error("Error fetching tasks:", error);
-      res.status(500).json({ message: "Failed to fetch tasks" });
+      res.status(500).json({ message: "Failed to fetch orders" });
     }
   });
 
-  app.post("/api/tasks", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
-    try {
-      const taskData = insertTaskSchema.parse(req.body);
-      const task = await storage.createTask(taskData);
-      res.json(task);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid task data", errors: error.errors });
-      } else {
-        console.error("Error creating task:", error);
-        res.status(500).json({ message: "Failed to create task" });
-      }
-    }
-  });
-
-  app.put("/api/tasks/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      const taskId = parseInt(req.params.id);
-      const updates = req.body;
-      
-      const updatedTask = await storage.updateTask(taskId, updates);
-      res.json(updatedTask);
-    } catch (error) {
-      console.error("Error updating task:", error);
-      res.status(500).json({ message: "Failed to update task" });
-    }
-  });
-
-  // Project updates/communication
-  app.get("/api/projects/:projectId/updates", authenticateToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      const projectId = parseInt(req.params.projectId);
-      const updates = await storage.getProjectUpdates(projectId);
-      res.json(updates);
-    } catch (error) {
-      console.error("Error fetching project updates:", error);
-      res.status(500).json({ message: "Failed to fetch project updates" });
-    }
-  });
-
-  app.post("/api/project-updates", authenticateToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      const updateData = insertProjectUpdateSchema.parse({
-        ...req.body,
-        userId: req.user!.id
-      });
-      const update = await storage.createProjectUpdate(updateData);
-      res.json(update);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid update data", errors: error.errors });
-      } else {
-        console.error("Error creating project update:", error);
-        res.status(500).json({ message: "Failed to create project update" });
-      }
-    }
-  });
-
-  // Employee routes
-  app.get("/api/employees", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
-    try {
-      const employees = await storage.getAllEmployees();
-      res.json(employees.map(emp => ({ 
-        id: emp.id, 
-        username: emp.username, 
-        firstName: emp.firstName, 
-        lastName: emp.lastName,
-        email: emp.email
-      })));
-    } catch (error) {
-      console.error("Error fetching employees:", error);
-      res.status(500).json({ message: "Failed to fetch employees" });
-    }
-  });
-
-  // Client management endpoints
-  app.get("/api/clients", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
-    try {
-      const clients = await storage.getAllClients();
-      res.json(clients);
-    } catch (error) {
-      console.error("Error fetching clients:", error);
-      res.status(500).json({ message: "Failed to fetch clients" });
-    }
-  });
-
-  app.post("/api/clients", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
-    try {
-      const validatedData = insertClientSchema.parse(req.body);
-      const client = await storage.createClient(validatedData);
-      res.json(client);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid client data", errors: error.errors });
-      } else {
-        console.error("Error creating client:", error);
-        res.status(500).json({ message: "Failed to create client" });
-      }
-    }
-  });
-
-  app.get("/api/clients/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      const clientId = parseInt(req.params.id);
-      const client = await storage.getClient(clientId);
-      if (!client) {
-        return res.status(404).json({ message: "Client not found" });
-      }
-      res.json(client);
-    } catch (error) {
-      console.error("Error fetching client:", error);
-      res.status(500).json({ message: "Failed to fetch client" });
-    }
-  });
-
-  app.put("/api/clients/:id", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
-    try {
-      const clientId = parseInt(req.params.id);
-      const updates = req.body;
-      const client = await storage.updateClient(clientId, updates);
-      res.json(client);
-    } catch (error) {
-      console.error("Error updating client:", error);
-      res.status(500).json({ message: "Failed to update client" });
-    }
-  });
-
-  // Contact form submission endpoint
+  // Contact form route (public)
   app.post("/api/contact", async (req, res) => {
     try {
-      const validatedData = insertContactSubmissionSchema.parse(req.body);
-      const submission = await storage.createContactSubmission(validatedData);
-      
-      console.log("New contact submission:", submission);
-      
-      res.json({ success: true, message: "Contact form submitted successfully" });
+      const submissionData = insertContactSubmissionSchema.parse(req.body);
+      const submission = await storage.createContactSubmission(submissionData);
+      res.json(submission);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ 
-          success: false, 
-          message: "Invalid form data", 
-          errors: error.errors 
-        });
-      } else {
-        console.error("Contact form error:", error);
-        res.status(500).json({ 
-          success: false, 
-          message: "Internal server error" 
-        });
-      }
+      console.error("Contact form error:", error);
+      res.status(400).json({ message: "Failed to submit contact form" });
     }
   });
 
-  // Get all contact submissions (admin/employee only)
-  app.get("/api/contact-submissions", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+  // Admin routes for contact submissions
+  app.get("/api/contact-submissions", authenticateToken, requireRole(['admin', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
     try {
       const submissions = await storage.getContactSubmissions();
       res.json(submissions);
     } catch (error) {
-      console.error("Error fetching contact submissions:", error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Internal server error" 
-      });
-    }
-  });
-
-  app.put("/api/contact-submissions/:id/status", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
-    try {
-      const submissionId = parseInt(req.params.id);
-      const { status } = req.body;
-      const updatedSubmission = await storage.updateContactSubmissionStatus(submissionId, status);
-      res.json(updatedSubmission);
-    } catch (error) {
-      console.error("Error updating contact submission:", error);
-      res.status(500).json({ message: "Failed to update contact submission status" });
-    }
-  });
-
-  // Consultation scheduling routes
-  app.get("/api/consultations", authenticateToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      const consultations = await storage.getAllConsultations();
-      res.json(consultations);
-    } catch (error) {
-      console.error("Error fetching consultations:", error);
-      res.status(500).json({ message: "Failed to fetch consultations" });
-    }
-  });
-
-  app.post("/api/consultations", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
-    try {
-      const consultation = await storage.createConsultation(req.body);
-      res.json(consultation);
-    } catch (error) {
-      console.error("Error creating consultation:", error);
-      res.status(500).json({ message: "Failed to create consultation" });
-    }
-  });
-
-  app.get("/api/consultations/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      const { id } = req.params;
-      const consultation = await storage.getConsultation(parseInt(id));
-      
-      if (!consultation) {
-        return res.status(404).json({ message: "Consultation not found" });
-      }
-      
-      res.json(consultation);
-    } catch (error) {
-      console.error("Error fetching consultation:", error);
-      res.status(500).json({ message: "Failed to fetch consultation" });
-    }
-  });
-
-  app.put("/api/consultations/:id", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
-    try {
-      const { id } = req.params;
-      const consultation = await storage.updateConsultation(parseInt(id), req.body);
-      res.json(consultation);
-    } catch (error) {
-      console.error("Error updating consultation:", error);
-      res.status(500).json({ message: "Failed to update consultation" });
-    }
-  });
-
-  app.delete("/api/consultations/:id", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
-    try {
-      const { id } = req.params;
-      await storage.deleteConsultation(parseInt(id));
-      res.json({ message: "Consultation deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting consultation:", error);
-      res.status(500).json({ message: "Failed to delete consultation" });
-    }
-  });
-
-  app.get("/api/consultations/employee/:employeeId", authenticateToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      const { employeeId } = req.params;
-      const consultations = await storage.getConsultationsByEmployee(parseInt(employeeId));
-      res.json(consultations);
-    } catch (error) {
-      console.error("Error fetching employee consultations:", error);
-      res.status(500).json({ message: "Failed to fetch employee consultations" });
-    }
-  });
-
-  app.get("/api/consultations/client/:clientId", authenticateToken, async (req: AuthenticatedRequest, res) => {
-    try {
-      const { clientId } = req.params;
-      const consultations = await storage.getConsultationsByClient(parseInt(clientId));
-      res.json(consultations);
-    } catch (error) {
-      console.error("Error fetching client consultations:", error);
-      res.status(500).json({ message: "Failed to fetch client consultations" });
+      res.status(500).json({ message: "Failed to fetch contact submissions" });
     }
   });
 
