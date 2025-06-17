@@ -17,40 +17,40 @@ export default function Services() {
       title: "Professional Installation",
       description: "Expert installation of windows and doors with precision and attention to detail. Our certified technicians ensure perfect fit and finish.",
       features: ["Certified installers", "Quality guarantee", "Clean-up included"],
-      color: "from-warm-orange to-golden-yellow",
-      bgColor: "bg-warm-orange/10"
+      color: "from-primary to-primary/80",
+      bgColor: "bg-primary/10"
     },
     {
       icon: <Warehouse className="h-8 w-8" />,
       title: "Window & Door Supply",
       description: "Authorized dealer of premium Milgard and Pella products. We supply high-quality windows and doors for any project size.",
       features: ["Premium brands", "Competitive pricing", "Fast delivery"],
-      color: "from-deep-navy to-primary-blue",
-      bgColor: "bg-deep-navy/10"
+      color: "from-accent to-accent/80",
+      bgColor: "bg-accent/10"
     },
     {
       icon: <Home className="h-8 w-8" />,
       title: "Replacement Services",
       description: "Complete window and door replacement services for residential properties. Upgrade your home's energy efficiency and curb appeal.",
       features: ["Energy efficient", "Custom sizing", "Warranty included"],
-      color: "from-success-green to-primary-blue",
-      bgColor: "bg-success-green/10"
+      color: "from-primary to-accent",
+      bgColor: "bg-primary/5"
     },
     {
       icon: <Settings className="h-8 w-8" />,
       title: "Repair Services",
       description: "Professional repair services for existing windows and doors. From glass replacement to hardware repairs, we fix it right.",
       features: ["Same-day service", "All brands serviced", "Parts in stock"],
-      color: "from-golden-yellow to-warm-orange",
-      bgColor: "bg-golden-yellow/10"
+      color: "from-accent to-primary",
+      bgColor: "bg-accent/5"
     },
     {
       icon: <ClipboardCheck className="h-8 w-8" />,
       title: "Free Consultations",
       description: "Professional consultation and assessment of your window and door needs. Get expert advice and accurate estimates at no cost.",
       features: ["No obligation", "Expert advice", "Detailed estimates"],
-      color: "from-primary-blue to-deep-navy",
-      bgColor: "bg-primary-blue/10"
+      color: "from-primary to-primary/70",
+      bgColor: "bg-primary/5"
     },
     {
       icon: <Medal className="h-8 w-8" />,
