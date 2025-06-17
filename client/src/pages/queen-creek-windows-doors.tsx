@@ -190,9 +190,11 @@ export default function QueenCreekWindowsDoors() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Button size="lg" className="bg-primary text-primary-foreground">
-              <Calculator className="mr-2 h-5 w-5" />
-              Get Free Queen Creek Estimate
+            <Button size="lg" className="bg-primary text-primary-foreground" asChild>
+              <Link href="/#contact">
+                <Calculator className="mr-2 h-5 w-5" />
+                Get Free Queen Creek Estimate
+              </Link>
             </Button>
             <Button variant="outline" size="lg" asChild>
               <a href="tel:4809334392" className="flex items-center">
