@@ -191,7 +191,7 @@ export default function Contact() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="phone" className="text-sm font-semibold text-gray-700 mb-2">Phone Number</Label>
+                  <Label htmlFor="phone" className="text-sm font-semibold text-card-foreground mb-2">Phone Number</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -199,12 +199,11 @@ export default function Contact() {
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     required
-                    className="bg-white"
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="email" className="text-sm font-semibold text-gray-700 mb-2">Email Address</Label>
+                  <Label htmlFor="email" className="text-sm font-semibold text-card-foreground mb-2">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
@@ -212,14 +211,13 @@ export default function Contact() {
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     required
-                    className="bg-white"
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="serviceNeeded" className="text-sm font-semibold text-gray-700 mb-2">Service Needed</Label>
+                  <Label htmlFor="serviceNeeded" className="text-sm font-semibold text-card-foreground mb-2">Service Needed</Label>
                   <Select value={formData.serviceNeeded} onValueChange={(value) => handleInputChange('serviceNeeded', value)}>
-                    <SelectTrigger className="bg-white">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select a service" />
                     </SelectTrigger>
                     <SelectContent>
@@ -235,21 +233,20 @@ export default function Contact() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="projectDetails" className="text-sm font-semibold text-gray-700 mb-2">Project Details</Label>
+                  <Label htmlFor="projectDetails" className="text-sm font-semibold text-card-foreground mb-2">Project Details</Label>
                   <Textarea
                     id="projectDetails"
                     rows={4}
                     placeholder="Tell us about your project..."
                     value={formData.projectDetails || ""}
                     onChange={(e) => handleInputChange('projectDetails', e.target.value)}
-                    className="bg-white"
                   />
                 </div>
                 
                 <Button 
                   type="submit" 
                   disabled={contactMutation.isPending}
-                  className="w-full bg-primary-blue text-white py-4 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-semibold text-lg"
+                  className="w-full py-4 px-6 font-semibold text-lg"
                 >
                   {contactMutation.isPending ? (
                     "Sending..."
