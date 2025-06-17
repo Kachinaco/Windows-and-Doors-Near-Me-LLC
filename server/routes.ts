@@ -302,6 +302,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Client management endpoints
+  app.get("/api/clients", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const clients = await storage.getAllClients();
+      res.json(clients);
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+      res.status(500).json({ message: "Failed to fetch clients" });
+    }
+  });
+
+  app.post("/api/clients", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const validatedData = insertClientSchema.parse(req.body);
+      const client = await storage.createClient(validatedData);
+      res.json(client);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid client data", errors: error.errors });
+      } else {
+        console.error("Error creating client:", error);
+        res.status(500).json({ message: "Failed to create client" });
+      }
+    }
+  });
+
+  app.get("/api/clients/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const clientId = parseInt(req.params.id);
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      res.json(client);
+    } catch (error) {
+      console.error("Error fetching client:", error);
+      res.status(500).json({ message: "Failed to fetch client" });
+    }
+  });
+
+  app.put("/api/clients/:id", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const clientId = parseInt(req.params.id);
+      const updates = req.body;
+      const client = await storage.updateClient(clientId, updates);
+      res.json(client);
+    } catch (error) {
+      console.error("Error updating client:", error);
+      res.status(500).json({ message: "Failed to update client" });
+    }
+  });
+
   // Contact form submission endpoint
   app.post("/api/contact", async (req, res) => {
     try {

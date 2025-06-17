@@ -1,11 +1,14 @@
 import {
   users,
+  clients,
   projects,
   tasks,
   projectUpdates,
   contactSubmissions,
   type User,
   type InsertUser,
+  type Client,
+  type InsertClient,
   type Project,
   type InsertProject,
   type Task,
@@ -29,10 +32,16 @@ export interface IStorage {
   authenticateUser(username: string, password: string): Promise<User | null>;
   getAllEmployees(): Promise<User[]>;
   
+  // Client operations
+  createClient(client: InsertClient): Promise<Client>;
+  getClient(id: number): Promise<Client | undefined>;
+  getAllClients(): Promise<Client[]>;
+  updateClient(id: number, updates: Partial<InsertClient>): Promise<Client>;
+  
   // Project operations
   createProject(project: InsertProject): Promise<Project>;
   getProject(id: number): Promise<Project | undefined>;
-  getProjectsByCustomer(customerId: number): Promise<Project[]>;
+  getProjectsByClient(clientId: number): Promise<Project[]>;
   getProjectsByEmployee(employeeId: number): Promise<Project[]>;
   getAllProjects(): Promise<Project[]>;
   updateProject(id: number, updates: Partial<InsertProject>): Promise<Project>;
@@ -112,6 +121,33 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(users).where(eq(users.role, "employee"));
   }
 
+  // Client operations
+  async createClient(insertClient: InsertClient): Promise<Client> {
+    const [client] = await db
+      .insert(clients)
+      .values(insertClient)
+      .returning();
+    return client;
+  }
+
+  async getClient(id: number): Promise<Client | undefined> {
+    const [client] = await db.select().from(clients).where(eq(clients.id, id));
+    return client || undefined;
+  }
+
+  async getAllClients(): Promise<Client[]> {
+    return await db.select().from(clients).orderBy(desc(clients.createdAt));
+  }
+
+  async updateClient(id: number, updates: Partial<InsertClient>): Promise<Client> {
+    const [client] = await db
+      .update(clients)
+      .set(updates)
+      .where(eq(clients.id, id))
+      .returning();
+    return client;
+  }
+
   // Project operations
   async createProject(insertProject: InsertProject): Promise<Project> {
     const [project] = await db
@@ -126,8 +162,8 @@ export class DatabaseStorage implements IStorage {
     return project || undefined;
   }
 
-  async getProjectsByCustomer(customerId: number): Promise<Project[]> {
-    return await db.select().from(projects).where(eq(projects.customerId, customerId));
+  async getProjectsByClient(clientId: number): Promise<Project[]> {
+    return await db.select().from(projects).where(eq(projects.clientId, clientId));
   }
 
   async getProjectsByEmployee(employeeId: number): Promise<Project[]> {
