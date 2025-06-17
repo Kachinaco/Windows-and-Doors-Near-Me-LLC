@@ -105,7 +105,7 @@ export default function Products() {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="text-4xl font-bold">PELLA</div>
+                    <div className="text-4xl font-bold text-[#f7ca36]">PELLA</div>
                     <div className="flex items-center space-x-1 text-white">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className="h-4 w-4 fill-current" />
