@@ -30,7 +30,7 @@ export default function LeadsPage() {
   const [selectedLead, setSelectedLead] = useState<ContactSubmission | null>(null);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
 
-  const { data: contactSubmissions = [], isLoading } = useQuery({
+  const { data: contactSubmissions = [], isLoading } = useQuery<ContactSubmission[]>({
     queryKey: ["/api/contact-submissions"],
     enabled: user?.role === 'admin' || user?.role === 'employee',
   });
