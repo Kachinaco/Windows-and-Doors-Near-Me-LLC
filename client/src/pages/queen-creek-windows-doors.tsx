@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Phone, Star, Award, Shield, Check, Calculator } from "lucide-react";
+import { Link } from "wouter";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
