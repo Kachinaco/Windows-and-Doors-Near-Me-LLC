@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, varchar, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, varchar, integer, boolean, jsonb, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -42,56 +42,46 @@ export const clients = pgTable("clients", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Projects table for customer projects
-export const projects = pgTable("projects", {
+// Milgard product catalog
+export const products = pgTable("products", {
   id: serial("id").primaryKey(),
-  clientId: integer("client_id").references(() => clients.id),
-  title: text("title").notNull(),
+  name: text("name").notNull(),
+  category: text("category").notNull(), // windows, doors
+  subcategory: text("subcategory"), // single-hung, double-hung, sliding, french, etc.
   description: text("description"),
-  status: text("status").notNull().default("pending"), // pending, in_progress, completed, cancelled
-  priority: text("priority").notNull().default("medium"), // low, medium, high, urgent
-  serviceType: text("service_type").notNull(),
-  email: text("email"),
-  phone: text("phone"),
-  address: text("address"),
-  estimatedCost: text("estimated_cost"),
-  actualCost: text("actual_cost"),
-  startDate: timestamp("start_date"),
-  endDate: timestamp("end_date"),
-  startTime: text("start_time"),
-  endTime: text("end_time"),
-  leadSource: text("lead_source"),
-  completedDate: timestamp("completed_date"),
-  assignedTo: integer("assigned_to").references(() => users.id),
+  price: text("price").notNull(), // storing as text for simplicity
+  imageUrl: text("image_url"),
+  specifications: jsonb("specifications"), // size, material, features, etc.
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Tasks within projects
-export const tasks = pgTable("tasks", {
+// Shopping cart for customers
+export const cartItems = pgTable("cart_items", {
   id: serial("id").primaryKey(),
-  projectId: integer("project_id").references(() => projects.id),
-  title: text("title").notNull(),
-  description: text("description"),
-  status: text("status").notNull().default("todo"), // todo, in_progress, done
-  priority: text("priority").notNull().default("medium"),
-  assignedTo: integer("assigned_to").references(() => users.id),
-  dueDate: timestamp("due_date"),
-  completedDate: timestamp("completed_date"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-// Project updates and communication
-export const projectUpdates = pgTable("project_updates", {
-  id: serial("id").primaryKey(),
-  projectId: integer("project_id").references(() => projects.id),
   userId: integer("user_id").references(() => users.id),
-  message: text("message").notNull(),
-  type: text("type").notNull().default("comment"), // comment, status_change, file_upload
-  metadata: jsonb("metadata"), // for storing additional data
+  productId: integer("product_id").references(() => products.id),
+  quantity: integer("quantity").notNull().default(1),
+  customizations: jsonb("customizations"), // size, color, hardware options
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Customer orders/quotes
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  orderNumber: text("order_number").notNull().unique(),
+  status: text("status").notNull().default("quote"), // quote, approved, in_progress, completed
+  totalAmount: text("total_amount"),
+  customerInfo: jsonb("customer_info"), // name, email, phone, address
+  items: jsonb("items"), // cart snapshot
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Remove old project management tables - customers now use simple shopping cart
 
 // Enhanced contact submissions
 export const contactSubmissions = pgTable("contact_submissions", {
