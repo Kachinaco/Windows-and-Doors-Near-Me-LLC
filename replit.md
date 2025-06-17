@@ -155,6 +155,7 @@ All endpoints include proper authentication middleware, role-based authorization
 Changelog:
 - June 17, 2025. Initial setup
 - June 17, 2025. Major creative redesign with unique visual elements, custom color scheme, and integrated company logo
+- June 17, 2025. Fixed mobile navigation accessibility - added Login button to mobile hamburger menu for better user experience
 
 ## User Preferences
 

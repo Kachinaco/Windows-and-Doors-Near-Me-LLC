@@ -11,14 +11,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertTaskSchema, InsertTask, Task } from "@shared/schema";
+import { insertTaskSchema, InsertTask, Task, Project, type User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   PlusCircle, 
   CheckSquare, 
   Users, 
   LogOut,
-  User,
+  User as UserIcon,
   Settings,
   ArrowLeft,
   Clock,
@@ -31,11 +31,11 @@ export default function TasksPage() {
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const { data: projects = [] } = useQuery({
+  const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
-  const { data: employees = [] } = useQuery({
+  const { data: employees = [] } = useQuery<User[]>({
     queryKey: ["/api/employees"],
     enabled: user?.role === 'admin' || user?.role === 'employee',
   });
@@ -119,7 +119,7 @@ export default function TasksPage() {
             
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <User className="h-5 w-5 text-gray-500" />
+                <UserIcon className="h-5 w-5 text-gray-500" />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   {user?.firstName} {user?.lastName} ({user?.role})
                 </span>
