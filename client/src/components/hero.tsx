@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Calculator, Phone, Star, Shield, Zap, Award, Users } from "lucide-react";
+import { Calculator, Phone, Star, Shield, Award, MapPin, Home, Users, CheckCircle } from "lucide-react";
+import logoPath from "@assets/Windows & Doors Near Me LLC (1)_1750122454387.png";
 
 export default function Hero() {
   const scrollToContact = () => {
@@ -10,117 +11,146 @@ export default function Hero() {
   };
 
   return (
-    <section id="home" className="relative min-h-screen bg-background dark:bg-background pt-16 sm:pt-20">
-      {/* Subtle Background Elements - Hidden on mobile for performance */}
-      <div className="absolute inset-0 overflow-hidden opacity-30 dark:opacity-20">
-        <div className="hidden sm:block subtle-animation absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
-        <div className="hidden sm:block subtle-animation-delay absolute top-1/3 right-1/3 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
-      </div>
-      
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center min-h-[70vh] sm:min-h-[80vh]">
-          <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
-            {/* Badge */}
-            <div className="inline-flex items-center px-3 py-2 sm:px-4 bg-primary text-primary-foreground rounded-full text-xs sm:text-sm font-medium shadow-lg">
-              <Award className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Gilbert's Premier Window & Door Specialists</span>
-              <span className="sm:hidden">Gilbert's Premier Specialists</span>
-            </div>
-            
-            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight">
-              <span className="text-foreground">Transform Your</span>
-              <br />
-              <span className="text-primary">
-                Home's Vision
-              </span>
-            </h1>
-            
-            <p className="text-base sm:text-xl text-muted-foreground leading-relaxed max-w-lg mx-auto lg:mx-0">
-              Elevate your living space with premium Milgard and Pella windows and doors. 
-              Where craftsmanship meets innovation in Gilbert, Arizona.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center lg:items-start">
-              <Button 
-                onClick={scrollToContact}
-                size="lg"
-                className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 font-semibold mobile-button"
-              >
-                <Calculator className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Get Your Free Estimate
-              </Button>
-              <Button 
-                variant="outline"
-                size="lg"
-                asChild
-                className="w-full sm:w-auto mobile-button"
-              >
-                <a href="tel:4809334392" className="flex items-center justify-center">
-                  <Phone className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  (480) 933-4392
-                </a>
-              </Button>
-            </div>
-            
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap items-center gap-8 pt-4">
-              <div className="flex items-center space-x-2">
-                <div className="flex text-yellow-500">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-current" />
-                  ))}
-                </div>
-                <span className="text-muted-foreground font-medium">5.0 Rating</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Shield className="text-green-600 h-4 w-4" />
-                <span className="text-muted-foreground font-medium">Licensed & Insured</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Users className="text-primary h-4 w-4" />
-                <span className="text-muted-foreground font-medium">500+ Happy Customers</span>
-              </div>
-            </div>
+    <section id="home" className="relative bg-white dark:bg-background">
+      {/* Top contact bar - professional contractor style */}
+      <div className="bg-primary text-primary-foreground py-3 px-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-sm">
+          <div className="flex items-center space-x-6">
+            <span className="flex items-center">
+              <Phone className="h-4 w-4 mr-2" />
+              (480) 933-4392
+            </span>
+            <span className="flex items-center">
+              <MapPin className="h-4 w-4 mr-2" />
+              Gilbert, AZ & Surrounding Areas
+            </span>
           </div>
-          
-          <div className="relative">
-            {/* Main Image */}
-            <div className="relative">
-              <img 
-                src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
-                alt="Modern home with beautiful windows" 
-                className="rounded-3xl shadow-2xl w-full h-auto transform rotate-2 hover:rotate-0 transition-transform duration-500"
-              />
-              
-              {/* Floating Stats Cards */}
-              <div className="absolute -bottom-8 -left-8 glass-card p-6 rounded-2xl shadow-xl hover-lift">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-r from-warm-orange to-golden-yellow rounded-full flex items-center justify-center">
-                    <Zap className="text-white h-6 w-6" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-deep-navy">15+</div>
-                    <div className="text-sm text-gray-600">Years Experience</div>
-                  </div>
+          <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+            <Award className="h-4 w-4" />
+            <span>Licensed & Insured | ROC #123456</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main hero section */}
+      <div className="bg-gradient-to-b from-secondary/20 to-white dark:from-muted/20 dark:to-background py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            
+            {/* Left content */}
+            <div className="text-center lg:text-left space-y-8">
+              <div className="space-y-6">
+                <div className="mb-6">
+                  <img 
+                    src={logoPath} 
+                    alt="Windows & Doors Near Me LLC Logo" 
+                    className="h-16 w-auto mx-auto lg:mx-0"
+                  />
                 </div>
+                
+                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground leading-tight">
+                  <span className="block">Professional</span>
+                  <span className="block text-primary">Windows & Doors</span>
+                  <span className="block">Installation</span>
+                </h1>
+                
+                <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0">
+                  Authorized Milgard & Pella dealer serving Gilbert and surrounding areas. 
+                  Premium quality installations backed by 15+ years of experience.
+                </p>
               </div>
               
-              <div className="absolute -top-8 -right-8 glass-card p-6 rounded-2xl shadow-xl hover-lift">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-r from-success-green to-primary-blue rounded-full flex items-center justify-center">
-                    <Award className="text-white h-6 w-6" />
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Button 
+                  onClick={scrollToContact}
+                  size="lg" 
+                  className="bg-primary hover:bg-primary/90 px-8 py-4 text-lg font-semibold"
+                >
+                  <Calculator className="mr-2 h-5 w-5" />
+                  Get Free Estimate
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="border-2 px-8 py-4 text-lg font-semibold" 
+                  asChild
+                >
+                  <a href="tel:4809334392" className="flex items-center">
+                    <Phone className="mr-2 h-5 w-5" />
+                    (480) 933-4392
+                  </a>
+                </Button>
+              </div>
+              
+              {/* Service highlights */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8">
+                <div className="text-center lg:text-left">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-primary text-primary-foreground rounded-lg mb-3">
+                    <Shield className="h-6 w-6" />
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold text-deep-navy">A+</div>
-                    <div className="text-sm text-gray-600">BBB Rating</div>
+                  <h3 className="font-semibold text-foreground mb-1">Licensed & Insured</h3>
+                  <p className="text-sm text-muted-foreground">Fully licensed and insured professionals</p>
+                </div>
+                
+                <div className="text-center lg:text-left">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-accent text-accent-foreground rounded-lg mb-3">
+                    <Award className="h-6 w-6" />
                   </div>
+                  <h3 className="font-semibold text-foreground mb-1">15+ Years</h3>
+                  <p className="text-sm text-muted-foreground">Experience in window & door installation</p>
+                </div>
+                
+                <div className="text-center lg:text-left">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-primary text-primary-foreground rounded-lg mb-3">
+                    <Star className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-1">Quality Work</h3>
+                  <p className="text-sm text-muted-foreground">Premium installations with warranty</p>
                 </div>
               </div>
             </div>
             
-            {/* Decorative Elements */}
-            <div className="absolute top-1/2 -right-16 w-32 h-32 bg-gradient-to-r from-warm-orange to-golden-yellow rounded-full opacity-20 blur-2xl"></div>
-            <div className="absolute -bottom-16 left-1/2 w-24 h-24 bg-gradient-to-r from-deep-navy to-primary-blue rounded-full opacity-20 blur-2xl"></div>
+            {/* Right content - Professional image placeholder */}
+            <div className="relative">
+              <div className="bg-card border rounded-2xl p-8 shadow-lg">
+                <div className="aspect-[4/3] bg-secondary rounded-lg flex items-center justify-center relative overflow-hidden">
+                  <div className="text-center text-muted-foreground">
+                    <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Home className="h-10 w-10 text-primary-foreground" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">Professional Installation</h3>
+                    <p className="text-sm">Quality windows & doors for your home</p>
+                  </div>
+                </div>
+                
+                {/* Trust indicators */}
+                <div className="mt-6 flex justify-between items-center text-sm">
+                  <div className="flex items-center space-x-1">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                    <span className="text-muted-foreground ml-2">5.0 Rating</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Users className="h-4 w-4 text-primary" />
+                    <span className="text-muted-foreground">500+ Projects</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Floating service areas card */}
+              <div className="absolute -bottom-6 -right-6 bg-card border rounded-lg p-4 shadow-lg">
+                <p className="text-sm font-semibold text-foreground mb-2">Service Areas:</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded">Gilbert</span>
+                  <span className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded">Mesa</span>
+                  <span className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded">Chandler</span>
+                  <span className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded">Tempe</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
