@@ -115,7 +115,9 @@ This is a modern business website for Windows & Doors Near Me LLC, a window and 
 
 Changelog:
 - June 17, 2025. Initial setup
+- June 17, 2025. Major creative redesign with unique visual elements, custom color scheme, and integrated company logo
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Design preference: Creative and unique website design that stands out from typical business websites.

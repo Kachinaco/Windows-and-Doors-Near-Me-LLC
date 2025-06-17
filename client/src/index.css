@@ -27,6 +27,10 @@
   --secondary-blue: hsl(213, 93%, 68%);
   --light-blue: hsl(214, 100%, 97%);
   --success-green: hsl(158, 64%, 52%);
+  --deep-navy: hsl(215, 28%, 17%);
+  --warm-orange: hsl(25, 95%, 53%);
+  --golden-yellow: hsl(45, 100%, 51%);
+  --soft-cream: hsl(48, 100%, 97%);
 }
 
 .dark {
@@ -90,5 +94,74 @@
   
   .text-success-green {
     color: hsl(158, 64%, 52%);
+  }
+
+  .bg-deep-navy {
+    background-color: hsl(215, 28%, 17%);
+  }
+  
+  .text-deep-navy {
+    color: hsl(215, 28%, 17%);
+  }
+  
+  .bg-warm-orange {
+    background-color: hsl(25, 95%, 53%);
+  }
+  
+  .text-warm-orange {
+    color: hsl(25, 95%, 53%);
+  }
+  
+  .bg-golden-yellow {
+    background-color: hsl(45, 100%, 51%);
+  }
+  
+  .text-golden-yellow {
+    color: hsl(45, 100%, 51%);
+  }
+  
+  .bg-soft-cream {
+    background-color: hsl(48, 100%, 97%);
+  }
+
+  .floating-shape {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .floating-shape-delay {
+    animation: float 6s ease-in-out infinite;
+    animation-delay: -3s;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .diagonal-split {
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   }
 }
