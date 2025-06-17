@@ -18,10 +18,26 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Dedicated clients table for customer information
+export const clients = pgTable("clients", {
+  id: serial("id").primaryKey(),
+  fullName: text("full_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  address: text("address"),
+  jobTitle: text("job_title"),
+  website: text("website"),
+  lastInteraction: timestamp("last_interaction"),
+  additionalInfo: text("additional_info"),
+  leadSource: text("lead_source"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Projects table for customer projects
 export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
-  customerId: integer("customer_id").references(() => users.id),
+  clientId: integer("client_id").references(() => clients.id),
   title: text("title").notNull(),
   description: text("description"),
   status: text("status").notNull().default("pending"), // pending, in_progress, completed, cancelled
@@ -30,7 +46,10 @@ export const projects = pgTable("projects", {
   estimatedCost: text("estimated_cost"),
   actualCost: text("actual_cost"),
   startDate: timestamp("start_date"),
-  dueDate: timestamp("due_date"),
+  endDate: timestamp("end_date"),
+  startTime: text("start_time"),
+  endTime: text("end_time"),
+  leadSource: text("lead_source"),
   completedDate: timestamp("completed_date"),
   assignedTo: integer("assigned_to").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -79,16 +98,18 @@ export const contactSubmissions = pgTable("contact_submissions", {
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   assignedProjects: many(projects, { relationName: "assignedProjects" }),
-  customerProjects: many(projects, { relationName: "customerProjects" }),
   assignedTasks: many(tasks),
   projectUpdates: many(projectUpdates),
 }));
 
+export const clientsRelations = relations(clients, ({ many }) => ({
+  projects: many(projects),
+}));
+
 export const projectsRelations = relations(projects, ({ one, many }) => ({
-  customer: one(users, {
-    fields: [projects.customerId],
-    references: [users.id],
-    relationName: "customerProjects",
+  client: one(clients, {
+    fields: [projects.clientId],
+    references: [clients.id],
   }),
   assignedEmployee: one(users, {
     fields: [projects.assignedTo],
@@ -155,8 +176,16 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
   createdAt: true,
 });
 
+export const insertClientSchema = createInsertSchema(clients).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertClient = z.infer<typeof insertClientSchema>;
+export type Client = typeof clients.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type LoginCredentials = z.infer<typeof loginSchema>;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
