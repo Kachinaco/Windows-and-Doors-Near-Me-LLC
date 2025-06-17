@@ -4,24 +4,25 @@ import { Leaf, Shield, Settings, Award, Check, BookOpen, Star, Zap } from "lucid
 
 export default function Products() {
   return (
-    <section id="products" className="py-20 bg-background">
+    <section id="products" className="py-12 sm:py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium shadow-lg mb-6">
-            <Award className="mr-2 h-4 w-4" />
-            Authorized Premium Dealer
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="inline-flex items-center px-3 py-2 sm:px-4 bg-primary text-primary-foreground rounded-full text-xs sm:text-sm font-medium shadow-lg mb-4 sm:mb-6">
+            <Award className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Authorized Premium Dealer</span>
+            <span className="sm:hidden">Premium Dealer</span>
           </div>
-          <h2 className="text-4xl font-bold text-foreground mb-6">
+          <h2 className="text-2xl sm:text-4xl font-bold text-foreground mb-4 sm:mb-6">
             Trusted
             <span className="text-primary"> Brands</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto px-2">
             We partner with industry leaders to bring you the finest windows and doors, 
             backed by comprehensive warranties and our expert installation.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Milgard Section */}
           <Card className="group relative overflow-hidden shadow-2xl hover-lift bg-card border">
             <CardContent className="p-0">

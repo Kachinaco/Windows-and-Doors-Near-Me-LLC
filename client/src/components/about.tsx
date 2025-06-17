@@ -3,16 +3,16 @@ import { IdCard, Shield } from "lucide-react";
 
 export default function About() {
   return (
-    <section id="about" className="py-20 bg-muted/30 dark:bg-muted/10">
+    <section id="about" className="py-12 sm:py-20 bg-muted/30 dark:bg-muted/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <h2 className="text-4xl font-bold text-foreground mb-6">About Windows & Doors Near Me LLC</h2>
-            <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="text-center lg:text-left">
+            <h2 className="text-2xl sm:text-4xl font-bold text-foreground mb-4 sm:mb-6">About Windows & Doors Near Me LLC</h2>
+            <p className="text-base sm:text-xl text-muted-foreground mb-4 sm:mb-6 leading-relaxed">
               Serving Gilbert, Arizona and surrounding communities for over 15 years, we've built our reputation 
               on quality craftsmanship, reliable service, and customer satisfaction.
             </p>
-            <p className="text-muted-foreground mb-8 leading-relaxed">
+            <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 leading-relaxed">
               As an authorized dealer of Milgard and Pella products, we offer the finest windows and doors 
               available, backed by comprehensive warranties and expert installation. Our team of certified 
               professionals takes pride in every project, ensuring your home receives the quality it deserves.

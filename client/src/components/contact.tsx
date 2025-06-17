@@ -61,31 +61,31 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="py-20 bg-background">
+    <section id="contact" className="py-12 sm:py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4">Get Your Free Estimate Today</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-4xl font-bold text-foreground mb-4">Get Your Free Estimate Today</h2>
+          <p className="text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto px-2">
             Ready to upgrade your windows and doors? Contact us for a free consultation and estimate. 
             We're here to help bring your vision to life.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Contact Information */}
           <div>
-            <Card className="bg-card border mb-8">
-              <CardContent className="p-8">
-                <h3 className="text-2xl font-bold text-card-foreground mb-6">Contact Information</h3>
+            <Card className="bg-card border mb-6 lg:mb-8">
+              <CardContent className="p-4 sm:p-6 lg:p-8">
+                <h3 className="text-xl sm:text-2xl font-bold text-card-foreground mb-4 sm:mb-6">Contact Information</h3>
                 
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="flex items-start">
-                    <div className="bg-primary p-3 rounded-full mr-4">
-                      <MapPin className="text-primary-foreground h-5 w-5" />
+                    <div className="bg-primary p-2 sm:p-3 rounded-full mr-3 sm:mr-4 flex-shrink-0">
+                      <MapPin className="text-primary-foreground h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
                     <div>
-                      <div className="font-semibold text-card-foreground mb-1">Address</div>
-                      <div className="text-muted-foreground">751 N Monterey St Suite 123<br />Gilbert, AZ 85233</div>
+                      <div className="font-semibold text-card-foreground mb-1 text-sm sm:text-base">Address</div>
+                      <div className="text-muted-foreground text-sm sm:text-base">751 N Monterey St Suite 123<br />Gilbert, AZ 85233</div>
                     </div>
                   </div>
                   
