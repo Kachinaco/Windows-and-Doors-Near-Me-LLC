@@ -60,6 +60,7 @@ function Router() {
           <Route path="/tasks" component={TasksPage} />
           <Route path="/leads" component={LeadsPage} />
           <Route path="/clients" component={ClientsPage} />
+          <Route path="/consultations" component={ConsultationsPage} />
           <Route path="/create-project" component={CreateProjectPage} />
         </>
       ) : (
