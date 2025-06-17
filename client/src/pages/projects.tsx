@@ -47,7 +47,7 @@ export default function ProjectsPage() {
       estimatedCost: "",
       priority: "medium",
       status: "pending",
-      customerId: null,
+      clientId: null,
       assignedTo: null,
     },
   });
