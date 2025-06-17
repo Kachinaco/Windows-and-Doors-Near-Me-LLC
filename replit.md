@@ -26,11 +26,15 @@ This is a modern business website for Windows & Doors Near Me LLC, a window and 
 - **Schema Validation**: Zod for runtime type validation
 
 ### Authentication & Authorization System
-- **User Roles**: Customer, Employee, Admin with different access levels
+- **User Profiles**: Three subscription tiers with role-based access control
+  - Customer (Free): Basic project tracking for homeowners
+  - Contractor (30-Day Trial): Full contractor features with trial period
+  - Contractor (Paid): Full features plus premium tools and advanced capabilities
+- **Subscription Management**: Trial expiration tracking, upgrade paths, and payment integration ready
 - **JWT Authentication**: Secure token-based authentication system
 - **Password Security**: bcryptjs hashing with salt rounds
-- **Protected Routes**: Frontend route protection based on authentication status
-- **API Security**: Middleware-based endpoint protection with role verification
+- **Protected Routes**: Frontend route protection based on authentication status and subscription level
+- **API Security**: Middleware-based endpoint protection with role verification and subscription access control
 
 ### Development Environment
 - **Platform**: Replit with PostgreSQL 16 module
@@ -158,6 +162,7 @@ Changelog:
 - June 17, 2025. Fixed mobile navigation accessibility - added Login button to mobile hamburger menu for better user experience
 - June 17, 2025. Implemented comprehensive consultation scheduling system with full editing capabilities and employee assignment features
 - June 17, 2025. Updated project creation modal interface to match user's specified design requirements from screenshots
+- June 17, 2025. Implemented three-tier subscription system: Customer (Free), Contractor (30-Day Trial), and Contractor (Paid) with role-based access control, trial expiration tracking, and subscription management interface
 
 ## User Preferences
 

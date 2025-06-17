@@ -38,6 +38,15 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
   const onSubmit = async (data: InsertUser) => {
     try {
       setError(null);
+      
+      // Set trial dates for contractor trial
+      if (data.subscriptionType === "trial") {
+        const now = new Date();
+        const trialEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
+        data.trialStartDate = now;
+        data.trialEndDate = trialEnd;
+      }
+      
       await register(data);
       onSuccess?.();
     } catch (err) {
