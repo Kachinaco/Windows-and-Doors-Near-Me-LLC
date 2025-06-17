@@ -63,32 +63,26 @@ export default function Services() {
   ];
 
   return (
-    <section id="services" className="py-20 bg-gradient-to-br from-soft-cream to-white relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-r from-warm-orange/10 to-golden-yellow/10 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-r from-deep-navy/10 to-primary-blue/10 rounded-full blur-3xl transform translate-x-1/2 translate-y-1/2"></div>
-      </div>
-      
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="services" className="py-20 bg-muted/30 dark:bg-muted/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-deep-navy to-warm-orange text-white rounded-full text-sm font-medium shadow-lg mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium shadow-lg mb-6">
             <Medal className="mr-2 h-4 w-4" />
             Comprehensive Window & Door Solutions
           </div>
-          <h2 className="text-5xl font-bold text-deep-navy mb-6">
+          <h2 className="text-4xl font-bold text-foreground mb-6">
             Services That
-            <span className="bg-gradient-to-r from-warm-orange to-golden-yellow bg-clip-text text-transparent"> Transform</span>
+            <span className="text-primary"> Transform</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             From consultation to completion, we handle every aspect of your project with unmatched expertise and care.
           </p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
-            <Card key={index} className={`relative group hover-lift cursor-pointer border-0 shadow-lg overflow-hidden ${service.bgColor}`}>
-              <CardContent className="p-8 relative z-10">
+            <Card key={index} className="relative group hover-lift cursor-pointer bg-card border shadow-lg">
+              <CardContent className="p-8">
                 {/* Icon with gradient background */}
                 <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${service.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                   <div className="text-white">
@@ -96,15 +90,15 @@ export default function Services() {
                   </div>
                 </div>
                 
-                <h3 className="text-2xl font-bold text-deep-navy mb-4 group-hover:text-warm-orange transition-colors duration-300">
+                <h3 className="text-2xl font-bold text-card-foreground mb-4 group-hover:text-primary transition-colors duration-300">
                   {service.title}
                 </h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <p className="text-muted-foreground mb-6 leading-relaxed">
                   {service.description}
                 </p>
                 <ul className="space-y-3">
                   {service.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center text-gray-700">
+                    <li key={featureIndex} className="flex items-center text-card-foreground">
                       <div className={`w-5 h-5 rounded-full bg-gradient-to-r ${service.color} flex items-center justify-center mr-3 flex-shrink-0`}>
                         <Check className="text-white h-3 w-3" />
                       </div>
@@ -113,19 +107,16 @@ export default function Services() {
                   ))}
                 </ul>
               </CardContent>
-              
-              {/* Hover effect overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-r ${service.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
             </Card>
           ))}
         </div>
         
         {/* Call to action */}
         <div className="text-center mt-16">
-          <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-8 bg-gradient-to-r from-deep-navy to-warm-orange rounded-3xl shadow-2xl">
-            <div className="text-white">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-8 bg-primary rounded-3xl shadow-2xl">
+            <div className="text-primary-foreground">
               <h3 className="text-2xl font-bold mb-2">Ready to Get Started?</h3>
-              <p className="text-blue-100">Contact us today for your free consultation and estimate.</p>
+              <p className="text-primary-foreground/80">Contact us today for your free consultation and estimate.</p>
             </div>
             <div className="flex gap-4">
               <Button 
@@ -133,7 +124,8 @@ export default function Services() {
                   const element = document.getElementById('contact');
                   if (element) element.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="bg-white text-deep-navy hover:bg-gray-100 px-6 py-3 rounded-full font-semibold transition-all duration-300"
+                variant="secondary"
+                className="px-6 py-3 font-semibold"
               >
                 Get Free Quote
               </Button>
