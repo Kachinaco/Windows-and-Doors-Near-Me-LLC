@@ -5,6 +5,7 @@ import {
   tasks,
   projectUpdates,
   contactSubmissions,
+  consultations,
   type User,
   type InsertUser,
   type Client,
@@ -17,6 +18,8 @@ import {
   type InsertProjectUpdate,
   type ContactSubmission,
   type InsertContactSubmission,
+  type Consultation,
+  type InsertConsultation,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -61,6 +64,15 @@ export interface IStorage {
   createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
   getContactSubmissions(): Promise<ContactSubmission[]>;
   updateContactSubmissionStatus(id: number, status: string): Promise<ContactSubmission>;
+  
+  // Consultation scheduling operations
+  createConsultation(consultation: InsertConsultation): Promise<Consultation>;
+  getConsultation(id: number): Promise<Consultation | undefined>;
+  getAllConsultations(): Promise<Consultation[]>;
+  getConsultationsByEmployee(employeeId: number): Promise<Consultation[]>;
+  getConsultationsByClient(clientId: number): Promise<Consultation[]>;
+  updateConsultation(id: number, updates: Partial<InsertConsultation>): Promise<Consultation>;
+  deleteConsultation(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -254,6 +266,59 @@ export class DatabaseStorage implements IStorage {
       .where(eq(contactSubmissions.id, id))
       .returning();
     return submission;
+  }
+
+  // Consultation scheduling operations
+  async createConsultation(insertConsultation: InsertConsultation): Promise<Consultation> {
+    const [consultation] = await db
+      .insert(consultations)
+      .values(insertConsultation)
+      .returning();
+    return consultation;
+  }
+
+  async getConsultation(id: number): Promise<Consultation | undefined> {
+    const [consultation] = await db
+      .select()
+      .from(consultations)
+      .where(eq(consultations.id, id));
+    return consultation;
+  }
+
+  async getAllConsultations(): Promise<Consultation[]> {
+    return await db
+      .select()
+      .from(consultations)
+      .orderBy(desc(consultations.appointmentDate));
+  }
+
+  async getConsultationsByEmployee(employeeId: number): Promise<Consultation[]> {
+    return await db
+      .select()
+      .from(consultations)
+      .where(eq(consultations.employeeId, employeeId))
+      .orderBy(desc(consultations.appointmentDate));
+  }
+
+  async getConsultationsByClient(clientId: number): Promise<Consultation[]> {
+    return await db
+      .select()
+      .from(consultations)
+      .where(eq(consultations.clientId, clientId))
+      .orderBy(desc(consultations.appointmentDate));
+  }
+
+  async updateConsultation(id: number, updates: Partial<InsertConsultation>): Promise<Consultation> {
+    const [consultation] = await db
+      .update(consultations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(consultations.id, id))
+      .returning();
+    return consultation;
+  }
+
+  async deleteConsultation(id: number): Promise<void> {
+    await db.delete(consultations).where(eq(consultations.id, id));
   }
 }
 
