@@ -10,23 +10,24 @@ export default function Hero() {
   };
 
   return (
-    <section id="home" className="relative min-h-screen bg-background dark:bg-background">
-      {/* Subtle Background Elements */}
+    <section id="home" className="relative min-h-screen bg-background dark:bg-background pt-16 sm:pt-20">
+      {/* Subtle Background Elements - Hidden on mobile for performance */}
       <div className="absolute inset-0 overflow-hidden opacity-30 dark:opacity-20">
-        <div className="subtle-animation absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
-        <div className="subtle-animation-delay absolute top-1/3 right-1/3 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="hidden sm:block subtle-animation absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="hidden sm:block subtle-animation-delay absolute top-1/3 right-1/3 w-48 h-48 bg-primary/5 rounded-full blur-3xl"></div>
       </div>
       
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center min-h-[80vh]">
-          <div className="space-y-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center min-h-[70vh] sm:min-h-[80vh]">
+          <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
             {/* Badge */}
-            <div className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium shadow-lg">
-              <Award className="mr-2 h-4 w-4" />
-              Gilbert's Premier Window & Door Specialists
+            <div className="inline-flex items-center px-3 py-2 sm:px-4 bg-primary text-primary-foreground rounded-full text-xs sm:text-sm font-medium shadow-lg">
+              <Award className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Gilbert's Premier Window & Door Specialists</span>
+              <span className="sm:hidden">Gilbert's Premier Specialists</span>
             </div>
             
-            <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight">
               <span className="text-foreground">Transform Your</span>
               <br />
               <span className="text-primary">
@@ -34,27 +35,28 @@ export default function Hero() {
               </span>
             </h1>
             
-            <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
+            <p className="text-base sm:text-xl text-muted-foreground leading-relaxed max-w-lg mx-auto lg:mx-0">
               Elevate your living space with premium Milgard and Pella windows and doors. 
               Where craftsmanship meets innovation in Gilbert, Arizona.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center lg:items-start">
               <Button 
                 onClick={scrollToContact}
                 size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 font-semibold"
+                className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 font-semibold mobile-button"
               >
-                <Calculator className="mr-2 h-5 w-5" />
+                <Calculator className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Get Your Free Estimate
               </Button>
               <Button 
                 variant="outline"
                 size="lg"
                 asChild
+                className="w-full sm:w-auto mobile-button"
               >
-                <a href="tel:4809334392" className="flex items-center">
-                  <Phone className="mr-2 h-5 w-5" />
+                <a href="tel:4809334392" className="flex items-center justify-center">
+                  <Phone className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   (480) 933-4392
                 </a>
               </Button>

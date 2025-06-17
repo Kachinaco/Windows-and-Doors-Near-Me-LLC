@@ -19,21 +19,22 @@ export default function Header() {
   return (
     <header className="bg-background dark:bg-background border-b border-border sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
+        <div className="flex justify-between items-center py-3 sm:py-4">
           <div className="flex items-center">
             <div className="flex items-center group cursor-pointer" onClick={() => scrollToSection('home')}>
-              <div className="relative mr-4">
+              <div className="relative mr-2 sm:mr-4">
                 <img 
                   src={logoPath} 
                   alt="Windows & Doors Near Me LLC Logo" 
-                  className="h-20 w-24 transition-all duration-300 group-hover:scale-110 dark:filter dark:brightness-0 dark:invert"
+                  className="h-12 w-14 sm:h-20 sm:w-24 transition-all duration-300 group-hover:scale-110 dark:filter dark:brightness-0 dark:invert"
                 />
               </div>
               <div>
-                <div className="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                  Windows & Doors Near Me
+                <div className="text-sm sm:text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                  <span className="hidden sm:inline">Windows & Doors Near Me</span>
+                  <span className="sm:hidden">W&D Near Me</span>
                 </div>
-                <div className="text-sm text-muted-foreground font-medium">Gilbert, Arizona</div>
+                <div className="text-xs sm:text-sm text-muted-foreground font-medium">Gilbert, Arizona</div>
               </div>
             </div>
           </div>
