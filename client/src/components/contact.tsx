@@ -61,13 +61,12 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="py-12 sm:py-20 bg-background">
+    <section id="contact" className="py-20 bg-white dark:bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-4xl font-bold text-foreground mb-4">Get Your Free Estimate Today</h2>
-          <p className="text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto px-2">
-            Ready to upgrade your windows and doors? Contact us for a free consultation and estimate. 
-            We're here to help bring your vision to life.
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-foreground mb-4">Get Your Free Estimate</h2>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Ready to upgrade your windows and doors? Contact our licensed professionals for a comprehensive consultation and detailed estimate.
           </p>
         </div>
         

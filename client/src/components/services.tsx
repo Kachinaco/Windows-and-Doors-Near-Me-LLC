@@ -57,8 +57,8 @@ export default function Services() {
       title: "Emergency Services",
       description: "24/7 emergency repair services for urgent window and door issues. We're here when you need us most.",
       features: ["24/7 availability", "Rapid response", "Security focus"],
-      color: "from-warm-orange to-success-green",
-      bgColor: "bg-warm-orange/10"
+      color: "from-accent to-accent/70",
+      bgColor: "bg-accent/5"
     }
   ];
 
