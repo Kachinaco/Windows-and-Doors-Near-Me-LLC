@@ -42,13 +42,14 @@ export default function ProjectsPage() {
     resolver: zodResolver(insertProjectSchema),
     defaultValues: {
       title: "",
-      description: "",
       serviceType: "",
-      estimatedCost: "",
+      email: "",
+      phone: "",
+      address: "",
+      assignedTo: null,
       priority: "medium",
       status: "pending",
       clientId: null,
-      assignedTo: null,
     },
   });
 
@@ -176,7 +177,7 @@ export default function ProjectsPage() {
                       <Input
                         id="title"
                         {...form.register("title")}
-                        placeholder="Test"
+                        placeholder="Window Installation Project"
                       />
                       {form.formState.errors.title && (
                         <p className="text-sm text-red-600">{form.formState.errors.title.message}</p>
@@ -190,7 +191,7 @@ export default function ProjectsPage() {
                         onValueChange={(value) => form.setValue("serviceType", value)}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Window install" />
+                          <SelectValue placeholder="Select service type" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Window Installation">Window Installation</SelectItem>
@@ -205,85 +206,48 @@ export default function ProjectsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      {...form.register("description")}
-                      placeholder="Install of 12 windows"
-                      rows={3}
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      {...form.register("email")}
+                      placeholder="customer@example.com"
                     />
-                    {form.formState.errors.description && (
-                      <p className="text-sm text-red-600">{form.formState.errors.description.message}</p>
-                    )}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="estimatedCost">Estimated Cost</Label>
-                      <Input
-                        id="estimatedCost"
-                        {...form.register("estimatedCost")}
-                        placeholder="$5,000"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="priority">Priority</Label>
-                      <Select value={form.watch("priority")} onValueChange={(value) => form.setValue("priority", value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select priority" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="urgent">Urgent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="status">Status</Label>
-                      <Select value={form.watch("status")} onValueChange={(value) => form.setValue("status", value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="in_progress">In Progress</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      {...form.register("phone")}
+                      placeholder="(480) 555-0123"
+                    />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="clientId">Customer ID</Label>
-                      <Input
-                        id="clientId"
-                        type="number"
-                        {...form.register("clientId", { valueAsNumber: true })}
-                        placeholder="01"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input
+                      id="address"
+                      {...form.register("address")}
+                      placeholder="123 Main St, Gilbert, AZ 85234"
+                    />
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="assignedTo">Assigned Employee</Label>
-                      <Select value={form.watch("assignedTo")?.toString()} onValueChange={(value) => form.setValue("assignedTo", parseInt(value))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select employee" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {employees.map((employee: User) => (
-                            <SelectItem key={employee.id} value={employee.id.toString()}>
-                              {employee.firstName} {employee.lastName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="assignedTo">Assigned Employee</Label>
+                    <Select value={form.watch("assignedTo")?.toString()} onValueChange={(value) => form.setValue("assignedTo", parseInt(value))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select employee" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {employees.map((employee: User) => (
+                          <SelectItem key={employee.id} value={employee.id.toString()}>
+                            {employee.firstName} {employee.lastName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="flex justify-end space-x-2 pt-4">

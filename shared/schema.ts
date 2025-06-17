@@ -43,6 +43,9 @@ export const projects = pgTable("projects", {
   status: text("status").notNull().default("pending"), // pending, in_progress, completed, cancelled
   priority: text("priority").notNull().default("medium"), // low, medium, high, urgent
   serviceType: text("service_type").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
   estimatedCost: text("estimated_cost"),
   actualCost: text("actual_cost"),
   startDate: timestamp("start_date"),
