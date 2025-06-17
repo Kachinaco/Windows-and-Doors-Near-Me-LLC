@@ -48,6 +48,44 @@ const requireRole = (roles: string[]) => {
   };
 };
 
+// Middleware to check subscription status and trial expiration
+const checkSubscriptionAccess = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const user = await storage.getUser(req.user!.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if trial has expired
+    if (user.role === 'contractor_trial' && user.trialEndDate) {
+      const now = new Date();
+      if (now > user.trialEndDate) {
+        // Update user to expired trial status
+        await storage.updateUser(user.id, {
+          subscriptionStatus: 'expired',
+          role: 'customer'
+        });
+        return res.status(403).json({ 
+          message: "Trial expired. Please upgrade to a paid plan to continue accessing contractor features.",
+          trialExpired: true 
+        });
+      }
+    }
+
+    // Check if paid subscription is active
+    if (user.role === 'contractor_paid' && user.subscriptionStatus === 'cancelled') {
+      return res.status(403).json({ 
+        message: "Subscription cancelled. Please renew to continue accessing premium features.",
+        subscriptionCancelled: true 
+      });
+    }
+
+    next();
+  } catch (error) {
+    res.status(500).json({ message: "Failed to verify subscription access" });
+  }
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Session configuration
   app.use(session({
@@ -133,7 +171,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: user.email, 
         firstName: user.firstName,
         lastName: user.lastName,
-        role: user.role 
+        role: user.role,
+        subscriptionType: user.subscriptionType,
+        subscriptionStatus: user.subscriptionStatus,
+        trialEndDate: user.trialEndDate
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch user data" });
@@ -144,7 +185,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       let projects;
-      if (req.user!.role === 'admin' || req.user!.role === 'employee') {
+      const allowedRoles = ['admin', 'employee', 'contractor_trial', 'contractor_paid'];
+      if (allowedRoles.includes(req.user!.role)) {
         projects = await storage.getAllProjects();
       } else {
         projects = await storage.getProjectsByCustomer(req.user!.id);
@@ -156,7 +198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+  app.post("/api/projects", authenticateToken, requireRole(['admin', 'employee', 'contractor_trial', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
     try {
       const projectData = insertProjectSchema.parse(req.body);
       const project = await storage.createProject(projectData);
