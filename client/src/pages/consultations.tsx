@@ -14,7 +14,7 @@ import { insertConsultationSchema, InsertConsultation, type Consultation, type C
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Plus,
-  Calendar,
+  CalendarDays,
   Clock,
   User as UserIcon,
   Building2,
@@ -374,7 +374,7 @@ export default function ConsultationsPage() {
           <div className="text-center py-8">Loading consultations...</div>
         ) : consultations.length === 0 ? (
           <div className="text-center py-8">
-            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No consultations scheduled</h3>
             <p className="text-gray-600 dark:text-gray-400">Schedule your first consultation to get started.</p>
           </div>
@@ -415,7 +415,7 @@ export default function ConsultationsPage() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <CalendarDays className="h-4 w-4 text-gray-500" />
                       <span className="text-sm">
                         {format(new Date(consultation.appointmentDate), "PPP 'at' p")}
                       </span>

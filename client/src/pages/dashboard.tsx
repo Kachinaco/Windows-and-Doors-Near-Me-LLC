@@ -251,7 +251,7 @@ export default function Dashboard() {
                       <h3 className="text-lg font-medium text-gray-900 dark:text-white">Consultations</h3>
                       <p className="text-gray-600 dark:text-gray-400">Schedule appointments</p>
                     </div>
-                    <Calendar className="h-8 w-8 text-blue-600" />
+                    <CalendarDays className="h-8 w-8 text-blue-600" />
                   </div>
                 </CardContent>
               </Card>
