@@ -26,7 +26,7 @@ export default function Header() {
                 <img 
                   src={logoPath} 
                   alt="Windows & Doors Near Me LLC Logo" 
-                  className="h-20 w-20 transition-all duration-300 group-hover:scale-110 dark:filter dark:brightness-0 dark:invert"
+                  className="h-20 w-24 transition-all duration-300 group-hover:scale-110 dark:filter dark:brightness-0 dark:invert"
                 />
               </div>
               <div>
