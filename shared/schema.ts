@@ -95,6 +95,27 @@ export const contactSubmissions = pgTable("contact_submissions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Consultation appointments scheduling
+export const consultations = pgTable("consultations", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").references(() => clients.id),
+  employeeId: integer("employee_id").references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  appointmentDate: timestamp("appointment_date").notNull(),
+  duration: integer("duration").notNull().default(60), // duration in minutes
+  status: text("status").notNull().default("scheduled"), // scheduled, confirmed, completed, cancelled, no_show
+  serviceType: text("service_type").notNull(),
+  address: text("address"),
+  consultationType: text("consultation_type").notNull().default("in_home"), // in_home, virtual, showroom
+  notes: text("notes"),
+  estimatedCost: text("estimated_cost"),
+  followUpRequired: boolean("follow_up_required").default(false),
+  reminderSent: boolean("reminder_sent").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   assignedProjects: many(projects, { relationName: "assignedProjects" }),
@@ -104,6 +125,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const clientsRelations = relations(clients, ({ many }) => ({
   projects: many(projects),
+  consultations: many(consultations),
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -138,6 +160,17 @@ export const projectUpdatesRelations = relations(projectUpdates, ({ one }) => ({
   }),
   user: one(users, {
     fields: [projectUpdates.userId],
+    references: [users.id],
+  }),
+}));
+
+export const consultationsRelations = relations(consultations, ({ one }) => ({
+  client: one(clients, {
+    fields: [consultations.clientId],
+    references: [clients.id],
+  }),
+  employee: one(users, {
+    fields: [consultations.employeeId],
     references: [users.id],
   }),
 }));
@@ -182,10 +215,18 @@ export const insertClientSchema = createInsertSchema(clients).omit({
   updatedAt: true,
 });
 
+export const insertConsultationSchema = createInsertSchema(consultations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type Client = typeof clients.$inferSelect;
+export type InsertConsultation = z.infer<typeof insertConsultationSchema>;
+export type Consultation = typeof consultations.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type LoginCredentials = z.infer<typeof loginSchema>;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
