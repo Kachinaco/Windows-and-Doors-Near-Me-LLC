@@ -20,6 +20,7 @@ import TasksPage from "@/pages/tasks";
 import LeadsPage from "@/pages/leads";
 import ClientsPage from "@/pages/clients";
 import CreateProjectPage from "@/pages/create-project";
+import ConsultationsPage from "@/pages/consultations";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
