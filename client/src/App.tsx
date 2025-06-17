@@ -18,6 +18,7 @@ import Dashboard from "@/pages/dashboard";
 import ProjectsPage from "@/pages/projects";
 import TasksPage from "@/pages/tasks";
 import LeadsPage from "@/pages/leads";
+import ClientsPage from "@/pages/clients";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -56,6 +57,7 @@ function Router() {
           <Route path="/projects/:id" component={ProjectsPage} />
           <Route path="/tasks" component={TasksPage} />
           <Route path="/leads" component={LeadsPage} />
+          <Route path="/clients" component={ClientsPage} />
         </>
       ) : (
         <>
@@ -64,6 +66,7 @@ function Router() {
           <Route path="/projects/:id" component={AuthPage} />
           <Route path="/tasks" component={AuthPage} />
           <Route path="/leads" component={AuthPage} />
+          <Route path="/clients" component={AuthPage} />
         </>
       )}
       

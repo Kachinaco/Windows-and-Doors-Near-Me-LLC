@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
 import { storage } from "./storage";
-import { loginSchema, insertUserSchema, insertProjectSchema, insertTaskSchema, insertProjectUpdateSchema, insertContactSubmissionSchema } from "@shared/schema";
+import { loginSchema, insertUserSchema, insertProjectSchema, insertTaskSchema, insertProjectUpdateSchema, insertContactSubmissionSchema, insertClientSchema } from "@shared/schema";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 
