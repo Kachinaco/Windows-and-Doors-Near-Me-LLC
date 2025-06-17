@@ -19,6 +19,7 @@ import ProjectsPage from "@/pages/projects";
 import TasksPage from "@/pages/tasks";
 import LeadsPage from "@/pages/leads";
 import ClientsPage from "@/pages/clients";
+import CreateProjectPage from "@/pages/create-project";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -58,6 +59,7 @@ function Router() {
           <Route path="/tasks" component={TasksPage} />
           <Route path="/leads" component={LeadsPage} />
           <Route path="/clients" component={ClientsPage} />
+          <Route path="/create-project" component={CreateProjectPage} />
         </>
       ) : (
         <>
