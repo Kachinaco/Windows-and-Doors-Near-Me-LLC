@@ -173,12 +173,12 @@ export default function Products() {
         
         {/* Call to Action */}
         <div className="text-center mt-16">
-          <div className="inline-flex flex-col items-center gap-6 p-8 bg-gradient-to-r from-deep-navy via-primary-blue to-warm-orange rounded-3xl shadow-2xl">
-            <div className="text-white text-center">
+          <div className="inline-flex flex-col items-center gap-6 p-8 bg-primary rounded-3xl shadow-2xl">
+            <div className="text-primary-foreground text-center">
               <h3 className="text-2xl font-bold mb-2">Explore Our Product Catalog</h3>
-              <p className="text-blue-100">Discover the perfect windows and doors for your home</p>
+              <p className="text-primary-foreground/80">Discover the perfect windows and doors for your home</p>
             </div>
-            <Button className="bg-white text-deep-navy hover:bg-gray-100 px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <Button variant="secondary" className="px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
               <BookOpen className="mr-2 h-5 w-5" />
               View Product Catalog
             </Button>

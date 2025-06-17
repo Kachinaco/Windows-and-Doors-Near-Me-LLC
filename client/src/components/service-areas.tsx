@@ -12,11 +12,11 @@ export default function ServiceAreas() {
   ];
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Service Areas</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <h2 className="text-4xl font-bold text-foreground mb-4">Service Areas</h2>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Proudly serving Gilbert and surrounding Arizona communities with professional 
             window and door installation services.
           </p>
@@ -24,10 +24,10 @@ export default function ServiceAreas() {
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {areas.map((area, index) => (
-            <Card key={index} className="bg-white hover:shadow-lg transition-shadow duration-200">
+            <Card key={index} className="bg-card border hover:shadow-lg transition-shadow duration-200">
               <CardContent className="p-6 text-center">
-                <MapPin className="text-primary-blue text-2xl mb-3 mx-auto" />
-                <div className="font-semibold text-gray-900">{area}</div>
+                <MapPin className="text-primary text-2xl mb-3 mx-auto" />
+                <div className="font-semibold text-card-foreground">{area}</div>
               </CardContent>
             </Card>
           ))}
