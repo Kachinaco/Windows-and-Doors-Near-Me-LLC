@@ -25,9 +25,9 @@ export default function ServiceAreas() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {areas.map((area, index) => (
             <Card key={index} className="bg-card border hover:shadow-lg transition-shadow duration-200">
-              <CardContent className="p-6 text-center">
-                <MapPin className="text-primary text-2xl mb-3 mx-auto" />
-                <div className="font-semibold text-card-foreground">{area}</div>
+              <CardContent className="p-3 sm:p-4 lg:p-6 text-center">
+                <MapPin className="text-primary text-lg sm:text-xl lg:text-2xl mb-2 sm:mb-3 mx-auto" />
+                <div className="font-semibold text-card-foreground text-sm sm:text-base">{area}</div>
               </CardContent>
             </Card>
           ))}
