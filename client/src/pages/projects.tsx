@@ -326,9 +326,9 @@ export default function ProjectsPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-700 dark:text-gray-300">Due Date</p>
+                      <p className="font-medium text-gray-700 dark:text-gray-300">End Date</p>
                       <p className="text-gray-600 dark:text-gray-400">
-                        {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'Not set'}
+                        {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'Not set'}
                       </p>
                     </div>
                   </div>
