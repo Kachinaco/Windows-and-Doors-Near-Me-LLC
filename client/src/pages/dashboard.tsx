@@ -241,6 +241,22 @@ export default function Dashboard() {
               </Card>
             </Link>
           )}
+
+          {(user?.role === 'admin' || user?.role === 'employee') && (
+            <Link href="/consultations">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Consultations</h3>
+                      <p className="text-gray-600 dark:text-gray-400">Schedule appointments</p>
+                    </div>
+                    <Calendar className="h-8 w-8 text-blue-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
         </div>
 
         {/* Recent Activity */}
