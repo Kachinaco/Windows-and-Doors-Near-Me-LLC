@@ -38,7 +38,7 @@ export default function Products() {
                       ))}
                     </div>
                   </div>
-                  <p className="text-blue-100 text-lg">Premium vinyl, wood, and fiberglass solutions</p>
+                  <p className="text-white text-lg font-medium">Premium vinyl, wood, and fiberglass solutions</p>
                 </div>
               </div>
               
@@ -112,7 +112,7 @@ export default function Products() {
                       ))}
                     </div>
                   </div>
-                  <p className="text-orange-100 text-lg">Innovation meets superior performance</p>
+                  <p className="text-white text-lg font-medium">Innovation meets superior performance</p>
                 </div>
               </div>
               
