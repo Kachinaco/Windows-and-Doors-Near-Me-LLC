@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Phone, Menu, X, Sun, Moon } from "lucide-react";
+import { Phone, Menu, X, Sun, Moon, User, LogOut } from "lucide-react";
 import { useTheme } from "@/lib/theme-provider";
+import { useAuth } from "@/hooks/useAuth";
 import logoPath from "@assets/Windows & Doors Near Me LLC (1)_1750122454387.png";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { user, logout, isAuthenticated } = useAuth();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
