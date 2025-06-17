@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Phone, Star, Award, Shield, Check, Calculator } from "lucide-react";
+import { Link } from "wouter";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
@@ -194,9 +195,11 @@ export default function GilbertWindowsDoors() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Button size="lg" className="bg-primary text-primary-foreground">
-              <Calculator className="mr-2 h-5 w-5" />
-              Get Free Gilbert Estimate
+            <Button size="lg" className="bg-primary text-primary-foreground" asChild>
+              <Link href="/#contact">
+                <Calculator className="mr-2 h-5 w-5" />
+                Get Free Gilbert Estimate
+              </Link>
             </Button>
             <Button variant="outline" size="lg" asChild>
               <a href="tel:4809334392" className="flex items-center">
