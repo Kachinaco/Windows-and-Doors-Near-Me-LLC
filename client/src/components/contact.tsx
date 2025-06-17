@@ -61,11 +61,11 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="py-20 bg-white">
+    <section id="contact" className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Get Your Free Estimate Today</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <h2 className="text-4xl font-bold text-foreground mb-4">Get Your Free Estimate Today</h2>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Ready to upgrade your windows and doors? Contact us for a free consultation and estimate. 
             We're here to help bring your vision to life.
           </p>
@@ -74,29 +74,29 @@ export default function Contact() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Contact Information */}
           <div>
-            <Card className="bg-light-blue border-0 mb-8">
+            <Card className="bg-card border mb-8">
               <CardContent className="p-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
+                <h3 className="text-2xl font-bold text-card-foreground mb-6">Contact Information</h3>
                 
                 <div className="space-y-6">
                   <div className="flex items-start">
-                    <div className="bg-primary-blue p-3 rounded-full mr-4">
-                      <MapPin className="text-white h-5 w-5" />
+                    <div className="bg-primary p-3 rounded-full mr-4">
+                      <MapPin className="text-primary-foreground h-5 w-5" />
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900 mb-1">Address</div>
-                      <div className="text-gray-600">751 N Monterey St Suite 123<br />Gilbert, AZ 85233</div>
+                      <div className="font-semibold text-card-foreground mb-1">Address</div>
+                      <div className="text-muted-foreground">751 N Monterey St Suite 123<br />Gilbert, AZ 85233</div>
                     </div>
                   </div>
                   
                   <div className="flex items-start">
-                    <div className="bg-primary-blue p-3 rounded-full mr-4">
-                      <Phone className="text-white h-5 w-5" />
+                    <div className="bg-primary p-3 rounded-full mr-4">
+                      <Phone className="text-primary-foreground h-5 w-5" />
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900 mb-1">Phone</div>
-                      <div className="text-gray-600">
-                        <a href="tel:4809334392" className="hover:text-primary-blue transition-colors">
+                      <div className="font-semibold text-card-foreground mb-1">Phone</div>
+                      <div className="text-muted-foreground">
+                        <a href="tel:4809334392" className="hover:text-primary transition-colors">
                           (480) 933-4392
                         </a>
                       </div>
@@ -104,12 +104,12 @@ export default function Contact() {
                   </div>
                   
                   <div className="flex items-start">
-                    <div className="bg-primary-blue p-3 rounded-full mr-4">
-                      <Clock className="text-white h-5 w-5" />
+                    <div className="bg-primary p-3 rounded-full mr-4">
+                      <Clock className="text-primary-foreground h-5 w-5" />
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900 mb-1">Hours</div>
-                      <div className="text-gray-600">
+                      <div className="font-semibold text-card-foreground mb-1">Hours</div>
+                      <div className="text-muted-foreground">
                         Mon-Fri: 7:00 AM - 6:00 PM<br />
                         Saturday: 8:00 AM - 4:00 PM<br />
                         Sunday: Emergency Only
@@ -118,22 +118,22 @@ export default function Contact() {
                   </div>
                   
                   <div className="flex items-start">
-                    <div className="bg-primary-blue p-3 rounded-full mr-4">
-                      <Mail className="text-white h-5 w-5" />
+                    <div className="bg-primary p-3 rounded-full mr-4">
+                      <Mail className="text-primary-foreground h-5 w-5" />
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900 mb-1">Email</div>
-                      <div className="text-gray-600">info@windowsandnearme.com</div>
+                      <div className="font-semibold text-card-foreground mb-1">Email</div>
+                      <div className="text-muted-foreground">info@windowsandnearme.com</div>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="bg-success-green text-white border-0">
+            <Card className="bg-primary border">
               <CardContent className="p-8">
-                <h3 className="text-2xl font-bold mb-4">Why Choose Us?</h3>
-                <ul className="space-y-3">
+                <h3 className="text-2xl font-bold mb-4 text-primary-foreground">Why Choose Us?</h3>
+                <ul className="space-y-3 text-primary-foreground">
                   <li className="flex items-center">
                     <Check className="mr-3 h-4 w-4" />
                     Free estimates & consultations
@@ -160,14 +160,14 @@ export default function Contact() {
           </div>
           
           {/* Contact Form */}
-          <Card className="bg-gray-50 border-0">
+          <Card className="bg-card border">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Request Your Free Estimate</h3>
+              <h3 className="text-2xl font-bold text-card-foreground mb-6">Request Your Free Estimate</h3>
               
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="firstName" className="text-sm font-semibold text-gray-700 mb-2">First Name</Label>
+                    <Label htmlFor="firstName" className="text-sm font-semibold text-card-foreground mb-2">First Name</Label>
                     <Input
                       id="firstName"
                       type="text"
@@ -175,11 +175,10 @@ export default function Contact() {
                       value={formData.firstName}
                       onChange={(e) => handleInputChange('firstName', e.target.value)}
                       required
-                      className="bg-white"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="lastName" className="text-sm font-semibold text-gray-700 mb-2">Last Name</Label>
+                    <Label htmlFor="lastName" className="text-sm font-semibold text-card-foreground mb-2">Last Name</Label>
                     <Input
                       id="lastName"
                       type="text"
@@ -187,7 +186,6 @@ export default function Contact() {
                       value={formData.lastName}
                       onChange={(e) => handleInputChange('lastName', e.target.value)}
                       required
-                      className="bg-white"
                     />
                   </div>
                 </div>

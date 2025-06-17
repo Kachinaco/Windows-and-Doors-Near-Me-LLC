@@ -43,27 +43,27 @@ export default function Gallery() {
   ];
 
   return (
-    <section id="gallery" className="py-20 bg-gray-50">
+    <section id="gallery" className="py-20 bg-muted/30 dark:bg-muted/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Work Gallery</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <h2 className="text-4xl font-bold text-foreground mb-4">Our Work Gallery</h2>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             See the quality of our installations and the transformation we bring to homes across Gilbert, Arizona.
           </p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project, index) => (
-            <Card key={index} className="bg-white overflow-hidden hover:shadow-xl transition-shadow duration-300">
+            <Card key={index} className="bg-card border overflow-hidden hover:shadow-xl transition-shadow duration-300">
               <img 
                 src={project.image}
                 alt={project.title}
                 className="w-full h-48 object-cover"
               />
               <CardContent className="p-6">
-                <h3 className="font-bold text-lg text-gray-900 mb-2">{project.title}</h3>
-                <p className="text-gray-600 mb-4">{project.description}</p>
-                <div className="flex items-center text-sm text-gray-500">
+                <h3 className="font-bold text-lg text-card-foreground mb-2">{project.title}</h3>
+                <p className="text-muted-foreground mb-4">{project.description}</p>
+                <div className="flex items-center text-sm text-muted-foreground">
                   <MapPin className="mr-2 h-4 w-4" />
                   {project.location}
                 </div>
@@ -73,7 +73,7 @@ export default function Gallery() {
         </div>
         
         <div className="text-center mt-12">
-          <Button className="bg-primary-blue text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-semibold text-lg">
+          <Button className="px-8 py-4 font-semibold text-lg">
             <Images className="mr-2 h-5 w-5" />
             View Complete Gallery
           </Button>
