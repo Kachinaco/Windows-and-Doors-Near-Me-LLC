@@ -5,7 +5,7 @@ import { User, LoginCredentials, InsertUser } from "@shared/schema";
 export function useAuth() {
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading } = useQuery({
+  const { data: user, isLoading } = useQuery<User>({
     queryKey: ["/api/auth/me"],
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes

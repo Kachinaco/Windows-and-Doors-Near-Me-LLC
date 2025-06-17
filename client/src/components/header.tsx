@@ -195,6 +195,29 @@ export default function Header() {
               <Button onClick={() => scrollToSection('contact')} className="w-full">
                 Free Estimate
               </Button>
+              
+              {/* Mobile Authentication buttons */}
+              {isAuthenticated ? (
+                <div className="space-y-2">
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link href="/dashboard" className="flex items-center justify-center">
+                      <User className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" className="w-full" onClick={logout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/login" className="flex items-center justify-center">
+                    <User className="mr-2 h-4 w-4" />
+                    Login
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         </div>
