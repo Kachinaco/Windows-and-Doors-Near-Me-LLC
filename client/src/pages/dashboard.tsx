@@ -24,11 +24,11 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("projects");
 
-  const { data: projects = [], isLoading: projectsLoading } = useQuery({
+  const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
-  const { data: contactSubmissions = [], isLoading: contactLoading } = useQuery({
+  const { data: contactSubmissions = [], isLoading: contactLoading } = useQuery<ContactSubmission[]>({
     queryKey: ["/api/contact-submissions"],
     enabled: user?.role === 'admin' || user?.role === 'employee',
   });
