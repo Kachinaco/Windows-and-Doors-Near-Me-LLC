@@ -406,6 +406,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Consultation scheduling routes
+  app.get("/api/consultations", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const consultations = await storage.getAllConsultations();
+      res.json(consultations);
+    } catch (error) {
+      console.error("Error fetching consultations:", error);
+      res.status(500).json({ message: "Failed to fetch consultations" });
+    }
+  });
+
+  app.post("/api/consultations", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const consultation = await storage.createConsultation(req.body);
+      res.json(consultation);
+    } catch (error) {
+      console.error("Error creating consultation:", error);
+      res.status(500).json({ message: "Failed to create consultation" });
+    }
+  });
+
+  app.get("/api/consultations/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const consultation = await storage.getConsultation(parseInt(id));
+      
+      if (!consultation) {
+        return res.status(404).json({ message: "Consultation not found" });
+      }
+      
+      res.json(consultation);
+    } catch (error) {
+      console.error("Error fetching consultation:", error);
+      res.status(500).json({ message: "Failed to fetch consultation" });
+    }
+  });
+
+  app.put("/api/consultations/:id", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      const consultation = await storage.updateConsultation(parseInt(id), req.body);
+      res.json(consultation);
+    } catch (error) {
+      console.error("Error updating consultation:", error);
+      res.status(500).json({ message: "Failed to update consultation" });
+    }
+  });
+
+  app.delete("/api/consultations/:id", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteConsultation(parseInt(id));
+      res.json({ message: "Consultation deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting consultation:", error);
+      res.status(500).json({ message: "Failed to delete consultation" });
+    }
+  });
+
+  app.get("/api/consultations/employee/:employeeId", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { employeeId } = req.params;
+      const consultations = await storage.getConsultationsByEmployee(parseInt(employeeId));
+      res.json(consultations);
+    } catch (error) {
+      console.error("Error fetching employee consultations:", error);
+      res.status(500).json({ message: "Failed to fetch employee consultations" });
+    }
+  });
+
+  app.get("/api/consultations/client/:clientId", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { clientId } = req.params;
+      const consultations = await storage.getConsultationsByClient(parseInt(clientId));
+      res.json(consultations);
+    } catch (error) {
+      console.error("Error fetching client consultations:", error);
+      res.status(500).json({ message: "Failed to fetch client consultations" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
