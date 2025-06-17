@@ -12,7 +12,15 @@ export const users = pgTable("users", {
   firstName: text("first_name"),
   lastName: text("last_name"),
   phone: text("phone"),
-  role: text("role").notNull().default("customer"), // customer, employee, admin
+  role: text("role").notNull().default("customer"), // customer, contractor_trial, contractor_paid, employee, admin
+  subscriptionType: text("subscription_type").notNull().default("free"), // free, trial, paid
+  subscriptionStatus: text("subscription_status").notNull().default("active"), // active, cancelled, expired
+  trialStartDate: timestamp("trial_start_date"),
+  trialEndDate: timestamp("trial_end_date"),
+  subscriptionStartDate: timestamp("subscription_start_date"),
+  subscriptionEndDate: timestamp("subscription_end_date"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

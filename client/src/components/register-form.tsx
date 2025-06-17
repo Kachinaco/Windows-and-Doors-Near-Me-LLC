@@ -30,6 +30,8 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
       lastName: "",
       phone: "",
       role: "customer",
+      subscriptionType: "free",
+      subscriptionStatus: "active",
     },
   });
 
@@ -53,6 +55,53 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {/* Profile Type Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="profileType">Choose Your Profile Type</Label>
+            <Select 
+              value={form.watch("subscriptionType")} 
+              onValueChange={(value) => {
+                form.setValue("subscriptionType", value);
+                if (value === "free") {
+                  form.setValue("role", "customer");
+                } else if (value === "trial") {
+                  form.setValue("role", "contractor_trial");
+                  // Set trial dates
+                  const now = new Date();
+                  const trialEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
+                  form.setValue("trialStartDate", now);
+                  form.setValue("trialEndDate", trialEnd);
+                } else if (value === "paid") {
+                  form.setValue("role", "contractor_paid");
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select profile type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="free">
+                  <div className="flex flex-col">
+                    <span className="font-medium">Customer (Free)</span>
+                    <span className="text-sm text-gray-500">Basic project tracking</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="trial">
+                  <div className="flex flex-col">
+                    <span className="font-medium">Contractor (30-Day Trial)</span>
+                    <span className="text-sm text-gray-500">Full features for 30 days</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="paid">
+                  <div className="flex flex-col">
+                    <span className="font-medium">Contractor (Paid)</span>
+                    <span className="text-sm text-gray-500">Full features + premium tools</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
