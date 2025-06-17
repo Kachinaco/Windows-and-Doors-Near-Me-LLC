@@ -43,16 +43,16 @@ export default function Gallery() {
   ];
 
   return (
-    <section id="gallery" className="py-20 bg-muted/30 dark:bg-muted/10">
+    <section id="gallery" className="py-12 sm:py-20 bg-muted/30 dark:bg-muted/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4">Our Work Gallery</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-4xl font-bold text-foreground mb-4">Our Work Gallery</h2>
+          <p className="text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto px-2">
             See the quality of our installations and the transformation we bring to homes across Gilbert, Arizona.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {projects.map((project, index) => (
             <Card key={index} className="bg-card border overflow-hidden hover:shadow-xl transition-shadow duration-300">
               <img 
