@@ -4,24 +4,18 @@ import { Leaf, Shield, Settings, Award, Check, BookOpen, Star, Zap } from "lucid
 
 export default function Products() {
   return (
-    <section id="products" className="py-20 bg-gradient-to-br from-white via-soft-cream to-light-blue relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 left-20 w-40 h-40 bg-gradient-to-r from-warm-orange/20 to-golden-yellow/20 rounded-full blur-3xl floating-shape"></div>
-        <div className="absolute bottom-20 right-20 w-60 h-60 bg-gradient-to-r from-deep-navy/20 to-primary-blue/20 rounded-full blur-3xl floating-shape-delay"></div>
-      </div>
-      
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="products" className="py-20 bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-warm-orange to-golden-yellow text-white rounded-full text-sm font-medium shadow-lg mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium shadow-lg mb-6">
             <Award className="mr-2 h-4 w-4" />
             Authorized Premium Dealer
           </div>
-          <h2 className="text-5xl font-bold text-deep-navy mb-6">
+          <h2 className="text-4xl font-bold text-foreground mb-6">
             Trusted
-            <span className="bg-gradient-to-r from-warm-orange to-golden-yellow bg-clip-text text-transparent"> Brands</span>
+            <span className="text-primary"> Brands</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             We partner with industry leaders to bring you the finest windows and doors, 
             backed by comprehensive warranties and our expert installation.
           </p>
@@ -29,7 +23,7 @@ export default function Products() {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Milgard Section */}
-          <Card className="group relative overflow-hidden border-0 shadow-2xl hover-lift bg-gradient-to-br from-white to-soft-cream">
+          <Card className="group relative overflow-hidden shadow-2xl hover-lift bg-card border">
             <CardContent className="p-0">
               {/* Header */}
               <div className="relative p-8 bg-gradient-to-r from-deep-navy to-primary-blue text-white">
@@ -61,39 +55,39 @@ export default function Products() {
               <div className="p-8">
                 {/* Features Grid */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="text-center p-4 bg-gradient-to-r from-success-green/10 to-primary-blue/10 rounded-2xl">
-                    <Leaf className="text-success-green text-2xl mb-2 mx-auto" />
-                    <div className="font-semibold text-deep-navy">Energy Star Rated</div>
+                  <div className="text-center p-4 bg-muted/50 rounded-2xl">
+                    <Leaf className="text-green-600 text-2xl mb-2 mx-auto" />
+                    <div className="font-semibold text-card-foreground">Energy Star Rated</div>
                   </div>
-                  <div className="text-center p-4 bg-gradient-to-r from-warm-orange/10 to-golden-yellow/10 rounded-2xl">
-                    <Shield className="text-warm-orange text-2xl mb-2 mx-auto" />
-                    <div className="font-semibold text-deep-navy">Lifetime Warranty</div>
+                  <div className="text-center p-4 bg-muted/50 rounded-2xl">
+                    <Shield className="text-primary text-2xl mb-2 mx-auto" />
+                    <div className="font-semibold text-card-foreground">Lifetime Warranty</div>
                   </div>
                 </div>
                 
                 {/* Product List */}
-                <ul className="space-y-3 text-gray-700">
-                  <li className="flex items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-success-green to-primary-blue flex items-center justify-center mr-3">
-                      <Check className="text-white h-3 w-3" />
+                <ul className="space-y-3 text-card-foreground">
+                  <li className="flex items-center p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-3">
+                      <Check className="text-primary-foreground h-3 w-3" />
                     </div>
                     <span className="font-medium">Tuscany Series Vinyl Windows</span>
                   </li>
-                  <li className="flex items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-success-green to-primary-blue flex items-center justify-center mr-3">
-                      <Check className="text-white h-3 w-3" />
+                  <li className="flex items-center p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-3">
+                      <Check className="text-primary-foreground h-3 w-3" />
                     </div>
                     <span className="font-medium">Ultra Series Fiberglass</span>
                   </li>
-                  <li className="flex items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-success-green to-primary-blue flex items-center justify-center mr-3">
-                      <Check className="text-white h-3 w-3" />
+                  <li className="flex items-center p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-3">
+                      <Check className="text-primary-foreground h-3 w-3" />
                     </div>
                     <span className="font-medium">Essence Series Wood Windows</span>
                   </li>
-                  <li className="flex items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-success-green to-primary-blue flex items-center justify-center mr-3">
-                      <Check className="text-white h-3 w-3" />
+                  <li className="flex items-center p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-3">
+                      <Check className="text-primary-foreground h-3 w-3" />
                     </div>
                     <span className="font-medium">Moving Glass Wall Systems</span>
                   </li>
@@ -103,7 +97,7 @@ export default function Products() {
           </Card>
           
           {/* Pella Section */}
-          <Card className="group relative overflow-hidden border-0 shadow-2xl hover-lift bg-gradient-to-br from-white to-soft-cream">
+          <Card className="group relative overflow-hidden shadow-2xl hover-lift bg-card border">
             <CardContent className="p-0">
               {/* Header */}
               <div className="relative p-8 bg-gradient-to-r from-warm-orange to-golden-yellow text-white">
@@ -135,39 +129,39 @@ export default function Products() {
               <div className="p-8">
                 {/* Features Grid */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="text-center p-4 bg-gradient-to-r from-deep-navy/10 to-primary-blue/10 rounded-2xl">
-                    <Zap className="text-deep-navy text-2xl mb-2 mx-auto" />
-                    <div className="font-semibold text-deep-navy">Smart Technology</div>
+                  <div className="text-center p-4 bg-muted/50 rounded-2xl">
+                    <Zap className="text-primary text-2xl mb-2 mx-auto" />
+                    <div className="font-semibold text-card-foreground">Smart Technology</div>
                   </div>
-                  <div className="text-center p-4 bg-gradient-to-r from-success-green/10 to-warm-orange/10 rounded-2xl">
-                    <Award className="text-success-green text-2xl mb-2 mx-auto" />
-                    <div className="font-semibold text-deep-navy">Award Winning</div>
+                  <div className="text-center p-4 bg-muted/50 rounded-2xl">
+                    <Award className="text-green-600 text-2xl mb-2 mx-auto" />
+                    <div className="font-semibold text-card-foreground">Award Winning</div>
                   </div>
                 </div>
                 
                 {/* Product List */}
-                <ul className="space-y-3 text-gray-700">
-                  <li className="flex items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-warm-orange to-golden-yellow flex items-center justify-center mr-3">
-                      <Check className="text-white h-3 w-3" />
+                <ul className="space-y-3 text-card-foreground">
+                  <li className="flex items-center p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-3">
+                      <Check className="text-primary-foreground h-3 w-3" />
                     </div>
                     <span className="font-medium">Impervia Fiberglass Windows</span>
                   </li>
-                  <li className="flex items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-warm-orange to-golden-yellow flex items-center justify-center mr-3">
-                      <Check className="text-white h-3 w-3" />
+                  <li className="flex items-center p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-3">
+                      <Check className="text-primary-foreground h-3 w-3" />
                     </div>
                     <span className="font-medium">250 Series Vinyl Windows</span>
                   </li>
-                  <li className="flex items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-warm-orange to-golden-yellow flex items-center justify-center mr-3">
-                      <Check className="text-white h-3 w-3" />
+                  <li className="flex items-center p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-3">
+                      <Check className="text-primary-foreground h-3 w-3" />
                     </div>
                     <span className="font-medium">Architect Series Wood Windows</span>
                   </li>
-                  <li className="flex items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-warm-orange to-golden-yellow flex items-center justify-center mr-3">
-                      <Check className="text-white h-3 w-3" />
+                  <li className="flex items-center p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-3">
+                      <Check className="text-primary-foreground h-3 w-3" />
                     </div>
                     <span className="font-medium">Sliding Patio Doors</span>
                   </li>
