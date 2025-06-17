@@ -1,9 +1,9 @@
-import { pgTable, text, serial, timestamp, varchar, integer, boolean, jsonb, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, varchar, integer, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
-// Enhanced users table with role-based access
+// Enhanced users table with subscription tiers
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -26,22 +26,6 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Dedicated clients table for customer information
-export const clients = pgTable("clients", {
-  id: serial("id").primaryKey(),
-  fullName: text("full_name").notNull(),
-  email: text("email").notNull(),
-  phone: text("phone"),
-  address: text("address"),
-  jobTitle: text("job_title"),
-  website: text("website"),
-  lastInteraction: timestamp("last_interaction"),
-  additionalInfo: text("additional_info"),
-  leadSource: text("lead_source"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
 // Milgard product catalog
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -49,7 +33,7 @@ export const products = pgTable("products", {
   category: text("category").notNull(), // windows, doors
   subcategory: text("subcategory"), // single-hung, double-hung, sliding, french, etc.
   description: text("description"),
-  price: text("price").notNull(), // storing as text for simplicity
+  price: text("price").notNull(),
   imageUrl: text("image_url"),
   specifications: jsonb("specifications"), // size, material, features, etc.
   isActive: boolean("is_active").default(true),
@@ -81,9 +65,7 @@ export const orders = pgTable("orders", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Remove old project management tables - customers now use simple shopping cart
-
-// Enhanced contact submissions
+// Contact form submissions for sales leads
 export const contactSubmissions = pgTable("contact_submissions", {
   id: serial("id").primaryKey(),
   firstName: text("first_name").notNull(),
@@ -96,87 +78,35 @@ export const contactSubmissions = pgTable("contact_submissions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Consultation appointments scheduling
-export const consultations = pgTable("consultations", {
-  id: serial("id").primaryKey(),
-  clientId: integer("client_id").references(() => clients.id),
-  employeeId: integer("employee_id").references(() => users.id),
-  title: text("title").notNull(),
-  description: text("description"),
-  appointmentDate: timestamp("appointment_date").notNull(),
-  duration: integer("duration").notNull().default(60), // duration in minutes
-  status: text("status").notNull().default("scheduled"), // scheduled, confirmed, completed, cancelled, no_show
-  serviceType: text("service_type").notNull(),
-  address: text("address"),
-  consultationType: text("consultation_type").notNull().default("in_home"), // in_home, virtual, showroom
-  notes: text("notes"),
-  estimatedCost: text("estimated_cost"),
-  followUpRequired: boolean("follow_up_required").default(false),
-  reminderSent: boolean("reminder_sent").default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-// Define relations
+// Relations
 export const usersRelations = relations(users, ({ many }) => ({
-  assignedProjects: many(projects, { relationName: "assignedProjects" }),
-  assignedTasks: many(tasks),
-  projectUpdates: many(projectUpdates),
+  cartItems: many(cartItems),
+  orders: many(orders),
 }));
 
-export const clientsRelations = relations(clients, ({ many }) => ({
-  projects: many(projects),
-  consultations: many(consultations),
+export const productsRelations = relations(products, ({ many }) => ({
+  cartItems: many(cartItems),
 }));
 
-export const projectsRelations = relations(projects, ({ one, many }) => ({
-  client: one(clients, {
-    fields: [projects.clientId],
-    references: [clients.id],
-  }),
-  assignedEmployee: one(users, {
-    fields: [projects.assignedTo],
-    references: [users.id],
-    relationName: "assignedProjects",
-  }),
-  tasks: many(tasks),
-  updates: many(projectUpdates),
-}));
-
-export const tasksRelations = relations(tasks, ({ one }) => ({
-  project: one(projects, {
-    fields: [tasks.projectId],
-    references: [projects.id],
-  }),
-  assignedEmployee: one(users, {
-    fields: [tasks.assignedTo],
-    references: [users.id],
-  }),
-}));
-
-export const projectUpdatesRelations = relations(projectUpdates, ({ one }) => ({
-  project: one(projects, {
-    fields: [projectUpdates.projectId],
-    references: [projects.id],
-  }),
+export const cartItemsRelations = relations(cartItems, ({ one }) => ({
   user: one(users, {
-    fields: [projectUpdates.userId],
+    fields: [cartItems.userId],
+    references: [users.id],
+  }),
+  product: one(products, {
+    fields: [cartItems.productId],
+    references: [products.id],
+  }),
+}));
+
+export const ordersRelations = relations(orders, ({ one }) => ({
+  user: one(users, {
+    fields: [orders.userId],
     references: [users.id],
   }),
 }));
 
-export const consultationsRelations = relations(consultations, ({ one }) => ({
-  client: one(clients, {
-    fields: [consultations.clientId],
-    references: [clients.id],
-  }),
-  employee: one(users, {
-    fields: [consultations.employeeId],
-    references: [users.id],
-  }),
-}));
-
-// Validation schemas
+// Schemas for validation
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -188,21 +118,21 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-export const insertProjectSchema = createInsertSchema(projects).omit({
+export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export const insertTaskSchema = createInsertSchema(tasks).omit({
+export const insertCartItemSchema = createInsertSchema(cartItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertOrderSchema = createInsertSchema(orders).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-});
-
-export const insertProjectUpdateSchema = createInsertSchema(projectUpdates).omit({
-  id: true,
-  createdAt: true,
 });
 
 export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
@@ -210,31 +140,19 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
   createdAt: true,
 });
 
-export const insertClientSchema = createInsertSchema(clients).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertConsultationSchema = createInsertSchema(consultations).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type InsertClient = z.infer<typeof insertClientSchema>;
-export type Client = typeof clients.$inferSelect;
-export type InsertConsultation = z.infer<typeof insertConsultationSchema>;
-export type Consultation = typeof consultations.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type LoginCredentials = z.infer<typeof loginSchema>;
-export type InsertProject = z.infer<typeof insertProjectSchema>;
-export type Project = typeof projects.$inferSelect;
-export type InsertTask = z.infer<typeof insertTaskSchema>;
-export type Task = typeof tasks.$inferSelect;
-export type InsertProjectUpdate = z.infer<typeof insertProjectUpdateSchema>;
-export type ProjectUpdate = typeof projectUpdates.$inferSelect;
-export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
+
+export type Product = typeof products.$inferSelect;
+export type InsertProduct = z.infer<typeof insertProductSchema>;
+
+export type CartItem = typeof cartItems.$inferSelect;
+export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
+
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;

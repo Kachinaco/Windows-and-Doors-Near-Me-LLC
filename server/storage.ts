@@ -1,24 +1,25 @@
 import {
   users,
-  clients,
   products,
   cartItems,
   orders,
   contactSubmissions,
-  consultations,
   type User,
   type InsertUser,
-  type Client,
-  type InsertClient,
+  type Product,
+  type InsertProduct,
+  type CartItem,
+  type InsertCartItem,
+  type Order,
+  type InsertOrder,
   type ContactSubmission,
   type InsertContactSubmission,
-  type Consultation,
-  type InsertConsultation,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
+// Interface for storage operations - simplified for e-commerce
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
@@ -27,46 +28,30 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User>;
   authenticateUser(username: string, password: string): Promise<User | null>;
-  getAllEmployees(): Promise<User[]>;
   
-  // Client operations
-  createClient(client: InsertClient): Promise<Client>;
-  getClient(id: number): Promise<Client | undefined>;
-  getAllClients(): Promise<Client[]>;
-  updateClient(id: number, updates: Partial<InsertClient>): Promise<Client>;
+  // Product operations
+  getAllProducts(): Promise<Product[]>;
+  getProduct(id: number): Promise<Product | undefined>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product>;
   
-  // Project operations
-  createProject(project: InsertProject): Promise<Project>;
-  getProject(id: number): Promise<Project | undefined>;
-  getProjectsByClient(clientId: number): Promise<Project[]>;
-  getProjectsByEmployee(employeeId: number): Promise<Project[]>;
-  getAllProjects(): Promise<Project[]>;
-  updateProject(id: number, updates: Partial<InsertProject>): Promise<Project>;
+  // Cart operations
+  getCartItems(userId: number): Promise<CartItem[]>;
+  addToCart(cartItem: InsertCartItem): Promise<CartItem>;
+  updateCartItem(id: number, updates: Partial<InsertCartItem>): Promise<CartItem>;
+  removeFromCart(id: number): Promise<void>;
+  clearCart(userId: number): Promise<void>;
   
-  // Task operations
-  createTask(task: InsertTask): Promise<Task>;
-  getTask(id: number): Promise<Task | undefined>;
-  getTasksByProject(projectId: number): Promise<Task[]>;
-  getTasksByAssignee(assigneeId: number): Promise<Task[]>;
-  updateTask(id: number, updates: Partial<InsertTask>): Promise<Task>;
-  
-  // Project updates operations
-  createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate>;
-  getProjectUpdates(projectId: number): Promise<ProjectUpdate[]>;
+  // Order operations
+  createOrder(order: InsertOrder): Promise<Order>;
+  getOrder(id: number): Promise<Order | undefined>;
+  getUserOrders(userId: number): Promise<Order[]>;
+  updateOrder(id: number, updates: Partial<InsertOrder>): Promise<Order>;
   
   // Contact form operations
   createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
   getContactSubmissions(): Promise<ContactSubmission[]>;
   updateContactSubmissionStatus(id: number, status: string): Promise<ContactSubmission>;
-  
-  // Consultation scheduling operations
-  createConsultation(consultation: InsertConsultation): Promise<Consultation>;
-  getConsultation(id: number): Promise<Consultation | undefined>;
-  getAllConsultations(): Promise<Consultation[]>;
-  getConsultationsByEmployee(employeeId: number): Promise<Consultation[]>;
-  getConsultationsByClient(clientId: number): Promise<Consultation[]>;
-  updateConsultation(id: number, updates: Partial<InsertConsultation>): Promise<Consultation>;
-  deleteConsultation(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -87,22 +72,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    // Hash password before storing
-    const hashedPassword = await bcrypt.hash(insertUser.password, 12);
+    const hashedPassword = await bcrypt.hash(insertUser.password, 10);
+    const userData = { ...insertUser, password: hashedPassword };
+    
     const [user] = await db
       .insert(users)
-      .values({
-        ...insertUser,
-        password: hashedPassword,
-      })
+      .values(userData)
       .returning();
     return user;
   }
 
   async updateUser(id: number, updates: Partial<InsertUser>): Promise<User> {
-    // Hash password if it's being updated
     if (updates.password) {
-      updates.password = await bcrypt.hash(updates.password, 12);
+      updates.password = await bcrypt.hash(updates.password, 10);
     }
     
     const [user] = await db
@@ -117,124 +99,123 @@ export class DatabaseStorage implements IStorage {
     const user = await this.getUserByUsername(username);
     if (!user) return null;
     
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) return null;
-    
-    return user;
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    return isValidPassword ? user : null;
   }
 
-  async getAllEmployees(): Promise<User[]> {
-    return await db.select().from(users).where(eq(users.role, "employee"));
+  // Product operations
+  async getAllProducts(): Promise<Product[]> {
+    return await db.select().from(products).where(eq(products.isActive, true)).orderBy(desc(products.createdAt));
   }
 
-  // Client operations
-  async createClient(insertClient: InsertClient): Promise<Client> {
-    const [client] = await db
-      .insert(clients)
-      .values(insertClient)
+  async getProduct(id: number): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product || undefined;
+  }
+
+  async createProduct(insertProduct: InsertProduct): Promise<Product> {
+    const [product] = await db
+      .insert(products)
+      .values(insertProduct)
       .returning();
-    return client;
+    return product;
   }
 
-  async getClient(id: number): Promise<Client | undefined> {
-    const [client] = await db.select().from(clients).where(eq(clients.id, id));
-    return client || undefined;
+  async updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product> {
+    const [product] = await db
+      .update(products)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
+    return product;
   }
 
-  async getAllClients(): Promise<Client[]> {
-    return await db.select().from(clients).orderBy(desc(clients.createdAt));
+  // Cart operations
+  async getCartItems(userId: number): Promise<CartItem[]> {
+    return await db
+      .select({
+        id: cartItems.id,
+        userId: cartItems.userId,
+        productId: cartItems.productId,
+        quantity: cartItems.quantity,
+        customizations: cartItems.customizations,
+        createdAt: cartItems.createdAt,
+        product: products,
+      })
+      .from(cartItems)
+      .leftJoin(products, eq(cartItems.productId, products.id))
+      .where(eq(cartItems.userId, userId));
   }
 
-  async updateClient(id: number, updates: Partial<InsertClient>): Promise<Client> {
-    const [client] = await db
-      .update(clients)
+  async addToCart(insertCartItem: InsertCartItem): Promise<CartItem> {
+    // Check if product already in cart
+    const [existingItem] = await db
+      .select()
+      .from(cartItems)
+      .where(eq(cartItems.userId, insertCartItem.userId!))
+      .where(eq(cartItems.productId, insertCartItem.productId!));
+
+    if (existingItem) {
+      // Update quantity if item exists
+      return await this.updateCartItem(existingItem.id, {
+        quantity: existingItem.quantity + (insertCartItem.quantity || 1)
+      });
+    } else {
+      // Create new cart item
+      const [cartItem] = await db
+        .insert(cartItems)
+        .values(insertCartItem)
+        .returning();
+      return cartItem;
+    }
+  }
+
+  async updateCartItem(id: number, updates: Partial<InsertCartItem>): Promise<CartItem> {
+    const [cartItem] = await db
+      .update(cartItems)
       .set(updates)
-      .where(eq(clients.id, id))
+      .where(eq(cartItems.id, id))
       .returning();
-    return client;
+    return cartItem;
   }
 
-  // Project operations
-  async createProject(insertProject: InsertProject): Promise<Project> {
-    const [project] = await db
-      .insert(projects)
-      .values(insertProject)
+  async removeFromCart(id: number): Promise<void> {
+    await db.delete(cartItems).where(eq(cartItems.id, id));
+  }
+
+  async clearCart(userId: number): Promise<void> {
+    await db.delete(cartItems).where(eq(cartItems.userId, userId));
+  }
+
+  // Order operations
+  async createOrder(insertOrder: InsertOrder): Promise<Order> {
+    const [order] = await db
+      .insert(orders)
+      .values(insertOrder)
       .returning();
-    return project;
+    return order;
   }
 
-  async getProject(id: number): Promise<Project | undefined> {
-    const [project] = await db.select().from(projects).where(eq(projects.id, id));
-    return project || undefined;
+  async getOrder(id: number): Promise<Order | undefined> {
+    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    return order || undefined;
   }
 
-  async getProjectsByClient(clientId: number): Promise<Project[]> {
-    return await db.select().from(projects).where(eq(projects.clientId, clientId));
-  }
-
-  async getProjectsByEmployee(employeeId: number): Promise<Project[]> {
-    return await db.select().from(projects).where(eq(projects.assignedTo, employeeId));
-  }
-
-  async getAllProjects(): Promise<Project[]> {
-    return await db.select().from(projects).orderBy(desc(projects.createdAt));
-  }
-
-  async updateProject(id: number, updates: Partial<InsertProject>): Promise<Project> {
-    const [project] = await db
-      .update(projects)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(projects.id, id))
-      .returning();
-    return project;
-  }
-
-  // Task operations
-  async createTask(insertTask: InsertTask): Promise<Task> {
-    const [task] = await db
-      .insert(tasks)
-      .values(insertTask)
-      .returning();
-    return task;
-  }
-
-  async getTask(id: number): Promise<Task | undefined> {
-    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
-    return task || undefined;
-  }
-
-  async getTasksByProject(projectId: number): Promise<Task[]> {
-    return await db.select().from(tasks).where(eq(tasks.projectId, projectId));
-  }
-
-  async getTasksByAssignee(assigneeId: number): Promise<Task[]> {
-    return await db.select().from(tasks).where(eq(tasks.assignedTo, assigneeId));
-  }
-
-  async updateTask(id: number, updates: Partial<InsertTask>): Promise<Task> {
-    const [task] = await db
-      .update(tasks)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(tasks.id, id))
-      .returning();
-    return task;
-  }
-
-  // Project updates operations
-  async createProjectUpdate(insertUpdate: InsertProjectUpdate): Promise<ProjectUpdate> {
-    const [update] = await db
-      .insert(projectUpdates)
-      .values(insertUpdate)
-      .returning();
-    return update;
-  }
-
-  async getProjectUpdates(projectId: number): Promise<ProjectUpdate[]> {
+  async getUserOrders(userId: number): Promise<Order[]> {
     return await db
       .select()
-      .from(projectUpdates)
-      .where(eq(projectUpdates.projectId, projectId))
-      .orderBy(desc(projectUpdates.createdAt));
+      .from(orders)
+      .where(eq(orders.userId, userId))
+      .orderBy(desc(orders.createdAt));
+  }
+
+  async updateOrder(id: number, updates: Partial<InsertOrder>): Promise<Order> {
+    const [order] = await db
+      .update(orders)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(orders.id, id))
+      .returning();
+    return order;
   }
 
   // Contact form operations
@@ -247,10 +228,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getContactSubmissions(): Promise<ContactSubmission[]> {
-    return await db
-      .select()
-      .from(contactSubmissions)
-      .orderBy(desc(contactSubmissions.createdAt));
+    return await db.select().from(contactSubmissions).orderBy(desc(contactSubmissions.createdAt));
   }
 
   async updateContactSubmissionStatus(id: number, status: string): Promise<ContactSubmission> {
@@ -260,59 +238,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(contactSubmissions.id, id))
       .returning();
     return submission;
-  }
-
-  // Consultation scheduling operations
-  async createConsultation(insertConsultation: InsertConsultation): Promise<Consultation> {
-    const [consultation] = await db
-      .insert(consultations)
-      .values(insertConsultation)
-      .returning();
-    return consultation;
-  }
-
-  async getConsultation(id: number): Promise<Consultation | undefined> {
-    const [consultation] = await db
-      .select()
-      .from(consultations)
-      .where(eq(consultations.id, id));
-    return consultation;
-  }
-
-  async getAllConsultations(): Promise<Consultation[]> {
-    return await db
-      .select()
-      .from(consultations)
-      .orderBy(desc(consultations.appointmentDate));
-  }
-
-  async getConsultationsByEmployee(employeeId: number): Promise<Consultation[]> {
-    return await db
-      .select()
-      .from(consultations)
-      .where(eq(consultations.employeeId, employeeId))
-      .orderBy(desc(consultations.appointmentDate));
-  }
-
-  async getConsultationsByClient(clientId: number): Promise<Consultation[]> {
-    return await db
-      .select()
-      .from(consultations)
-      .where(eq(consultations.clientId, clientId))
-      .orderBy(desc(consultations.appointmentDate));
-  }
-
-  async updateConsultation(id: number, updates: Partial<InsertConsultation>): Promise<Consultation> {
-    const [consultation] = await db
-      .update(consultations)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(consultations.id, id))
-      .returning();
-    return consultation;
-  }
-
-  async deleteConsultation(id: number): Promise<void> {
-    await db.delete(consultations).where(eq(consultations.id, id));
   }
 }
 
