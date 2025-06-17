@@ -1,14 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
+import { Link } from "wouter";
 
 export default function ServiceAreas() {
   const areas = [
-    "Gilbert",
-    "Mesa", 
-    "Chandler",
-    "Tempe",
-    "Scottsdale",
-    "Queen Creek"
+    { name: "Gilbert", link: "/gilbert-windows-doors" },
+    { name: "Mesa", link: "/mesa-windows-doors" }, 
+    { name: "Chandler", link: "/chandler-windows-doors" },
+    { name: "Tempe", link: "/tempe-windows-doors" },
+    { name: "Scottsdale", link: "/scottsdale-windows-doors" },
+    { name: "Queen Creek", link: "/queen-creek-windows-doors" }
   ];
 
   return (
@@ -24,12 +25,15 @@ export default function ServiceAreas() {
         
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {areas.map((area, index) => (
-            <Card key={index} className="bg-card border hover:shadow-lg transition-shadow duration-200">
-              <CardContent className="p-3 sm:p-4 lg:p-6 text-center">
-                <MapPin className="text-primary text-lg sm:text-xl lg:text-2xl mb-2 sm:mb-3 mx-auto" />
-                <div className="font-semibold text-card-foreground text-sm sm:text-base">{area}</div>
-              </CardContent>
-            </Card>
+            <Link key={index} href={area.link}>
+              <Card className="bg-card border hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105">
+                <CardContent className="p-3 sm:p-4 lg:p-6 text-center">
+                  <MapPin className="text-primary text-lg sm:text-xl lg:text-2xl mb-2 sm:mb-3 mx-auto" />
+                  <div className="font-semibold text-card-foreground text-sm sm:text-base">{area.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Click for local services</div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>
