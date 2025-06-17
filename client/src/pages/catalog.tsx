@@ -39,12 +39,12 @@ export default function CatalogPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch products
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
 
   // Fetch cart items
-  const { data: cartItems = [] } = useQuery({
+  const { data: cartItems = [] } = useQuery<any[]>({
     queryKey: ["/api/cart"],
     enabled: !!user,
   });
@@ -94,7 +94,7 @@ export default function CatalogPage() {
     },
   });
 
-  const filteredProducts = products.filter((product: Product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -102,12 +102,12 @@ export default function CatalogPage() {
   });
 
   const getCartQuantity = (productId: number) => {
-    const cartItem = cartItems.find((item: CartItem) => item.productId === productId);
+    const cartItem = cartItems.find((item) => item.productId === productId);
     return cartItem?.quantity || 0;
   };
 
   const getCartTotal = () => {
-    return cartItems.reduce((total: number, item: CartItem) => {
+    return cartItems.reduce((total, item) => {
       return total + (parseFloat(item.product?.price || "0") * item.quantity);
     }, 0);
   };
