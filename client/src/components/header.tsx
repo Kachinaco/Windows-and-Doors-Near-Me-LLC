@@ -21,7 +21,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <div className="flex items-center cursor-pointer" onClick={() => scrollToSection('home')}>
+          <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => scrollToSection('home')}>
             <img 
               src={logoPath} 
               alt="Windows & Doors Near Me LLC Logo" 
