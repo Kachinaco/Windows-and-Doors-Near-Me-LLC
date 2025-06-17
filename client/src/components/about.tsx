@@ -3,16 +3,16 @@ import { IdCard, Shield } from "lucide-react";
 
 export default function About() {
   return (
-    <section id="about" className="py-20 bg-white">
+    <section id="about" className="py-20 bg-muted/30 dark:bg-muted/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">About Windows & Doors Near Me LLC</h2>
-            <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+            <h2 className="text-4xl font-bold text-foreground mb-6">About Windows & Doors Near Me LLC</h2>
+            <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
               Serving Gilbert, Arizona and surrounding communities for over 15 years, we've built our reputation 
               on quality craftsmanship, reliable service, and customer satisfaction.
             </p>
-            <p className="text-gray-600 mb-8 leading-relaxed">
+            <p className="text-muted-foreground mb-8 leading-relaxed">
               As an authorized dealer of Milgard and Pella products, we offer the finest windows and doors 
               available, backed by comprehensive warranties and expert installation. Our team of certified 
               professionals takes pride in every project, ensuring your home receives the quality it deserves.
@@ -20,34 +20,34 @@ export default function About() {
             
             <div className="grid grid-cols-2 gap-6 mb-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary-blue mb-2">15+</div>
-                <div className="text-gray-600">Years Experience</div>
+                <div className="text-3xl font-bold text-primary mb-2">15+</div>
+                <div className="text-muted-foreground">Years Experience</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary-blue mb-2">500+</div>
-                <div className="text-gray-600">Projects Completed</div>
+                <div className="text-3xl font-bold text-primary mb-2">500+</div>
+                <div className="text-muted-foreground">Projects Completed</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary-blue mb-2">100%</div>
-                <div className="text-gray-600">Licensed & Insured</div>
+                <div className="text-3xl font-bold text-primary mb-2">100%</div>
+                <div className="text-muted-foreground">Licensed & Insured</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary-blue mb-2">5.0</div>
-                <div className="text-gray-600">Average Rating</div>
+                <div className="text-3xl font-bold text-primary mb-2">5.0</div>
+                <div className="text-muted-foreground">Average Rating</div>
               </div>
             </div>
             
             <div className="flex flex-wrap gap-4">
-              <Card className="bg-light-blue border-0">
+              <Card className="bg-card border">
                 <CardContent className="flex items-center p-4">
-                  <IdCard className="text-primary-blue text-2xl mr-3" />
-                  <span className="font-semibold">Licensed Contractors</span>
+                  <IdCard className="text-primary text-2xl mr-3" />
+                  <span className="font-semibold text-card-foreground">Licensed Contractors</span>
                 </CardContent>
               </Card>
-              <Card className="bg-light-blue border-0">
+              <Card className="bg-card border">
                 <CardContent className="flex items-center p-4">
-                  <Shield className="text-success-green text-2xl mr-3" />
-                  <span className="font-semibold">Fully Insured</span>
+                  <Shield className="text-green-600 text-2xl mr-3" />
+                  <span className="font-semibold text-card-foreground">Fully Insured</span>
                 </CardContent>
               </Card>
             </div>
