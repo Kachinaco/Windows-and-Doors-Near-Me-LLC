@@ -176,7 +176,7 @@ export default function ProjectsPage() {
                       <Input
                         id="title"
                         {...form.register("title")}
-                        placeholder="e.g., Milgard Windows Installation"
+                        placeholder="Test"
                       />
                       {form.formState.errors.title && (
                         <p className="text-sm text-red-600">{form.formState.errors.title.message}</p>
@@ -185,14 +185,22 @@ export default function ProjectsPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="serviceType">Service Type</Label>
-                      <Input
-                        id="serviceType"
-                        {...form.register("serviceType")}
-                        placeholder="e.g., Window Installation"
-                      />
-                      {form.formState.errors.serviceType && (
-                        <p className="text-sm text-red-600">{form.formState.errors.serviceType.message}</p>
-                      )}
+                      <Select 
+                        value={form.watch("serviceType")} 
+                        onValueChange={(value) => form.setValue("serviceType", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Window install" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Window Installation">Window Installation</SelectItem>
+                          <SelectItem value="Door Installation">Door Installation</SelectItem>
+                          <SelectItem value="Window Replacement">Window Replacement</SelectItem>
+                          <SelectItem value="Door Replacement">Door Replacement</SelectItem>
+                          <SelectItem value="Home Improvement">Home Improvement</SelectItem>
+                          <SelectItem value="Repair Service">Repair Service</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
@@ -201,7 +209,7 @@ export default function ProjectsPage() {
                     <Textarea
                       id="description"
                       {...form.register("description")}
-                      placeholder="Detailed project description..."
+                      placeholder="Install of 12 windows"
                       rows={3}
                     />
                     {form.formState.errors.description && (
@@ -252,12 +260,12 @@ export default function ProjectsPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="customerId">Customer ID</Label>
+                      <Label htmlFor="clientId">Customer ID</Label>
                       <Input
-                        id="customerId"
+                        id="clientId"
                         type="number"
-                        {...form.register("customerId", { valueAsNumber: true })}
-                        placeholder="Customer ID"
+                        {...form.register("clientId", { valueAsNumber: true })}
+                        placeholder="01"
                       />
                     </div>
 
