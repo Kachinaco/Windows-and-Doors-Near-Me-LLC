@@ -189,7 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (allowedRoles.includes(req.user!.role)) {
         projects = await storage.getAllProjects();
       } else {
-        projects = await storage.getProjectsByCustomer(req.user!.id);
+        projects = await storage.getProjectsByClient(req.user!.id);
       }
       res.json(projects);
     } catch (error) {

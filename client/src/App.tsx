@@ -21,6 +21,7 @@ import LeadsPage from "@/pages/leads";
 import ClientsPage from "@/pages/clients";
 import CreateProjectPage from "@/pages/create-project";
 import ConsultationsPage from "@/pages/consultations";
+import SubscriptionPage from "@/pages/subscription";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -62,6 +63,7 @@ function Router() {
           <Route path="/clients" component={ClientsPage} />
           <Route path="/consultations" component={ConsultationsPage} />
           <Route path="/create-project" component={CreateProjectPage} />
+          <Route path="/subscription" component={SubscriptionPage} />
         </>
       ) : (
         <>
