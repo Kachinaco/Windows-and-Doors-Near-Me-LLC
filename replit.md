@@ -156,6 +156,8 @@ Changelog:
 - June 17, 2025. Initial setup
 - June 17, 2025. Major creative redesign with unique visual elements, custom color scheme, and integrated company logo
 - June 17, 2025. Fixed mobile navigation accessibility - added Login button to mobile hamburger menu for better user experience
+- June 17, 2025. Implemented comprehensive consultation scheduling system with full editing capabilities and employee assignment features
+- June 17, 2025. Updated project creation modal interface to match user's specified design requirements from screenshots
 
 ## User Preferences
 
