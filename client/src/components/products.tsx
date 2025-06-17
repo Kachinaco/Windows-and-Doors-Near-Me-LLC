@@ -112,7 +112,7 @@ export default function Products() {
                       ))}
                     </div>
                   </div>
-                  <p className="text-primary-foreground text-lg font-medium">Innovation meets superior performance</p>
+                  <p className="text-lg font-medium text-[#000000]">Innovation meets superior performance</p>
                 </div>
               </div>
               
