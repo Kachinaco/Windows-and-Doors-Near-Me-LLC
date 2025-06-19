@@ -939,6 +939,26 @@ export default function QuotePage() {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Tempered Glass</Label>
+                    <div className="flex items-center space-x-2 h-8">
+                      <Checkbox
+                        id="tempered"
+                        checked={currentItem.configuration?.isTempered}
+                        onCheckedChange={(checked) => setCurrentItem({
+                          ...currentItem,
+                          configuration: {...currentItem.configuration!, isTempered: !!checked}
+                        })}
+                      />
+                      <label
+                        htmlFor="tempered"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Tempered (+$4.85/sq ft)
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Dimensions Section */}
