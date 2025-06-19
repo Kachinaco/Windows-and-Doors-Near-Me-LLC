@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
@@ -45,6 +46,7 @@ const productCategories = [
 
 export default function CatalogPage() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   return (
@@ -100,7 +102,11 @@ export default function CatalogPage() {
                 </h3>
                 <Button 
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2"
-                  onClick={() => setSelectedCategory(category.id)}
+                  onClick={() => {
+                    // Store selected product in sessionStorage and navigate to quote page
+                    sessionStorage.setItem('selectedProduct', category.name);
+                    setLocation('/quote');
+                  }}
                 >
                   Start Pricing Now
                 </Button>
