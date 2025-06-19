@@ -1033,7 +1033,7 @@ export default function QuotePage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {frameColors.map(finish => (
+                        {getAvailableInteriorColors(currentItem.configuration?.exteriorColor || "white").map(finish => (
                           <SelectItem key={finish.value} value={finish.value}>
                             {finish.label}
                           </SelectItem>
@@ -1122,8 +1122,9 @@ export default function QuotePage() {
                     {/* Main Window Frame */}
                     <div 
                       className={`relative ${
-                        currentItem.configuration.frameColor === 'bronze' ? 'bg-yellow-100 border-yellow-800' :
-                        currentItem.configuration.frameColor === 'black' ? 'bg-gray-200 border-gray-900' :
+                        currentItem.configuration.exteriorColor === 'bronze' ? 'bg-yellow-100 border-yellow-800' :
+                        currentItem.configuration.exteriorColor === 'black' ? 'bg-gray-200 border-gray-900' :
+                        currentItem.configuration.exteriorColor === 'tan' ? 'bg-amber-100 border-amber-800' :
                         'bg-gray-100 border-gray-700'
                       } border-2`}
                       style={{
@@ -1291,7 +1292,7 @@ export default function QuotePage() {
                   </div>
                   <div className="flex justify-between">
                     <span>Frame:</span>
-                    <span className="font-medium capitalize">{currentItem.configuration.frameColor}</span>
+                    <span className="font-medium capitalize">{currentItem.configuration.exteriorColor}/{currentItem.configuration.interiorColor}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Glass:</span>
