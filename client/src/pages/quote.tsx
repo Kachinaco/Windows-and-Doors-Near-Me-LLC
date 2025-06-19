@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Plus, Calculator, FileText, Phone, CheckCircle } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -20,7 +21,9 @@ interface QuoteItem {
   height: string;
   configuration: {
     frameColor: string;
-    glassType: string;
+    outerGlass: string;
+    innerGlass: string;
+    isTempered: boolean;
     gridPattern: string;
     operatingType: string;
     operatingConfiguration?: string;
@@ -79,12 +82,16 @@ const frameColors = [
   { value: "custom", label: "Custom Color", priceAdder: 2.50 }
 ];
 
-const glassTypes = [
-  { value: "clear", label: "Clear Glass", priceAdder: 0 },
-  { value: "low-e", label: "Low-E Glass", priceAdder: 3.20 },
-  { value: "tempered", label: "Tempered Glass", priceAdder: 4.85 },
-  { value: "laminated", label: "Laminated Glass", priceAdder: 6.75 },
-  { value: "impact", label: "Impact Resistant", priceAdder: 12.40 }
+const outerGlassTypes = [
+  { value: "clear", label: "Clear", priceAdder: 0 },
+  { value: "low-e", label: "Low-E", priceAdder: 3.20 },
+  { value: "low-e-max", label: "Low E Max", priceAdder: 5.80 }
+];
+
+const innerGlassTypes = [
+  { value: "clear", label: "Clear", priceAdder: 0 },
+  { value: "obscure", label: "Obscure", priceAdder: 1.50 },
+  { value: "4th-surface-coating", label: "4th Surface Coating", priceAdder: 2.90 }
 ];
 
 const gridPatterns = [
@@ -157,7 +164,9 @@ export default function QuotePage() {
     height: "",
     configuration: {
       frameColor: "white",
-      glassType: "clear",
+      outerGlass: "clear",
+      innerGlass: "clear",
+      isTempered: false,
       gridPattern: "none",
       operatingType: "vertical-hung",
       operatingConfiguration: "double-hung",
@@ -229,10 +238,21 @@ export default function QuotePage() {
       pricePerSqFt += finType.priceAdder;
     }
     
-    // Add glass type adder
-    const glassType = glassTypes.find(g => g.value === item.configuration?.glassType);
-    if (glassType) {
-      pricePerSqFt += glassType.priceAdder;
+    // Add outer glass adder
+    const outerGlass = outerGlassTypes.find(g => g.value === item.configuration?.outerGlass);
+    if (outerGlass) {
+      pricePerSqFt += outerGlass.priceAdder;
+    }
+
+    // Add inner glass adder
+    const innerGlass = innerGlassTypes.find(g => g.value === item.configuration?.innerGlass);
+    if (innerGlass) {
+      pricePerSqFt += innerGlass.priceAdder;
+    }
+
+    // Add tempered glass adder
+    if (item.configuration?.isTempered) {
+      pricePerSqFt += 4.85; // Tempered glass upcharge
     }
     
     // Add grid pattern adder
@@ -715,6 +735,28 @@ export default function QuotePage() {
                   </div>
 
                   <div>
+                    <Label className="text-sm font-medium text-blue-600">Fin Type *</Label>
+                    <Select
+                      value={currentItem.configuration?.finType}
+                      onValueChange={(value) => setCurrentItem({
+                        ...currentItem,
+                        configuration: {...currentItem.configuration!, finType: value}
+                      })}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {finTypes.map(fin => (
+                          <SelectItem key={fin.value} value={fin.value}>
+                            {fin.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
                     <Label className="text-sm font-medium text-blue-600">Energy Package *</Label>
                     <Select
                       value={currentItem.configuration?.energyPackage}
@@ -762,28 +804,6 @@ export default function QuotePage() {
                     </Select>
                   </div>
 
-                  <div>
-                    <Label className="text-sm font-medium text-blue-600">Fin Type *</Label>
-                    <Select
-                      value={currentItem.configuration?.finType}
-                      onValueChange={(value) => setCurrentItem({
-                        ...currentItem,
-                        configuration: {...currentItem.configuration!, finType: value}
-                      })}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {finTypes.map(fin => (
-                          <SelectItem key={fin.value} value={fin.value}>
-                            {fin.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
                   {/* Second Row */}
                   <div>
                     <Label className="text-sm font-medium text-blue-600">Configuration *</Label>
@@ -811,19 +831,41 @@ export default function QuotePage() {
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium text-blue-600">Interior Glass</Label>
+                    <Label className="text-sm font-medium text-blue-600">Outer Glass *</Label>
                     <Select
-                      value={currentItem.configuration?.glassType}
+                      value={currentItem.configuration?.outerGlass}
                       onValueChange={(value) => setCurrentItem({
                         ...currentItem,
-                        configuration: {...currentItem.configuration!, glassType: value}
+                        configuration: {...currentItem.configuration!, outerGlass: value}
                       })}
                     >
                       <SelectTrigger className="h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {glassTypes.map(glass => (
+                        {outerGlassTypes.map(glass => (
+                          <SelectItem key={glass.value} value={glass.value}>
+                            {glass.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Inner Glass *</Label>
+                    <Select
+                      value={currentItem.configuration?.innerGlass}
+                      onValueChange={(value) => setCurrentItem({
+                        ...currentItem,
+                        configuration: {...currentItem.configuration!, innerGlass: value}
+                      })}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {innerGlassTypes.map(glass => (
                           <SelectItem key={glass.value} value={glass.value}>
                             {glass.label}
                           </SelectItem>
