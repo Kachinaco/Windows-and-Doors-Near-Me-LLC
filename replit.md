@@ -179,6 +179,7 @@ Changelog:
 - June 19, 2025. Fixed black frame pricing to $1.75 per sq ft (40% premium over standard $1.25 for tan/bronze colors)
 - June 19, 2025. Moved "Add Item" button to bottom of configurator for better user workflow
 - June 19, 2025. Implemented rough opening calculation adjustment - subtracts 0.5" from each dimension for actual window size since rough opening measurements are frame-to-frame
+- June 19, 2025. Enhanced window preview display with larger minimum sizes and accurate dimension representation for rough opening calculations
 
 ## User Preferences
 

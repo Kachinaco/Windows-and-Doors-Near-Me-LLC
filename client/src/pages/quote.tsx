@@ -313,12 +313,30 @@ export default function QuotePage() {
     });
   };
 
+  // Function to parse dimension input (handles both "35.5" and "35 1/2" formats)
+  const parseDimension = (input: string): number => {
+    if (!input) return 0;
+    
+    // Handle fractional input like "35 1/2"
+    const fractionMatch = input.match(/^(\d+)(?:\s+(\d+)\/(\d+))?$/);
+    if (fractionMatch) {
+      const whole = parseInt(fractionMatch[1]) || 0;
+      const numerator = parseInt(fractionMatch[2]) || 0;
+      const denominator = parseInt(fractionMatch[3]) || 1;
+      return whole + (numerator / denominator);
+    }
+    
+    // Handle decimal input like "35.5"
+    const decimal = parseFloat(input);
+    return isNaN(decimal) ? 0 : decimal;
+  };
+
   const calculateItemPrice = (item: QuoteItem): number => {
     if (!item.width || !item.height) return 0;
     
     // Get actual dimensions for pricing calculations
-    let actualWidth = parseFloat(item.width);
-    let actualHeight = parseFloat(item.height);
+    let actualWidth = parseDimension(item.width);
+    let actualHeight = parseDimension(item.height);
     
     // For rough opening, subtract 0.5" from each dimension to get actual window size
     if (item.configuration?.openingType === "rough-opening") {
@@ -824,21 +842,27 @@ export default function QuotePage() {
                       <Label className="text-sm font-medium text-blue-600">Exact Width for 17 3/4" to 95 1/2" *</Label>
                       <Input
                         type="text"
-                        placeholder="35 1/2"
+                        placeholder="35.5 or 35 1/2"
                         value={currentItem.width}
                         onChange={(e) => setCurrentItem({...currentItem, width: e.target.value})}
                         className="h-8"
                       />
+                      <div className="text-xs text-gray-500 mt-1">
+                        Enter as decimal (35.5) or fraction (35 1/2)
+                      </div>
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-blue-600">Exact Height from 11 1/2" to 71 1/2" *</Label>
                       <Input
                         type="text"
-                        placeholder="47 1/2"
+                        placeholder="47.5 or 47 1/2"
                         value={currentItem.height}
                         onChange={(e) => setCurrentItem({...currentItem, height: e.target.value})}
                         className="h-8"
                       />
+                      <div className="text-xs text-gray-500 mt-1">
+                        Enter as decimal (47.5) or fraction (47 1/2)
+                      </div>
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-blue-600">Quantity *</Label>
@@ -1380,14 +1404,14 @@ export default function QuotePage() {
                       } border-2`}
                       style={{
                         width: currentItem.width ? `${Math.max(120, Math.min(280, (() => {
-                          let width = parseFloat(currentItem.width);
+                          let width = parseDimension(currentItem.width);
                           if (currentItem.configuration?.openingType === "rough-opening") {
                             width = Math.max(0, width - 0.5);
                           }
                           return width * 3.5;
                         })()))}px` : '140px',
                         height: currentItem.height ? `${Math.max(120, Math.min(320, (() => {
-                          let height = parseFloat(currentItem.height);
+                          let height = parseDimension(currentItem.height);
                           if (currentItem.configuration?.openingType === "rough-opening") {
                             height = Math.max(0, height - 0.5);
                           }
@@ -1534,7 +1558,7 @@ export default function QuotePage() {
                         <div className="absolute -bottom-8 left-0 right-0 flex justify-center">
                           <div className="text-xs font-medium text-gray-700">
                             {(() => {
-                              let width = parseFloat(currentItem.width);
+                              let width = parseDimension(currentItem.width);
                               if (currentItem.configuration?.openingType === "rough-opening") {
                                 width = Math.max(0, width - 0.5);
                               }
@@ -1546,7 +1570,7 @@ export default function QuotePage() {
                         <div className="absolute -left-8 top-0 bottom-0 flex items-center">
                           <div className="text-xs font-medium text-gray-700 transform -rotate-90">
                             {(() => {
-                              let height = parseFloat(currentItem.height);
+                              let height = parseDimension(currentItem.height);
                               if (currentItem.configuration?.openingType === "rough-opening") {
                                 height = Math.max(0, height - 0.5);
                               }
@@ -1600,7 +1624,7 @@ export default function QuotePage() {
                     <div className="p-2 bg-blue-50 rounded text-xs text-blue-700">
                       <strong>Rough Opening Adjustment:</strong> Subtracting 0.5" from each dimension for actual window size
                       <br />
-                      Actual Size: {Math.max(0, parseFloat(currentItem.width) - 0.5)}" × {Math.max(0, parseFloat(currentItem.height) - 0.5)}"
+                      Actual Size: {Math.max(0, parseDimension(currentItem.width) - 0.5)}" × {Math.max(0, parseDimension(currentItem.height) - 0.5)}"
                     </div>
                   )}
                   
