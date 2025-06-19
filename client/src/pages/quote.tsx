@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, Calculator, FileText, Phone, CheckCircle, Image, X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
 
 interface QuoteItem {
   id: string;
@@ -32,10 +33,11 @@ interface QuoteItem {
   totalPrice: number;
 }
 
-const productLines = [
-  { value: "v300-trinsic", label: "V300 Trinsic", description: "MILGARD V300 TRINSIC WINDOW", pricePerSqFt: 25.80 },
-  { value: "v350-tuscany", label: "V350 Tuscany", description: "MILGARD V350 TUSCANY WINDOW", pricePerSqFt: 28.50 },
-  { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 32.20 }
+const allProductLines = [
+  { value: "v300-trinsic", label: "V300 Trinsic", description: "MILGARD V300 TRINSIC WINDOW", pricePerSqFt: 25.80, tier: "customer" },
+  { value: "styline", label: "Styline", description: "MILGARD STYLINE WINDOW", pricePerSqFt: 22.50, tier: "customer" },
+  { value: "v350-tuscany", label: "V350 Tuscany", description: "MILGARD V350 TUSCANY WINDOW", pricePerSqFt: 28.50, tier: "contractor" },
+  { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 32.20, tier: "contractor" }
 ];
 
 const operatingTypes = [
@@ -128,12 +130,32 @@ const windowGalleries = {
 
 export default function QuotePage() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [step, setStep] = useState<"configure" | "summary" | "contact">("configure");
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
   const [openGallery, setOpenGallery] = useState<string | null>(null);
+
+  // Filter product lines based on user role/subscription
+  const getAvailableProductLines = () => {
+    if (!user) return allProductLines.filter(p => p.tier === "customer");
+    
+    // Check user role/subscription level
+    const userRole = user.role?.toLowerCase() || 'customer';
+    const isCustomerTier = userRole === 'customer' || userRole === 'trial' || !user.role;
+    
+    if (isCustomerTier) {
+      return allProductLines.filter(p => p.tier === "customer");
+    } else {
+      // Contractor (paid) and admin users see all products
+      return allProductLines;
+    }
+  };
+
+  const productLines = getAvailableProductLines();
+
   const [currentItem, setCurrentItem] = useState<QuoteItem>({
     id: "",
-    productType: "V300 Trinsic",
+    productType: productLines[0]?.label || "V300 Trinsic",
     quantity: 1,
     width: "",
     height: "",
@@ -164,7 +186,7 @@ export default function QuotePage() {
     if (!item.width || !item.height) return 0;
     
     const sqFt = (parseFloat(item.width) * parseFloat(item.height)) / 144;
-    const baseProduct = productLines.find(p => p.label === item.productType);
+    const baseProduct = allProductLines.find(p => p.label === item.productType);
     let pricePerSqFt = baseProduct?.pricePerSqFt || 25.80;
 
     // Add glass pricing
@@ -471,7 +493,7 @@ export default function QuotePage() {
                   <div>
                     <Label className="text-sm font-medium">Item Description</Label>
                     <div className="h-8 px-3 py-1 bg-white dark:bg-gray-700 border rounded-md text-sm flex items-center">
-                      {productLines.find(p => p.label === currentItem.productType)?.description || "CONFIGURED WINDOW"}
+                      {allProductLines.find(p => p.label === currentItem.productType)?.description || "CONFIGURED WINDOW"}
                     </div>
                   </div>
                   <div>
@@ -1111,7 +1133,7 @@ export default function QuotePage() {
                   <div className="flex justify-between">
                     <span className="text-sm">Base Price/sq ft:</span>
                     <span className="text-sm font-medium">
-                      ${productLines.find(p => p.label === currentItem.productType)?.pricePerSqFt || 25.80}
+                      ${allProductLines.find(p => p.label === currentItem.productType)?.pricePerSqFt || 25.80}
                     </span>
                   </div>
                   
