@@ -18,7 +18,9 @@ interface QuoteItem {
   quantity: number;
   width: string;
   height: string;
+  callOut?: string;
   configuration: {
+    openingType?: string;
     exteriorColor: string;
     interiorColor: string;
     outerGlass: string;
@@ -253,7 +255,9 @@ export default function QuotePage() {
     quantity: 1,
     width: "",
     height: "",
+    callOut: "",
     configuration: {
+      openingType: "net-frame",
       exteriorColor: "white",
       interiorColor: "white",
       outerGlass: "clear",
@@ -287,7 +291,9 @@ export default function QuotePage() {
       quantity: 1,
       width: "",
       height: "",
+      callOut: "",
       configuration: {
+        openingType: "net-frame",
         exteriorColor: "white",
         interiorColor: "white",
         outerGlass: "clear",
@@ -701,53 +707,130 @@ export default function QuotePage() {
                   <Label className="text-sm font-medium text-blue-600">Opening Type *</Label>
                   <div className="flex items-center space-x-6 mt-2">
                     <div className="flex items-center space-x-2">
-                      <input type="radio" id="rough-opening" name="opening-type" className="text-blue-600" />
+                      <input 
+                        type="radio" 
+                        id="rough-opening" 
+                        name="opening-type" 
+                        value="rough-opening"
+                        checked={currentItem.configuration?.openingType === "rough-opening"}
+                        onChange={(e) => setCurrentItem({
+                          ...currentItem,
+                          configuration: {...currentItem.configuration!, openingType: e.target.value}
+                        })}
+                        className="text-blue-600" 
+                      />
                       <label htmlFor="rough-opening" className="text-sm">Rough Opening</label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <input type="radio" id="net-frame" name="opening-type" checked={true} readOnly className="text-blue-600" />
+                      <input 
+                        type="radio" 
+                        id="net-frame" 
+                        name="opening-type" 
+                        value="net-frame"
+                        checked={currentItem.configuration?.openingType === "net-frame" || !currentItem.configuration?.openingType}
+                        onChange={(e) => setCurrentItem({
+                          ...currentItem,
+                          configuration: {...currentItem.configuration!, openingType: e.target.value}
+                        })}
+                        className="text-blue-600" 
+                      />
                       <label htmlFor="net-frame" className="text-sm">Net Frame</label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <input type="radio" id="call-out" name="opening-type" className="text-blue-600" />
+                      <input 
+                        type="radio" 
+                        id="call-out" 
+                        name="opening-type" 
+                        value="call-out"
+                        checked={currentItem.configuration?.openingType === "call-out"}
+                        onChange={(e) => setCurrentItem({
+                          ...currentItem,
+                          configuration: {...currentItem.configuration!, openingType: e.target.value}
+                        })}
+                        className="text-blue-600" 
+                      />
                       <label htmlFor="call-out" className="text-sm">Call Out</label>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-blue-600">Exact Width for 17 3/4" to 95 1/2" *</Label>
-                    <Input
-                      type="text"
-                      placeholder="35 1/2"
-                      value={currentItem.width}
-                      onChange={(e) => setCurrentItem({...currentItem, width: e.target.value})}
-                      className="h-8"
-                    />
+                {currentItem.configuration?.openingType === "call-out" ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-blue-600">Window Call Out (e.g. 3030, 3060) *</Label>
+                      <Input
+                        type="text"
+                        placeholder="3030"
+                        value={currentItem.callOut || ""}
+                        onChange={(e) => {
+                          const callOut = e.target.value;
+                          // Parse call out like "3030" to width="36" height="36"
+                          if (callOut.length === 4) {
+                            const width = parseInt(callOut.substring(0, 2)) + "\"";
+                            const height = parseInt(callOut.substring(2, 4)) + "\"";
+                            setCurrentItem({
+                              ...currentItem, 
+                              callOut, 
+                              width, 
+                              height
+                            });
+                          } else {
+                            setCurrentItem({...currentItem, callOut});
+                          }
+                        }}
+                        className="h-8"
+                      />
+                      <div className="text-xs text-gray-500 mt-1">
+                        Enter 4 digits (e.g. 3030 = 30"×30", 3060 = 30"×60")
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-blue-600">Quantity *</Label>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        value={currentItem.quantity}
+                        onChange={(e) => setCurrentItem({...currentItem, quantity: parseInt(e.target.value) || 1})}
+                        className="h-8"
+                        min="1"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label className="text-sm font-medium text-blue-600">Exact Height from 11 1/2" to 71 1/2" *</Label>
-                    <Input
-                      type="text"
-                      placeholder="47 1/2"
-                      value={currentItem.height}
-                      onChange={(e) => setCurrentItem({...currentItem, height: e.target.value})}
-                      className="h-8"
-                    />
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-blue-600">Exact Width for 17 3/4" to 95 1/2" *</Label>
+                      <Input
+                        type="text"
+                        placeholder="35 1/2"
+                        value={currentItem.width}
+                        onChange={(e) => setCurrentItem({...currentItem, width: e.target.value})}
+                        className="h-8"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-blue-600">Exact Height from 11 1/2" to 71 1/2" *</Label>
+                      <Input
+                        type="text"
+                        placeholder="47 1/2"
+                        value={currentItem.height}
+                        onChange={(e) => setCurrentItem({...currentItem, height: e.target.value})}
+                        className="h-8"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-blue-600">Quantity *</Label>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        value={currentItem.quantity}
+                        onChange={(e) => setCurrentItem({...currentItem, quantity: parseInt(e.target.value) || 1})}
+                        className="h-8"
+                        min="1"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label className="text-sm font-medium text-blue-600">Quantity *</Label>
-                    <Input
-                      type="number"
-                      placeholder="1"
-                      value={currentItem.quantity}
-                      onChange={(e) => setCurrentItem({...currentItem, quantity: parseInt(e.target.value) || 1})}
-                      className="h-8"
-                      min="1"
-                    />
-                  </div>
-                </div>
+                )}
 
                 <div className="mt-6 pt-4 border-t flex gap-3 flex-wrap">
                   <Button 
