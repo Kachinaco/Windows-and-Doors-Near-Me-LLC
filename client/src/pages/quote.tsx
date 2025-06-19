@@ -768,21 +768,6 @@ export default function QuotePage() {
                       />
                       <label htmlFor="net-frame" className="text-sm">Net Frame</label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <input 
-                        type="radio" 
-                        id="call-out" 
-                        name="opening-type" 
-                        value="call-out"
-                        checked={currentItem.configuration?.openingType === "call-out"}
-                        onChange={(e) => setCurrentItem({
-                          ...currentItem,
-                          configuration: {...currentItem.configuration!, openingType: e.target.value}
-                        })}
-                        className="text-blue-600" 
-                      />
-                      <label htmlFor="call-out" className="text-sm">Call Out</label>
-                    </div>
                   </div>
                 </div>
 
