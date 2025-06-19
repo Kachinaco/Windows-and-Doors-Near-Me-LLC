@@ -23,6 +23,9 @@ interface QuoteItem {
     glassType: string;
     gridPattern: string;
     operatingType: string;
+    operatingConfiguration?: string;
+    energyPackage: string;
+    finType: string;
   };
   unitPrice: number;
   totalPrice: number;
@@ -93,18 +96,55 @@ const gridPatterns = [
 ];
 
 const operatingTypes = [
-  { value: "single-hung", label: "Single Hung", priceMultiplier: 1.0 },
-  { value: "double-hung", label: "Double Hung", priceMultiplier: 1.15 },
-  { value: "casement", label: "Casement", priceMultiplier: 1.35 },
-  { value: "sliding", label: "Sliding", priceMultiplier: 0.95 },
-  { value: "awning", label: "Awning", priceMultiplier: 1.25 },
-  { value: "fixed", label: "Fixed/Picture", priceMultiplier: 0.85 }
+  { 
+    value: "vertical-hung", 
+    label: "Vertical Hung", 
+    priceMultiplier: 1.0,
+    configurations: [
+      { value: "single-hung", label: "Single Hung", priceMultiplier: 1.0 },
+      { value: "double-hung", label: "Double Hung", priceMultiplier: 1.15 }
+    ]
+  },
+  { 
+    value: "horizontal-slider", 
+    label: "Horizontal Slider", 
+    priceMultiplier: 0.95,
+    configurations: [
+      { value: "two-lite-slider", label: "Two Lite Slider", priceMultiplier: 0.95 },
+      { value: "three-lite-slider", label: "Three Lite Slider", priceMultiplier: 1.05 }
+    ]
+  },
+  { 
+    value: "slider-picture", 
+    label: "Slider Picture Windows", 
+    priceMultiplier: 0.90,
+    configurations: [
+      { value: "picture-left-slider", label: "Picture Left + Slider", priceMultiplier: 0.90 },
+      { value: "picture-right-slider", label: "Picture Right + Slider", priceMultiplier: 0.90 },
+      { value: "picture-center-sliders", label: "Picture Center + 2 Sliders", priceMultiplier: 1.10 }
+    ]
+  },
+  { 
+    value: "arches", 
+    label: "Arches", 
+    priceMultiplier: 1.45,
+    configurations: [
+      { value: "full-arch", label: "Full Arch", priceMultiplier: 1.45 },
+      { value: "half-arch", label: "Half Arch", priceMultiplier: 1.25 },
+      { value: "quarter-arch", label: "Quarter Arch", priceMultiplier: 1.15 }
+    ]
+  }
 ];
 
 const energyPackages = [
-  { value: "standard", label: "Standard", priceAdder: 0 },
-  { value: "energy-star", label: "ENERGY STAR®", priceAdder: 2.40 },
-  { value: "high-performance", label: "High Performance", priceAdder: 4.90 }
+  { value: "none", label: "None", priceAdder: 0 },
+  { value: "title-24", label: "Title 24", priceAdder: 2.40 }
+];
+
+const finTypes = [
+  { value: "block-frame", label: "Block Frame", priceAdder: 0 },
+  { value: "flush-fin", label: "Flush Fin", priceAdder: 0.85 },
+  { value: "nail-fin-setback", label: "Nail Fin 1-3/8 Setback", priceAdder: 1.20 }
 ];
 
 export default function QuotePage() {
@@ -119,7 +159,10 @@ export default function QuotePage() {
       frameColor: "white",
       glassType: "clear",
       gridPattern: "none",
-      operatingType: "double-hung"
+      operatingType: "vertical-hung",
+      operatingConfiguration: "double-hung",
+      energyPackage: "none",
+      finType: "block-frame"
     }
   });
 
@@ -159,10 +202,31 @@ export default function QuotePage() {
     
     let pricePerSqFt = productLine.pricePerSqFt;
     
-    // Apply operating type multiplier
+    // Apply operating type multiplier (main category)
     const operatingType = operatingTypes.find(op => op.value === item.configuration?.operatingType);
     if (operatingType) {
+      // Apply base multiplier for main category
       pricePerSqFt *= operatingType.priceMultiplier;
+      
+      // Apply specific configuration multiplier if available
+      if (item.configuration?.operatingConfiguration && operatingType.configurations) {
+        const specificConfig = operatingType.configurations.find(config => config.value === item.configuration?.operatingConfiguration);
+        if (specificConfig) {
+          pricePerSqFt *= specificConfig.priceMultiplier;
+        }
+      }
+    }
+    
+    // Add energy package adder
+    const energyPackage = energyPackages.find(e => e.value === item.configuration?.energyPackage);
+    if (energyPackage) {
+      pricePerSqFt += energyPackage.priceAdder;
+    }
+    
+    // Add fin type adder
+    const finType = finTypes.find(f => f.value === item.configuration?.finType);
+    if (finType) {
+      pricePerSqFt += finType.priceAdder;
     }
     
     // Add glass type adder
@@ -653,10 +717,10 @@ export default function QuotePage() {
                   <div>
                     <Label className="text-sm font-medium text-blue-600">Energy Package *</Label>
                     <Select
-                      value={currentItem.configuration?.glassType}
+                      value={currentItem.configuration?.energyPackage}
                       onValueChange={(value) => setCurrentItem({
                         ...currentItem,
-                        configuration: {...currentItem.configuration!, glassType: value}
+                        configuration: {...currentItem.configuration!, energyPackage: value}
                       })}
                     >
                       <SelectTrigger className="h-8">
@@ -678,7 +742,11 @@ export default function QuotePage() {
                       value={currentItem.configuration?.operatingType}
                       onValueChange={(value) => setCurrentItem({
                         ...currentItem,
-                        configuration: {...currentItem.configuration!, operatingType: value}
+                        configuration: {
+                          ...currentItem.configuration!, 
+                          operatingType: value,
+                          operatingConfiguration: operatingTypes.find(op => op.value === value)?.configurations?.[0]?.value || ""
+                        }
                       })}
                     >
                       <SelectTrigger className="h-8">
@@ -695,21 +763,21 @@ export default function QuotePage() {
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium text-blue-600">Net Frame</Label>
+                    <Label className="text-sm font-medium text-blue-600">Fin Type *</Label>
                     <Select
-                      value={currentItem.configuration?.frameColor}
+                      value={currentItem.configuration?.finType}
                       onValueChange={(value) => setCurrentItem({
                         ...currentItem,
-                        configuration: {...currentItem.configuration!, frameColor: value}
+                        configuration: {...currentItem.configuration!, finType: value}
                       })}
                     >
                       <SelectTrigger className="h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {frameColors.map(color => (
-                          <SelectItem key={color.value} value={color.value}>
-                            {color.label}
+                        {finTypes.map(fin => (
+                          <SelectItem key={fin.value} value={fin.value}>
+                            {fin.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -717,6 +785,31 @@ export default function QuotePage() {
                   </div>
 
                   {/* Second Row */}
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Configuration *</Label>
+                    <Select
+                      value={currentItem.configuration?.operatingConfiguration}
+                      onValueChange={(value) => setCurrentItem({
+                        ...currentItem,
+                        configuration: {...currentItem.configuration!, operatingConfiguration: value}
+                      })}
+                      disabled={!currentItem.configuration?.operatingType}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue placeholder="Select configuration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {operatingTypes
+                          .find(op => op.value === currentItem.configuration?.operatingType)
+                          ?.configurations?.map(config => (
+                            <SelectItem key={config.value} value={config.value}>
+                              {config.label}
+                            </SelectItem>
+                          )) || []}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <div>
                     <Label className="text-sm font-medium text-blue-600">Interior Glass</Label>
                     <Select
