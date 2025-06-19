@@ -35,9 +35,9 @@ interface QuoteItem {
 
 const allProductLines = [
   { value: "v300-trinsic", label: "V300 Trinsic", description: "MILGARD V300 TRINSIC WINDOW", pricePerSqFt: 25.80, tier: "customer" },
-  { value: "styline", label: "Styline", description: "MILGARD STYLINE WINDOW", pricePerSqFt: 22.50, tier: "customer" },
-  { value: "v350-tuscany", label: "V350 Tuscany", description: "MILGARD V350 TUSCANY WINDOW", pricePerSqFt: 28.50, tier: "contractor" },
-  { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 32.20, tier: "contractor" }
+  { value: "v350-tuscany", label: "V350 Tuscany", description: "MILGARD V350 TUSCANY WINDOW", pricePerSqFt: 28.50, tier: "customer" },
+  { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 32.20, tier: "contractor" },
+  { value: "ultra", label: "Ultra", description: "MILGARD ULTRA PREMIUM WINDOW", pricePerSqFt: 35.00, tier: "contractor" }
 ];
 
 const operatingTypes = [
@@ -137,16 +137,24 @@ export default function QuotePage() {
 
   // Filter product lines based on user role/subscription
   const getAvailableProductLines = () => {
-    if (!user) return allProductLines.filter(p => p.tier === "customer");
+    // Always show customer-tier products for non-authenticated users
+    if (!user) {
+      return allProductLines.filter(p => p.tier === "customer");
+    }
     
     // Check user role/subscription level
     const userRole = user.role?.toLowerCase() || 'customer';
-    const isCustomerTier = userRole === 'customer' || userRole === 'trial' || !user.role;
+    console.log('User role:', userRole, 'User object:', user);
+    
+    // Customer tier users (including free customers) only see Trinsic and Tuscany
+    const isCustomerTier = userRole === 'customer' || userRole === 'trial' || userRole === 'free' || !user.role;
     
     if (isCustomerTier) {
+      console.log('Filtering to customer tier products');
       return allProductLines.filter(p => p.tier === "customer");
     } else {
       // Contractor (paid) and admin users see all products
+      console.log('Showing all products for contractor/admin');
       return allProductLines;
     }
   };
