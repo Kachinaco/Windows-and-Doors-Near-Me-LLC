@@ -150,10 +150,10 @@ const innerGlassTypes = [
 ];
 
 const frameColors = [
-  { value: "white", label: "White" },
-  { value: "tan", label: "Tan" },
-  { value: "bronze", label: "Bronze" },
-  { value: "black", label: "Black" }
+  { value: "white", label: "White", priceAdder: 0 },
+  { value: "tan", label: "Tan", priceAdder: 1.25 },
+  { value: "bronze", label: "Bronze", priceAdder: 1.25 },
+  { value: "black", label: "Black", priceAdder: 1.25 }
 ];
 
 // Get available interior colors based on exterior color selection
@@ -323,6 +323,10 @@ export default function QuotePage() {
     // Add energy package pricing
     const energyPackage = energyPackages.find(e => e.value === item.configuration.energyPackage);
     if (energyPackage) pricePerSqFt += energyPackage.priceAdder;
+
+    // Add frame color pricing
+    const exteriorColor = frameColors.find(c => c.value === item.configuration.exteriorColor);
+    if (exteriorColor) pricePerSqFt += exteriorColor.priceAdder;
 
     // Add glass pricing
     const outerGlass = outerGlassTypes.find(g => g.value === item.configuration.outerGlass);
@@ -788,8 +792,8 @@ export default function QuotePage() {
                         className="h-8"
                       />
                       <div className="text-xs text-gray-500 mt-1">
-                        Enter 4 digits (e.g. 3030 = 36"×36", 3060 = 36"×72")
-                        <br />Formula: Each digit × 12 (30 = 3×12 + 0×12 = 36")
+                        Enter 4 digits (e.g. 3030 = 36"×36", 2050 = 24"×60")
+                        <br />Formula: Each digit × 12 (20 = 2×12 + 0×12 = 24", 50 = 5×12 + 0×12 = 60")
                       </div>
                     </div>
                     <div>
@@ -1554,6 +1558,15 @@ export default function QuotePage() {
                       ${allProductLines.find(p => p.label === currentItem.productType)?.pricePerSqFt || 25.80}
                     </span>
                   </div>
+                  
+                  {currentItem.configuration.exteriorColor !== 'white' && (
+                    <div className="flex justify-between">
+                      <span className="text-sm">Frame Color ({currentItem.configuration.exteriorColor}):</span>
+                      <span className="text-sm font-medium">
+                        +${frameColors.find(c => c.value === currentItem.configuration.exteriorColor)?.priceAdder || 0}
+                      </span>
+                    </div>
+                  )}
                   
                   {currentItem.configuration.outerGlass !== 'clear' && (
                     <div className="flex justify-between">

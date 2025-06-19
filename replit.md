@@ -173,6 +173,9 @@ Changelog:
 - June 19, 2025. Implemented CTB Quote Plus pricing structure with updated base prices, energy packages (Title 24 2019), glass options (SunGuardMAX, EdgeGuardMAX), and comprehensive pricing calculation
 - June 19, 2025. Added admin view toggle allowing admin/contractor users to switch between full access and customer-restricted view for testing customer experience
 - June 19, 2025. Separated EdgeGuard Max as standalone option from glass types, implemented automatic Title 24 selection (Low-E Max + EdgeGuard Max + Argon)
+- June 19, 2025. Implemented frame color restrictions for V300 windows: White/Tan exteriors match interior colors, Bronze/Black exteriors allow white or matching interior colors
+- June 19, 2025. Added real-time energy performance ratings (U-Factor, SHGC, VT) that update based on glass selections and show Title 24 compliance
+- June 19, 2025. Restructured dimensions section with Opening Type selection (Rough Opening, Net Frame, Call Out) and implemented call out calculation where each digit × 12 gives actual measurements
 
 ## User Preferences
 
