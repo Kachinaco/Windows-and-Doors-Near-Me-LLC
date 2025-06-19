@@ -35,7 +35,7 @@ interface QuoteItem {
 
 const allProductLines = [
   { value: "v300-trinsic", label: "V300 Trinsic", description: "MILGARD V300 TRINSIC WINDOW", pricePerSqFt: 25.80, tier: "customer" },
-  { value: "v350-tuscany", label: "V350 Tuscany", description: "MILGARD V350 TUSCANY WINDOW", pricePerSqFt: 28.50, tier: "customer" },
+  { value: "v400-tuscany", label: "V400 Tuscany", description: "MILGARD V400 TUSCANY WINDOW", pricePerSqFt: 28.50, tier: "customer" },
   { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 32.20, tier: "contractor" }
 ];
 
