@@ -28,6 +28,7 @@ interface QuoteItem {
     operatingConfiguration?: string;
     energyPackage: string;
     finType: string;
+    spacer: string;
   };
   unitPrice: number;
   totalPrice: number;
@@ -82,6 +83,11 @@ const outerGlassTypes = [
   { value: "clear", label: "Clear", priceAdder: 0 },
   { value: "sungaardmax-low-e", label: "SunGuardMAX (Low E)", priceAdder: 2.45 },
   { value: "edgeguardmax", label: "EdgeGuardMAX", priceAdder: 4.15 }
+];
+
+const spacerOptions = [
+  { value: "black", label: "Black", priceAdder: 0 },
+  { value: "argon", label: "Argon", priceAdder: 1.85 }
 ];
 
 const innerGlassTypes = [
@@ -182,7 +188,8 @@ export default function QuotePage() {
       operatingType: "vertical-hung",
       operatingConfiguration: "single-hung",
       energyPackage: "none",
-      finType: "nail-fin"
+      finType: "nail-fin",
+      spacer: "black"
     },
     unitPrice: 0,
     totalPrice: 0
@@ -213,6 +220,10 @@ export default function QuotePage() {
     
     if (outerGlass) pricePerSqFt += outerGlass.priceAdder;
     if (innerGlass) pricePerSqFt += innerGlass.priceAdder;
+    
+    // Add spacer pricing
+    const spacer = spacerOptions.find(s => s.value === item.configuration.spacer);
+    if (spacer) pricePerSqFt += spacer.priceAdder;
     
     // Add tempered glass pricing
     if (item.configuration.isTempered) {
@@ -681,10 +692,20 @@ export default function QuotePage() {
                   <Label className="text-sm font-medium text-blue-600">Energy Package *</Label>
                   <Select
                     value={currentItem.configuration?.energyPackage}
-                    onValueChange={(value) => setCurrentItem({
-                      ...currentItem,
-                      configuration: {...currentItem.configuration!, energyPackage: value}
-                    })}
+                    onValueChange={(value) => {
+                      let updatedConfiguration = {...currentItem.configuration!, energyPackage: value};
+                      
+                      // Auto-select glass options when Title 24 2019 is chosen
+                      if (value === "title-24-2019") {
+                        updatedConfiguration.outerGlass = "edgeguardmax"; // Low-E Max
+                        updatedConfiguration.spacer = "argon";
+                      }
+                      
+                      setCurrentItem({
+                        ...currentItem,
+                        configuration: updatedConfiguration
+                      });
+                    }}
                   >
                     <SelectTrigger className="h-8">
                       <SelectValue />
