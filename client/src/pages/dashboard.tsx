@@ -1,21 +1,30 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Building2, 
   Users, 
   LogOut,
   User,
-  Settings
+  Settings,
+  Eye
 } from "lucide-react";
 import { Link } from "wouter";
+import { useState } from "react";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
+  const [previewRole, setPreviewRole] = useState<string | null>(null);
 
   const handleLogout = () => {
     logout();
   };
+
+  // For admin users, allow previewing different roles
+  const effectiveUser = user?.role === 'admin' && previewRole 
+    ? { ...user, role: previewRole } 
+    : user;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -34,9 +43,28 @@ export default function Dashboard() {
               <div className="flex items-center space-x-2">
                 <User className="h-5 w-5 text-gray-500" />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  {user?.firstName} {user?.lastName} ({user?.role})
+                  {user?.firstName} {user?.lastName} ({effectiveUser?.role})
+                  {previewRole && <span className="text-blue-600 font-medium"> (Preview Mode)</span>}
                 </span>
               </div>
+
+              {/* Admin Role Switcher */}
+              {user?.role === 'admin' && (
+                <div className="flex items-center space-x-2">
+                  <Eye className="h-4 w-4 text-gray-500" />
+                  <Select value={previewRole || user.role} onValueChange={setPreviewRole}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Preview as..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin (Default)</SelectItem>
+                      <SelectItem value="customer">Customer (Free)</SelectItem>
+                      <SelectItem value="contractor_trial">Contractor (30-Day Trial)</SelectItem>
+                      <SelectItem value="contractor_paid">Contractor (Paid)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               
               <Button variant="outline" size="sm">
                 <Settings className="h-4 w-4 mr-2" />
@@ -59,14 +87,18 @@ export default function Dashboard() {
             Milgard Product Dashboard
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Welcome back, {user?.firstName}! Browse our Milgard windows and doors catalog.
+            Welcome back, {user?.firstName}! 
+            {effectiveUser?.role === 'customer' ? ' Browse our Milgard windows and doors catalog.' : 
+             effectiveUser?.role === 'contractor_trial' ? ' You have access to project management during your 30-day trial.' :
+             effectiveUser?.role === 'contractor_paid' ? ' You have full access to all contractor features.' :
+             ' You have admin access to all system features.'}
           </p>
         </div>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Product Catalog for Customers */}
-          {user?.role === 'customer' && (
+          {effectiveUser?.role === 'customer' && (
             <Link href="/catalog">
               <Card className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="p-6">
@@ -87,7 +119,7 @@ export default function Dashboard() {
           )}
 
           {/* Project Management for Contractors */}
-          {(user?.role === 'contractor_trial' || user?.role === 'contractor_paid' || user?.role === 'admin') && (
+          {(effectiveUser?.role === 'contractor_trial' || effectiveUser?.role === 'contractor_paid' || effectiveUser?.role === 'admin') && (
             <Link href="/projects">
               <Card className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="p-6">
@@ -98,7 +130,7 @@ export default function Dashboard() {
                     <div className="ml-4">
                       <p className="text-lg font-medium text-gray-900 dark:text-white">Project Management</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Manage installation projects
+                        {effectiveUser?.role === 'contractor_trial' ? 'Manage projects (trial)' : 'Manage installation projects'}
                       </p>
                     </div>
                   </div>
@@ -117,7 +149,9 @@ export default function Dashboard() {
                   <div className="ml-4">
                     <p className="text-lg font-medium text-gray-900 dark:text-white">Subscription</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {user?.role === 'customer' ? 'Upgrade to contractor' : 'Manage subscription'}
+                      {effectiveUser?.role === 'customer' ? 'Upgrade to contractor' : 
+                       effectiveUser?.role === 'contractor_trial' ? 'Upgrade to paid plan' :
+                       'Manage subscription'}
                     </p>
                   </div>
                 </div>
