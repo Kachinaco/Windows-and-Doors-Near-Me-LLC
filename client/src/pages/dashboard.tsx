@@ -64,24 +64,48 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Link href="/catalog">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                    <Building2 className="h-6 w-6 text-blue-600" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {/* Product Catalog for Customers */}
+          {user?.role === 'customer' && (
+            <Link href="/catalog">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                      <Building2 className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-lg font-medium text-gray-900 dark:text-white">Browse Products</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        View Milgard windows and doors
+                      </p>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <p className="text-lg font-medium text-gray-900 dark:text-white">Browse Products</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      View Milgard windows and doors
-                    </p>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
+
+          {/* Project Management for Contractors */}
+          {(user?.role === 'contractor_trial' || user?.role === 'contractor_paid' || user?.role === 'admin') && (
+            <Link href="/projects">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                      <Building2 className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-lg font-medium text-gray-900 dark:text-white">Project Management</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Manage installation projects
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
 
           <Link href="/subscription">
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -93,7 +117,7 @@ export default function Dashboard() {
                   <div className="ml-4">
                     <p className="text-lg font-medium text-gray-900 dark:text-white">Subscription</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {user?.role === 'customer' ? 'Upgrade account' : 'Manage subscription'}
+                      {user?.role === 'customer' ? 'Upgrade to contractor' : 'Manage subscription'}
                     </p>
                   </div>
                 </div>

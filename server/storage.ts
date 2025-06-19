@@ -4,6 +4,7 @@ import {
   cartItems,
   orders,
   contactSubmissions,
+  projects,
   type User,
   type InsertUser,
   type Product,
@@ -14,6 +15,8 @@ import {
   type InsertOrder,
   type ContactSubmission,
   type InsertContactSubmission,
+  type Project,
+  type InsertProject,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -52,6 +55,13 @@ export interface IStorage {
   createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
   getContactSubmissions(): Promise<ContactSubmission[]>;
   updateContactSubmissionStatus(id: number, status: string): Promise<ContactSubmission>;
+  
+  // Project management operations
+  getAllProjects(): Promise<Project[]>;
+  getProject(id: number): Promise<Project | undefined>;
+  createProject(project: InsertProject): Promise<Project>;
+  updateProject(id: number, updates: Partial<InsertProject>): Promise<Project>;
+  getAllEmployees(): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -240,6 +250,41 @@ export class DatabaseStorage implements IStorage {
       .where(eq(contactSubmissions.id, id))
       .returning();
     return submission;
+  }
+
+  // Project management operations
+  async getAllProjects(): Promise<Project[]> {
+    return await db.select().from(projects).orderBy(desc(projects.createdAt));
+  }
+
+  async getProject(id: number): Promise<Project | undefined> {
+    const [project] = await db.select().from(projects).where(eq(projects.id, id));
+    return project;
+  }
+
+  async createProject(insertProject: InsertProject): Promise<Project> {
+    const [project] = await db
+      .insert(projects)
+      .values(insertProject)
+      .returning();
+    return project;
+  }
+
+  async updateProject(id: number, updates: Partial<InsertProject>): Promise<Project> {
+    const [project] = await db
+      .update(projects)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(projects.id, id))
+      .returning();
+    return project;
+  }
+
+  async getAllEmployees(): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(eq(users.role, 'contractor_paid'))
+      .orderBy(users.firstName);
   }
 }
 
