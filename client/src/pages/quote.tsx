@@ -97,6 +97,45 @@ const argonOptions = [
   { value: "argon", label: "Argon", priceAdder: 1.85 }
 ];
 
+// Energy rating calculations based on glass configuration
+const calculateEnergyRatings = (item: QuoteItem) => {
+  let uFactor = 0.30; // Base U-Factor for V300/V400
+  let shgc = 0.25; // Base Solar Heat Gain Coefficient
+  let vt = 0.70; // Base Visible Transmittance
+
+  // Adjust based on glass type
+  if (item.configuration.outerGlass === 'low-e-max') {
+    uFactor = 0.24;
+    shgc = 0.21;
+    vt = 0.68;
+  } else if (item.configuration.outerGlass === 'sungaardmax-low-e') {
+    uFactor = 0.26;
+    shgc = 0.23;
+    vt = 0.65;
+  }
+
+  // EdgeGuard Max improvement
+  if (item.configuration.edgeGuard === 'edgeguardmax') {
+    uFactor -= 0.02;
+  }
+
+  // Argon gas improvement
+  if (item.configuration.argon === 'argon') {
+    uFactor -= 0.01;
+    shgc -= 0.01;
+  }
+
+  // Energy package certification
+  const energyStar = item.configuration.energyPackage === 'title-24-2019';
+
+  return {
+    uFactor: Math.max(0.15, uFactor).toFixed(2),
+    shgc: Math.max(0.15, shgc).toFixed(2),
+    vt: Math.min(0.90, vt).toFixed(2),
+    energyStar
+  };
+};
+
 const edgeGuardOptions = [
   { value: "none", label: "None", priceAdder: 0 },
   { value: "edgeguardmax", label: "EdgeGuard Max", priceAdder: 4.15 }
@@ -240,6 +279,33 @@ export default function QuotePage() {
     address: "",
     notes: ""
   });
+
+  const resetCurrentItem = () => {
+    setCurrentItem({
+      id: "",
+      productType: productLines[0]?.label || "V300 Trinsic",
+      quantity: 1,
+      width: "",
+      height: "",
+      configuration: {
+        exteriorColor: "white",
+        interiorColor: "white",
+        outerGlass: "clear",
+        innerGlass: "clear",
+        isTempered: false,
+        gridPattern: "none",
+        operatingType: "vertical-hung",
+        operatingConfiguration: "single-hung",
+        energyPackage: "none",
+        finType: "nail-fin",
+        spacer: "black",
+        edgeGuard: "none",
+        argon: "none"
+      },
+      unitPrice: 0,
+      totalPrice: 0
+    });
+  };
 
   const calculateItemPrice = (item: QuoteItem): number => {
     if (!item.width || !item.height) return 0;
@@ -1130,6 +1196,59 @@ export default function QuotePage() {
 
           {/* Right Sidebar */}
           <div className="space-y-6">
+            {/* Energy Ratings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center">
+                  <svg className="h-5 w-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                  </svg>
+                  Energy Performance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  const ratings = calculateEnergyRatings(currentItem);
+                  return (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-3 gap-3 text-center">
+                        <div className="p-3 bg-blue-50 rounded-lg">
+                          <div className="text-lg font-bold text-blue-700">{ratings.uFactor}</div>
+                          <div className="text-xs text-blue-600">U-Factor</div>
+                          <div className="text-xs text-gray-500">BTU/hr·ft²·°F</div>
+                        </div>
+                        <div className="p-3 bg-orange-50 rounded-lg">
+                          <div className="text-lg font-bold text-orange-700">{ratings.shgc}</div>
+                          <div className="text-xs text-orange-600">SHGC</div>
+                          <div className="text-xs text-gray-500">Solar Heat Gain</div>
+                        </div>
+                        <div className="p-3 bg-green-50 rounded-lg">
+                          <div className="text-lg font-bold text-green-700">{ratings.vt}</div>
+                          <div className="text-xs text-green-600">VT</div>
+                          <div className="text-xs text-gray-500">Visible Light</div>
+                        </div>
+                      </div>
+                      
+                      {ratings.energyStar && (
+                        <div className="flex items-center justify-center p-2 bg-green-100 rounded-lg">
+                          <svg className="h-5 w-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-6.55 8.18L10 18z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-sm font-medium text-green-700">Title 24 2019 Compliant</span>
+                        </div>
+                      )}
+                      
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <div>• Lower U-Factor = Better insulation</div>
+                        <div>• Lower SHGC = Less heat gain</div>
+                        <div>• Higher VT = More natural light</div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+
             {/* Window Preview */}
             <Card>
               <CardHeader>
