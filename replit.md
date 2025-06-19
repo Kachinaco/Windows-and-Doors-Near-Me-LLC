@@ -178,6 +178,7 @@ Changelog:
 - June 19, 2025. Restructured dimensions section with Opening Type selection (Rough Opening, Net Frame, Call Out) and implemented call out calculation where each digit × 12 gives actual measurements
 - June 19, 2025. Fixed black frame pricing to $1.75 per sq ft (40% premium over standard $1.25 for tan/bronze colors)
 - June 19, 2025. Moved "Add Item" button to bottom of configurator for better user workflow
+- June 19, 2025. Implemented rough opening calculation adjustment - subtracts 0.5" from each dimension for actual window size since rough opening measurements are frame-to-frame
 
 ## User Preferences
 
