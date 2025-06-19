@@ -133,8 +133,9 @@ export default function QuotePage() {
   const [step, setStep] = useState<"configure" | "summary" | "contact">("configure");
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
   const [openGallery, setOpenGallery] = useState<string | null>(null);
+  const [viewAsCustomer, setViewAsCustomer] = useState(false);
 
-  // Filter product lines based on user role/subscription
+  // Filter product lines based on user role/subscription and view toggle
   const getAvailableProductLines = () => {
     // Always show customer-tier products for non-authenticated users
     if (!user) {
@@ -143,7 +144,13 @@ export default function QuotePage() {
     
     // Check user role/subscription level
     const userRole = user.role?.toLowerCase() || 'customer';
-    console.log('User role:', userRole, 'User object:', user);
+    console.log('User role:', userRole, 'View as customer:', viewAsCustomer);
+    
+    // If admin/contractor is viewing as customer, show customer products only
+    if (viewAsCustomer && (userRole === 'admin' || userRole === 'contractor_paid')) {
+      console.log('Admin/contractor viewing as customer - showing customer products only');
+      return allProductLines.filter(p => p.tier === "customer");
+    }
     
     // Customer tier users (including free customers) only see Trinsic and Tuscany
     const isCustomerTier = userRole === 'customer' || userRole === 'trial' || userRole === 'free' || !user.role;
@@ -152,7 +159,7 @@ export default function QuotePage() {
       console.log('Filtering to customer tier products');
       return allProductLines.filter(p => p.tier === "customer");
     } else {
-      // Contractor (paid) and admin users see all products
+      // Contractor (paid) and admin users see all products (when not in customer view)
       console.log('Showing all products for contractor/admin');
       return allProductLines;
     }
@@ -478,11 +485,44 @@ export default function QuotePage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Window Configuration Tool
-          </h1>
+          <div className="flex justify-between items-start mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              Window Configuration Tool
+            </h1>
+            {/* Admin View Toggle */}
+            {user && (user.role === 'admin' || user.role === 'contractor_paid') && (
+              <div className="flex items-center space-x-2 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg border">
+                <span className="text-sm text-gray-600 dark:text-gray-400">View as:</span>
+                <button
+                  onClick={() => setViewAsCustomer(false)}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                    !viewAsCustomer 
+                      ? 'bg-blue-600 text-white' 
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                  }`}
+                >
+                  {user.role === 'admin' ? 'Admin' : 'Contractor'}
+                </button>
+                <button
+                  onClick={() => setViewAsCustomer(true)}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                    viewAsCustomer 
+                      ? 'bg-blue-600 text-white' 
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                  }`}
+                >
+                  Customer
+                </button>
+              </div>
+            )}
+          </div>
           <p className="text-gray-600 dark:text-gray-400">
             Configure your Milgard windows and get an instant quote
+            {user && (user.role === 'admin' || user.role === 'contractor_paid') && viewAsCustomer && (
+              <span className="ml-2 text-blue-600 dark:text-blue-400 font-medium">
+                (Customer View - V300/V400 only)
+              </span>
+            )}
           </p>
         </div>
 
