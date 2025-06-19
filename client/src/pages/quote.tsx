@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Plus, Calculator, FileText, Phone, CheckCircle } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -34,131 +32,82 @@ interface QuoteItem {
   totalPrice: number;
 }
 
-// Milgard Product Lines with pricing per sq ft
 const productLines = [
+  { value: "v300-trinsic", label: "V300 Trinsic", description: "MILGARD V300 TRINSIC WINDOW", pricePerSqFt: 25.80 },
+  { value: "v350-tuscany", label: "V350 Tuscany", description: "MILGARD V350 TUSCANY WINDOW", pricePerSqFt: 28.50 },
+  { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 32.20 }
+];
+
+const operatingTypes = [
   {
-    value: "tuscany-v400",
-    label: "Milgard Tuscany® Series V400",
-    description: "CONFIGURED WINDOW",
-    pricePerSqFt: 28.50,
-    category: "Vinyl Series"
+    value: "vertical-hung",
+    label: "Vertical Hung",
+    configurations: [
+      { value: "single-hung", label: "Single Hung" },
+      { value: "double-hung", label: "Double Hung" }
+    ]
   },
   {
-    value: "trinsic-v300",
-    label: "Milgard Trinsic® Series V300", 
-    description: "CONFIGURED WINDOW",
-    pricePerSqFt: 32.75,
-    category: "Vinyl Series"
+    value: "horizontal-slider",
+    label: "Horizontal Slider", 
+    configurations: [
+      { value: "two-lite-slider", label: "Two Lite Slider" },
+      { value: "three-lite-slider", label: "Three Lite Slider" }
+    ]
   },
   {
-    value: "styleline-v250",
-    label: "Milgard Style Line® Series V250",
-    description: "CONFIGURED WINDOW", 
-    pricePerSqFt: 26.90,
-    category: "Vinyl Series"
-  },
-  {
-    value: "ultra-c650",
-    label: "Milgard Ultra™ Series C650",
-    description: "CONFIGURED WINDOW",
-    pricePerSqFt: 42.80,
-    category: "Fiberglass Series"
-  },
-  {
-    value: "aluminum-a250",
-    label: "Thermally Improved Aluminum A250",
-    description: "CONFIGURED WINDOW",
-    pricePerSqFt: 35.60,
-    category: "Aluminum Series"
+    value: "slider-picture",
+    label: "Slider Picture Windows",
+    configurations: [
+      { value: "xl-slider", label: "XL Slider" },
+      { value: "xo-slider", label: "XO Slider" },
+      { value: "ox-slider", label: "OX Slider" }
+    ]
   }
 ];
 
-const frameColors = [
-  { value: "white", label: "White", priceAdder: 0 },
-  { value: "bronze", label: "Bronze", priceAdder: 1.25 },
-  { value: "black", label: "Black", priceAdder: 1.25 },
-  { value: "tan", label: "Tan", priceAdder: 1.25 },
-  { value: "clay", label: "Clay", priceAdder: 1.25 },
-  { value: "custom", label: "Custom Color", priceAdder: 2.50 }
+const finTypes = [
+  { value: "block-frame", label: "Block Frame" },
+  { value: "flush-fin", label: "Flush Fin" },
+  { value: "nail-fin", label: "Nail Fin" }
+];
+
+const energyPackages = [
+  { value: "none", label: "None" },
+  { value: "title-24", label: "Title 24 2019" }
 ];
 
 const outerGlassTypes = [
   { value: "clear", label: "Clear", priceAdder: 0 },
-  { value: "low-e", label: "Low-E", priceAdder: 3.20 },
-  { value: "low-e-max", label: "Low E Max", priceAdder: 5.80 }
+  { value: "low-e", label: "Low-E", priceAdder: 2.50 },
+  { value: "low-e-max", label: "Low E Max", priceAdder: 4.20 }
 ];
 
 const innerGlassTypes = [
   { value: "clear", label: "Clear", priceAdder: 0 },
-  { value: "obscure", label: "Obscure", priceAdder: 1.50 },
-  { value: "4th-surface-coating", label: "4th Surface Coating", priceAdder: 2.90 }
+  { value: "obscure", label: "Obscure", priceAdder: 1.25 },
+  { value: "4th-surface", label: "4th Surface Coating", priceAdder: 3.80 }
+];
+
+const frameColors = [
+  { value: "white", label: "White" },
+  { value: "bronze", label: "Bronze" },
+  { value: "black", label: "Black" }
 ];
 
 const gridPatterns = [
-  { value: "none", label: "None", priceAdder: 0 },
-  { value: "colonial", label: "Colonial", priceAdder: 1.80 },
-  { value: "prairie", label: "Prairie", priceAdder: 2.10 },
-  { value: "diamond", label: "Diamond", priceAdder: 2.85 },
-  { value: "custom", label: "Custom Pattern", priceAdder: 3.50 }
-];
-
-const operatingTypes = [
-  { 
-    value: "vertical-hung", 
-    label: "Vertical Hung", 
-    priceMultiplier: 1.0,
-    configurations: [
-      { value: "single-hung", label: "Single Hung", priceMultiplier: 1.0 },
-      { value: "double-hung", label: "Double Hung", priceMultiplier: 1.15 }
-    ]
-  },
-  { 
-    value: "horizontal-slider", 
-    label: "Horizontal Slider", 
-    priceMultiplier: 0.95,
-    configurations: [
-      { value: "two-lite-slider", label: "Two Lite Slider", priceMultiplier: 0.95 },
-      { value: "three-lite-slider", label: "Three Lite Slider", priceMultiplier: 1.05 }
-    ]
-  },
-  { 
-    value: "slider-picture", 
-    label: "Slider Picture Windows", 
-    priceMultiplier: 0.90,
-    configurations: [
-      { value: "picture-left-slider", label: "Picture Left + Slider", priceMultiplier: 0.90 },
-      { value: "picture-right-slider", label: "Picture Right + Slider", priceMultiplier: 0.90 },
-      { value: "picture-center-sliders", label: "Picture Center + 2 Sliders", priceMultiplier: 1.10 }
-    ]
-  },
-  { 
-    value: "arches", 
-    label: "Arches", 
-    priceMultiplier: 1.45,
-    configurations: [
-      { value: "full-arch", label: "Full Arch", priceMultiplier: 1.45 },
-      { value: "half-arch", label: "Half Arch", priceMultiplier: 1.25 },
-      { value: "quarter-arch", label: "Quarter Arch", priceMultiplier: 1.15 }
-    ]
-  }
-];
-
-const energyPackages = [
-  { value: "none", label: "None", priceAdder: 0 },
-  { value: "title-24", label: "Title 24", priceAdder: 2.40 }
-];
-
-const finTypes = [
-  { value: "block-frame", label: "Block Frame", priceAdder: 0 },
-  { value: "flush-fin", label: "Flush Fin", priceAdder: 0.85 },
-  { value: "nail-fin-setback", label: "Nail Fin 1-3/8 Setback", priceAdder: 1.20 }
+  { value: "none", label: "None" },
+  { value: "colonial", label: "Colonial" },
+  { value: "prairie", label: "Prairie" }
 ];
 
 export default function QuotePage() {
-  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [step, setStep] = useState<"configure" | "summary" | "contact">("configure");
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
-  const [currentItem, setCurrentItem] = useState<Partial<QuoteItem>>({
-    productType: "Milgard Tuscany® Series V400",
+  const [currentItem, setCurrentItem] = useState<QuoteItem>({
+    id: "",
+    productType: "V300 Trinsic",
     quantity: 1,
     width: "",
     height: "",
@@ -169,10 +118,12 @@ export default function QuotePage() {
       isTempered: false,
       gridPattern: "none",
       operatingType: "vertical-hung",
-      operatingConfiguration: "double-hung",
+      operatingConfiguration: "single-hung",
       energyPackage: "none",
-      finType: "block-frame"
-    }
+      finType: "nail-fin"
+    },
+    unitPrice: 0,
+    totalPrice: 0
   });
 
   const [customerInfo, setCustomerInfo] = useState({
@@ -183,222 +134,188 @@ export default function QuotePage() {
     notes: ""
   });
 
-  const [step, setStep] = useState<"configure" | "summary" | "contact" | "success">("configure");
-  const [submittedQuoteNumber, setSubmittedQuoteNumber] = useState("");
-  const { toast } = useToast();
+  const calculateItemPrice = (item: QuoteItem): number => {
+    if (!item.width || !item.height) return 0;
+    
+    const sqFt = (parseFloat(item.width) * parseFloat(item.height)) / 144;
+    const baseProduct = productLines.find(p => p.label === item.productType);
+    let pricePerSqFt = baseProduct?.pricePerSqFt || 25.80;
 
-  // Load selected product from sessionStorage
-  useEffect(() => {
-    const selectedProduct = sessionStorage.getItem('selectedProduct');
-    if (selectedProduct) {
-      setCurrentItem(prev => ({
-        ...prev,
-        productType: selectedProduct
-      }));
-    }
-  }, []);
-
-  const calculateItemPrice = (item: Partial<QuoteItem>) => {
-    if (!item.width || !item.height || !item.productType) return 0;
+    // Add glass pricing
+    const outerGlass = outerGlassTypes.find(g => g.value === item.configuration.outerGlass);
+    const innerGlass = innerGlassTypes.find(g => g.value === item.configuration.innerGlass);
     
-    const width = parseFloat(item.width);
-    const height = parseFloat(item.height);
-    const area = (width * height) / 144; // Convert to square feet
+    if (outerGlass) pricePerSqFt += outerGlass.priceAdder;
+    if (innerGlass) pricePerSqFt += innerGlass.priceAdder;
     
-    // Find base price per sq ft for product line
-    const productLine = productLines.find(p => p.label === item.productType);
-    if (!productLine) return 0;
-    
-    let pricePerSqFt = productLine.pricePerSqFt;
-    
-    // Apply operating type multiplier (main category)
-    const operatingType = operatingTypes.find(op => op.value === item.configuration?.operatingType);
-    if (operatingType) {
-      // Apply base multiplier for main category
-      pricePerSqFt *= operatingType.priceMultiplier;
-      
-      // Apply specific configuration multiplier if available
-      if (item.configuration?.operatingConfiguration && operatingType.configurations) {
-        const specificConfig = operatingType.configurations.find(config => config.value === item.configuration?.operatingConfiguration);
-        if (specificConfig) {
-          pricePerSqFt *= specificConfig.priceMultiplier;
-        }
-      }
-    }
-    
-    // Add energy package adder
-    const energyPackage = energyPackages.find(e => e.value === item.configuration?.energyPackage);
-    if (energyPackage) {
-      pricePerSqFt += energyPackage.priceAdder;
-    }
-    
-    // Add fin type adder
-    const finType = finTypes.find(f => f.value === item.configuration?.finType);
-    if (finType) {
-      pricePerSqFt += finType.priceAdder;
-    }
-    
-    // Add outer glass adder
-    const outerGlass = outerGlassTypes.find(g => g.value === item.configuration?.outerGlass);
-    if (outerGlass) {
-      pricePerSqFt += outerGlass.priceAdder;
+    // Add tempered glass pricing
+    if (item.configuration.isTempered) {
+      pricePerSqFt += 4.85;
     }
 
-    // Add inner glass adder
-    const innerGlass = innerGlassTypes.find(g => g.value === item.configuration?.innerGlass);
-    if (innerGlass) {
-      pricePerSqFt += innerGlass.priceAdder;
-    }
-
-    // Add tempered glass adder
-    if (item.configuration?.isTempered) {
-      pricePerSqFt += 4.85; // Tempered glass upcharge
-    }
-    
-    // Add grid pattern adder
-    const gridPattern = gridPatterns.find(g => g.value === item.configuration?.gridPattern);
-    if (gridPattern) {
-      pricePerSqFt += gridPattern.priceAdder;
-    }
-    
-    // Add frame color adder
-    const frameColor = frameColors.find(c => c.value === item.configuration?.frameColor);
-    if (frameColor) {
-      pricePerSqFt += frameColor.priceAdder;
-    }
-    
-    const unitPrice = Math.round(pricePerSqFt * area * 100) / 100;
-    return unitPrice;
+    return sqFt * pricePerSqFt;
   };
 
   const addItemToQuote = () => {
-    if (!currentItem.width || !currentItem.height) return;
-    
-    const unitPrice = calculateItemPrice(currentItem);
+    if (!currentItem.width || !currentItem.height) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter width and height",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const newItem: QuoteItem = {
+      ...currentItem,
       id: Date.now().toString(),
-      productType: currentItem.productType!,
-      quantity: currentItem.quantity || 1,
-      width: currentItem.width!,
-      height: currentItem.height!,
-      configuration: currentItem.configuration!,
-      unitPrice,
-      totalPrice: unitPrice * (currentItem.quantity || 1)
+      unitPrice: calculateItemPrice(currentItem),
+      totalPrice: calculateItemPrice(currentItem) * currentItem.quantity
     };
-    
+
     setQuoteItems([...quoteItems, newItem]);
     
-    // Reset current item for next entry
+    // Reset for next item
     setCurrentItem({
       ...currentItem,
+      id: "",
       width: "",
       height: "",
       quantity: 1
     });
+
+    toast({
+      title: "Item Added",
+      description: "Window configuration added to quote"
+    });
   };
 
-  const getTotalPrice = () => {
-    return quoteItems.reduce((total, item) => total + item.totalPrice, 0);
+  const getTotalPrice = (): number => {
+    return quoteItems.reduce((sum, item) => sum + item.totalPrice, 0);
   };
 
-  const getCurrentItemPrice = () => {
-    return calculateItemPrice(currentItem) * (currentItem.quantity || 1);
-  };
-
-  // Quote submission mutation
   const submitQuoteMutation = useMutation({
-    mutationFn: async (quoteData: any) => {
-      const response = await apiRequest("POST", "/api/quote-requests", quoteData);
-      return response.json();
+    mutationFn: async (data: any) => {
+      return await apiRequest("POST", "/api/quote-requests", data);
     },
-    onSuccess: (data: any) => {
-      setSubmittedQuoteNumber(data.quoteNumber);
-      setStep("success");
+    onSuccess: () => {
       toast({
-        title: "Quote Request Submitted", 
-        description: `Your quote request ${data.quoteNumber} has been submitted successfully.`,
+        title: "Quote Submitted",
+        description: "Your quote request has been submitted successfully!"
+      });
+      setStep("configure");
+      setQuoteItems([]);
+      setCustomerInfo({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        notes: ""
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "Submission Failed",
-        description: "There was an error submitting your quote request. Please try again.",
-        variant: "destructive",
+        description: error.message || "Failed to submit quote request",
+        variant: "destructive"
       });
-    },
+    }
   });
 
-  const handleQuoteSubmission = () => {
-    if (!customerInfo.name || !customerInfo.email || !customerInfo.phone || quoteItems.length === 0) {
+  const handleSubmitQuote = () => {
+    if (!customerInfo.name || !customerInfo.email || !customerInfo.phone) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required customer information",
+        variant: "destructive"
+      });
       return;
     }
 
-    const quoteData = {
+    if (quoteItems.length === 0) {
+      toast({
+        title: "No Items",
+        description: "Please add at least one window to your quote",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    submitQuoteMutation.mutate({
       customerName: customerInfo.name,
       customerEmail: customerInfo.email,
       customerPhone: customerInfo.phone,
-      projectAddress: customerInfo.address || "",
+      customerAddress: customerInfo.address,
+      notes: customerInfo.notes,
       items: quoteItems,
-      totalEstimate: getTotalPrice().toString(),
-      notes: customerInfo.notes || "",
-    };
-
-    submitQuoteMutation.mutate(quoteData);
+      totalPrice: getTotalPrice(),
+      status: "pending"
+    });
   };
 
-  if (step === "success") {
+  if (step === "summary") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Card className="text-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => setStep("configure")}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Configuration
+            </Button>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              Quote Summary
+            </h1>
+          </div>
+
+          <Card className="mb-6">
             <CardHeader>
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-              <CardTitle className="text-2xl font-bold text-green-600">
-                Quote Request Submitted Successfully!
-              </CardTitle>
+              <CardTitle>Quote Items</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="text-lg">
-                <p className="mb-2">Your quote request has been submitted with reference number:</p>
-                <p className="text-2xl font-bold text-blue-600">{submittedQuoteNumber}</p>
-              </div>
+            <CardContent>
+              {quoteItems.map((item, index) => (
+                <div key={item.id} className="border-b pb-4 mb-4 last:border-b-0">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <p className="font-medium">{item.productType}</p>
+                      <p className="text-sm text-gray-500">{item.configuration.operatingType}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm">Dimensions: {item.width}" × {item.height}"</p>
+                      <p className="text-sm">Quantity: {item.quantity}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm">Glass: {item.configuration.outerGlass}/{item.configuration.innerGlass}</p>
+                      <p className="text-sm">Frame: {item.configuration.frameColor}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">${item.totalPrice.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
               
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2">What happens next?</h3>
-                <ul className="text-left space-y-2 text-sm">
-                  <li>• Our team will review your quote request within 24 hours</li>
-                  <li>• We'll contact you at {customerInfo.phone} or {customerInfo.email} with a detailed quote</li>
-                  <li>• A project specialist will schedule a consultation if needed</li>
-                  <li>• You'll receive a formal quote with pricing and timeline</li>
-                </ul>
-              </div>
-
-              <div className="text-gray-600 dark:text-gray-400">
-                <p className="mb-2">Quote Details:</p>
-                <p>Total Items: {quoteItems.length} windows</p>
-                <p>Estimated Value: ${getTotalPrice().toLocaleString()}</p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button 
-                  size="lg"
-                  onClick={() => setLocation("/catalog")}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  Browse More Products
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  onClick={() => window.open('tel:4809934392')}
-                >
-                  Call Us: (480) 993-4392
-                </Button>
+              <div className="pt-4 border-t">
+                <div className="flex justify-between items-center text-lg font-bold">
+                  <span>Total Quote Amount:</span>
+                  <span className="text-orange-600">${getTotalPrice().toLocaleString()}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
+
+          <div className="flex gap-4">
+            <Button 
+              onClick={() => setStep("contact")}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Submit Quote Request
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -406,41 +323,55 @@ export default function QuotePage() {
 
   if (step === "contact") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+        <div className="max-w-2xl mx-auto">
           <div className="mb-6">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => setStep("summary")}
               className="mb-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Quote Summary
+              Back to Summary
             </Button>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+              Contact Information
+            </h1>
           </div>
 
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Phone className="h-5 w-5 mr-2" />
-                Contact Information
+                Your Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="name">Full Name *</Label>
+                  <Label>Full Name *</Label>
                   <Input
-                    id="name"
                     value={customerInfo.name}
                     onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
                     placeholder="John Smith"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Label>Email Address *</Label>
                   <Input
-                    id="phone"
+                    type="email"
+                    value={customerInfo.email}
+                    onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
+                    placeholder="john@email.com"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Phone Number *</Label>
+                  <Input
+                    type="tel"
                     value={customerInfo.phone}
                     onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
                     placeholder="(480) 555-0123"
@@ -449,20 +380,8 @@ export default function QuotePage() {
               </div>
 
               <div>
-                <Label htmlFor="email">Email Address *</Label>
+                <Label>Project Address</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  value={customerInfo.email}
-                  onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
-                  placeholder="john@example.com"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="address">Project Address</Label>
-                <Input
-                  id="address"
                   value={customerInfo.address}
                   onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})}
                   placeholder="123 Main St, Gilbert, AZ 85234"
@@ -470,139 +389,29 @@ export default function QuotePage() {
               </div>
 
               <div>
-                <Label htmlFor="notes">Additional Notes</Label>
+                <Label>Additional Notes</Label>
                 <Textarea
-                  id="notes"
                   value={customerInfo.notes}
                   onChange={(e) => setCustomerInfo({...customerInfo, notes: e.target.value})}
-                  placeholder="Any special requirements, timeline, or questions..."
+                  placeholder="Any special requirements or notes about your project..."
                   rows={4}
                 />
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button 
-                  size="lg" 
-                  className="bg-orange-600 hover:bg-orange-700 text-white"
-                  disabled={!customerInfo.name || !customerInfo.email || !customerInfo.phone || submitQuoteMutation.isPending}
-                  onClick={handleQuoteSubmission}
-                >
-                  {submitQuoteMutation.isPending ? "Submitting..." : "Submit Quote Request"}
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  onClick={() => window.open('tel:4809934392')}
-                >
-                  Call Now: (480) 993-4392
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === "summary") {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <Button 
-              variant="ghost" 
-              onClick={() => setStep("configure")}
-              className="mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Configuration
-            </Button>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2" />
-                  Quote Summary
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-500">Total Quantity: {quoteItems.reduce((sum, item) => sum + item.quantity, 0)} Windows</div>
-                  <div className="text-2xl font-bold text-orange-600">
-                    ${getTotalPrice().toLocaleString()}
-                  </div>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {quoteItems.map((item) => (
-                  <div key={item.id} className="border rounded-lg p-4 bg-white dark:bg-gray-800">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-semibold">{item.productType}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {item.width}" x {item.height}" - {operatingTypes.find(op => op.value === item.configuration.operatingType)?.label}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setQuoteItems(quoteItems.filter(q => q.id !== item.id))}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm">
-                        Quantity: {item.quantity}
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm text-gray-600">${item.unitPrice.toLocaleString()} each</div>
-                        <div className="font-bold">${item.totalPrice.toLocaleString()}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {quoteItems.length === 0 && (
-                  <div className="text-center py-12 text-gray-500">
-                    No items in quote yet. Go back to add windows.
-                  </div>
+              <Button
+                onClick={handleSubmitQuote}
+                disabled={submitQuoteMutation.isPending}
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                {submitQuoteMutation.isPending ? (
+                  "Submitting..."
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Submit Quote Request
+                  </>
                 )}
-              </div>
-
-              {quoteItems.length > 0 && (
-                <div className="mt-6 pt-6 border-t">
-                  <div className="flex justify-between items-center mb-6">
-                    <div className="text-lg font-semibold">
-                      Total: ${getTotalPrice().toLocaleString()}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      *Prices are estimates. Final pricing may vary based on installation requirements.
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Button 
-                      size="lg" 
-                      onClick={() => setStep("contact")}
-                      className="bg-orange-600 hover:bg-orange-700 text-white"
-                    >
-                      Get Official Quote
-                    </Button>
-                    <Button 
-                      size="lg" 
-                      variant="outline"
-                      onClick={() => window.print()}
-                    >
-                      Print Quote
-                    </Button>
-                  </div>
-                </div>
-              )}
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -611,85 +420,38 @@ export default function QuotePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => setLocation("/catalog")}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Catalog
-          </Button>
-          
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Window Configuration Tool
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Configure your {currentItem.productType} windows
-              </p>
-            </div>
-            
-            {quoteItems.length > 0 && (
-              <Button 
-                onClick={() => setStep("summary")}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                View Quote ({quoteItems.length} items)
-              </Button>
-            )}
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            Window Configuration Tool
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Configure your Milgard windows and get an instant quote
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Configuration Panel */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Item Selection Header */}
-            <Card className="bg-gray-50 dark:bg-gray-800">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Basic Information */}
+            <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                  Item Selection
+                  Basic Information
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-sm font-medium">Window</Label>
-                    <Select
-                      value={currentItem.productType}
-                      onValueChange={(value) => setCurrentItem({...currentItem, productType: value})}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {productLines.map(product => (
-                          <SelectItem key={product.value} value={product.label}>
-                            {product.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium">Description</Label>
+                    <Label className="text-sm font-medium">Item Description</Label>
                     <div className="h-8 px-3 py-1 bg-white dark:bg-gray-700 border rounded-md text-sm flex items-center">
                       {productLines.find(p => p.label === currentItem.productType)?.description || "CONFIGURED WINDOW"}
                     </div>
                   </div>
-
                   <div>
                     <Label className="text-sm font-medium">Location/Level</Label>
-                    <Input 
-                      className="h-8 text-sm" 
-                      placeholder="Living Room"
-                    />
+                    <Input className="h-8 text-sm" placeholder="Living Room" />
                   </div>
-
                   <div>
                     <Label className="text-sm font-medium">Qty</Label>
                     <Input
@@ -705,16 +467,15 @@ export default function QuotePage() {
               </CardContent>
             </Card>
 
-            {/* Configuration Options */}
+            {/* Product Configuration */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                  Configuration Options
+                  Product Configuration
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* First Row */}
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm font-medium text-blue-600">Product Line *</Label>
                     <Select
@@ -733,53 +494,8 @@ export default function QuotePage() {
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div>
-                    <Label className="text-sm font-medium text-blue-600">Fin Type *</Label>
-                    <Select
-                      value={currentItem.configuration?.finType}
-                      onValueChange={(value) => setCurrentItem({
-                        ...currentItem,
-                        configuration: {...currentItem.configuration!, finType: value}
-                      })}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {finTypes.map(fin => (
-                          <SelectItem key={fin.value} value={fin.value}>
-                            {fin.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium text-blue-600">Energy Package *</Label>
-                    <Select
-                      value={currentItem.configuration?.energyPackage}
-                      onValueChange={(value) => setCurrentItem({
-                        ...currentItem,
-                        configuration: {...currentItem.configuration!, energyPackage: value}
-                      })}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {energyPackages.map(pkg => (
-                          <SelectItem key={pkg.value} value={pkg.value}>
-                            {pkg.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium text-blue-600">Opening Type *</Label>
+                    <Label className="text-sm font-medium text-blue-600">Operating Style *</Label>
                     <Select
                       value={currentItem.configuration?.operatingType}
                       onValueChange={(value) => setCurrentItem({
@@ -803,35 +519,142 @@ export default function QuotePage() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
 
-                  {/* Second Row */}
+                <div>
+                  <Label className="text-sm font-medium text-blue-600">Configuration Model *</Label>
+                  <Select
+                    value={currentItem.configuration?.operatingConfiguration}
+                    onValueChange={(value) => setCurrentItem({
+                      ...currentItem,
+                      configuration: {...currentItem.configuration!, operatingConfiguration: value}
+                    })}
+                    disabled={!currentItem.configuration?.operatingType}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue placeholder="Select configuration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {operatingTypes
+                        .find(op => op.value === currentItem.configuration?.operatingType)
+                        ?.configurations?.map(config => (
+                          <SelectItem key={config.value} value={config.value}>
+                            {config.label}
+                          </SelectItem>
+                        )) || []}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-blue-600">Fin Type *</Label>
+                  <Select
+                    value={currentItem.configuration?.finType}
+                    onValueChange={(value) => setCurrentItem({
+                      ...currentItem,
+                      configuration: {...currentItem.configuration!, finType: value}
+                    })}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {finTypes.map(fin => (
+                        <SelectItem key={fin.value} value={fin.value}>
+                          {fin.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Packages */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Packages
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <Label className="text-sm font-medium text-blue-600">Energy Package *</Label>
+                  <Select
+                    value={currentItem.configuration?.energyPackage}
+                    onValueChange={(value) => setCurrentItem({
+                      ...currentItem,
+                      configuration: {...currentItem.configuration!, energyPackage: value}
+                    })}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {energyPackages.map(pkg => (
+                        <SelectItem key={pkg.value} value={pkg.value}>
+                          {pkg.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Glass */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Glass
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-blue-600">Glazing *</Label>
+                  <div className="flex items-center space-x-6 mt-2">
+                    <div className="flex items-center space-x-2">
+                      <input type="radio" id="dual-glaze" name="glazing" checked={true} readOnly className="text-blue-600" />
+                      <label htmlFor="dual-glaze" className="text-sm">Dual Glaze</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-blue-600">Customize Glass By Lite *</Label>
+                  <div className="flex items-center space-x-6 mt-2">
+                    <div className="flex items-center space-x-2">
+                      <input type="radio" id="customize-no" name="customize" checked={true} readOnly className="text-blue-600" />
+                      <label htmlFor="customize-no" className="text-sm">No</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="radio" id="customize-yes" name="customize" readOnly className="text-blue-600" />
+                      <label htmlFor="customize-yes" className="text-sm">Yes</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-blue-600">Configuration *</Label>
+                    <Label className="text-sm font-medium text-blue-600">Tempered *</Label>
                     <Select
-                      value={currentItem.configuration?.operatingConfiguration}
+                      value={currentItem.configuration?.isTempered ? "yes" : "none"}
                       onValueChange={(value) => setCurrentItem({
                         ...currentItem,
-                        configuration: {...currentItem.configuration!, operatingConfiguration: value}
+                        configuration: {...currentItem.configuration!, isTempered: value === "yes"}
                       })}
-                      disabled={!currentItem.configuration?.operatingType}
                     >
                       <SelectTrigger className="h-8">
-                        <SelectValue placeholder="Select configuration" />
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {operatingTypes
-                          .find(op => op.value === currentItem.configuration?.operatingType)
-                          ?.configurations?.map(config => (
-                            <SelectItem key={config.value} value={config.value}>
-                              {config.label}
-                            </SelectItem>
-                          )) || []}
+                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="yes">Yes</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div>
-                    <Label className="text-sm font-medium text-blue-600">Outer Glass *</Label>
+                    <Label className="text-sm font-medium text-blue-600">Glass Type Outer Lite *</Label>
                     <Select
                       value={currentItem.configuration?.outerGlass}
                       onValueChange={(value) => setCurrentItem({
@@ -851,29 +674,99 @@ export default function QuotePage() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
 
-                  <div>
-                    <Label className="text-sm font-medium text-blue-600">Inner Glass *</Label>
-                    <Select
-                      value={currentItem.configuration?.innerGlass}
-                      onValueChange={(value) => setCurrentItem({
-                        ...currentItem,
-                        configuration: {...currentItem.configuration!, innerGlass: value}
-                      })}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {innerGlassTypes.map(glass => (
-                          <SelectItem key={glass.value} value={glass.value}>
-                            {glass.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                <div>
+                  <Label className="text-sm font-medium text-blue-600">Glass Type Inner Lite *</Label>
+                  <Select
+                    value={currentItem.configuration?.innerGlass}
+                    onValueChange={(value) => setCurrentItem({
+                      ...currentItem,
+                      configuration: {...currentItem.configuration!, innerGlass: value}
+                    })}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {innerGlassTypes.map(glass => (
+                        <SelectItem key={glass.value} value={glass.value}>
+                          {glass.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Checkrail & Grids */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Checkrail & Grids
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-blue-600">Checkrail *</Label>
+                  <Select value="none">
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-blue-600">Customize Grids By Lite *</Label>
+                  <div className="flex items-center space-x-6 mt-2">
+                    <div className="flex items-center space-x-2">
+                      <input type="radio" id="grids-no" name="grids" checked={true} readOnly className="text-blue-600" />
+                      <label htmlFor="grids-no" className="text-sm">No</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="radio" id="grids-yes" name="grids" readOnly className="text-blue-600" />
+                      <label htmlFor="grids-yes" className="text-sm">Yes</label>
+                    </div>
                   </div>
+                </div>
 
+                <div>
+                  <Label className="text-sm font-medium text-blue-600">Grid Type *</Label>
+                  <Select
+                    value={currentItem.configuration?.gridPattern}
+                    onValueChange={(value) => setCurrentItem({
+                      ...currentItem,
+                      configuration: {...currentItem.configuration!, gridPattern: value}
+                    })}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {gridPatterns.map(grid => (
+                        <SelectItem key={grid.value} value={grid.value}>
+                          {grid.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Finishes */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Finishes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm font-medium text-blue-600">Exterior Finish *</Label>
                     <Select
@@ -895,7 +788,6 @@ export default function QuotePage() {
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div>
                     <Label className="text-sm font-medium text-blue-600">Interior Finish *</Label>
                     <Select
@@ -917,94 +809,58 @@ export default function QuotePage() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
 
+            {/* Dimensions */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Dimensions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-blue-600">Grid Pattern *</Label>
-                    <Select
-                      value={currentItem.configuration?.gridPattern}
-                      onValueChange={(value) => setCurrentItem({
-                        ...currentItem,
-                        configuration: {...currentItem.configuration!, gridPattern: value}
-                      })}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {gridPatterns.map(grid => (
-                          <SelectItem key={grid.value} value={grid.value}>
-                            {grid.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-sm font-medium">Width (inches) *</Label>
+                    <Input
+                      className="h-8"
+                      type="number"
+                      value={currentItem.width}
+                      onChange={(e) => setCurrentItem({...currentItem, width: e.target.value})}
+                      placeholder="36"
+                      min="12"
+                      max="120"
+                    />
                   </div>
-
                   <div>
-                    <Label className="text-sm font-medium text-blue-600">Tempered Glass</Label>
-                    <div className="flex items-center space-x-2 h-8">
-                      <Checkbox
-                        id="tempered"
-                        checked={currentItem.configuration?.isTempered}
-                        onCheckedChange={(checked) => setCurrentItem({
-                          ...currentItem,
-                          configuration: {...currentItem.configuration!, isTempered: !!checked}
-                        })}
-                      />
-                      <label
-                        htmlFor="tempered"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        Tempered (+$4.85/sq ft)
-                      </label>
+                    <Label className="text-sm font-medium">Height (inches) *</Label>
+                    <Input
+                      className="h-8"
+                      type="number"
+                      value={currentItem.height}
+                      onChange={(e) => setCurrentItem({...currentItem, height: e.target.value})}
+                      placeholder="48"
+                      min="12"
+                      max="120"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Square Feet</Label>
+                    <div className="h-8 px-3 py-1 bg-gray-100 dark:bg-gray-700 border rounded-md text-sm flex items-center">
+                      {currentItem.width && currentItem.height ? 
+                        ((parseFloat(currentItem.width) * parseFloat(currentItem.height)) / 144).toFixed(2) : '0.00'}
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Unit Price</Label>
+                    <div className="h-8 px-3 py-1 bg-gray-100 dark:bg-gray-700 border rounded-md text-sm flex items-center font-semibold">
+                      ${calculateItemPrice(currentItem).toLocaleString()}
                     </div>
                   </div>
                 </div>
 
-                {/* Dimensions Section */}
-                <div className="mt-6 pt-4 border-t">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium">Width (inches) *</Label>
-                      <Input
-                        className="h-8"
-                        type="number"
-                        value={currentItem.width}
-                        onChange={(e) => setCurrentItem({...currentItem, width: e.target.value})}
-                        placeholder="36"
-                        min="12"
-                        max="120"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Height (inches) *</Label>
-                      <Input
-                        className="h-8"
-                        type="number"
-                        value={currentItem.height}
-                        onChange={(e) => setCurrentItem({...currentItem, height: e.target.value})}
-                        placeholder="48"
-                        min="12"
-                        max="120"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Square Feet</Label>
-                      <div className="h-8 px-3 py-1 bg-gray-100 dark:bg-gray-700 border rounded-md text-sm flex items-center">
-                        {currentItem.width && currentItem.height ? 
-                          ((parseFloat(currentItem.width) * parseFloat(currentItem.height)) / 144).toFixed(2) : '0.00'}
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Unit Price</Label>
-                      <div className="h-8 px-3 py-1 bg-gray-100 dark:bg-gray-700 border rounded-md text-sm flex items-center font-semibold">
-                        ${calculateItemPrice(currentItem).toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
                 <div className="mt-6 pt-4 border-t flex gap-3 flex-wrap">
                   <Button 
                     onClick={addItemToQuote}
@@ -1014,27 +870,12 @@ export default function QuotePage() {
                     <Plus className="h-4 w-4 mr-2" />
                     Add Item
                   </Button>
-                  <Button variant="outline" size="sm">
-                    Add
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Reset selection options
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Library
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Write to Dealer Options
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Product Catalog
-                  </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Right Sidebar - Price Calculator & Quote Summary */}
+          {/* Right Sidebar */}
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -1044,64 +885,78 @@ export default function QuotePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {currentItem.width && currentItem.height ? (
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span>Base Price/sq ft:</span>
-                      <span>${productLines.find(p => p.label === currentItem.productType)?.pricePerSqFt || 0}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Square Feet:</span>
-                      <span>{((parseFloat(currentItem.width) * parseFloat(currentItem.height)) / 144).toFixed(2)}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between font-semibold">
-                      <span>Unit Price:</span>
-                      <span>${calculateItemPrice(currentItem).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Total ({currentItem.quantity}x):</span>
-                      <span className="text-orange-600">${getCurrentItemPrice().toLocaleString()}</span>
-                    </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Base Price/sq ft:</span>
+                    <span className="text-sm font-medium">
+                      ${productLines.find(p => p.label === currentItem.productType)?.pricePerSqFt || 25.80}
+                    </span>
                   </div>
-                ) : (
-                  <div className="text-center py-6 text-gray-500">
-                    Enter width and height to see pricing
+                  
+                  {currentItem.configuration.outerGlass !== 'clear' && (
+                    <div className="flex justify-between">
+                      <span className="text-sm">Outer Glass:</span>
+                      <span className="text-sm font-medium">
+                        +${outerGlassTypes.find(g => g.value === currentItem.configuration.outerGlass)?.priceAdder || 0}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {currentItem.configuration.innerGlass !== 'clear' && (
+                    <div className="flex justify-between">
+                      <span className="text-sm">Inner Glass:</span>
+                      <span className="text-sm font-medium">
+                        +${innerGlassTypes.find(g => g.value === currentItem.configuration.innerGlass)?.priceAdder || 0}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {currentItem.configuration.isTempered && (
+                    <div className="flex justify-between">
+                      <span className="text-sm">Tempered Glass:</span>
+                      <span className="text-sm font-medium">+$4.85</span>
+                    </div>
+                  )}
+                  
+                  <Separator />
+                  
+                  <div className="flex justify-between font-semibold">
+                    <span>Current Item Total:</span>
+                    <span className="text-orange-600">${calculateItemPrice(currentItem).toLocaleString()}</span>
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
 
             {quoteItems.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Quote Items ({quoteItems.length})</CardTitle>
+                  <CardTitle>Quote Summary</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                  {quoteItems.slice(-3).map((item) => (
-                    <div key={item.id} className="flex justify-between items-center text-sm p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                      <div>
-                        {item.width}" x {item.height}" ({item.quantity}x)
+                <CardContent>
+                  <div className="space-y-2">
+                    {quoteItems.map((item, index) => (
+                      <div key={item.id} className="flex justify-between text-sm">
+                        <span>{item.productType} ({item.quantity}x)</span>
+                        <span>${item.totalPrice.toLocaleString()}</span>
                       </div>
-                      <div className="font-semibold">
-                        ${item.totalPrice.toLocaleString()}
-                      </div>
+                    ))}
+                    
+                    <Separator />
+                    
+                    <div className="flex justify-between font-semibold">
+                      <span>Total:</span>
+                      <span className="text-orange-600">${getTotalPrice().toLocaleString()}</span>
                     </div>
-                  ))}
-                  
-                  <Separator />
-                  <div className="flex justify-between items-center font-bold">
-                    <span>Total:</span>
-                    <span className="text-orange-600">${getTotalPrice().toLocaleString()}</span>
+                    
+                    <Button 
+                      onClick={() => setStep("summary")}
+                      variant="outline"
+                      className="w-full mt-2"
+                    >
+                      View Full Quote
+                    </Button>
                   </div>
-                  
-                  <Button 
-                    onClick={() => setStep("summary")}
-                    variant="outline"
-                    className="w-full mt-2"
-                  >
-                    View Full Quote
-                  </Button>
                 </CardContent>
               </Card>
             )}
