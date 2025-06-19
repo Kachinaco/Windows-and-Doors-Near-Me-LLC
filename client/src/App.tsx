@@ -20,6 +20,7 @@ import QuotePage from "@/pages/quote";
 import ProjectsPage from "@/pages/projects";
 import LeadsPage from "@/pages/leads";
 import SubscriptionPage from "@/pages/subscription";
+import QuotesDashboard from "@/pages/quotes-dashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -58,6 +59,7 @@ function Router() {
           <Route path="/quote" component={QuotePage} />
           <Route path="/projects" component={ProjectsPage} />
           <Route path="/leads" component={LeadsPage} />
+          <Route path="/quotes" component={QuotesDashboard} />
           <Route path="/subscription" component={SubscriptionPage} />
         </>
       ) : (
