@@ -887,66 +887,160 @@ export default function QuotePage() {
               <CardContent>
                 <div className="flex justify-center mb-4">
                   <div className="relative">
-                    {/* Window Frame */}
+                    {/* Main Window Frame */}
                     <div 
-                      className={`border-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 relative ${
-                        currentItem.configuration.frameColor === 'bronze' ? 'border-yellow-700' :
-                        currentItem.configuration.frameColor === 'black' ? 'border-gray-900' :
-                        'border-gray-300'
-                      }`}
+                      className={`relative ${
+                        currentItem.configuration.frameColor === 'bronze' ? 'bg-yellow-100 border-yellow-800' :
+                        currentItem.configuration.frameColor === 'black' ? 'bg-gray-200 border-gray-900' :
+                        'bg-gray-100 border-gray-700'
+                      } border-2`}
                       style={{
-                        width: currentItem.width ? `${Math.min(180, parseInt(currentItem.width) * 2)}px` : '120px',
-                        height: currentItem.height ? `${Math.min(240, parseInt(currentItem.height) * 2)}px` : '160px'
+                        width: currentItem.width ? `${Math.min(200, parseInt(currentItem.width) * 2.5)}px` : '140px',
+                        height: currentItem.height ? `${Math.min(260, parseInt(currentItem.height) * 2.5)}px` : '180px'
                       }}
                     >
-                      {/* Glass Effect */}
-                      <div className={`absolute inset-1 ${
-                        currentItem.configuration.outerGlass === 'low-e' ? 'bg-gradient-to-br from-green-50 to-blue-50' :
-                        currentItem.configuration.outerGlass === 'low-e-max' ? 'bg-gradient-to-br from-blue-50 to-purple-50' :
-                        'bg-gradient-to-br from-blue-50 to-white'
+                      {/* Frame Detail Lines */}
+                      <div className="absolute inset-1 border border-gray-500"></div>
+                      <div className="absolute inset-2 border border-gray-400"></div>
+                      
+                      {/* Glass Area */}
+                      <div className={`absolute inset-3 ${
+                        currentItem.configuration.outerGlass === 'low-e' ? 'bg-gradient-to-br from-green-50 to-blue-100' :
+                        currentItem.configuration.outerGlass === 'low-e-max' ? 'bg-gradient-to-br from-blue-100 to-purple-100' :
+                        'bg-gradient-to-br from-blue-50 to-blue-100'
                       } ${
-                        currentItem.configuration.innerGlass === 'obscure' ? 'opacity-70' : 'opacity-90'
+                        currentItem.configuration.innerGlass === 'obscure' ? 'opacity-60' : 'opacity-80'
                       }`}>
-                        {/* Tempered Glass Indicator */}
-                        {currentItem.configuration.isTempered && (
-                          <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full opacity-60"></div>
-                        )}
                         
-                        {/* Grid Pattern */}
+                        {/* Vertical Hung Windows */}
+                        {currentItem.configuration.operatingType === 'vertical-hung' && (
+                          <>
+                            {/* Meeting Rail (horizontal divider) */}
+                            <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-600 transform -translate-y-0.5"></div>
+                            
+                            {currentItem.configuration.operatingConfiguration === 'single-hung' && (
+                              /* Bottom sash moves up (indicated by arrow) */
+                              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                                <div className="w-0 h-0 border-l-2 border-r-2 border-b-4 border-transparent border-b-gray-600"></div>
+                              </div>
+                            )}
+                            
+                            {currentItem.configuration.operatingConfiguration === 'double-hung' && (
+                              <>
+                                {/* Both sashes move (indicated by arrows) */}
+                                <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
+                                  <div className="w-0 h-0 border-l-2 border-r-2 border-t-4 border-transparent border-t-gray-600"></div>
+                                </div>
+                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                                  <div className="w-0 h-0 border-l-2 border-r-2 border-b-4 border-transparent border-b-gray-600"></div>
+                                </div>
+                              </>
+                            )}
+                          </>
+                        )}
+
+                        {/* Horizontal Slider Windows */}
+                        {currentItem.configuration.operatingType === 'horizontal-slider' && (
+                          <>
+                            {currentItem.configuration.operatingConfiguration === 'xo-slider' && (
+                              <>
+                                {/* Left panel moves (X), right panel fixed (O) */}
+                                <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-gray-600"></div>
+                                <div className="absolute left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                  <div className="w-0 h-0 border-t-2 border-b-2 border-l-4 border-transparent border-l-gray-800"></div>
+                                </div>
+                                <div className="absolute left-2 top-2 text-xs font-bold text-gray-800">X</div>
+                                <div className="absolute right-2 top-2 text-xs font-bold text-gray-600">O</div>
+                              </>
+                            )}
+                            
+                            {currentItem.configuration.operatingConfiguration === 'ox-slider' && (
+                              <>
+                                {/* Left panel fixed (O), right panel moves (X) */}
+                                <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-gray-600"></div>
+                                <div className="absolute right-1/4 top-1/2 transform translate-x-1/2 -translate-y-1/2">
+                                  <div className="w-0 h-0 border-t-2 border-b-2 border-r-4 border-transparent border-r-gray-800"></div>
+                                </div>
+                                <div className="absolute left-2 top-2 text-xs font-bold text-gray-600">O</div>
+                                <div className="absolute right-2 top-2 text-xs font-bold text-gray-800">X</div>
+                              </>
+                            )}
+                            
+                            {currentItem.configuration.operatingConfiguration === 'xox-slider' && (
+                              <>
+                                {/* Left and right panels move (X), center panel fixed (O) */}
+                                <div className="absolute top-0 bottom-0 left-1/3 w-1 bg-gray-600"></div>
+                                <div className="absolute top-0 bottom-0 right-1/3 w-1 bg-gray-600"></div>
+                                <div className="absolute left-1/6 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                  <div className="w-0 h-0 border-t-2 border-b-2 border-l-3 border-transparent border-l-gray-800"></div>
+                                </div>
+                                <div className="absolute right-1/6 top-1/2 transform translate-x-1/2 -translate-y-1/2">
+                                  <div className="w-0 h-0 border-t-2 border-b-2 border-r-3 border-transparent border-r-gray-800"></div>
+                                </div>
+                                <div className="absolute left-1 top-2 text-xs font-bold text-gray-800">X</div>
+                                <div className="absolute left-1/2 top-2 transform -translate-x-1/2 text-xs font-bold text-gray-600">O</div>
+                                <div className="absolute right-1 top-2 text-xs font-bold text-gray-800">X</div>
+                              </>
+                            )}
+                          </>
+                        )}
+
+                        {/* Picture Window (no operating elements) */}
+                        {currentItem.configuration.operatingType === 'slider-picture' && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-xs text-gray-500 font-medium">FIXED</div>
+                          </div>
+                        )}
+
+                        {/* Grid Pattern Overlay */}
                         {currentItem.configuration.gridPattern !== 'none' && (
-                          <div className="absolute inset-0">
+                          <div className="absolute inset-0 pointer-events-none">
                             {currentItem.configuration.gridPattern === 'colonial' && (
                               <>
-                                <div className="absolute top-1/3 left-0 right-0 h-0.5 bg-gray-400 opacity-60"></div>
-                                <div className="absolute bottom-1/3 left-0 right-0 h-0.5 bg-gray-400 opacity-60"></div>
-                                <div className="absolute top-0 bottom-0 left-1/3 w-0.5 bg-gray-400 opacity-60"></div>
-                                <div className="absolute top-0 bottom-0 right-1/3 w-0.5 bg-gray-400 opacity-60"></div>
+                                <div className="absolute top-1/3 left-0 right-0 h-0.5 bg-gray-500 opacity-70"></div>
+                                <div className="absolute bottom-1/3 left-0 right-0 h-0.5 bg-gray-500 opacity-70"></div>
+                                <div className="absolute top-0 bottom-0 left-1/3 w-0.5 bg-gray-500 opacity-70"></div>
+                                <div className="absolute top-0 bottom-0 right-1/3 w-0.5 bg-gray-500 opacity-70"></div>
                               </>
                             )}
                             {currentItem.configuration.gridPattern === 'prairie' && (
                               <>
-                                <div className="absolute top-4 left-4 right-4 h-0.5 bg-gray-400 opacity-60"></div>
-                                <div className="absolute top-4 bottom-4 left-4 w-0.5 bg-gray-400 opacity-60"></div>
-                                <div className="absolute top-4 bottom-4 right-4 w-0.5 bg-gray-400 opacity-60"></div>
-                                <div className="absolute bottom-4 left-4 right-4 h-0.5 bg-gray-400 opacity-60"></div>
+                                <div className="absolute top-3 left-3 right-3 h-0.5 bg-gray-500 opacity-70"></div>
+                                <div className="absolute top-3 bottom-3 left-3 w-0.5 bg-gray-500 opacity-70"></div>
+                                <div className="absolute top-3 bottom-3 right-3 w-0.5 bg-gray-500 opacity-70"></div>
+                                <div className="absolute bottom-3 left-3 right-3 h-0.5 bg-gray-500 opacity-70"></div>
                               </>
                             )}
                           </div>
                         )}
 
-                        {/* Operating Style Indicators */}
-                        {currentItem.configuration.operatingType === 'horizontal-slider' && (
-                          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-500 opacity-40"></div>
-                        )}
-                        {currentItem.configuration.operatingType === 'vertical-hung' && (
-                          <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-gray-500 opacity-40"></div>
+                        {/* Tempered Glass Indicator */}
+                        {currentItem.configuration.isTempered && (
+                          <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full opacity-80 border border-red-600"></div>
                         )}
                       </div>
+                      
+                      {/* Fin Type Indicators */}
+                      {currentItem.configuration.finType === 'nail-fin' && (
+                        <div className="absolute -inset-2 border-2 border-dashed border-gray-400 opacity-60"></div>
+                      )}
+                      {currentItem.configuration.finType === 'flush-fin' && (
+                        <div className="absolute -inset-1 border border-solid border-gray-500 opacity-50"></div>
+                      )}
                     </div>
                     
-                    {/* Fin Type Indicator */}
-                    {currentItem.configuration.finType === 'nail-fin' && (
-                      <div className="absolute -inset-1 border border-dashed border-gray-400 opacity-50"></div>
+                    {/* Dimension Labels */}
+                    {currentItem.width && currentItem.height && (
+                      <>
+                        {/* Width dimension */}
+                        <div className="absolute -bottom-8 left-0 right-0 flex justify-center">
+                          <div className="text-xs font-medium text-gray-700">{currentItem.width}"</div>
+                        </div>
+                        {/* Height dimension */}
+                        <div className="absolute -left-8 top-0 bottom-0 flex items-center">
+                          <div className="text-xs font-medium text-gray-700 transform -rotate-90">{currentItem.height}"</div>
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
