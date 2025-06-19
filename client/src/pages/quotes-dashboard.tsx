@@ -72,7 +72,7 @@ export default function QuotesDashboard() {
   const queryClient = useQueryClient();
 
   // Fetch quote requests
-  const { data: quoteRequests = [], isLoading } = useQuery({
+  const { data: quoteRequests = [], isLoading } = useQuery<QuoteRequest[]>({
     queryKey: ["/api/quote-requests", selectedStatus !== "all" ? { status: selectedStatus } : {}],
     retry: false,
   });
@@ -190,7 +190,7 @@ export default function QuotesDashboard() {
 
         {/* Quote Requests Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {quoteRequests?.map((quote: QuoteRequest) => (
+          {quoteRequests.map((quote: QuoteRequest) => (
             <Card key={quote.id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
@@ -386,7 +386,7 @@ export default function QuotesDashboard() {
           ))}
         </div>
 
-        {(!quoteRequests || quoteRequests.length === 0) && (
+        {quoteRequests.length === 0 && (
           <div className="text-center py-12">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">

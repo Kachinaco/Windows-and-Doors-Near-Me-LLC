@@ -50,6 +50,8 @@ This is a modern business website for Windows & Doors Near Me LLC, a window and 
 - **Tasks Table**: Project task management with assignments, priorities, and completion tracking
 - **Project Updates Table**: Communication and activity logging for project collaboration
 - **Contact Submissions Table**: Lead management system with status tracking and conversion capabilities
+- **Quote Requests Table**: Online quote request system with window configurations, customer info, and status tracking
+- **Quote Activities Table**: Activity logging for quote communications and status changes
 - **Relations**: Comprehensive database relationships using Drizzle ORM relations for data integrity
 - **Type Safety**: Full Drizzle-zod integration for runtime validation and TypeScript types
 
@@ -163,6 +165,8 @@ Changelog:
 - June 17, 2025. Implemented comprehensive consultation scheduling system with full editing capabilities and employee assignment features
 - June 17, 2025. Updated project creation modal interface to match user's specified design requirements from screenshots
 - June 17, 2025. Implemented three-tier subscription system: Customer (Free), Contractor (30-Day Trial), and Contractor (Paid) with role-based access control, trial expiration tracking, and subscription management interface
+- June 19, 2025. Implemented professional window configuration tool with Milgard pricing based on price per square foot
+- June 19, 2025. Added comprehensive online quote request system with customer portal, contractor dashboard, and activity tracking
 
 ## User Preferences
 
