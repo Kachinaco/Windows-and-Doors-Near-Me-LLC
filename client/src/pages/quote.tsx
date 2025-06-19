@@ -29,6 +29,7 @@ interface QuoteItem {
     energyPackage: string;
     finType: string;
     spacer: string;
+    edgeGuard: string;
   };
   unitPrice: number;
   totalPrice: number;
@@ -82,12 +83,17 @@ const energyPackages = [
 const outerGlassTypes = [
   { value: "clear", label: "Clear", priceAdder: 0 },
   { value: "sungaardmax-low-e", label: "SunGuardMAX (Low E)", priceAdder: 2.45 },
-  { value: "edgeguardmax", label: "EdgeGuardMAX", priceAdder: 4.15 }
+  { value: "low-e-max", label: "Low-E Max", priceAdder: 3.20 }
 ];
 
 const spacerOptions = [
   { value: "black", label: "Black", priceAdder: 0 },
   { value: "argon", label: "Argon", priceAdder: 1.85 }
+];
+
+const edgeGuardOptions = [
+  { value: "none", label: "None", priceAdder: 0 },
+  { value: "edgeguardmax", label: "EdgeGuard Max", priceAdder: 4.15 }
 ];
 
 const innerGlassTypes = [
@@ -189,7 +195,8 @@ export default function QuotePage() {
       operatingConfiguration: "single-hung",
       energyPackage: "none",
       finType: "nail-fin",
-      spacer: "black"
+      spacer: "black",
+      edgeGuard: "none"
     },
     unitPrice: 0,
     totalPrice: 0
@@ -220,6 +227,10 @@ export default function QuotePage() {
     
     if (outerGlass) pricePerSqFt += outerGlass.priceAdder;
     if (innerGlass) pricePerSqFt += innerGlass.priceAdder;
+    
+    // Add EdgeGuard pricing
+    const edgeGuard = edgeGuardOptions.find(e => e.value === item.configuration.edgeGuard);
+    if (edgeGuard) pricePerSqFt += edgeGuard.priceAdder;
     
     // Add spacer pricing
     const spacer = spacerOptions.find(s => s.value === item.configuration.spacer);
@@ -697,7 +708,8 @@ export default function QuotePage() {
                       
                       // Auto-select glass options when Title 24 2019 is chosen
                       if (value === "title-24-2019") {
-                        updatedConfiguration.outerGlass = "edgeguardmax"; // Low-E Max
+                        updatedConfiguration.outerGlass = "low-e-max"; // Low-E Max glass
+                        updatedConfiguration.edgeGuard = "edgeguardmax"; // EdgeGuard Max standalone
                         updatedConfiguration.spacer = "argon";
                       }
                       
@@ -818,26 +830,49 @@ export default function QuotePage() {
                   </Select>
                 </div>
 
-                <div>
-                  <Label className="text-sm font-medium text-blue-600">Spacer Finish *</Label>
-                  <Select
-                    value={currentItem.configuration?.spacer}
-                    onValueChange={(value) => setCurrentItem({
-                      ...currentItem,
-                      configuration: {...currentItem.configuration!, spacer: value}
-                    })}
-                  >
-                    <SelectTrigger className="h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {spacerOptions.map(spacer => (
-                        <SelectItem key={spacer.value} value={spacer.value}>
-                          {spacer.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">EdgeGuard Max *</Label>
+                    <Select
+                      value={currentItem.configuration?.edgeGuard}
+                      onValueChange={(value) => setCurrentItem({
+                        ...currentItem,
+                        configuration: {...currentItem.configuration!, edgeGuard: value}
+                      })}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {edgeGuardOptions.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Spacer Finish *</Label>
+                    <Select
+                      value={currentItem.configuration?.spacer}
+                      onValueChange={(value) => setCurrentItem({
+                        ...currentItem,
+                        configuration: {...currentItem.configuration!, spacer: value}
+                      })}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {spacerOptions.map(spacer => (
+                          <SelectItem key={spacer.value} value={spacer.value}>
+                            {spacer.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </CardContent>
             </Card>
