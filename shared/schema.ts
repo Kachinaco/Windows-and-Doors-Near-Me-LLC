@@ -78,6 +78,37 @@ export const contactSubmissions = pgTable("contact_submissions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Online quote requests with window configurations
+export const quoteRequests = pgTable("quote_requests", {
+  id: serial("id").primaryKey(),
+  quoteNumber: text("quote_number").notNull().unique(),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone").notNull(),
+  projectAddress: text("project_address"),
+  items: jsonb("items").notNull(), // Array of configured windows/doors
+  totalEstimate: text("total_estimate").notNull(),
+  status: text("status").notNull().default("pending"), // pending, reviewed, quoted, converted, closed
+  priority: text("priority").notNull().default("normal"), // normal, high, urgent
+  notes: text("notes"),
+  followUpDate: timestamp("follow_up_date"),
+  assignedTo: integer("assigned_to").references(() => users.id),
+  convertedToProjectId: integer("converted_to_project_id").references(() => projects.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Quote request activities/communications log
+export const quoteActivities = pgTable("quote_activities", {
+  id: serial("id").primaryKey(),
+  quoteRequestId: integer("quote_request_id").references(() => quoteRequests.id),
+  activityType: text("activity_type").notNull(), // created, email_sent, call_made, quote_sent, follow_up, converted
+  description: text("description").notNull(),
+  performedBy: integer("performed_by").references(() => users.id),
+  metadata: jsonb("metadata"), // Additional data like email content, call duration, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Project management for contractors (Monday.com style)
 export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
@@ -105,6 +136,8 @@ export const projects = pgTable("projects", {
 export const usersRelations = relations(users, ({ many }) => ({
   cartItems: many(cartItems),
   orders: many(orders),
+  assignedQuoteRequests: many(quoteRequests),
+  quoteActivities: many(quoteActivities),
 }));
 
 export const productsRelations = relations(products, ({ many }) => ({
@@ -125,6 +158,29 @@ export const cartItemsRelations = relations(cartItems, ({ one }) => ({
 export const ordersRelations = relations(orders, ({ one }) => ({
   user: one(users, {
     fields: [orders.userId],
+    references: [users.id],
+  }),
+}));
+
+export const quoteRequestsRelations = relations(quoteRequests, ({ one, many }) => ({
+  assignedUser: one(users, {
+    fields: [quoteRequests.assignedTo],
+    references: [users.id],
+  }),
+  convertedProject: one(projects, {
+    fields: [quoteRequests.convertedToProjectId],
+    references: [projects.id],
+  }),
+  activities: many(quoteActivities),
+}));
+
+export const quoteActivitiesRelations = relations(quoteActivities, ({ one }) => ({
+  quoteRequest: one(quoteRequests, {
+    fields: [quoteActivities.quoteRequestId],
+    references: [quoteRequests.id],
+  }),
+  performedByUser: one(users, {
+    fields: [quoteActivities.performedBy],
     references: [users.id],
   }),
 }));
@@ -169,6 +225,17 @@ export const insertProjectSchema = createInsertSchema(projects).omit({
   updatedAt: true,
 });
 
+export const insertQuoteRequestSchema = createInsertSchema(quoteRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertQuoteActivitySchema = createInsertSchema(quoteActivities).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -188,3 +255,9 @@ export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
+
+export type QuoteRequest = typeof quoteRequests.$inferSelect;
+export type InsertQuoteRequest = z.infer<typeof insertQuoteRequestSchema>;
+
+export type QuoteActivity = typeof quoteActivities.$inferSelect;
+export type InsertQuoteActivity = z.infer<typeof insertQuoteActivitySchema>;
