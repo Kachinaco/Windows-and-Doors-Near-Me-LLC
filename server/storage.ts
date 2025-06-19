@@ -5,6 +5,8 @@ import {
   orders,
   contactSubmissions,
   projects,
+  quoteRequests,
+  quoteActivities,
   type User,
   type InsertUser,
   type Product,
@@ -17,6 +19,10 @@ import {
   type InsertContactSubmission,
   type Project,
   type InsertProject,
+  type QuoteRequest,
+  type InsertQuoteRequest,
+  type QuoteActivity,
+  type InsertQuoteActivity,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -62,6 +68,18 @@ export interface IStorage {
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: number, updates: Partial<InsertProject>): Promise<Project>;
   getAllEmployees(): Promise<User[]>;
+  
+  // Quote request operations
+  createQuoteRequest(quoteRequest: InsertQuoteRequest): Promise<QuoteRequest>;
+  getQuoteRequest(id: number): Promise<QuoteRequest | undefined>;
+  getAllQuoteRequests(): Promise<QuoteRequest[]>;
+  getQuoteRequestsByStatus(status: string): Promise<QuoteRequest[]>;
+  getQuoteRequestsByAssignee(assigneeId: number): Promise<QuoteRequest[]>;
+  updateQuoteRequest(id: number, updates: Partial<InsertQuoteRequest>): Promise<QuoteRequest>;
+  
+  // Quote activity operations
+  createQuoteActivity(activity: InsertQuoteActivity): Promise<QuoteActivity>;
+  getQuoteActivities(quoteRequestId: number): Promise<QuoteActivity[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -285,6 +303,71 @@ export class DatabaseStorage implements IStorage {
       .from(users)
       .where(eq(users.role, 'contractor_paid'))
       .orderBy(users.firstName);
+  }
+
+  // Quote request operations
+  async createQuoteRequest(insertQuoteRequest: InsertQuoteRequest): Promise<QuoteRequest> {
+    const quoteNumber = `QR-${Date.now()}`;
+    const [quoteRequest] = await db
+      .insert(quoteRequests)
+      .values({
+        ...insertQuoteRequest,
+        quoteNumber,
+      })
+      .returning();
+    return quoteRequest;
+  }
+
+  async getQuoteRequest(id: number): Promise<QuoteRequest | undefined> {
+    const [quoteRequest] = await db.select().from(quoteRequests).where(eq(quoteRequests.id, id));
+    return quoteRequest;
+  }
+
+  async getAllQuoteRequests(): Promise<QuoteRequest[]> {
+    const requests = await db.select().from(quoteRequests).orderBy(desc(quoteRequests.createdAt));
+    return requests;
+  }
+
+  async getQuoteRequestsByStatus(status: string): Promise<QuoteRequest[]> {
+    const requests = await db.select().from(quoteRequests)
+      .where(eq(quoteRequests.status, status))
+      .orderBy(desc(quoteRequests.createdAt));
+    return requests;
+  }
+
+  async getQuoteRequestsByAssignee(assigneeId: number): Promise<QuoteRequest[]> {
+    const requests = await db.select().from(quoteRequests)
+      .where(eq(quoteRequests.assignedTo, assigneeId))
+      .orderBy(desc(quoteRequests.createdAt));
+    return requests;
+  }
+
+  async updateQuoteRequest(id: number, updates: Partial<InsertQuoteRequest>): Promise<QuoteRequest> {
+    const [quoteRequest] = await db
+      .update(quoteRequests)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(quoteRequests.id, id))
+      .returning();
+    return quoteRequest;
+  }
+
+  // Quote activity operations
+  async createQuoteActivity(insertActivity: InsertQuoteActivity): Promise<QuoteActivity> {
+    const [activity] = await db
+      .insert(quoteActivities)
+      .values(insertActivity)
+      .returning();
+    return activity;
+  }
+
+  async getQuoteActivities(quoteRequestId: number): Promise<QuoteActivity[]> {
+    const activities = await db.select().from(quoteActivities)
+      .where(eq(quoteActivities.quoteRequestId, quoteRequestId))
+      .orderBy(desc(quoteActivities.createdAt));
+    return activities;
   }
 }
 
