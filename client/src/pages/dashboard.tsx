@@ -159,7 +159,7 @@ export default function Dashboard() {
             </Card>
           </Link>
 
-          {(user?.role === 'admin' || user?.role === 'contractor_paid') && (
+          {(effectiveUser?.role === 'admin' || effectiveUser?.role === 'contractor_paid') && (
             <Link href="/leads">
               <Card className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="p-6">
