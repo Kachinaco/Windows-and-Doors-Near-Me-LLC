@@ -153,7 +153,7 @@ const frameColors = [
   { value: "white", label: "White", priceAdder: 0 },
   { value: "tan", label: "Tan", priceAdder: 1.25 },
   { value: "bronze", label: "Bronze", priceAdder: 1.25 },
-  { value: "black", label: "Black", priceAdder: 1.25 }
+  { value: "black", label: "Black", priceAdder: 1.75 }
 ];
 
 // Get available interior colors based on exterior color selection

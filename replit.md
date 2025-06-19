@@ -176,6 +176,8 @@ Changelog:
 - June 19, 2025. Implemented frame color restrictions for V300 windows: White/Tan exteriors match interior colors, Bronze/Black exteriors allow white or matching interior colors
 - June 19, 2025. Added real-time energy performance ratings (U-Factor, SHGC, VT) that update based on glass selections and show Title 24 compliance
 - June 19, 2025. Restructured dimensions section with Opening Type selection (Rough Opening, Net Frame, Call Out) and implemented call out calculation where each digit × 12 gives actual measurements
+- June 19, 2025. Fixed black frame pricing to $1.75 per sq ft (40% premium over standard $1.25 for tan/bronze colors)
+- June 19, 2025. Moved "Add Item" button to bottom of configurator for better user workflow
 
 ## User Preferences
 
