@@ -19,7 +19,8 @@ interface QuoteItem {
   width: string;
   height: string;
   configuration: {
-    frameColor: string;
+    exteriorColor: string;
+    interiorColor: string;
     outerGlass: string;
     innerGlass: string;
     isTempered: boolean;
@@ -109,9 +110,32 @@ const innerGlassTypes = [
 
 const frameColors = [
   { value: "white", label: "White" },
+  { value: "tan", label: "Tan" },
   { value: "bronze", label: "Bronze" },
   { value: "black", label: "Black" }
 ];
+
+// Get available interior colors based on exterior color selection
+const getAvailableInteriorColors = (exteriorColor: string) => {
+  switch (exteriorColor) {
+    case "white":
+      return [{ value: "white", label: "White" }];
+    case "tan":
+      return [{ value: "tan", label: "Tan" }];
+    case "bronze":
+      return [
+        { value: "bronze", label: "Bronze" },
+        { value: "white", label: "White" }
+      ];
+    case "black":
+      return [
+        { value: "black", label: "Black" },
+        { value: "white", label: "White" }
+      ];
+    default:
+      return frameColors;
+  }
+};
 
 const gridPatterns = [
   { value: "none", label: "None" },
@@ -191,7 +215,8 @@ export default function QuotePage() {
     width: "",
     height: "",
     configuration: {
-      frameColor: "white",
+      exteriorColor: "white",
+      interiorColor: "white",
       outerGlass: "clear",
       innerGlass: "clear",
       isTempered: false,
@@ -387,7 +412,7 @@ export default function QuotePage() {
                     </div>
                     <div>
                       <p className="text-sm">Glass: {item.configuration.outerGlass}/{item.configuration.innerGlass}</p>
-                      <p className="text-sm">Frame: {item.configuration.frameColor}</p>
+                      <p className="text-sm">Frame: {item.configuration.exteriorColor}/{item.configuration.interiorColor}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">${item.totalPrice.toLocaleString()}</p>
@@ -966,11 +991,22 @@ export default function QuotePage() {
                   <div>
                     <Label className="text-sm font-medium text-blue-600">Exterior Finish *</Label>
                     <Select
-                      value={currentItem.configuration?.frameColor}
-                      onValueChange={(value) => setCurrentItem({
-                        ...currentItem,
-                        configuration: {...currentItem.configuration!, frameColor: value}
-                      })}
+                      value={currentItem.configuration?.exteriorColor}
+                      onValueChange={(value) => {
+                        const availableInteriorColors = getAvailableInteriorColors(value);
+                        const newInteriorColor = availableInteriorColors.find(c => c.value === currentItem.configuration.interiorColor) 
+                          ? currentItem.configuration.interiorColor 
+                          : availableInteriorColors[0]?.value || value;
+                        
+                        setCurrentItem({
+                          ...currentItem,
+                          configuration: {
+                            ...currentItem.configuration!, 
+                            exteriorColor: value,
+                            interiorColor: newInteriorColor
+                          }
+                        });
+                      }}
                     >
                       <SelectTrigger className="h-8">
                         <SelectValue />
@@ -987,10 +1023,10 @@ export default function QuotePage() {
                   <div>
                     <Label className="text-sm font-medium text-blue-600">Interior Finish *</Label>
                     <Select
-                      value={currentItem.configuration?.frameColor}
+                      value={currentItem.configuration?.interiorColor}
                       onValueChange={(value) => setCurrentItem({
                         ...currentItem,
-                        configuration: {...currentItem.configuration!, frameColor: value}
+                        configuration: {...currentItem.configuration!, interiorColor: value}
                       })}
                     >
                       <SelectTrigger className="h-8">
