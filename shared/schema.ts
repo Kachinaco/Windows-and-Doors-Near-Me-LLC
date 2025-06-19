@@ -78,6 +78,29 @@ export const contactSubmissions = pgTable("contact_submissions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Project management for contractors (Monday.com style)
+export const projects = pgTable("projects", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  serviceType: text("service_type").notNull(),
+  status: text("status").notNull().default("scheduled"), // scheduled, in_progress, completed, paid, cancelled
+  priority: text("priority").notNull().default("medium"), // low, medium, high, urgent
+  clientId: integer("client_id"),
+  assignedTo: integer("assigned_to").references(() => users.id),
+  estimatedCost: text("estimated_cost"),
+  actualCost: text("actual_cost"),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  completedAt: timestamp("completed_at"),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   cartItems: many(cartItems),
@@ -140,6 +163,12 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
   createdAt: true,
 });
 
+export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -155,4 +184,7 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+
+export type Project = typeof projects.$inferSelect;
+export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;

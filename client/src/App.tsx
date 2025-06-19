@@ -16,6 +16,7 @@ import QueenCreekWindowsDoors from "@/pages/queen-creek-windows-doors";
 import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard";
 import CatalogPage from "@/pages/catalog";
+import ProjectsPage from "@/pages/projects";
 import LeadsPage from "@/pages/leads";
 import SubscriptionPage from "@/pages/subscription";
 
@@ -53,6 +54,7 @@ function Router() {
         <>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/catalog" component={CatalogPage} />
+          <Route path="/projects" component={ProjectsPage} />
           <Route path="/leads" component={LeadsPage} />
           <Route path="/subscription" component={SubscriptionPage} />
         </>
@@ -60,6 +62,7 @@ function Router() {
         <>
           <Route path="/dashboard" component={AuthPage} />
           <Route path="/catalog" component={AuthPage} />
+          <Route path="/projects" component={AuthPage} />
           <Route path="/leads" component={AuthPage} />
         </>
       )}
