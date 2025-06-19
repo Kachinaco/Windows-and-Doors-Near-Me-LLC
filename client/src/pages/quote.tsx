@@ -844,23 +844,7 @@ export default function QuotePage() {
                   </div>
                 )}
 
-                <div className="mt-6 pt-4 border-t flex gap-3 flex-wrap">
-                  <Button 
-                    onClick={addItemToQuote}
-                    className="bg-orange-600 hover:bg-orange-700 text-white"
-                    disabled={!currentItem.width || !currentItem.height}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Item
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={resetCurrentItem}
-                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                  >
-                    Clear Form
-                  </Button>
-                </div>
+
               </CardContent>
             </Card>
 
@@ -1286,6 +1270,28 @@ export default function QuotePage() {
               </CardContent>
             </Card>
 
+            {/* Action Buttons */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex gap-3 flex-wrap">
+                  <Button 
+                    onClick={addItemToQuote}
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                    disabled={!currentItem.width || !currentItem.height}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Item
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={resetCurrentItem}
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Clear Form
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
           </div>
 
