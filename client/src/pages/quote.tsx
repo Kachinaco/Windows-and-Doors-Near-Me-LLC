@@ -764,10 +764,12 @@ export default function QuotePage() {
                         value={currentItem.callOut || ""}
                         onChange={(e) => {
                           const callOut = e.target.value;
-                          // Parse call out like "3030" to width="36" height="36"
-                          if (callOut.length === 4) {
-                            const width = parseInt(callOut.substring(0, 2)) + "\"";
-                            const height = parseInt(callOut.substring(2, 4)) + "\"";
+                          // Parse call out like "3030" using formula: first 2 digits × 12 + 36 for width, last 2 digits for height
+                          if (callOut.length === 4 && /^\d{4}$/.test(callOut)) {
+                            const firstTwo = parseInt(callOut.substring(0, 2));
+                            const lastTwo = parseInt(callOut.substring(2, 4));
+                            const width = (firstTwo * 12 + 36) + "\"";
+                            const height = lastTwo + "\"";
                             setCurrentItem({
                               ...currentItem, 
                               callOut, 
@@ -781,7 +783,8 @@ export default function QuotePage() {
                         className="h-8"
                       />
                       <div className="text-xs text-gray-500 mt-1">
-                        Enter 4 digits (e.g. 3030 = 30"×30", 3060 = 30"×60")
+                        Enter 4 digits (e.g. 3030 = 72"×30", 3060 = 72"×60")
+                        <br />Formula: First 2 digits × 12 + 36 = Width, Last 2 digits = Height
                       </div>
                     </div>
                     <div>
