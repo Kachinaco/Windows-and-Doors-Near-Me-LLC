@@ -30,6 +30,7 @@ interface QuoteItem {
     finType: string;
     spacer: string;
     edgeGuard: string;
+    argon: string;
   };
   unitPrice: number;
   totalPrice: number;
@@ -87,7 +88,11 @@ const outerGlassTypes = [
 ];
 
 const spacerOptions = [
-  { value: "black", label: "Black", priceAdder: 0 },
+  { value: "black", label: "Black", priceAdder: 0 }
+];
+
+const argonOptions = [
+  { value: "none", label: "None", priceAdder: 0 },
   { value: "argon", label: "Argon", priceAdder: 1.85 }
 ];
 
@@ -196,7 +201,8 @@ export default function QuotePage() {
       energyPackage: "none",
       finType: "nail-fin",
       spacer: "black",
-      edgeGuard: "none"
+      edgeGuard: "none",
+      argon: "none"
     },
     unitPrice: 0,
     totalPrice: 0
@@ -235,6 +241,10 @@ export default function QuotePage() {
     // Add spacer pricing
     const spacer = spacerOptions.find(s => s.value === item.configuration.spacer);
     if (spacer) pricePerSqFt += spacer.priceAdder;
+    
+    // Add argon pricing
+    const argon = argonOptions.find(a => a.value === item.configuration.argon);
+    if (argon) pricePerSqFt += argon.priceAdder;
     
     // Add tempered glass pricing
     if (item.configuration.isTempered) {
@@ -710,7 +720,7 @@ export default function QuotePage() {
                       if (value === "title-24-2019") {
                         updatedConfiguration.outerGlass = "low-e-max"; // Low-E Max glass
                         updatedConfiguration.edgeGuard = "edgeguardmax"; // EdgeGuard Max standalone
-                        updatedConfiguration.spacer = "argon";
+                        updatedConfiguration.argon = "argon"; // Argon gas
                       }
                       
                       setCurrentItem({
@@ -752,19 +762,7 @@ export default function QuotePage() {
                   </div>
                 </div>
 
-                <div>
-                  <Label className="text-sm font-medium text-blue-600">Customize Glass By Lite *</Label>
-                  <div className="flex items-center space-x-6 mt-2">
-                    <div className="flex items-center space-x-2">
-                      <input type="radio" id="customize-no" name="customize" checked={true} readOnly className="text-blue-600" />
-                      <label htmlFor="customize-no" className="text-sm">No</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="radio" id="customize-yes" name="customize" readOnly className="text-blue-600" />
-                      <label htmlFor="customize-yes" className="text-sm">Yes</label>
-                    </div>
-                  </div>
-                </div>
+
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -830,7 +828,7 @@ export default function QuotePage() {
                   </Select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label className="text-sm font-medium text-blue-600">EdgeGuard Max *</Label>
                     <Select
@@ -868,6 +866,27 @@ export default function QuotePage() {
                         {spacerOptions.map(spacer => (
                           <SelectItem key={spacer.value} value={spacer.value}>
                             {spacer.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Gas Filled *</Label>
+                    <Select
+                      value={currentItem.configuration?.argon}
+                      onValueChange={(value) => setCurrentItem({
+                        ...currentItem,
+                        configuration: {...currentItem.configuration!, argon: value}
+                      })}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {argonOptions.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
