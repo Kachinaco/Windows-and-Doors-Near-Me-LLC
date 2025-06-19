@@ -1379,8 +1379,20 @@ export default function QuotePage() {
                         'bg-gray-100 border-gray-700'
                       } border-2`}
                       style={{
-                        width: currentItem.width ? `${Math.min(200, parseInt(currentItem.width) * 2.5)}px` : '140px',
-                        height: currentItem.height ? `${Math.min(260, parseInt(currentItem.height) * 2.5)}px` : '180px'
+                        width: currentItem.width ? `${Math.max(120, Math.min(280, (() => {
+                          let width = parseFloat(currentItem.width);
+                          if (currentItem.configuration?.openingType === "rough-opening") {
+                            width = Math.max(0, width - 0.5);
+                          }
+                          return width * 3.5;
+                        })()))}px` : '140px',
+                        height: currentItem.height ? `${Math.max(120, Math.min(320, (() => {
+                          let height = parseFloat(currentItem.height);
+                          if (currentItem.configuration?.openingType === "rough-opening") {
+                            height = Math.max(0, height - 0.5);
+                          }
+                          return height * 3.5;
+                        })()))}px` : '180px'
                       }}
                     >
                       {/* Frame Detail Lines */}
@@ -1520,11 +1532,27 @@ export default function QuotePage() {
                       <>
                         {/* Width dimension */}
                         <div className="absolute -bottom-8 left-0 right-0 flex justify-center">
-                          <div className="text-xs font-medium text-gray-700">{currentItem.width}"</div>
+                          <div className="text-xs font-medium text-gray-700">
+                            {(() => {
+                              let width = parseFloat(currentItem.width);
+                              if (currentItem.configuration?.openingType === "rough-opening") {
+                                width = Math.max(0, width - 0.5);
+                              }
+                              return width;
+                            })()}"
+                          </div>
                         </div>
                         {/* Height dimension */}
                         <div className="absolute -left-8 top-0 bottom-0 flex items-center">
-                          <div className="text-xs font-medium text-gray-700 transform -rotate-90">{currentItem.height}"</div>
+                          <div className="text-xs font-medium text-gray-700 transform -rotate-90">
+                            {(() => {
+                              let height = parseFloat(currentItem.height);
+                              if (currentItem.configuration?.openingType === "rough-opening") {
+                                height = Math.max(0, height - 0.5);
+                              }
+                              return height;
+                            })()}"
+                          </div>
                         </div>
                       </>
                     )}
