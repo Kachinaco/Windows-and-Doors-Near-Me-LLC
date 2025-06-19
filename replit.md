@@ -169,6 +169,7 @@ Changelog:
 - June 19, 2025. Added comprehensive online quote request system with customer portal, contractor dashboard, and activity tracking
 - June 19, 2025. Updated colonial grid pattern to accurate 3x2 layout (3 columns x 2 rows) matching technical specifications
 - June 19, 2025. Removed "350" and "Ultra" product lines from available options per user requirements
+- June 19, 2025. Updated customer product access to V300 and V400 series only (changed V350 Tuscany to V400 Tuscany)
 
 ## User Preferences
 
