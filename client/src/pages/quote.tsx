@@ -316,7 +316,17 @@ export default function QuotePage() {
   const calculateItemPrice = (item: QuoteItem): number => {
     if (!item.width || !item.height) return 0;
     
-    const sqFt = (parseFloat(item.width) * parseFloat(item.height)) / 144;
+    // Get actual dimensions for pricing calculations
+    let actualWidth = parseFloat(item.width);
+    let actualHeight = parseFloat(item.height);
+    
+    // For rough opening, subtract 0.5" from each dimension to get actual window size
+    if (item.configuration?.openingType === "rough-opening") {
+      actualWidth = Math.max(0, actualWidth - 0.5);
+      actualHeight = Math.max(0, actualHeight - 0.5);
+    }
+    
+    const sqFt = (actualWidth * actualHeight) / 144;
     const baseProduct = allProductLines.find(p => p.label === item.productType);
     let pricePerSqFt = baseProduct?.pricePerSqFt || 28.75;
 
@@ -1558,6 +1568,14 @@ export default function QuotePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
+                  {currentItem.configuration?.openingType === "rough-opening" && currentItem.width && currentItem.height && (
+                    <div className="p-2 bg-blue-50 rounded text-xs text-blue-700">
+                      <strong>Rough Opening Adjustment:</strong> Subtracting 0.5" from each dimension for actual window size
+                      <br />
+                      Actual Size: {Math.max(0, parseFloat(currentItem.width) - 0.5)}" × {Math.max(0, parseFloat(currentItem.height) - 0.5)}"
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between">
                     <span className="text-sm">Base Price/sq ft:</span>
                     <span className="text-sm font-medium">
