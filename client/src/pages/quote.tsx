@@ -40,9 +40,9 @@ interface QuoteItem {
 }
 
 const allProductLines = [
-  { value: "v300-trinsic", label: "V300 Trinsic", description: "MILGARD V300 TRINSIC WINDOW", pricePerSqFt: 28.75, tier: "customer" },
-  { value: "v400-tuscany", label: "V400 Tuscany", description: "MILGARD V400 TUSCANY WINDOW", pricePerSqFt: 31.20, tier: "customer" },
-  { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 35.90, tier: "contractor" }
+  { value: "v300-trinsic", label: "V300 Trinsic", description: "MILGARD V300 TRINSIC WINDOW", pricePerSqFt: 22.50, tier: "customer" },
+  { value: "v400-tuscany", label: "V400 Tuscany", description: "MILGARD V400 TUSCANY WINDOW", pricePerSqFt: 25.75, tier: "customer" },
+  { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 29.85, tier: "contractor" }
 ];
 
 const operatingTypes = [
@@ -81,13 +81,13 @@ const finTypes = [
 
 const energyPackages = [
   { value: "none", label: "None", priceAdder: 0 },
-  { value: "title-24-2019", label: "Title 24 2019", priceAdder: 2.85 }
+  { value: "title-24-2019", label: "Title 24 2019", priceAdder: 2.25 }
 ];
 
 const outerGlassTypes = [
   { value: "clear", label: "Clear", priceAdder: 0 },
-  { value: "sungaardmax-low-e", label: "SunGuardMAX (Low E)", priceAdder: 2.45 },
-  { value: "low-e-max", label: "Low-E Max", priceAdder: 3.20 }
+  { value: "sungaardmax-low-e", label: "SunGuardMAX (Low E)", priceAdder: 1.95 },
+  { value: "low-e-max", label: "Low-E Max", priceAdder: 2.75 }
 ];
 
 const spacerOptions = [
@@ -96,7 +96,7 @@ const spacerOptions = [
 
 const argonOptions = [
   { value: "none", label: "None", priceAdder: 0 },
-  { value: "argon", label: "Argon", priceAdder: 1.85 }
+  { value: "argon", label: "Argon", priceAdder: 1.50 }
 ];
 
 // Energy rating calculations based on glass configuration
@@ -148,13 +148,13 @@ const calculateEnergyRatings = (item: QuoteItem) => {
 
 const edgeGuardOptions = [
   { value: "none", label: "None", priceAdder: 0 },
-  { value: "edgeguardmax", label: "EdgeGuard Max", priceAdder: 4.15 }
+  { value: "edgeguardmax", label: "EdgeGuard Max", priceAdder: 3.50 }
 ];
 
 const innerGlassTypes = [
   { value: "clear", label: "Clear", priceAdder: 0 },
-  { value: "obscure", label: "Obscure", priceAdder: 1.30 },
-  { value: "4th-surface", label: "4th Surface Coating", priceAdder: 3.85 }
+  { value: "obscure", label: "Obscure", priceAdder: 1.15 },
+  { value: "4th-surface", label: "4th Surface Coating", priceAdder: 3.25 }
 ];
 
 const frameColors = [
