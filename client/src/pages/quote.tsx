@@ -159,9 +159,9 @@ const innerGlassTypes = [
 
 const frameColors = [
   { value: "white", label: "White", priceAdder: 0 },
-  { value: "tan", label: "Tan", priceAdder: 1.25 },
-  { value: "bronze", label: "Bronze", priceAdder: 1.25 },
-  { value: "black", label: "Black", priceAdder: 1.75 }
+  { value: "tan", label: "Tan", priceAdder: 1.10 },
+  { value: "bronze", label: "Bronze", priceAdder: 1.10 },
+  { value: "black", label: "Black", priceAdder: 1.55 }
 ];
 
 // Get available interior colors based on exterior color selection
@@ -385,7 +385,7 @@ export default function QuotePage() {
     
     // Add tempered glass pricing
     if (item.configuration.isTempered) {
-      pricePerSqFt += 4.90;
+      pricePerSqFt += 4.25;
     }
 
     return sqFt * pricePerSqFt;
