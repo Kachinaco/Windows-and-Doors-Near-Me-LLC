@@ -764,12 +764,17 @@ export default function QuotePage() {
                         value={currentItem.callOut || ""}
                         onChange={(e) => {
                           const callOut = e.target.value;
-                          // Parse call out like "3030" using formula: first 2 digits × 12 + 36 for width, last 2 digits for height
+                          // Parse call out like "3030" where each digit × 12 + 0
                           if (callOut.length === 4 && /^\d{4}$/.test(callOut)) {
-                            const firstTwo = parseInt(callOut.substring(0, 2));
-                            const lastTwo = parseInt(callOut.substring(2, 4));
-                            const width = (firstTwo * 12 + 36) + "\"";
-                            const height = lastTwo + "\"";
+                            const widthDigits = callOut.substring(0, 2);
+                            const heightDigits = callOut.substring(2, 4);
+                            
+                            // Calculate width: each digit × 12 + 0
+                            const width = (parseInt(widthDigits.charAt(0)) * 12 + parseInt(widthDigits.charAt(1)) * 12) + "\"";
+                            
+                            // Calculate height: each digit × 12 + 0  
+                            const height = (parseInt(heightDigits.charAt(0)) * 12 + parseInt(heightDigits.charAt(1)) * 12) + "\"";
+                            
                             setCurrentItem({
                               ...currentItem, 
                               callOut, 
@@ -783,8 +788,8 @@ export default function QuotePage() {
                         className="h-8"
                       />
                       <div className="text-xs text-gray-500 mt-1">
-                        Enter 4 digits (e.g. 3030 = 72"×30", 3060 = 72"×60")
-                        <br />Formula: First 2 digits × 12 + 36 = Width, Last 2 digits = Height
+                        Enter 4 digits (e.g. 3030 = 36"×36", 3060 = 36"×72")
+                        <br />Formula: Each digit × 12 (30 = 3×12 + 0×12 = 36")
                       </div>
                     </div>
                     <div>
