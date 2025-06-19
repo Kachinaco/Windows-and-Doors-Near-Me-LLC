@@ -5,11 +5,24 @@ import { User, LoginCredentials, InsertUser } from "@shared/schema";
 export function useAuth() {
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading } = useQuery<User>({
+  const { data: user, isLoading, error } = useQuery<User>({
     queryKey: ["/api/auth/me"],
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: !!localStorage.getItem("authToken"),
+    queryFn: async () => {
+      try {
+        const response = await apiRequest("GET", "/api/auth/me");
+        return response.json();
+      } catch (err: any) {
+        // If authentication fails, clear the invalid token
+        if (err.message?.includes("401") || err.message?.includes("403")) {
+          localStorage.removeItem("authToken");
+          queryClient.setQueryData(["/api/auth/me"], null);
+        }
+        throw err;
+      }
+    },
   });
 
   const loginMutation = useMutation({
