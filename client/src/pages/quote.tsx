@@ -34,9 +34,9 @@ interface QuoteItem {
 }
 
 const allProductLines = [
-  { value: "v300-trinsic", label: "V300 Trinsic", description: "MILGARD V300 TRINSIC WINDOW", pricePerSqFt: 25.80, tier: "customer" },
-  { value: "v400-tuscany", label: "V400 Tuscany", description: "MILGARD V400 TUSCANY WINDOW", pricePerSqFt: 28.50, tier: "customer" },
-  { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 32.20, tier: "contractor" }
+  { value: "v300-trinsic", label: "V300 Trinsic", description: "MILGARD V300 TRINSIC WINDOW", pricePerSqFt: 28.75, tier: "customer" },
+  { value: "v400-tuscany", label: "V400 Tuscany", description: "MILGARD V400 TUSCANY WINDOW", pricePerSqFt: 31.20, tier: "customer" },
+  { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 35.90, tier: "contractor" }
 ];
 
 const operatingTypes = [
@@ -74,20 +74,20 @@ const finTypes = [
 ];
 
 const energyPackages = [
-  { value: "none", label: "None" },
-  { value: "title-24", label: "Title 24 2019" }
+  { value: "none", label: "None", priceAdder: 0 },
+  { value: "title-24-2019", label: "Title 24 2019", priceAdder: 2.85 }
 ];
 
 const outerGlassTypes = [
   { value: "clear", label: "Clear", priceAdder: 0 },
-  { value: "low-e", label: "Low-E", priceAdder: 2.50 },
-  { value: "low-e-max", label: "Low E Max", priceAdder: 4.20 }
+  { value: "sungaardmax-low-e", label: "SunGuardMAX (Low E)", priceAdder: 2.45 },
+  { value: "edgeguardmax", label: "EdgeGuardMAX", priceAdder: 4.15 }
 ];
 
 const innerGlassTypes = [
   { value: "clear", label: "Clear", priceAdder: 0 },
-  { value: "obscure", label: "Obscure", priceAdder: 1.25 },
-  { value: "4th-surface", label: "4th Surface Coating", priceAdder: 3.80 }
+  { value: "obscure", label: "Obscure", priceAdder: 1.30 },
+  { value: "4th-surface", label: "4th Surface Coating", priceAdder: 3.85 }
 ];
 
 const frameColors = [
@@ -201,7 +201,11 @@ export default function QuotePage() {
     
     const sqFt = (parseFloat(item.width) * parseFloat(item.height)) / 144;
     const baseProduct = allProductLines.find(p => p.label === item.productType);
-    let pricePerSqFt = baseProduct?.pricePerSqFt || 25.80;
+    let pricePerSqFt = baseProduct?.pricePerSqFt || 28.75;
+
+    // Add energy package pricing
+    const energyPackage = energyPackages.find(e => e.value === item.configuration.energyPackage);
+    if (energyPackage) pricePerSqFt += energyPackage.priceAdder;
 
     // Add glass pricing
     const outerGlass = outerGlassTypes.find(g => g.value === item.configuration.outerGlass);
@@ -212,7 +216,7 @@ export default function QuotePage() {
     
     // Add tempered glass pricing
     if (item.configuration.isTempered) {
-      pricePerSqFt += 4.85;
+      pricePerSqFt += 4.90;
     }
 
     return sqFt * pricePerSqFt;

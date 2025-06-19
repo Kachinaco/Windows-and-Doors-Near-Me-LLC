@@ -220,7 +220,7 @@ export default function CatalogPage() {
             <Button 
               size="lg" 
               variant="outline"
-              className="border-white text-white hover:bg-white hover:text-blue-900 px-8 py-3"
+              className="border h-11 rounded-md border-white text-white hover:bg-white hover:text-blue-900 px-8 py-3 bg-[#1e3a8a]"
             >
               Call (480) 993-4392
             </Button>
