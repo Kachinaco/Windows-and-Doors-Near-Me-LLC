@@ -7,6 +7,7 @@ import {
   projects,
   quoteRequests,
   quoteActivities,
+  blogPosts,
   type User,
   type InsertUser,
   type Product,
@@ -23,6 +24,8 @@ import {
   type InsertQuoteRequest,
   type QuoteActivity,
   type InsertQuoteActivity,
+  type BlogPost,
+  type InsertBlogPost,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -80,6 +83,16 @@ export interface IStorage {
   // Quote activity operations
   createQuoteActivity(activity: InsertQuoteActivity): Promise<QuoteActivity>;
   getQuoteActivities(quoteRequestId: number): Promise<QuoteActivity[]>;
+  
+  // Blog operations
+  getAllBlogPosts(): Promise<BlogPost[]>;
+  getPublishedBlogPosts(): Promise<BlogPost[]>;
+  getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
+  getBlogPost(id: number): Promise<BlogPost | undefined>;
+  createBlogPost(blogPost: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: number, updates: Partial<InsertBlogPost>): Promise<BlogPost>;
+  deleteBlogPost(id: number): Promise<void>;
+  getBlogPostsByCategory(category: string): Promise<BlogPost[]>;
 }
 
 export class DatabaseStorage implements IStorage {

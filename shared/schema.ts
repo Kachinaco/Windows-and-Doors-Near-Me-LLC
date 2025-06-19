@@ -185,6 +185,30 @@ export const quoteActivitiesRelations = relations(quoteActivities, ({ one }) => 
   }),
 }));
 
+// Blog posts for home improvement tips
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  excerpt: text("excerpt").notNull(),
+  content: text("content").notNull(),
+  category: text("category").notNull(), // window-tips, door-tips, maintenance, energy-efficiency, installation
+  tags: jsonb("tags"), // array of tag strings
+  imageUrl: text("image_url"),
+  authorId: integer("author_id").references(() => users.id),
+  isPublished: boolean("is_published").default(false),
+  publishedAt: timestamp("published_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const blogPostsRelations = relations(blogPosts, ({ one }) => ({
+  author: one(users, {
+    fields: [blogPosts.authorId],
+    references: [users.id],
+  }),
+}));
+
 // Schemas for validation
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -237,6 +261,12 @@ export const insertQuoteActivitySchema = createInsertSchema(quoteActivities).omi
   createdAt: true,
 });
 
+export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -262,3 +292,6 @@ export type InsertQuoteRequest = z.infer<typeof insertQuoteRequestSchema>;
 
 export type QuoteActivity = typeof quoteActivities.$inferSelect;
 export type InsertQuoteActivity = z.infer<typeof insertQuoteActivitySchema>;
+
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
