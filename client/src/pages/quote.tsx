@@ -623,6 +623,86 @@ export default function QuotePage() {
               </CardContent>
             </Card>
 
+            {/* Dimensions Configuration */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Dimensions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-blue-600">Opening Type *</Label>
+                  <div className="flex items-center space-x-6 mt-2">
+                    <div className="flex items-center space-x-2">
+                      <input type="radio" id="rough-opening" name="opening-type" className="text-blue-600" />
+                      <label htmlFor="rough-opening" className="text-sm">Rough Opening</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="radio" id="net-frame" name="opening-type" checked={true} readOnly className="text-blue-600" />
+                      <label htmlFor="net-frame" className="text-sm">Net Frame</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="radio" id="call-out" name="opening-type" className="text-blue-600" />
+                      <label htmlFor="call-out" className="text-sm">Call Out</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Exact Width for 17 3/4" to 95 1/2" *</Label>
+                    <Input
+                      type="text"
+                      placeholder="35 1/2"
+                      value={currentItem.width}
+                      onChange={(e) => setCurrentItem({...currentItem, width: e.target.value})}
+                      className="h-8"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Exact Height from 11 1/2" to 71 1/2" *</Label>
+                    <Input
+                      type="text"
+                      placeholder="47 1/2"
+                      value={currentItem.height}
+                      onChange={(e) => setCurrentItem({...currentItem, height: e.target.value})}
+                      className="h-8"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Quantity *</Label>
+                    <Input
+                      type="number"
+                      placeholder="1"
+                      value={currentItem.quantity}
+                      onChange={(e) => setCurrentItem({...currentItem, quantity: parseInt(e.target.value) || 1})}
+                      className="h-8"
+                      min="1"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t flex gap-3 flex-wrap">
+                  <Button 
+                    onClick={addItemToQuote}
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                    disabled={!currentItem.width || !currentItem.height}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Item
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={resetCurrentItem}
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Clear Form
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Product Configuration */}
             <Card>
               <CardHeader className="pb-3">
@@ -1045,66 +1125,7 @@ export default function QuotePage() {
               </CardContent>
             </Card>
 
-            {/* Dimensions */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                  Dimensions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium">Width (inches) *</Label>
-                    <Input
-                      className="h-8"
-                      type="number"
-                      value={currentItem.width}
-                      onChange={(e) => setCurrentItem({...currentItem, width: e.target.value})}
-                      placeholder="36"
-                      min="12"
-                      max="120"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Height (inches) *</Label>
-                    <Input
-                      className="h-8"
-                      type="number"
-                      value={currentItem.height}
-                      onChange={(e) => setCurrentItem({...currentItem, height: e.target.value})}
-                      placeholder="48"
-                      min="12"
-                      max="120"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Square Feet</Label>
-                    <div className="h-8 px-3 py-1 bg-gray-100 dark:bg-gray-700 border rounded-md text-sm flex items-center">
-                      {currentItem.width && currentItem.height ? 
-                        ((parseFloat(currentItem.width) * parseFloat(currentItem.height)) / 144).toFixed(2) : '0.00'}
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Unit Price</Label>
-                    <div className="h-8 px-3 py-1 bg-gray-100 dark:bg-gray-700 border rounded-md text-sm flex items-center font-semibold">
-                      ${calculateItemPrice(currentItem).toLocaleString()}
-                    </div>
-                  </div>
-                </div>
 
-                <div className="mt-6 pt-4 border-t flex gap-3 flex-wrap">
-                  <Button 
-                    onClick={addItemToQuote}
-                    className="bg-orange-600 hover:bg-orange-700 text-white"
-                    disabled={!currentItem.width || !currentItem.height}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Item
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Right Sidebar */}
