@@ -877,6 +877,108 @@ export default function QuotePage() {
 
           {/* Right Sidebar */}
           <div className="space-y-6">
+            {/* Window Preview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Window Preview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    {/* Window Frame */}
+                    <div 
+                      className={`border-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 relative ${
+                        currentItem.configuration.frameColor === 'bronze' ? 'border-yellow-700' :
+                        currentItem.configuration.frameColor === 'black' ? 'border-gray-900' :
+                        'border-gray-300'
+                      }`}
+                      style={{
+                        width: currentItem.width ? `${Math.min(180, parseInt(currentItem.width) * 2)}px` : '120px',
+                        height: currentItem.height ? `${Math.min(240, parseInt(currentItem.height) * 2)}px` : '160px'
+                      }}
+                    >
+                      {/* Glass Effect */}
+                      <div className={`absolute inset-1 ${
+                        currentItem.configuration.outerGlass === 'low-e' ? 'bg-gradient-to-br from-green-50 to-blue-50' :
+                        currentItem.configuration.outerGlass === 'low-e-max' ? 'bg-gradient-to-br from-blue-50 to-purple-50' :
+                        'bg-gradient-to-br from-blue-50 to-white'
+                      } ${
+                        currentItem.configuration.innerGlass === 'obscure' ? 'opacity-70' : 'opacity-90'
+                      }`}>
+                        {/* Tempered Glass Indicator */}
+                        {currentItem.configuration.isTempered && (
+                          <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full opacity-60"></div>
+                        )}
+                        
+                        {/* Grid Pattern */}
+                        {currentItem.configuration.gridPattern !== 'none' && (
+                          <div className="absolute inset-0">
+                            {currentItem.configuration.gridPattern === 'colonial' && (
+                              <>
+                                <div className="absolute top-1/3 left-0 right-0 h-0.5 bg-gray-400 opacity-60"></div>
+                                <div className="absolute bottom-1/3 left-0 right-0 h-0.5 bg-gray-400 opacity-60"></div>
+                                <div className="absolute top-0 bottom-0 left-1/3 w-0.5 bg-gray-400 opacity-60"></div>
+                                <div className="absolute top-0 bottom-0 right-1/3 w-0.5 bg-gray-400 opacity-60"></div>
+                              </>
+                            )}
+                            {currentItem.configuration.gridPattern === 'prairie' && (
+                              <>
+                                <div className="absolute top-4 left-4 right-4 h-0.5 bg-gray-400 opacity-60"></div>
+                                <div className="absolute top-4 bottom-4 left-4 w-0.5 bg-gray-400 opacity-60"></div>
+                                <div className="absolute top-4 bottom-4 right-4 w-0.5 bg-gray-400 opacity-60"></div>
+                                <div className="absolute bottom-4 left-4 right-4 h-0.5 bg-gray-400 opacity-60"></div>
+                              </>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Operating Style Indicators */}
+                        {currentItem.configuration.operatingType === 'horizontal-slider' && (
+                          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-500 opacity-40"></div>
+                        )}
+                        {currentItem.configuration.operatingType === 'vertical-hung' && (
+                          <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-gray-500 opacity-40"></div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Fin Type Indicator */}
+                    {currentItem.configuration.finType === 'nail-fin' && (
+                      <div className="absolute -inset-1 border border-dashed border-gray-400 opacity-50"></div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Configuration Summary */}
+                <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                  <div className="flex justify-between">
+                    <span>Product:</span>
+                    <span className="font-medium">{currentItem.productType}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Style:</span>
+                    <span className="font-medium capitalize">{currentItem.configuration.operatingType?.replace('-', ' ')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Frame:</span>
+                    <span className="font-medium capitalize">{currentItem.configuration.frameColor}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Glass:</span>
+                    <span className="font-medium">{currentItem.configuration.outerGlass}/{currentItem.configuration.innerGlass}</span>
+                  </div>
+                  {currentItem.configuration.isTempered && (
+                    <div className="flex justify-between">
+                      <span>Tempered:</span>
+                      <span className="font-medium text-red-600">Yes</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
