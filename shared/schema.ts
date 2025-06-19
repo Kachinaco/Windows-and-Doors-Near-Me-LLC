@@ -227,6 +227,7 @@ export const insertProjectSchema = createInsertSchema(projects).omit({
 
 export const insertQuoteRequestSchema = createInsertSchema(quoteRequests).omit({
   id: true,
+  quoteNumber: true,
   createdAt: true,
   updatedAt: true,
 });

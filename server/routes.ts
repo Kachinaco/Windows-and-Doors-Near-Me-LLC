@@ -390,6 +390,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Quote request routes
+  app.post("/api/quote-requests", async (req, res) => {
+    try {
+      const { customerName, customerEmail, customerPhone, projectAddress, items, totalEstimate, notes } = req.body;
+      
+      if (!customerName || !customerEmail || !customerPhone || !items || !totalEstimate) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const quoteRequest = await storage.createQuoteRequest({
+        customerName,
+        customerEmail,
+        customerPhone,
+        projectAddress,
+        items,
+        totalEstimate,
+        notes,
+        status: "pending",
+        priority: "normal"
+      });
+
+      // Create initial activity
+      await storage.createQuoteActivity({
+        quoteRequestId: quoteRequest.id,
+        activityType: "created",
+        description: `Quote request submitted by ${customerName}`,
+        metadata: { items: items.length, totalEstimate }
+      });
+
+      res.status(201).json({ message: "Quote request submitted successfully", quoteNumber: quoteRequest.quoteNumber });
+    } catch (error: any) {
+      console.error("Error creating quote request:", error);
+      res.status(500).json({ message: "Failed to submit quote request" });
+    }
+  });
+
+  app.get("/api/quote-requests", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { status, assignedTo } = req.query;
+      let quoteRequests;
+
+      if (status) {
+        quoteRequests = await storage.getQuoteRequestsByStatus(status as string);
+      } else if (assignedTo) {
+        quoteRequests = await storage.getQuoteRequestsByAssignee(parseInt(assignedTo as string));
+      } else {
+        quoteRequests = await storage.getAllQuoteRequests();
+      }
+
+      res.json(quoteRequests);
+    } catch (error: any) {
+      console.error("Error fetching quote requests:", error);
+      res.status(500).json({ message: "Failed to fetch quote requests" });
+    }
+  });
+
+  app.get("/api/quote-requests/:id", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const quoteRequest = await storage.getQuoteRequest(parseInt(req.params.id));
+      if (!quoteRequest) {
+        return res.status(404).json({ message: "Quote request not found" });
+      }
+
+      const activities = await storage.getQuoteActivities(quoteRequest.id);
+      res.json({ ...quoteRequest, activities });
+    } catch (error: any) {
+      console.error("Error fetching quote request:", error);
+      res.status(500).json({ message: "Failed to fetch quote request" });
+    }
+  });
+
+  app.put("/api/quote-requests/:id", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const updates = req.body;
+      const quoteRequest = await storage.updateQuoteRequest(parseInt(req.params.id), updates);
+
+      // Create activity for status change
+      if (updates.status) {
+        await storage.createQuoteActivity({
+          quoteRequestId: quoteRequest.id,
+          activityType: "status_changed",
+          description: `Status changed to ${updates.status}`,
+          performedBy: req.user!.id,
+          metadata: { newStatus: updates.status }
+        });
+      }
+
+      res.json(quoteRequest);
+    } catch (error: any) {
+      console.error("Error updating quote request:", error);
+      res.status(500).json({ message: "Failed to update quote request" });
+    }
+  });
+
+  app.post("/api/quote-requests/:id/activities", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { activityType, description, metadata } = req.body;
+      
+      const activity = await storage.createQuoteActivity({
+        quoteRequestId: parseInt(req.params.id),
+        activityType,
+        description,
+        performedBy: req.user!.id,
+        metadata
+      });
+
+      res.status(201).json(activity);
+    } catch (error: any) {
+      console.error("Error creating quote activity:", error);
+      res.status(500).json({ message: "Failed to create activity" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

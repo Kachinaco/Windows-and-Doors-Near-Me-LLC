@@ -7,7 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Plus, Calculator, FileText, Phone } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft, Plus, Calculator, FileText, Phone, CheckCircle } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 interface QuoteItem {
   id: string;
@@ -128,7 +131,9 @@ export default function QuotePage() {
     notes: ""
   });
 
-  const [step, setStep] = useState<"configure" | "summary" | "contact">("configure");
+  const [step, setStep] = useState<"configure" | "summary" | "contact" | "success">("configure");
+  const [submittedQuoteNumber, setSubmittedQuoteNumber] = useState("");
+  const { toast } = useToast();
 
   // Load selected product from sessionStorage
   useEffect(() => {
@@ -216,6 +221,46 @@ export default function QuotePage() {
     return calculateItemPrice(currentItem) * (currentItem.quantity || 1);
   };
 
+  // Quote submission mutation
+  const submitQuoteMutation = useMutation({
+    mutationFn: async (quoteData: any) => {
+      return apiRequest("POST", "/api/quote-requests", quoteData);
+    },
+    onSuccess: (data) => {
+      setSubmittedQuoteNumber(data.quoteNumber);
+      setStep("success");
+      toast({
+        title: "Quote Request Submitted",
+        description: `Your quote request ${data.quoteNumber} has been submitted successfully.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Submission Failed",
+        description: "There was an error submitting your quote request. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleQuoteSubmission = () => {
+    if (!customerInfo.name || !customerInfo.email || !customerInfo.phone || quoteItems.length === 0) {
+      return;
+    }
+
+    const quoteData = {
+      customerName: customerInfo.name,
+      customerEmail: customerInfo.email,
+      customerPhone: customerInfo.phone,
+      projectAddress: customerInfo.address || "",
+      items: quoteItems,
+      totalEstimate: getTotalPrice().toString(),
+      notes: customerInfo.notes || "",
+    };
+
+    submitQuoteMutation.mutate(quoteData);
+  };
+
   if (step === "contact") {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
@@ -296,9 +341,10 @@ export default function QuotePage() {
                 <Button 
                   size="lg" 
                   className="bg-orange-600 hover:bg-orange-700 text-white"
-                  disabled={!customerInfo.name || !customerInfo.email || !customerInfo.phone}
+                  disabled={!customerInfo.name || !customerInfo.email || !customerInfo.phone || submitQuoteMutation.isPending}
+                  onClick={handleQuoteSubmission}
                 >
-                  Submit Quote Request
+                  {submitQuoteMutation.isPending ? "Submitting..." : "Submit Quote Request"}
                 </Button>
                 <Button 
                   size="lg" 
