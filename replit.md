@@ -172,6 +172,7 @@ Changelog:
 - June 19, 2025. Updated customer product access to V300 and V400 series only (changed V350 Tuscany to V400 Tuscany)
 - June 19, 2025. Implemented CTB Quote Plus pricing structure with updated base prices, energy packages (Title 24 2019), glass options (SunGuardMAX, EdgeGuardMAX), and comprehensive pricing calculation
 - June 19, 2025. Added admin view toggle allowing admin/contractor users to switch between full access and customer-restricted view for testing customer experience
+- June 19, 2025. Separated EdgeGuard Max as standalone option from glass types, implemented automatic Title 24 selection (Low-E Max + EdgeGuard Max + Argon)
 
 ## User Preferences
 
