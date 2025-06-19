@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Calculator, FileText, Phone, CheckCircle } from "lucide-react";
+import { ArrowLeft, Plus, Calculator, FileText, Phone, CheckCircle, Image, X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -101,10 +101,36 @@ const gridPatterns = [
   { value: "prairie", label: "Prairie" }
 ];
 
+// Window gallery images data
+const windowGalleries = {
+  operatingTypes: [
+    { id: 'horizontal-slider', name: 'Horizontal Sliders', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8bGluZSB4MT0iNjAiIHkxPSIwIiB4Mj0iNjAiIHkyPSI4MCIgc3Ryb2tlPSIjNEI1NTYzIiBzdHJva2Utd2lkdGg9IjIiLz4KPHN2ZyB4PSIyNSIgeT0iMzUiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgdmlld0JveD0iMCAwIDEwIDEwIiBmaWxsPSJub25lIj4KICA8cG9seWdvbiBwb2ludHM9IjAsMy41IDMsNSAwLDYuNSIgZmlsbD0iIzM3NDE1MSIvPgo8L3N2Zz4KPHN2ZyB4PSI4NSIgeT0iMzUiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgdmlld0JveD0iMCAwIDEwIDEwIiBmaWxsPSJub25lIj4KICA8cG9seWdvbiBwb2ludHM9IjEwLDMuNSA3LDUgMTAsNi41IiBmaWxsPSIjNkI3Mjg0Ii8+Cjwvc3ZnPgo8L3N2Zz4=' },
+    { id: 'vertical-hung', name: 'Vertical Sliders', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8bGluZSB4MT0iMCIgeTE9IjQwIiB4Mj0iMTIwIiB5Mj0iNDAiIHN0cm9rZT0iIzRCNTU2MyIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxzdmcgeD0iNTUiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHZpZXdCb3g9IjAgMCAxMCAxMCIgZmlsbD0ibm9uZSI+CiAgPHBvbHlnb24gcG9pbnRzPSIzLjUsMCA1LDMgNi41LDAiIGZpbGw9IiMzNzQxNTEiLz4KPC9zdmc+CjxzdmcgeD0iNTUiIHk9IjYwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHZpZXdCb3g9IjAgMCAxMCAxMCIgZmlsbD0ibm9uZSI+CiAgPHBvbHlnb24gcG9pbnRzPSIzLjUsMTAgNSw3IDYuNSwxMCIgZmlsbD0iIzM3NDE1MSIvPgo8L3N2Zz4KPC9zdmc+' },
+    { id: 'awning', name: 'Awning', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTAgMTBMMTEwIDEwIDExMCA3MCAiIHN0cm9rZT0iIzM3NDE1MSIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+Cjx0ZXh0IHg9IjUwIiB5PSI0NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjMzc0MTUxIj5Bd25pbmc8L3RleHQ+Cjwvc3ZnPg==' },
+    { id: 'casement', name: 'Casement', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTEwIDEwTDEwIDEwIDEwIDcwIiBzdHJva2U9IiMzNzQxNTEiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPgo8dGV4dCB4PSI0NSIgeT0iNDUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzM3NDE1MSI+Q2FzZW1lbnQ8L3RleHQ+Cjwvc3ZnPg==' },
+    { id: 'picture', name: 'Picture Window', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8dGV4dCB4PSIzNSIgeT0iNDUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzM3NDE1MSI+Rml4ZWQ8L3RleHQ+Cjwvc3ZnPg==' },
+    { id: 'slider-picture', name: 'Slider Picture Window', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8bGluZSB4MT0iNDAiIHkxPSIwIiB4Mj0iNDAiIHkyPSI4MCIgc3Ryb2tlPSIjNEI1NTYzIiBzdHJva2Utd2lkdGg9IjIiLz4KPGxpbmUgeDE9IjgwIiB5MT0iMCIgeDI9IjgwIiB5Mj0iODAiIHN0cm9rZT0iIzRCNTU2MyIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjx0ZXh0IHg9IjE1IiB5PSI0NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IiMzNzQxNTEiPlg8L3RleHQ+Cjx0ZXh0IHg9IjU1IiB5PSI0NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IiM2QjcyODQiPk88L3RleHQ+Cjx0ZXh0IHg9Ijk1IiB5PSI0NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IiMzNzQxNTEiPlg8L3RleHQ+Cjwvc3ZnPg==' }
+  ],
+  configurations: [
+    { id: 'xo-slider', name: 'XO Slider', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8bGluZSB4MT0iNjAiIHkxPSIwIiB4Mj0iNjAiIHkyPSI4MCIgc3Ryb2tlPSIjNEI1NTYzIiBzdHJva2Utd2lkdGg9IjIiLz4KPHN2ZyB4PSIyNSIgeT0iMzUiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgdmlld0JveD0iMCAwIDEwIDEwIiBmaWxsPSJub25lIj4KICA8cG9seWdvbiBwb2ludHM9IjAsMy41IDMsNSAwLDYuNSIgZmlsbD0iIzM3NDE1MSIvPgo8L3N2Zz4KPHN2ZyB4PSI4NSIgeT0iMzUiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgdmlld0JveD0iMCAwIDEwIDEwIiBmaWxsPSJub25lIj4KICA8cG9seWdvbiBwb2ludHM9IjEwLDMuNSA3LDUgMTAsNi41IiBmaWxsPSIjNkI3Mjg0Ii8+Cjwvc3ZnPgo8dGV4dCB4PSIyNSIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzM3NDE1MSI+WDwvdGV4dD4KPHR4dCB4PSI4NSIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzZCNzI4NCI+TzwvdGV4dD4KPC9zdmc+' },
+    { id: 'ox-slider', name: 'OX Slider', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8bGluZSB4MT0iNjAiIHkxPSIwIiB4Mj0iNjAiIHkyPSI4MCIgc3Ryb2tlPSIjNEI1NTYzIiBzdHJva2Utd2lkdGg9IjIiLz4KPHN2ZyB4PSI4NSIgeT0iMzUiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgdmlld0JveD0iMCAwIDEwIDEwIiBmaWxsPSJub25lIj4KICA8cG9seWdvbiBwb2ludHM9IjEwLDMuNSA3LDUgMTAsNi41IiBmaWxsPSIjMzc0MTUxIi8+Cjwvc3ZnPgo8dGV4dCB4PSIyNSIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzZCNzI4NCI+TzwvdGV4dD4KPHR4dCB4PSI4NSIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzM3NDE1MSI+WDwvdGV4dD4KPC9zdmc+' },
+    { id: 'xox-slider', name: 'XOX Slider', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8bGluZSB4MT0iNDAiIHkxPSIwIiB4Mj0iNDAiIHkyPSI4MCIgc3Ryb2tlPSIjNEI1NTYzIiBzdHJva2Utd2lkdGg9IjIiLz4KPGxpbmUgeDE9IjgwIiB5MT0iMCIgeDI9IjgwIiB5Mj0iODAiIHN0cm9rZT0iIzRCNTU2MyIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjx0ZXh0IHg9IjE1IiB5PSIxNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjMzc0MTUxIj5YPC90ZXh0Pgo8dGV4dCB4PSI1NSIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzZCNzI4NCI+TzwvdGV4dD4KPHR4dCB4PSI5NSIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzM3NDE1MSI+WDwvdGV4dD4KPC9zdmc+' },
+    { id: 'single-hung', name: 'Single Hung', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8bGluZSB4MT0iMCIgeTE9IjQwIiB4Mj0iMTIwIiB5Mj0iNDAiIHN0cm9rZT0iIzRCNTU2MyIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxzdmcgeD0iNTUiIHk9IjYwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHZpZXdCb3g9IjAgMCAxMCAxMCIgZmlsbD0ibm9uZSI+CiAgPHBvbHlnb24gcG9pbnRzPSIzLjUsMTAgNSw3IDYuNSwxMCIgZmlsbD0iIzM3NDE1MSIvPgo8L3N2Zz4KPC9zdmc+' },
+    { id: 'double-hung', name: 'Double Hung', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8bGluZSB4MT0iMCIgeTE9IjQwIiB4Mj0iMTIwIiB5Mj0iNDAiIHN0cm9rZT0iIzRCNTU2MyIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxzdmcgeD0iNTUiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHZpZXdCb3g9IjAgMCAxMCAxMCIgZmlsbD0ibm9uZSI+CiAgPHBvbHlnb24gcG9pbnRzPSIzLjUsMCA1LDMgNi41LDAiIGZpbGw9IiMzNzQxNTEiLz4KPC9zdmc+CjxzdmcgeD0iNTUiIHk9IjYwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHZpZXdCb3g9IjAgMCAxMCAxMCIgZmlsbD0ibm9uZSI+CiAgPHBvbHlnb24gcG9pbnRzPSIzLjUsMTAgNSw3IDYuNSwxMCIgZmlsbD0iIzM3NDE1MSIvPgo8L3N2Zz4KPC9zdmc+' }
+  ],
+  glassTypes: [
+    { id: 'clear-clear', name: 'Clear/Clear', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRkFGQUZCIiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8dGV4dCB4PSI0MCIgeT0iNDUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI5IiBmaWxsPSIjMzc0MTUxIj5DbGVhcjwvdGV4dD4KPC9zdmc+' },
+    { id: 'low-e-clear', name: 'Low-E/Clear', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRUNGREY1IiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8dGV4dCB4PSIzNSIgeT0iNDUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI5IiBmaWxsPSIjMzc0MTUxIj5Mb3ctRTwvdGV4dD4KPC9zdmc+' },
+    { id: 'low-e-max-clear', name: 'Low-E Max/Clear', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRkJGQ0ZFIiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIvPgo8dGV4dCB4PSIyNSIgeT0iNDUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmaWxsPSIjMzc0MTUxIj5Mb3ctRSBNYXg8L3RleHQ+Cjwvc3ZnPg==' },
+    { id: 'clear-obscure', name: 'Clear/Obscure', image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMTIwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjlGQUZCIiBzdHJva2U9IiM0QjVTNjMiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC43Ii8+Cjx0ZXh0IHg9IjMwIiB5PSI0NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjkiIGZpbGw9IiMzNzQxNTEiPk9ic2N1cmU8L3RleHQ+Cjwvc3ZnPg==' }
+  ]
+};
+
 export default function QuotePage() {
   const { toast } = useToast();
   const [step, setStep] = useState<"configure" | "summary" | "contact">("configure");
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
+  const [openGallery, setOpenGallery] = useState<string | null>(null);
   const [currentItem, setCurrentItem] = useState<QuoteItem>({
     id: "",
     productType: "V300 Trinsic",
@@ -920,19 +946,19 @@ export default function QuotePage() {
                             
                             {currentItem.configuration.operatingConfiguration === 'single-hung' && (
                               /* Bottom sash moves up (indicated by arrow) */
-                              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                <div className="w-0 h-0 border-l-2 border-r-2 border-b-4 border-transparent border-b-gray-600"></div>
+                              <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2">
+                                <div className="w-0 h-0 border-l-4 border-r-4 border-b-8 border-transparent border-b-gray-700"></div>
                               </div>
                             )}
                             
                             {currentItem.configuration.operatingConfiguration === 'double-hung' && (
                               <>
                                 {/* Both sashes move (indicated by arrows) */}
-                                <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
-                                  <div className="w-0 h-0 border-l-2 border-r-2 border-t-4 border-transparent border-t-gray-600"></div>
+                                <div className="absolute top-3 left-1/2 transform -translate-x-1/2">
+                                  <div className="w-0 h-0 border-l-4 border-r-4 border-t-8 border-transparent border-t-gray-700"></div>
                                 </div>
-                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                  <div className="w-0 h-0 border-l-2 border-r-2 border-b-4 border-transparent border-b-gray-600"></div>
+                                <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2">
+                                  <div className="w-0 h-0 border-l-4 border-r-4 border-b-8 border-transparent border-b-gray-700"></div>
                                 </div>
                               </>
                             )}
@@ -947,10 +973,10 @@ export default function QuotePage() {
                                 {/* Left panel moves (X), right panel fixed (O) */}
                                 <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-gray-600"></div>
                                 <div className="absolute left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                  <div className="w-0 h-0 border-t-2 border-b-2 border-l-4 border-transparent border-l-gray-800"></div>
+                                  <div className="w-0 h-0 border-t-4 border-b-4 border-l-8 border-transparent border-l-gray-800"></div>
                                 </div>
-                                <div className="absolute left-2 top-2 text-xs font-bold text-gray-800">X</div>
-                                <div className="absolute right-2 top-2 text-xs font-bold text-gray-600">O</div>
+                                <div className="absolute left-2 top-2 text-sm font-bold text-gray-800">X</div>
+                                <div className="absolute right-2 top-2 text-sm font-bold text-gray-600">O</div>
                               </>
                             )}
                             
@@ -959,10 +985,10 @@ export default function QuotePage() {
                                 {/* Left panel fixed (O), right panel moves (X) */}
                                 <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-gray-600"></div>
                                 <div className="absolute right-1/4 top-1/2 transform translate-x-1/2 -translate-y-1/2">
-                                  <div className="w-0 h-0 border-t-2 border-b-2 border-r-4 border-transparent border-r-gray-800"></div>
+                                  <div className="w-0 h-0 border-t-4 border-b-4 border-r-8 border-transparent border-r-gray-800"></div>
                                 </div>
-                                <div className="absolute left-2 top-2 text-xs font-bold text-gray-600">O</div>
-                                <div className="absolute right-2 top-2 text-xs font-bold text-gray-800">X</div>
+                                <div className="absolute left-2 top-2 text-sm font-bold text-gray-600">O</div>
+                                <div className="absolute right-2 top-2 text-sm font-bold text-gray-800">X</div>
                               </>
                             )}
                             
@@ -972,14 +998,14 @@ export default function QuotePage() {
                                 <div className="absolute top-0 bottom-0 left-1/3 w-1 bg-gray-600"></div>
                                 <div className="absolute top-0 bottom-0 right-1/3 w-1 bg-gray-600"></div>
                                 <div className="absolute left-1/6 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                  <div className="w-0 h-0 border-t-2 border-b-2 border-l-3 border-transparent border-l-gray-800"></div>
+                                  <div className="w-0 h-0 border-t-4 border-b-4 border-l-6 border-transparent border-l-gray-800"></div>
                                 </div>
                                 <div className="absolute right-1/6 top-1/2 transform translate-x-1/2 -translate-y-1/2">
-                                  <div className="w-0 h-0 border-t-2 border-b-2 border-r-3 border-transparent border-r-gray-800"></div>
+                                  <div className="w-0 h-0 border-t-4 border-b-4 border-r-6 border-transparent border-r-gray-800"></div>
                                 </div>
-                                <div className="absolute left-1 top-2 text-xs font-bold text-gray-800">X</div>
-                                <div className="absolute left-1/2 top-2 transform -translate-x-1/2 text-xs font-bold text-gray-600">O</div>
-                                <div className="absolute right-1 top-2 text-xs font-bold text-gray-800">X</div>
+                                <div className="absolute left-1 top-2 text-sm font-bold text-gray-800">X</div>
+                                <div className="absolute left-1/2 top-2 transform -translate-x-1/2 text-sm font-bold text-gray-600">O</div>
+                                <div className="absolute right-1 top-2 text-sm font-bold text-gray-800">X</div>
                               </>
                             )}
                           </>
