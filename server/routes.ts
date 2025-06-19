@@ -11,6 +11,7 @@ import {
   insertCartItemSchema,
   insertOrderSchema,
   insertContactSubmissionSchema,
+  insertProjectSchema,
 } from "@shared/schema";
 
 interface AuthenticatedRequest extends Request {
