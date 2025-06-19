@@ -51,8 +51,9 @@ const operatingTypes = [
     value: "horizontal-slider",
     label: "Horizontal Slider", 
     configurations: [
-      { value: "two-lite-slider", label: "Two Lite Slider" },
-      { value: "three-lite-slider", label: "Three Lite Slider" }
+      { value: "xo-slider", label: "XO Slider" },
+      { value: "ox-slider", label: "OX Slider" },
+      { value: "xox-slider", label: "XOX Slider" }
     ]
   },
   {
@@ -60,8 +61,7 @@ const operatingTypes = [
     label: "Slider Picture Windows",
     configurations: [
       { value: "xl-slider", label: "XL Slider" },
-      { value: "xo-slider", label: "XO Slider" },
-      { value: "ox-slider", label: "OX Slider" }
+      { value: "picture-window", label: "Picture Window" }
     ]
   }
 ];
