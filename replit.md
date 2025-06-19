@@ -167,6 +167,8 @@ Changelog:
 - June 17, 2025. Implemented three-tier subscription system: Customer (Free), Contractor (30-Day Trial), and Contractor (Paid) with role-based access control, trial expiration tracking, and subscription management interface
 - June 19, 2025. Implemented professional window configuration tool with Milgard pricing based on price per square foot
 - June 19, 2025. Added comprehensive online quote request system with customer portal, contractor dashboard, and activity tracking
+- June 19, 2025. Updated colonial grid pattern to accurate 3x2 layout (3 columns x 2 rows) matching technical specifications
+- June 19, 2025. Removed "350" and "Ultra" product lines from available options per user requirements
 
 ## User Preferences
 
