@@ -101,30 +101,38 @@ const argonOptions = [
 
 // Energy rating calculations based on glass configuration
 const calculateEnergyRatings = (item: QuoteItem) => {
-  let uFactor = 0.30; // Base U-Factor for V300/V400
-  let shgc = 0.25; // Base Solar Heat Gain Coefficient
-  let vt = 0.70; // Base Visible Transmittance
+  // Base ratings for standard configuration
+  let uFactor = 0.32;
+  let shgc = 0.25;
+  let vt = 0.70;
 
-  // Adjust based on glass type
-  if (item.configuration.outerGlass === 'low-e-max') {
-    uFactor = 0.24;
-    shgc = 0.21;
-    vt = 0.68;
-  } else if (item.configuration.outerGlass === 'sungaardmax-low-e') {
-    uFactor = 0.26;
-    shgc = 0.23;
-    vt = 0.65;
-  }
+  // Title 24 2019 configuration (Low-E Max + EdgeGuard Max + Argon)
+  if (item.configuration.energyPackage === 'title-24-2019') {
+    uFactor = 0.28;
+    shgc = 0.22;
+    vt = 0.51;
+  } else {
+    // Individual glass type adjustments for non-Title 24
+    if (item.configuration.outerGlass === 'low-e-max') {
+      uFactor = 0.24;
+      shgc = 0.21;
+      vt = 0.68;
+    } else if (item.configuration.outerGlass === 'sungaardmax-low-e') {
+      uFactor = 0.26;
+      shgc = 0.23;
+      vt = 0.65;
+    }
 
-  // EdgeGuard Max improvement
-  if (item.configuration.edgeGuard === 'edgeguardmax') {
-    uFactor -= 0.02;
-  }
+    // EdgeGuard Max improvement
+    if (item.configuration.edgeGuard === 'edgeguardmax') {
+      uFactor -= 0.02;
+    }
 
-  // Argon gas improvement
-  if (item.configuration.argon === 'argon') {
-    uFactor -= 0.01;
-    shgc -= 0.01;
+    // Argon gas improvement
+    if (item.configuration.argon === 'argon') {
+      uFactor -= 0.01;
+      shgc -= 0.01;
+    }
   }
 
   // Energy package certification
