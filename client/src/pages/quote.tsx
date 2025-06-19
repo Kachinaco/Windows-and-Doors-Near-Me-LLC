@@ -6,9 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Plus, Minus, Calculator, FileText, Phone } from "lucide-react";
+import { ArrowLeft, Plus, Calculator, FileText, Phone } from "lucide-react";
 
 interface QuoteItem {
   id: string;
@@ -20,44 +19,89 @@ interface QuoteItem {
     frameColor: string;
     glassType: string;
     gridPattern: string;
-    hardware: string;
     operatingType: string;
   };
   unitPrice: number;
   totalPrice: number;
 }
 
+// Milgard Product Lines with pricing per sq ft
+const productLines = [
+  {
+    value: "tuscany-v400",
+    label: "Milgard Tuscany® Series V400",
+    description: "CONFIGURED WINDOW",
+    pricePerSqFt: 28.50,
+    category: "Vinyl Series"
+  },
+  {
+    value: "trinsic-v300",
+    label: "Milgard Trinsic® Series V300", 
+    description: "CONFIGURED WINDOW",
+    pricePerSqFt: 32.75,
+    category: "Vinyl Series"
+  },
+  {
+    value: "styleline-v250",
+    label: "Milgard Style Line® Series V250",
+    description: "CONFIGURED WINDOW", 
+    pricePerSqFt: 26.90,
+    category: "Vinyl Series"
+  },
+  {
+    value: "ultra-c650",
+    label: "Milgard Ultra™ Series C650",
+    description: "CONFIGURED WINDOW",
+    pricePerSqFt: 42.80,
+    category: "Fiberglass Series"
+  },
+  {
+    value: "aluminum-a250",
+    label: "Thermally Improved Aluminum A250",
+    description: "CONFIGURED WINDOW",
+    pricePerSqFt: 35.60,
+    category: "Aluminum Series"
+  }
+];
+
 const frameColors = [
-  { value: "white", label: "White", color: "#FFFFFF" },
-  { value: "bronze", label: "Bronze", color: "#8B4513" },
-  { value: "black", label: "Black", color: "#000000" },
-  { value: "tan", label: "Tan", color: "#D2B48C" },
-  { value: "clay", label: "Clay", color: "#A0522D" }
+  { value: "white", label: "White", priceAdder: 0 },
+  { value: "bronze", label: "Bronze", priceAdder: 1.25 },
+  { value: "black", label: "Black", priceAdder: 1.25 },
+  { value: "tan", label: "Tan", priceAdder: 1.25 },
+  { value: "clay", label: "Clay", priceAdder: 1.25 },
+  { value: "custom", label: "Custom Color", priceAdder: 2.50 }
 ];
 
 const glassTypes = [
-  { value: "clear", label: "Clear Glass", price: 0 },
-  { value: "low-e", label: "Low-E Glass", price: 45 },
-  { value: "tempered", label: "Tempered Glass", price: 85 },
-  { value: "laminated", label: "Laminated Glass", price: 120 },
-  { value: "impact", label: "Impact Resistant", price: 180 }
+  { value: "clear", label: "Clear Glass", priceAdder: 0 },
+  { value: "low-e", label: "Low-E Glass", priceAdder: 3.20 },
+  { value: "tempered", label: "Tempered Glass", priceAdder: 4.85 },
+  { value: "laminated", label: "Laminated Glass", priceAdder: 6.75 },
+  { value: "impact", label: "Impact Resistant", priceAdder: 12.40 }
 ];
 
 const gridPatterns = [
-  { value: "none", label: "No Grids", price: 0 },
-  { value: "colonial", label: "Colonial Pattern", price: 25 },
-  { value: "prairie", label: "Prairie Style", price: 30 },
-  { value: "diamond", label: "Diamond Pattern", price: 40 },
-  { value: "custom", label: "Custom Pattern", price: 55 }
+  { value: "none", label: "None", priceAdder: 0 },
+  { value: "colonial", label: "Colonial", priceAdder: 1.80 },
+  { value: "prairie", label: "Prairie", priceAdder: 2.10 },
+  { value: "diamond", label: "Diamond", priceAdder: 2.85 },
+  { value: "custom", label: "Custom Pattern", priceAdder: 3.50 }
 ];
 
 const operatingTypes = [
-  { value: "single-hung", label: "Single Hung", basePrice: 320 },
-  { value: "double-hung", label: "Double Hung", basePrice: 385 },
-  { value: "casement", label: "Casement", basePrice: 450 },
-  { value: "sliding", label: "Sliding", basePrice: 295 },
-  { value: "awning", label: "Awning", basePrice: 375 },
-  { value: "fixed", label: "Fixed/Picture", basePrice: 245 }
+  { value: "single-hung", label: "Single Hung", priceMultiplier: 1.0 },
+  { value: "double-hung", label: "Double Hung", priceMultiplier: 1.15 },
+  { value: "casement", label: "Casement", priceMultiplier: 1.35 },
+  { value: "sliding", label: "Sliding", priceMultiplier: 0.95 },
+  { value: "awning", label: "Awning", priceMultiplier: 1.25 },
+  { value: "fixed", label: "Fixed/Picture", priceMultiplier: 0.85 }
+];
+
+const energyPackages = [
+  { value: "standard", label: "Standard", priceAdder: 0 },
+  { value: "energy-star", label: "ENERGY STAR®", priceAdder: 2.40 },
+  { value: "high-performance", label: "High Performance", priceAdder: 4.90 }
 ];
 
 export default function QuotePage() {
@@ -72,10 +116,19 @@ export default function QuotePage() {
       frameColor: "white",
       glassType: "clear",
       gridPattern: "none",
-      hardware: "standard",
       operatingType: "double-hung"
     }
   });
+
+  const [customerInfo, setCustomerInfo] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    notes: ""
+  });
+
+  const [step, setStep] = useState<"configure" | "summary" | "contact">("configure");
 
   // Load selected product from sessionStorage
   useEffect(() => {
@@ -87,29 +140,45 @@ export default function QuotePage() {
       }));
     }
   }, []);
-  
-  const [customerInfo, setCustomerInfo] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-    notes: ""
-  });
-
-  const [step, setStep] = useState<"configure" | "summary" | "contact">("configure");
 
   const calculateItemPrice = (item: Partial<QuoteItem>) => {
-    if (!item.width || !item.height || !item.configuration?.operatingType) return 0;
+    if (!item.width || !item.height || !item.productType) return 0;
     
     const width = parseFloat(item.width);
     const height = parseFloat(item.height);
     const area = (width * height) / 144; // Convert to square feet
     
-    const basePrice = operatingTypes.find(op => op.value === item.configuration?.operatingType)?.basePrice || 0;
-    const glassUpcharge = glassTypes.find(g => g.value === item.configuration?.glassType)?.price || 0;
-    const gridUpcharge = gridPatterns.find(g => g.value === item.configuration?.gridPattern)?.price || 0;
+    // Find base price per sq ft for product line
+    const productLine = productLines.find(p => p.label === item.productType);
+    if (!productLine) return 0;
     
-    const unitPrice = Math.round((basePrice + glassUpcharge + gridUpcharge) * Math.max(area, 1));
+    let pricePerSqFt = productLine.pricePerSqFt;
+    
+    // Apply operating type multiplier
+    const operatingType = operatingTypes.find(op => op.value === item.configuration?.operatingType);
+    if (operatingType) {
+      pricePerSqFt *= operatingType.priceMultiplier;
+    }
+    
+    // Add glass type adder
+    const glassType = glassTypes.find(g => g.value === item.configuration?.glassType);
+    if (glassType) {
+      pricePerSqFt += glassType.priceAdder;
+    }
+    
+    // Add grid pattern adder
+    const gridPattern = gridPatterns.find(g => g.value === item.configuration?.gridPattern);
+    if (gridPattern) {
+      pricePerSqFt += gridPattern.priceAdder;
+    }
+    
+    // Add frame color adder
+    const frameColor = frameColors.find(c => c.value === item.configuration?.frameColor);
+    if (frameColor) {
+      pricePerSqFt += frameColor.priceAdder;
+    }
+    
+    const unitPrice = Math.round(pricePerSqFt * area * 100) / 100;
     return unitPrice;
   };
 
@@ -137,18 +206,6 @@ export default function QuotePage() {
       height: "",
       quantity: 1
     });
-  };
-
-  const removeQuoteItem = (id: string) => {
-    setQuoteItems(quoteItems.filter(item => item.id !== id));
-  };
-
-  const updateQuantity = (id: string, newQuantity: number) => {
-    setQuoteItems(quoteItems.map(item => 
-      item.id === id 
-        ? { ...item, quantity: newQuantity, totalPrice: item.unitPrice * newQuantity }
-        : item
-    ));
   };
 
   const getTotalPrice = () => {
@@ -302,42 +359,16 @@ export default function QuotePage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeQuoteItem(item.id)}
+                        onClick={() => setQuoteItems(quoteItems.filter(q => q.id !== item.id))}
                         className="text-red-600 hover:text-red-700"
                       >
                         Remove
                       </Button>
                     </div>
                     
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-sm mb-3">
-                      <div>
-                        <span className="font-medium">Frame:</span> {frameColors.find(c => c.value === item.configuration.frameColor)?.label}
-                      </div>
-                      <div>
-                        <span className="font-medium">Glass:</span> {glassTypes.find(g => g.value === item.configuration.glassType)?.label}
-                      </div>
-                      <div>
-                        <span className="font-medium">Grids:</span> {gridPatterns.find(g => g.value === item.configuration.gridPattern)?.label}
-                      </div>
-                    </div>
-
                     <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <span className="font-medium px-3">{item.quantity}</span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
+                      <div className="text-sm">
+                        Quantity: {item.quantity}
                       </div>
                       <div className="text-right">
                         <div className="text-sm text-gray-600">${item.unitPrice.toLocaleString()} each</div>
@@ -392,7 +423,7 @@ export default function QuotePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6">
           <Button 
             variant="ghost" 
@@ -424,43 +455,56 @@ export default function QuotePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Configuration Panel */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Window Specifications</CardTitle>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Configuration Panel */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Item Selection Header */}
+            <Card className="bg-gray-50 dark:bg-gray-800">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Item Selection
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                   <div>
-                    <Label htmlFor="width">Width (inches) *</Label>
-                    <Input
-                      id="width"
-                      type="number"
-                      value={currentItem.width}
-                      onChange={(e) => setCurrentItem({...currentItem, width: e.target.value})}
-                      placeholder="36"
-                      min="12"
-                      max="120"
+                    <Label className="text-sm font-medium">Window</Label>
+                    <Select
+                      value={currentItem.productType}
+                      onValueChange={(value) => setCurrentItem({...currentItem, productType: value})}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {productLines.map(product => (
+                          <SelectItem key={product.value} value={product.label}>
+                            {product.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">Description</Label>
+                    <div className="h-8 px-3 py-1 bg-white dark:bg-gray-700 border rounded-md text-sm flex items-center">
+                      {productLines.find(p => p.label === currentItem.productType)?.description || "CONFIGURED WINDOW"}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">Location/Level</Label>
+                    <Input 
+                      className="h-8 text-sm" 
+                      placeholder="Living Room"
                     />
                   </div>
+
                   <div>
-                    <Label htmlFor="height">Height (inches) *</Label>
+                    <Label className="text-sm font-medium">Qty</Label>
                     <Input
-                      id="height"
-                      type="number"
-                      value={currentItem.height}
-                      onChange={(e) => setCurrentItem({...currentItem, height: e.target.value})}
-                      placeholder="48"
-                      min="12"
-                      max="120"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="quantity">Quantity</Label>
-                    <Input
-                      id="quantity"
+                      className="h-8 text-sm"
                       type="number"
                       value={currentItem.quantity}
                       onChange={(e) => setCurrentItem({...currentItem, quantity: parseInt(e.target.value) || 1})}
@@ -472,28 +516,29 @@ export default function QuotePage() {
               </CardContent>
             </Card>
 
+            {/* Configuration Options */}
             <Card>
-              <CardHeader>
-                <CardTitle>Configuration Options</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Configuration Options
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* First Row */}
                   <div>
-                    <Label>Operating Type</Label>
+                    <Label className="text-sm font-medium text-blue-600">Product Line *</Label>
                     <Select
-                      value={currentItem.configuration?.operatingType}
-                      onValueChange={(value) => setCurrentItem({
-                        ...currentItem,
-                        configuration: {...currentItem.configuration!, operatingType: value}
-                      })}
+                      value={currentItem.productType}
+                      onValueChange={(value) => setCurrentItem({...currentItem, productType: value})}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {operatingTypes.map(type => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label} - ${type.basePrice}+
+                        {productLines.map(product => (
+                          <SelectItem key={product.value} value={product.label}>
+                            {product.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -501,35 +546,7 @@ export default function QuotePage() {
                   </div>
 
                   <div>
-                    <Label>Frame Color</Label>
-                    <Select
-                      value={currentItem.configuration?.frameColor}
-                      onValueChange={(value) => setCurrentItem({
-                        ...currentItem,
-                        configuration: {...currentItem.configuration!, frameColor: value}
-                      })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {frameColors.map(color => (
-                          <SelectItem key={color.value} value={color.value}>
-                            <div className="flex items-center">
-                              <div 
-                                className="w-4 h-4 rounded-full mr-2 border"
-                                style={{ backgroundColor: color.color }}
-                              />
-                              {color.label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label>Glass Type</Label>
+                    <Label className="text-sm font-medium text-blue-600">Energy Package *</Label>
                     <Select
                       value={currentItem.configuration?.glassType}
                       onValueChange={(value) => setCurrentItem({
@@ -537,13 +554,13 @@ export default function QuotePage() {
                         configuration: {...currentItem.configuration!, glassType: value}
                       })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {glassTypes.map(glass => (
-                          <SelectItem key={glass.value} value={glass.value}>
-                            {glass.label} {glass.price > 0 && `(+$${glass.price})`}
+                        {energyPackages.map(pkg => (
+                          <SelectItem key={pkg.value} value={pkg.value}>
+                            {pkg.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -551,7 +568,118 @@ export default function QuotePage() {
                   </div>
 
                   <div>
-                    <Label>Grid Pattern</Label>
+                    <Label className="text-sm font-medium text-blue-600">Opening Type *</Label>
+                    <Select
+                      value={currentItem.configuration?.operatingType}
+                      onValueChange={(value) => setCurrentItem({
+                        ...currentItem,
+                        configuration: {...currentItem.configuration!, operatingType: value}
+                      })}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {operatingTypes.map(type => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Net Frame</Label>
+                    <Select
+                      value={currentItem.configuration?.frameColor}
+                      onValueChange={(value) => setCurrentItem({
+                        ...currentItem,
+                        configuration: {...currentItem.configuration!, frameColor: value}
+                      })}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {frameColors.map(color => (
+                          <SelectItem key={color.value} value={color.value}>
+                            {color.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Second Row */}
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Interior Glass</Label>
+                    <Select
+                      value={currentItem.configuration?.glassType}
+                      onValueChange={(value) => setCurrentItem({
+                        ...currentItem,
+                        configuration: {...currentItem.configuration!, glassType: value}
+                      })}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {glassTypes.map(glass => (
+                          <SelectItem key={glass.value} value={glass.value}>
+                            {glass.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Exterior Finish *</Label>
+                    <Select
+                      value={currentItem.configuration?.frameColor}
+                      onValueChange={(value) => setCurrentItem({
+                        ...currentItem,
+                        configuration: {...currentItem.configuration!, frameColor: value}
+                      })}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {frameColors.map(finish => (
+                          <SelectItem key={finish.value} value={finish.value}>
+                            {finish.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Interior Finish *</Label>
+                    <Select
+                      value={currentItem.configuration?.frameColor}
+                      onValueChange={(value) => setCurrentItem({
+                        ...currentItem,
+                        configuration: {...currentItem.configuration!, frameColor: value}
+                      })}
+                    >
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {frameColors.map(finish => (
+                          <SelectItem key={finish.value} value={finish.value}>
+                            {finish.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Grid Pattern *</Label>
                     <Select
                       value={currentItem.configuration?.gridPattern}
                       onValueChange={(value) => setCurrentItem({
@@ -559,24 +687,94 @@ export default function QuotePage() {
                         configuration: {...currentItem.configuration!, gridPattern: value}
                       })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {gridPatterns.map(grid => (
                           <SelectItem key={grid.value} value={grid.value}>
-                            {grid.label} {grid.price > 0 && `(+$${grid.price})`}
+                            {grid.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
+
+                {/* Dimensions Section */}
+                <div className="mt-6 pt-4 border-t">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">Width (inches) *</Label>
+                      <Input
+                        className="h-8"
+                        type="number"
+                        value={currentItem.width}
+                        onChange={(e) => setCurrentItem({...currentItem, width: e.target.value})}
+                        placeholder="36"
+                        min="12"
+                        max="120"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Height (inches) *</Label>
+                      <Input
+                        className="h-8"
+                        type="number"
+                        value={currentItem.height}
+                        onChange={(e) => setCurrentItem({...currentItem, height: e.target.value})}
+                        placeholder="48"
+                        min="12"
+                        max="120"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Square Feet</Label>
+                      <div className="h-8 px-3 py-1 bg-gray-100 dark:bg-gray-700 border rounded-md text-sm flex items-center">
+                        {currentItem.width && currentItem.height ? 
+                          ((parseFloat(currentItem.width) * parseFloat(currentItem.height)) / 144).toFixed(2) : '0.00'}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Unit Price</Label>
+                      <div className="h-8 px-3 py-1 bg-gray-100 dark:bg-gray-700 border rounded-md text-sm flex items-center font-semibold">
+                        ${calculateItemPrice(currentItem).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-6 pt-4 border-t flex gap-3 flex-wrap">
+                  <Button 
+                    onClick={addItemToQuote}
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                    disabled={!currentItem.width || !currentItem.height}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Item
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Add
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Reset selection options
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Library
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Write to Dealer Options
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Product Catalog
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Price Calculator & Add to Quote */}
+          {/* Right Sidebar - Price Calculator & Quote Summary */}
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -588,22 +786,14 @@ export default function QuotePage() {
               <CardContent>
                 {currentItem.width && currentItem.height ? (
                   <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Base Price:</span>
-                      <span>${operatingTypes.find(op => op.value === currentItem.configuration?.operatingType)?.basePrice || 0}</span>
+                    <div className="flex justify-between text-sm">
+                      <span>Base Price/sq ft:</span>
+                      <span>${productLines.find(p => p.label === currentItem.productType)?.pricePerSqFt || 0}</span>
                     </div>
-                    {currentItem.configuration?.glassType !== 'clear' && (
-                      <div className="flex justify-between text-sm">
-                        <span>Glass Upgrade:</span>
-                        <span>+${glassTypes.find(g => g.value === currentItem.configuration?.glassType)?.price || 0}</span>
-                      </div>
-                    )}
-                    {currentItem.configuration?.gridPattern !== 'none' && (
-                      <div className="flex justify-between text-sm">
-                        <span>Grid Pattern:</span>
-                        <span>+${gridPatterns.find(g => g.value === currentItem.configuration?.gridPattern)?.price || 0}</span>
-                      </div>
-                    )}
+                    <div className="flex justify-between text-sm">
+                      <span>Square Feet:</span>
+                      <span>{((parseFloat(currentItem.width) * parseFloat(currentItem.height)) / 144).toFixed(2)}</span>
+                    </div>
                     <Separator />
                     <div className="flex justify-between font-semibold">
                       <span>Unit Price:</span>
@@ -613,15 +803,6 @@ export default function QuotePage() {
                       <span>Total ({currentItem.quantity}x):</span>
                       <span className="text-orange-600">${getCurrentItemPrice().toLocaleString()}</span>
                     </div>
-                    
-                    <Button 
-                      onClick={addItemToQuote}
-                      className="w-full bg-orange-600 hover:bg-orange-700 text-white mt-4"
-                      disabled={!currentItem.width || !currentItem.height}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add to Quote
-                    </Button>
                   </div>
                 ) : (
                   <div className="text-center py-6 text-gray-500">
