@@ -817,6 +817,28 @@ export default function QuotePage() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-blue-600">Spacer Finish *</Label>
+                  <Select
+                    value={currentItem.configuration?.spacer}
+                    onValueChange={(value) => setCurrentItem({
+                      ...currentItem,
+                      configuration: {...currentItem.configuration!, spacer: value}
+                    })}
+                  >
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {spacerOptions.map(spacer => (
+                        <SelectItem key={spacer.value} value={spacer.value}>
+                          {spacer.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardContent>
             </Card>
 
