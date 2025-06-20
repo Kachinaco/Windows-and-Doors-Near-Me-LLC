@@ -504,6 +504,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Blog routes
+  app.get("/api/blog", async (req, res) => {
+    try {
+      const { category } = req.query;
+      let posts;
+      
+      if (category) {
+        posts = await storage.getBlogPostsByCategory(category as string);
+      } else {
+        posts = await storage.getPublishedBlogPosts();
+      }
+      
+      res.json(posts);
+    } catch (error: any) {
+      console.error("Error fetching blog posts:", error);
+      res.status(500).json({ message: "Failed to fetch blog posts" });
+    }
+  });
+
+  app.get("/api/blog/:slug", async (req, res) => {
+    try {
+      const post = await storage.getBlogPostBySlug(req.params.slug);
+      if (!post || !post.isPublished) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      res.json(post);
+    } catch (error: any) {
+      console.error("Error fetching blog post:", error);
+      res.status(500).json({ message: "Failed to fetch blog post" });
+    }
+  });
+
+  // Admin blog management routes
+  app.get("/api/admin/blog", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const posts = await storage.getAllBlogPosts();
+      res.json(posts);
+    } catch (error: any) {
+      console.error("Error fetching all blog posts:", error);
+      res.status(500).json({ message: "Failed to fetch blog posts" });
+    }
+  });
+
+  app.post("/api/admin/blog", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const postData = {
+        ...req.body,
+        authorId: req.user!.id,
+        publishedAt: req.body.isPublished ? new Date() : null
+      };
+      
+      const post = await storage.createBlogPost(postData);
+      res.status(201).json(post);
+    } catch (error: any) {
+      console.error("Error creating blog post:", error);
+      res.status(500).json({ message: "Failed to create blog post" });
+    }
+  });
+
+  app.put("/api/admin/blog/:id", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const updates = req.body;
+      if (updates.isPublished && !updates.publishedAt) {
+        updates.publishedAt = new Date();
+      }
+      
+      const post = await storage.updateBlogPost(parseInt(req.params.id), updates);
+      res.json(post);
+    } catch (error: any) {
+      console.error("Error updating blog post:", error);
+      res.status(500).json({ message: "Failed to update blog post" });
+    }
+  });
+
+  app.delete("/api/admin/blog/:id", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      await storage.deleteBlogPost(parseInt(req.params.id));
+      res.status(204).send();
+    } catch (error: any) {
+      console.error("Error deleting blog post:", error);
+      res.status(500).json({ message: "Failed to delete blog post" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
