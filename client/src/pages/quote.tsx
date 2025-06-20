@@ -289,7 +289,8 @@ export default function QuotePage() {
     email: "",
     phone: "",
     address: "",
-    notes: ""
+    notes: "",
+    needsInstallation: false
   });
 
   const resetCurrentItem = () => {
@@ -445,7 +446,8 @@ export default function QuotePage() {
         email: "",
         phone: "",
         address: "",
-        notes: ""
+        notes: "",
+        needsInstallation: false
       });
     },
     onError: (error: any) => {
@@ -482,6 +484,7 @@ export default function QuotePage() {
       customerPhone: customerInfo.phone,
       customerAddress: customerInfo.address,
       notes: customerInfo.notes,
+      needsInstallation: customerInfo.needsInstallation,
       items: quoteItems,
       totalPrice: getTotalPrice(),
       status: "pending"
@@ -559,138 +562,142 @@ export default function QuotePage() {
                           <div className="text-blue-600 underline cursor-pointer text-sm mt-1">Remove</div>
                         </div>
                         
-                        {/* Window Preview */}
-                        <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 h-64">
+                        {/* Modern Window Preview */}
+                        <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-6 h-72 shadow-sm">
                           <div className="flex flex-col h-full">
-                            {/* Dimension Labels */}
-                            <div className="text-center mb-2">
-                              <div className="text-xs text-gray-600">{actualWidth.toFixed(1)}"</div>
-                              <div className="flex justify-center">
-                                <div className="w-32 h-0.5 bg-gray-400 relative">
-                                  <div className="absolute -left-1 -top-1 w-2 h-2 bg-gray-400"></div>
-                                  <div className="absolute -right-1 -top-1 w-2 h-2 bg-gray-400"></div>
+                            {/* Header Info */}
+                            <div className="flex justify-between items-center mb-4">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span className="text-xs font-medium text-slate-600">
+                                  {actualWidth.toFixed(1)}" × {actualHeight.toFixed(1)}"
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                {energyRatings.energyStar && (
+                                  <div className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium">
+                                    ENERGY STAR
+                                  </div>
+                                )}
+                                <div className="bg-slate-200 text-slate-700 text-xs px-2 py-1 rounded-full font-medium">
+                                  {item.configuration.outerGlass === 'low-e-max' ? 'Low-E Max' :
+                                   item.configuration.outerGlass === 'sungaardmax-low-e' ? 'SunGuard' : 'Clear'}
                                 </div>
                               </div>
                             </div>
                             
-                            <div className="flex flex-1 items-center">
-                              {/* Height Label */}
-                              <div className="flex flex-col items-center mr-3">
-                                <div className="h-20 w-0.5 bg-gray-400 relative">
-                                  <div className="absolute -left-1 -top-1 w-2 h-2 bg-gray-400"></div>
-                                  <div className="absolute -left-1 -bottom-1 w-2 h-2 bg-gray-400"></div>
-                                </div>
-                                <div className="text-xs text-gray-600 mt-1 -rotate-90 whitespace-nowrap">{actualHeight.toFixed(1)}"</div>
-                              </div>
-                              
-                              {/* Window Frame */}
-                              <div className="relative bg-white border-4 border-gray-700 rounded-sm shadow-lg" 
-                                   style={{
-                                     width: `${Math.max(140, Math.min(200, actualWidth * 4))}px`,
-                                     height: `${Math.max(100, Math.min(140, actualHeight * 3))}px`,
-                                     backgroundColor: item.configuration.exteriorColor === 'black' ? '#2d2d2d' : 
-                                                    item.configuration.exteriorColor === 'bronze' ? '#8b6914' :
-                                                    item.configuration.exteriorColor === 'tan' ? '#d2b48c' : '#ffffff'
-                                   }}>
+                            {/* 3D-Style Window */}
+                            <div className="flex-1 flex items-center justify-center">
+                              <div className="relative transform perspective-1000 rotate-y-12 rotate-x-6">
+                                {/* Window Shadow */}
+                                <div className="absolute inset-0 bg-black/20 rounded-lg blur-sm translate-x-2 translate-y-2"></div>
                                 
-                                {/* Glass Area */}
-                                <div className="absolute inset-2 bg-blue-50 bg-opacity-30 border border-gray-400"
-                                     style={{
-                                       backgroundColor: item.configuration.outerGlass === 'low-e-max' ? '#e8f4fd' :
-                                                      item.configuration.outerGlass === 'sungaardmax-low-e' ? '#f0f8ff' : '#f8fafc'
-                                     }}>
-                                  
-                                  {/* Operating Elements */}
-                                  {item.configuration.operatingType === 'vertical-hung' && (
-                                    <>
-                                      <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-700 transform -translate-y-0.5"></div>
-                                      {item.configuration.operatingConfiguration === 'single-hung' && (
-                                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                          <div className="w-0 h-0 border-l-3 border-r-3 border-b-6 border-transparent border-b-gray-800"></div>
+                                {/* Window Frame */}
+                                <div 
+                                  className="relative rounded-lg shadow-2xl border-2"
+                                  style={{
+                                    width: `${Math.max(160, Math.min(220, actualWidth * 4.5))}px`,
+                                    height: `${Math.max(120, Math.min(160, actualHeight * 3.5))}px`,
+                                    background: item.configuration.exteriorColor === 'black' ? 
+                                      'linear-gradient(135deg, #1f2937 0%, #111827 100%)' : 
+                                      item.configuration.exteriorColor === 'bronze' ? 
+                                      'linear-gradient(135deg, #a16207 0%, #713f12 100%)' :
+                                      item.configuration.exteriorColor === 'tan' ? 
+                                      'linear-gradient(135deg, #d2b48c 0%, #c19a6b 100%)' : 
+                                      'linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)',
+                                    borderColor: item.configuration.exteriorColor === 'black' ? '#374151' : 
+                                               item.configuration.exteriorColor === 'bronze' ? '#92400e' :
+                                               item.configuration.exteriorColor === 'tan' ? '#a16207' : '#d1d5db'
+                                  }}
+                                >
+                                  {/* Glass Area with Reflection */}
+                                  <div 
+                                    className="absolute inset-3 rounded-md overflow-hidden"
+                                    style={{
+                                      background: item.configuration.outerGlass === 'low-e-max' ? 
+                                        'linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 50%, #81d4fa 100%)' :
+                                        item.configuration.outerGlass === 'sungaardmax-low-e' ? 
+                                        'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%)' : 
+                                        'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)'
+                                    }}
+                                  >
+                                    {/* Glass Reflection Effect */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent"></div>
+                                    <div className="absolute top-2 left-2 w-8 h-12 bg-white/30 rounded-sm transform -skew-x-12"></div>
+                                    
+                                    {/* Operating Elements */}
+                                    {item.configuration.operatingType === 'vertical-hung' && (
+                                      <>
+                                        <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-600/80 transform -translate-y-0.5 shadow-sm"></div>
+                                        {item.configuration.operatingConfiguration === 'single-hung' && (
+                                          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2">
+                                            <div className="w-6 h-2 bg-slate-600 rounded-full shadow-sm"></div>
+                                          </div>
+                                        )}
+                                        {item.configuration.operatingConfiguration === 'double-hung' && (
+                                          <>
+                                            <div className="absolute top-3 left-1/2 transform -translate-x-1/2">
+                                              <div className="w-6 h-2 bg-slate-600 rounded-full shadow-sm"></div>
+                                            </div>
+                                            <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2">
+                                              <div className="w-6 h-2 bg-slate-600 rounded-full shadow-sm"></div>
+                                            </div>
+                                          </>
+                                        )}
+                                      </>
+                                    )}
+                                    
+                                    {item.configuration.operatingType === 'horizontal-slider' && (
+                                      <>
+                                        <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-slate-600/80 shadow-sm"></div>
+                                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                          <div className="w-2 h-6 bg-slate-600 rounded-full shadow-sm"></div>
                                         </div>
-                                      )}
-                                      {item.configuration.operatingConfiguration === 'double-hung' && (
-                                        <>
-                                          <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
-                                            <div className="w-0 h-0 border-l-3 border-r-3 border-t-6 border-transparent border-t-gray-800"></div>
-                                          </div>
-                                          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                                            <div className="w-0 h-0 border-l-3 border-r-3 border-b-6 border-transparent border-b-gray-800"></div>
-                                          </div>
-                                        </>
-                                      )}
-                                    </>
-                                  )}
-                                  
-                                  {item.configuration.operatingType === 'horizontal-slider' && (
-                                    <>
-                                      <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-gray-700"></div>
-                                      {item.configuration.operatingConfiguration === 'xo-slider' && (
-                                        <>
-                                          <div className="absolute left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                            <div className="w-0 h-0 border-t-3 border-b-3 border-l-6 border-transparent border-l-gray-800"></div>
-                                          </div>
-                                          <div className="absolute left-2 top-2 text-xs font-bold text-gray-800">X</div>
-                                          <div className="absolute right-2 top-2 text-xs font-bold text-gray-600">O</div>
-                                        </>
-                                      )}
-                                    </>
-                                  )}
-                                  
-                                  {/* Grid Pattern Overlay */}
-                                  {item.configuration.gridPattern === 'colonial' && (
-                                    <>
-                                      <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-700 opacity-90"></div>
-                                      <div className="absolute top-0 bottom-0 left-1/3 w-0.5 bg-gray-700 opacity-90"></div>
-                                      <div className="absolute top-0 bottom-0 left-2/3 w-0.5 bg-gray-700 opacity-90"></div>
-                                    </>
-                                  )}
-                                  
-                                  {item.configuration.gridPattern === 'prairie' && (
-                                    <>
-                                      <div className="absolute top-3 left-3 right-3 h-0.5 bg-gray-700 opacity-80"></div>
-                                      <div className="absolute top-3 bottom-3 left-3 w-0.5 bg-gray-700 opacity-80"></div>
-                                      <div className="absolute top-3 bottom-3 right-3 w-0.5 bg-gray-700 opacity-80"></div>
-                                      <div className="absolute bottom-3 left-3 right-3 h-0.5 bg-gray-700 opacity-80"></div>
-                                    </>
-                                  )}
-                                  
-                                  {/* Energy Star Badge */}
-                                  {energyRatings.energyStar && (
-                                    <div className="absolute top-1 right-1">
-                                      <div className="bg-blue-600 text-white text-xs px-1 py-0.5 rounded font-bold">
-                                        ENERGY STAR
-                                      </div>
-                                    </div>
-                                  )}
-                                  
-                                  {/* Glass Type Indicator */}
-                                  <div className="absolute bottom-1 left-1">
-                                    <div className="text-xs text-gray-600 font-medium">
-                                      {item.configuration.outerGlass === 'low-e-max' ? 'Low-E Max' :
-                                       item.configuration.outerGlass === 'sungaardmax-low-e' ? 'SunGuard' : 'Clear'}
-                                    </div>
+                                      </>
+                                    )}
+                                    
+                                    {/* Grid Pattern with Modern Styling */}
+                                    {item.configuration.gridPattern === 'colonial' && (
+                                      <>
+                                        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-700/60 shadow-sm"></div>
+                                        <div className="absolute top-0 bottom-0 left-1/3 w-0.5 bg-slate-700/60 shadow-sm"></div>
+                                        <div className="absolute top-0 bottom-0 left-2/3 w-0.5 bg-slate-700/60 shadow-sm"></div>
+                                      </>
+                                    )}
+                                    
+                                    {item.configuration.gridPattern === 'prairie' && (
+                                      <>
+                                        <div className="absolute top-4 left-4 right-4 h-0.5 bg-slate-700/60 shadow-sm"></div>
+                                        <div className="absolute top-4 bottom-4 left-4 w-0.5 bg-slate-700/60 shadow-sm"></div>
+                                        <div className="absolute top-4 bottom-4 right-4 w-0.5 bg-slate-700/60 shadow-sm"></div>
+                                        <div className="absolute bottom-4 left-4 right-4 h-0.5 bg-slate-700/60 shadow-sm"></div>
+                                      </>
+                                    )}
                                   </div>
                                 </div>
-                                
-                                {/* Frame Color Indicator */}
-                                <div className="absolute -bottom-6 left-0 right-0 text-center">
-                                  <div className="text-xs text-gray-600 capitalize">
-                                    {item.configuration.exteriorColor} Frame
-                                  </div>
-                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Bottom Info */}
+                            <div className="flex justify-between items-center mt-4">
+                              <div className="text-xs text-slate-500">
+                                {item.configuration.exteriorColor.charAt(0).toUpperCase() + item.configuration.exteriorColor.slice(1)} Frame
+                              </div>
+                              <div className="text-xs text-slate-500">
+                                {sqFt.toFixed(1)} sq ft
                               </div>
                             </div>
                           </div>
                         </div>
                         
-                        <div className="text-center mt-3 space-y-2">
-                          <button className="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors">
-                            View Technical Drawing
+                        <div className="text-center mt-4">
+                          <button className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors group">
+                            <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            View 3D Model
                           </button>
-                          <div className="text-xs text-gray-500">
-                            Scale: Proportional Preview
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -796,6 +803,19 @@ export default function QuotePage() {
                   placeholder="Any special requirements or notes about your project..."
                   rows={4}
                 />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="installation"
+                  checked={customerInfo.needsInstallation}
+                  onChange={(e) => setCustomerInfo({...customerInfo, needsInstallation: e.target.checked})}
+                  className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+                />
+                <Label htmlFor="installation" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  I need professional installation services
+                </Label>
               </div>
 
               <Button
