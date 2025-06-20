@@ -40,9 +40,9 @@ interface QuoteItem {
 }
 
 const allProductLines = [
-  { value: "v300-trinsic", label: "V300 Trinsic", description: "MILGARD V300 TRINSIC WINDOW", pricePerSqFt: 22.50, tier: "customer" },
-  { value: "v400-tuscany", label: "V400 Tuscany", description: "MILGARD V400 TUSCANY WINDOW", pricePerSqFt: 25.75, tier: "customer" },
-  { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 29.85, tier: "contractor" }
+  { value: "v300-trinsic", label: "V300 Trinsic", description: "MILGARD V300 TRINSIC WINDOW", pricePerSqFt: 15.50, tier: "customer" },
+  { value: "v400-tuscany", label: "V400 Tuscany", description: "MILGARD V400 TUSCANY WINDOW", pricePerSqFt: 18.75, tier: "customer" },
+  { value: "v450-montecito", label: "V450 Montecito", description: "MILGARD V450 MONTECITO WINDOW", pricePerSqFt: 22.25, tier: "contractor" }
 ];
 
 const operatingTypes = [
@@ -81,13 +81,13 @@ const finTypes = [
 
 const energyPackages = [
   { value: "none", label: "None", priceAdder: 0 },
-  { value: "title-24-2019", label: "Title 24 2019", priceAdder: 2.25 }
+  { value: "title-24-2019", label: "Title 24 2019", priceAdder: 0 }
 ];
 
 const outerGlassTypes = [
-  { value: "clear", label: "Clear", priceAdder: 0 },
-  { value: "sungaardmax-low-e", label: "SunGuardMAX (Low E)", priceAdder: 1.95 },
-  { value: "low-e-max", label: "Low-E Max", priceAdder: 2.75 }
+  { value: "clear", label: "Clear", priceAdder: -1.28 },
+  { value: "sungaardmax-low-e", label: "SunGuardMAX (Low E)", priceAdder: 0 },
+  { value: "low-e-max", label: "Low-E Max", priceAdder: 0.68 }
 ];
 
 const spacerOptions = [
@@ -96,7 +96,7 @@ const spacerOptions = [
 
 const argonOptions = [
   { value: "none", label: "None", priceAdder: 0 },
-  { value: "argon", label: "Argon", priceAdder: 1.50 }
+  { value: "argon", label: "Argon", priceAdder: 1.89 }
 ];
 
 // Energy rating calculations based on glass configuration
@@ -153,15 +153,15 @@ const edgeGuardOptions = [
 
 const innerGlassTypes = [
   { value: "clear", label: "Clear", priceAdder: 0 },
-  { value: "obscure", label: "Obscure", priceAdder: 1.15 },
+  { value: "obscure", label: "Obscure", priceAdder: 2.32 },
   { value: "4th-surface", label: "4th Surface Coating", priceAdder: 3.25 }
 ];
 
 const frameColors = [
   { value: "white", label: "White", priceAdder: 0 },
-  { value: "tan", label: "Tan", priceAdder: 1.10 },
-  { value: "bronze", label: "Bronze", priceAdder: 1.10 },
-  { value: "black", label: "Black", priceAdder: 1.55 }
+  { value: "tan", label: "Tan", priceAdder: 0 },
+  { value: "bronze", label: "Bronze", priceAdder: 0 },
+  { value: "black", label: "Black", priceAdder: 0 }
 ];
 
 // Get available interior colors based on exterior color selection
@@ -385,7 +385,7 @@ export default function QuotePage() {
     
     // Add tempered glass pricing
     if (item.configuration.isTempered) {
-      pricePerSqFt += 4.25;
+      pricePerSqFt += 17.60;
     }
 
     return sqFt * pricePerSqFt;

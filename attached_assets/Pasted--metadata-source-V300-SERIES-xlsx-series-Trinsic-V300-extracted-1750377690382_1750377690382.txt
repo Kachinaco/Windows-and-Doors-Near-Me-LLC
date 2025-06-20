@@ -1,0 +1,329 @@
+{
+  "metadata": {
+    "source": "V300 SERIES.xlsx",
+    "series": "Trinsic V300",
+    "extractedOn": "2025-06-19",
+    "description": "Window pricing data for V300 series configurator"
+  },
+  "windowTypes": {
+    "SH": {
+      "displayName": "Single Hung",
+      "totalSizes": 71,
+      "pricing": [
+        {
+          "width": 10.20,
+          "height": 11.5,
+          "widthRaw": "1020",
+          "heightRaw": "11 1/2 x 23 1/2",
+          "basePrice": 12,
+          "configurations": [378, 401, 520, 484, 22]
+        },
+        {
+          "width": 10.26,
+          "height": 11.5,
+          "widthRaw": "1026",
+          "heightRaw": "11 1/2 x 29 1/2",
+          "basePrice": 12,
+          "configurations": [385, 412, 526, 488, 22]
+        }
+      ]
+    },
+    "Single Slider": {
+      "displayName": "Single Slider",
+      "totalSizes": 78,
+      "pricing": [
+        {
+          "width": 20.16,
+          "height": 23.5,
+          "widthRaw": "2016",
+          "heightRaw": "23 1/2 x 17 1/2",
+          "basePrice": 24,
+          "configurations": [374, 401, 22, 515, 478]
+        }
+      ]
+    },
+    "Double Slider": {
+      "displayName": "Double Slider",
+      "totalSizes": 60,
+      "pricing": [
+        {
+          "width": 40.16,
+          "height": 47.5,
+          "widthRaw": "4016",
+          "heightRaw": "47 1/2 x 17 1/2",
+          "basePrice": 48,
+          "configurations": [711, 752, 825, 762, 44]
+        }
+      ]
+    },
+    "Casement": {
+      "displayName": "Casement",
+      "totalSizes": 39,
+      "pricing": [
+        {
+          "width": 16.16,
+          "height": 17.5,
+          "widthRaw": "1616",
+          "heightRaw": "17 1/2 x 17 1/2",
+          "basePrice": 18,
+          "configurations": [592, 615, 518, 472, 22]
+        }
+      ]
+    },
+    "Awning": {
+      "displayName": "Awning",
+      "totalSizes": 20,
+      "pricing": [
+        {
+          "width": 16.16,
+          "height": 17.5,
+          "widthRaw": "1616",
+          "heightRaw": "17 1/2 x 17 1/2",
+          "basePrice": 18,
+          "configurations": [584, 607, 518, 472, 22]
+        }
+      ]
+    },
+    "Picture Window": {
+      "displayName": "Picture Window",
+      "totalSizes": 231,
+      "pricing": [
+        {
+          "width": 10.10,
+          "height": 11.5,
+          "widthRaw": "1010",
+          "heightRaw": "11 1/2 x 11 1/2",
+          "basePrice": 12,
+          "configurations": [171, 187, 329, 308]
+        }
+      ]
+    }
+  },
+  "options": {
+    "glass": {
+      "Glass - Clear Glass Deduct per piece of glass": {
+        "price": -1.28,
+        "unit": "Per Square Ft.",
+        "description": "Glass - Clear Glass Deduct per piece of glass"
+      },
+      "Glass - DSB - Clear Tempered": {
+        "price": 17.6,
+        "unit": "Per Square Ft.",
+        "description": "Glass - DSB - Clear Tempered"
+      },
+      "Glass - DSB - Obscure": {
+        "price": 2.32,
+        "unit": "Per Square Ft.",
+        "description": "Glass - DSB - Obscure"
+      },
+      "Glass - DSB - Obscure/Tempered": {
+        "price": 32.93,
+        "unit": "Per Square Ft.",
+        "description": "Glass - DSB - Obscure/Tempered"
+      },
+      "Glass - DSB - Loe/Obscure": {
+        "price": 3.6,
+        "unit": "Per Square Ft.",
+        "description": "Glass - DSB - Loe/Obscure"
+      },
+      "Glass - DSB - Loe/Tempered": {
+        "price": 20.41,
+        "unit": "Per Square Ft.",
+        "description": "Glass - DSB - Loe/Tempered"
+      },
+      "Glass - DSB - Loe/Obscure/Tempered": {
+        "price": 37.49,
+        "unit": "Per Square Ft.",
+        "description": "Glass - DSB - Loe/Obscure/Tempered"
+      },
+      "Glass - TSB - Clear": {
+        "price": 4.73,
+        "unit": "Per Square Ft.",
+        "description": "Glass - TSB - Clear"
+      },
+      "Glass - TSB - Clear Tempered": {
+        "price": 22.34,
+        "unit": "Per Square Ft.",
+        "description": "Glass - TSB - Clear Tempered"
+      },
+      "Glass - TSB - Obscure": {
+        "price": 7.05,
+        "unit": "Per Square Ft.",
+        "description": "Glass - TSB - Obscure"
+      },
+      "Glass - TSB - Obscure/Tempered": {
+        "price": 37.66,
+        "unit": "Per Square Ft.",
+        "description": "Glass - TSB - Obscure/Tempered"
+      },
+      "Glass - TSB - Loe": {
+        "price": 5.41,
+        "unit": "Per Square Ft.",
+        "description": "Glass - TSB - Loe"
+      },
+      "Glass - TSB - Loe/Obscure": {
+        "price": 8.33,
+        "unit": "Per Square Ft.",
+        "description": "Glass - TSB - Loe/Obscure"
+      },
+      "Glass - TSB - Loe/Tempered": {
+        "price": 25.14,
+        "unit": "Per Square Ft.",
+        "description": "Glass - TSB - Loe/Tempered"
+      },
+      "Glass - TSB - Loe/Obscure/Tempered": {
+        "price": 42.22,
+        "unit": "Per Square Ft.",
+        "description": "Glass - TSB - Loe/Obscure/Tempered"
+      },
+      "Glass - QSB - Clear": {
+        "price": 9.45,
+        "unit": "Per Square Ft.",
+        "description": "Glass - QSB - Clear"
+      },
+      "Glass - QSB - Clear Tempered": {
+        "price": 27.07,
+        "unit": "Per Square Ft.",
+        "description": "Glass - QSB - Clear Tempered"
+      },
+      "Glass - QSB - Obscure": {
+        "price": 11.77,
+        "unit": "Per Square Ft.",
+        "description": "Glass - QSB - Obscure"
+      },
+      "Glass - QSB - Obscure/Tempered": {
+        "price": 42.39,
+        "unit": "Per Square Ft.",
+        "description": "Glass - QSB - Obscure/Tempered"
+      },
+      "Glass - QSB - Loe": {
+        "price": 10.13,
+        "unit": "Per Square Ft.",
+        "description": "Glass - QSB - Loe"
+      },
+      "Glass - QSB - Loe/Obscure": {
+        "price": 13.05,
+        "unit": "Per Square Ft.",
+        "description": "Glass - QSB - Loe/Obscure"
+      },
+      "Glass - QSB - Loe/Tempered": {
+        "price": 29.87,
+        "unit": "Per Square Ft.",
+        "description": "Glass - QSB - Loe/Tempered"
+      },
+      "Glass - QSB - Loe/Obscure/Tempered": {
+        "price": 46.95,
+        "unit": "Per Square Ft.",
+        "description": "Glass - QSB - Loe/Obscure/Tempered"
+      }
+    },
+    "hardware": {
+      "Screen - Full Frame White Fiberglass": {
+        "price": 21,
+        "unit": "Per Square Ft.",
+        "description": "Screen - Full Frame White Fiberglass"
+      }
+    },
+    "finishes": {
+      "Adobe Adder": {
+        "price": 14,
+        "unit": "Per Window",
+        "description": "Adobe Adder"
+      },
+      "High Head Bead(White or Adobe)": {
+        "price": 1.89,
+        "unit": "Per Lineal Ft.",
+        "description": "High Head Bead(White or Adobe)"
+      }
+    },
+    "special": {
+      "Fin Removal Charge": {
+        "price": 21,
+        "unit": "Per Window",
+        "description": "Fin Removal Charge"
+      },
+      "Argon Enhanced*": {
+        "price": 1.89,
+        "unit": "Per Square Ft.",
+        "description": "Argon Enhanced*"
+      },
+      "Muntin Bar - Removable": {
+        "price": 12.6,
+        "unit": "Per Lineal Ft.",
+        "description": "Muntin Bar - Removable"
+      },
+      "Muntin Bar - Permanent": {
+        "price": 8.82,
+        "unit": "Per Lineal Ft.",
+        "description": "Muntin Bar - Permanent"
+      },
+      "Muntin Bar - Between Glass": {
+        "price": 2.1,
+        "unit": "Per Lineal Ft.",
+        "description": "Muntin Bar - Between Glass"
+      },
+      "Interior Wood Casing (Pine)": {
+        "price": 3.15,
+        "unit": "Per Lineal Ft.",
+        "description": "Interior Wood Casing (Pine)"
+      },
+      "Interior Wood Casing (Hemlock)": {
+        "price": 4.73,
+        "unit": "Per Lineal Ft.",
+        "description": "Interior Wood Casing (Hemlock)"
+      },
+      "Interior Wood Casing (Oak)": {
+        "price": 6.3,
+        "unit": "Per Lineal Ft.",
+        "description": "Interior Wood Casing (Oak)"
+      },
+      "Interior Wood Casing (Mahogany)": {
+        "price": 8.4,
+        "unit": "Per Lineal Ft.",
+        "description": "Interior Wood Casing (Mahogany)"
+      },
+      "Interior Wood Casing (Poplar)": {
+        "price": 6.3,
+        "unit": "Per Lineal Ft.",
+        "description": "Interior Wood Casing (Poplar)"
+      },
+      "Interior Wood Casing (Cherry)": {
+        "price": 10.5,
+        "unit": "Per Lineal Ft.",
+        "description": "Interior Wood Casing (Cherry)"
+      },
+      "Interior Wood Casing (Maple)": {
+        "price": 8.4,
+        "unit": "Per Lineal Ft.",
+        "description": "Interior Wood Casing (Maple)"
+      },
+      "Exterior Wood Casing (Pine)": {
+        "price": 3.15,
+        "unit": "Per Lineal Ft.",
+        "description": "Exterior Wood Casing (Pine)"
+      },
+      "Exterior Wood Casing (Hemlock)": {
+        "price": 4.73,
+        "unit": "Per Lineal Ft.",
+        "description": "Exterior Wood Casing (Hemlock)"
+      },
+      "Exterior Wood Casing (Cedar)": {
+        "price": 6.3,
+        "unit": "Per Lineal Ft.",
+        "description": "Exterior Wood Casing (Cedar)"
+      },
+      "Exterior Wood Casing (Mahogany)": {
+        "price": 10.5,
+        "unit": "Per Lineal Ft.",
+        "description": "Exterior Wood Casing (Mahogany)"
+      }
+    }
+  },
+  "usage": {
+    "description": "This data structure contains all pricing information for the V300 window series configurator",
+    "windowTypes": "Each window type has an array of pricing objects with width, height, and pricing configurations",
+    "pricing": "basePrice is the starting price, configurations array contains additional pricing tiers",
+    "options": "All add-on options are categorized by type with price per unit specified",
+    "implementation": "Use this JSON in your Replit configurator to calculate window prices based on size and selected options"
+  }
+}
