@@ -655,7 +655,10 @@ export default function QuotePage() {
                                 {/* Grid Patterns */}
                                 {item.configuration.gridPattern === 'colonial' && (
                                   <>
-                                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-700 opacity-80"></div>
+                                    {/* Horizontal dividers for 2 rows */}
+                                    <div className="absolute top-1/3 left-0 right-0 h-0.5 bg-gray-700 opacity-80"></div>
+                                    <div className="absolute top-2/3 left-0 right-0 h-0.5 bg-gray-700 opacity-80"></div>
+                                    {/* Vertical dividers for 3 columns */}
                                     <div className="absolute top-0 bottom-0 left-1/3 w-0.5 bg-gray-700 opacity-80"></div>
                                     <div className="absolute top-0 bottom-0 left-2/3 w-0.5 bg-gray-700 opacity-80"></div>
                                   </>
@@ -1676,10 +1679,11 @@ export default function QuotePage() {
                           <div className="absolute inset-0 pointer-events-none">
                             {currentItem.configuration.gridPattern === 'colonial' && (
                               <>
-                                {/* Horizontal dividers - 3 columns x 2 rows pattern */}
-                                <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-600 opacity-80"></div>
+                                {/* Horizontal dividers for 2 rows */}
+                                <div className="absolute top-1/3 left-0 right-0 h-0.5 bg-gray-600 opacity-80"></div>
+                                <div className="absolute top-2/3 left-0 right-0 h-0.5 bg-gray-600 opacity-80"></div>
                                 
-                                {/* Vertical dividers - create 3 equal columns */}
+                                {/* Vertical dividers for 3 columns */}
                                 <div className="absolute top-0 bottom-0 left-1/3 w-0.5 bg-gray-600 opacity-80"></div>
                                 <div className="absolute top-0 bottom-0 left-2/3 w-0.5 bg-gray-600 opacity-80"></div>
                               </>
