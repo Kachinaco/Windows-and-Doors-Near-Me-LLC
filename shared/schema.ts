@@ -91,6 +91,7 @@ export const quoteRequests = pgTable("quote_requests", {
   status: text("status").notNull().default("pending"), // pending, reviewed, quoted, converted, closed
   priority: text("priority").notNull().default("normal"), // normal, high, urgent
   notes: text("notes"),
+  needsInstallation: boolean("needs_installation").default(false), // Whether customer needs installation services
   followUpDate: timestamp("follow_up_date"),
   assignedTo: integer("assigned_to").references(() => users.id),
   convertedToProjectId: integer("converted_to_project_id").references(() => projects.id),
