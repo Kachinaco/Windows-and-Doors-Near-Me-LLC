@@ -511,27 +511,90 @@ export default function QuotePage() {
               <CardTitle>Quote Items</CardTitle>
             </CardHeader>
             <CardContent>
-              {quoteItems.map((item, index) => (
-                <div key={item.id} className="border-b pb-4 mb-4 last:border-b-0">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <p className="font-medium">{item.productType}</p>
-                      <p className="text-sm text-gray-500">{item.configuration.operatingType}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm">Dimensions: {item.width}" × {item.height}"</p>
-                      <p className="text-sm">Quantity: {item.quantity}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm">Glass: {item.configuration.outerGlass}/{item.configuration.innerGlass}</p>
-                      <p className="text-sm">Frame: {item.configuration.exteriorColor}/{item.configuration.interiorColor}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">${item.totalPrice.toLocaleString()}</p>
+              {quoteItems.map((item, index) => {
+                const energyRatings = calculateEnergyRatings(item);
+                const actualWidth = item.configuration?.openingType === "rough-opening" 
+                  ? Math.max(0, parseDimension(item.width) - 0.5) 
+                  : parseDimension(item.width);
+                const actualHeight = item.configuration?.openingType === "rough-opening" 
+                  ? Math.max(0, parseDimension(item.height) - 0.5) 
+                  : parseDimension(item.height);
+                const sqFt = (actualWidth * actualHeight) / 144;
+                
+                return (
+                  <div key={item.id} className="border rounded-lg p-6 mb-6 bg-white">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Left Column - Window Details */}
+                      <div className="lg:col-span-2">
+                        <div className="mb-4">
+                          <h3 className="text-lg font-bold text-gray-800">Window</h3>
+                          <p className="text-sm text-gray-600 mb-2">CONFIGURED WINDOW</p>
+                          <p className="font-semibold">{item.productType}, {item.width} x {item.height} {item.configuration.operatingConfiguration}, Ext {item.configuration.exteriorColor} / Int {item.configuration.interiorColor}, Call Out: 3030, U-Factor: {energyRatings.uFactor}, SHGC: {energyRatings.shgc}, VT: {energyRatings.vt}</p>
+                        </div>
+                        
+                        <div className="space-y-1 text-sm">
+                          <p><strong>Model =</strong> {item.configuration.operatingConfiguration === 'single-hung' ? 'Single Hung' : item.configuration.operatingConfiguration === 'double-hung' ? 'Double Hung' : 'Horizontal Slider'}</p>
+                          <p><strong>Size =</strong> Net Frame: {actualWidth.toFixed(1)}" x {actualHeight.toFixed(1)}"</p>
+                          <p><strong>Dimensions =</strong> Sash Height: One Tall, Southern, Meets Title 24 2019</p>
+                          <p><strong>Energy =</strong> Title 24 2019</p>
+                          <p><strong>Glass =</strong> 1/8" {item.configuration.outerGlass === 'sungaardmax-low-e' ? 'SunGuardMAX (Low-E)' : item.configuration.outerGlass === 'low-e-max' ? 'Low-E Max' : 'Clear'} over 1/8" {item.configuration.innerGlass === 'clear' ? 'Clear' : item.configuration.innerGlass === 'obscure' ? 'Obscure' : '4th Surface'} with {item.configuration.edgeGuard === 'edgeguardmax' ? 'EdgeGuardMAX' : 'Black'} {item.configuration.edgeGuard === 'edgeguardmax' ? 'Spacer' : 'Spacer'}</p>
+                          <p><strong>Glazing =</strong> 3/4" IGU with {item.configuration.argon === 'argon' ? 'Argon' : 'Air'}</p>
+                          <p><strong>Hardware =</strong> Standard Operation</p>
+                          <p><strong>Grilles =</strong> {item.configuration.gridPattern === 'none' ? 'None' : item.configuration.gridPattern === 'colonial' ? 'Colonial Grille Pattern' : 'Prairie Grille Pattern'}</p>
+                          <p><strong>Glazing Bead =</strong> Standard with Fiberglass Mesh, Screen Ship Loose</p>
+                          <p><strong>Screen =</strong> Standard with Fiberglass Mesh, Screen Ship Loose</p>
+                          <p><strong>Ratings =</strong> STC: 30, OITC: 26, PG: L-P-30-0</p>
+                          <p><strong>Installs =</strong> 7.75 (Nominal) O.I. width x 17 (Nominal) O.I. height</p>
+                          <p><strong>Calculations =</strong> Unit Area (Sq. Ft.): {sqFt.toFixed(2)}, Unit Perimeter (nominal in lineal ft): 12</p>
+                          <p><strong>Other Ratings =</strong> CFD: MIL-A-525-1003-0001</p>
+                        </div>
+                      </div>
+                      
+                      {/* Right Column - Pricing and Preview */}
+                      <div className="lg:col-span-1">
+                        <div className="text-right mb-4">
+                          <div className="text-sm text-gray-600">EA</div>
+                          <div className="text-2xl font-bold">{item.totalPrice.toFixed(2)}</div>
+                          <div className="text-sm text-gray-600">{item.totalPrice.toFixed(2)}</div>
+                          <div className="text-blue-600 underline cursor-pointer text-sm mt-1">Remove</div>
+                        </div>
+                        
+                        {/* Window Preview */}
+                        <div className="bg-gray-100 border-2 border-gray-300 rounded-lg p-4 h-48 flex items-center justify-center">
+                          <div className="relative bg-white border-4 border-gray-600 rounded" 
+                               style={{
+                                 width: `${Math.max(120, Math.min(180, actualWidth * 3.5))}px`,
+                                 height: `${Math.max(80, Math.min(120, actualHeight * 2.5))}px`
+                               }}>
+                            
+                            {/* Window Operating Elements */}
+                            {item.configuration.operatingType === 'vertical-hung' && (
+                              <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-600 transform -translate-y-0.5"></div>
+                            )}
+                            
+                            {item.configuration.operatingType === 'horizontal-slider' && (
+                              <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-gray-600"></div>
+                            )}
+                            
+                            {/* Grid Pattern */}
+                            {item.configuration.gridPattern === 'colonial' && (
+                              <>
+                                <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-600 opacity-80"></div>
+                                <div className="absolute top-0 bottom-0 left-1/3 w-0.5 bg-gray-600 opacity-80"></div>
+                                <div className="absolute top-0 bottom-0 left-2/3 w-0.5 bg-gray-600 opacity-80"></div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="text-center mt-2">
+                          <div className="text-blue-600 underline cursor-pointer text-sm">View Image</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               
               <div className="pt-4 border-t">
                 <div className="flex justify-between items-center text-lg font-bold">
