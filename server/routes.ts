@@ -393,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Quote request routes
   app.post("/api/quote-requests", async (req, res) => {
     try {
-      const { customerName, customerEmail, customerPhone, projectAddress, items, totalEstimate, notes } = req.body;
+      const { customerName, customerEmail, customerPhone, projectAddress, items, totalEstimate, notes, needsInstallation } = req.body;
       
       if (!customerName || !customerEmail || !customerPhone || !items || !totalEstimate) {
         return res.status(400).json({ message: "Missing required fields" });
@@ -407,6 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         items,
         totalEstimate,
         notes,
+        needsInstallation: needsInstallation || false,
         status: "pending",
         priority: "normal"
       });
