@@ -655,19 +655,19 @@ export default function QuotePage() {
                                 {/* Grid Patterns */}
                                 {item.configuration.gridPattern === 'colonial' && (
                                   <>
-                                    {/* Upper sash (top half) - 3 columns x 2 rows */}
-                                    {/* Horizontal line in middle of upper sash */}
-                                    <div className="absolute left-0 right-0 h-0.5 bg-gray-700 opacity-80" style={{ top: '25%' }}></div>
-                                    {/* Vertical lines for 3 columns in upper sash */}
-                                    <div className="absolute top-0 bottom-1/2 left-1/3 w-0.5 bg-gray-700 opacity-80"></div>
-                                    <div className="absolute top-0 bottom-1/2 left-2/3 w-0.5 bg-gray-700 opacity-80"></div>
+                                    {/* Upper sash (top half) - 2 columns x 3 rows */}
+                                    {/* Horizontal lines for 3 rows in upper sash */}
+                                    <div className="absolute left-0 right-0 h-0.5 bg-gray-700 opacity-80" style={{ top: '16.67%' }}></div>
+                                    <div className="absolute left-0 right-0 h-0.5 bg-gray-700 opacity-80" style={{ top: '33.33%' }}></div>
+                                    {/* Vertical line for 2 columns in upper sash */}
+                                    <div className="absolute top-0 bottom-1/2 left-1/2 w-0.5 bg-gray-700 opacity-80"></div>
                                     
-                                    {/* Lower sash (bottom half) - 3 columns x 2 rows */}
-                                    {/* Horizontal line in middle of lower sash */}
-                                    <div className="absolute left-0 right-0 h-0.5 bg-gray-700 opacity-80" style={{ top: '75%' }}></div>
-                                    {/* Vertical lines for 3 columns in lower sash */}
-                                    <div className="absolute top-1/2 bottom-0 left-1/3 w-0.5 bg-gray-700 opacity-80"></div>
-                                    <div className="absolute top-1/2 bottom-0 left-2/3 w-0.5 bg-gray-700 opacity-80"></div>
+                                    {/* Lower sash (bottom half) - 2 columns x 3 rows */}
+                                    {/* Horizontal lines for 3 rows in lower sash */}
+                                    <div className="absolute left-0 right-0 h-0.5 bg-gray-700 opacity-80" style={{ top: '66.67%' }}></div>
+                                    <div className="absolute left-0 right-0 h-0.5 bg-gray-700 opacity-80" style={{ top: '83.33%' }}></div>
+                                    {/* Vertical line for 2 columns in lower sash */}
+                                    <div className="absolute top-1/2 bottom-0 left-1/2 w-0.5 bg-gray-700 opacity-80"></div>
                                   </>
                                 )}
                                 
@@ -1686,19 +1686,19 @@ export default function QuotePage() {
                           <div className="absolute inset-0 pointer-events-none">
                             {currentItem.configuration.gridPattern === 'colonial' && (
                               <>
-                                {/* Upper sash (top half) - 3 columns x 2 rows */}
-                                {/* Horizontal line in middle of upper sash */}
-                                <div className="absolute left-0 right-0 h-0.5 bg-gray-600 opacity-80" style={{ top: '25%' }}></div>
-                                {/* Vertical lines for 3 columns in upper sash */}
-                                <div className="absolute top-0 bottom-1/2 left-1/3 w-0.5 bg-gray-600 opacity-80"></div>
-                                <div className="absolute top-0 bottom-1/2 left-2/3 w-0.5 bg-gray-600 opacity-80"></div>
+                                {/* Upper sash (top half) - 2 columns x 3 rows */}
+                                {/* Horizontal lines for 3 rows in upper sash */}
+                                <div className="absolute left-0 right-0 h-0.5 bg-gray-600 opacity-80" style={{ top: '16.67%' }}></div>
+                                <div className="absolute left-0 right-0 h-0.5 bg-gray-600 opacity-80" style={{ top: '33.33%' }}></div>
+                                {/* Vertical line for 2 columns in upper sash */}
+                                <div className="absolute top-0 bottom-1/2 left-1/2 w-0.5 bg-gray-600 opacity-80"></div>
                                 
-                                {/* Lower sash (bottom half) - 3 columns x 2 rows */}
-                                {/* Horizontal line in middle of lower sash */}
-                                <div className="absolute left-0 right-0 h-0.5 bg-gray-600 opacity-80" style={{ top: '75%' }}></div>
-                                {/* Vertical lines for 3 columns in lower sash */}
-                                <div className="absolute top-1/2 bottom-0 left-1/3 w-0.5 bg-gray-600 opacity-80"></div>
-                                <div className="absolute top-1/2 bottom-0 left-2/3 w-0.5 bg-gray-600 opacity-80"></div>
+                                {/* Lower sash (bottom half) - 2 columns x 3 rows */}
+                                {/* Horizontal lines for 3 rows in lower sash */}
+                                <div className="absolute left-0 right-0 h-0.5 bg-gray-600 opacity-80" style={{ top: '66.67%' }}></div>
+                                <div className="absolute left-0 right-0 h-0.5 bg-gray-600 opacity-80" style={{ top: '83.33%' }}></div>
+                                {/* Vertical line for 2 columns in lower sash */}
+                                <div className="absolute top-1/2 bottom-0 left-1/2 w-0.5 bg-gray-600 opacity-80"></div>
                               </>
                             )}
                             {currentItem.configuration.gridPattern === 'prairie' && (
