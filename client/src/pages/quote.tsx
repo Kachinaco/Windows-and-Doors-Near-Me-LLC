@@ -560,35 +560,137 @@ export default function QuotePage() {
                         </div>
                         
                         {/* Window Preview */}
-                        <div className="bg-gray-100 border-2 border-gray-300 rounded-lg p-4 h-48 flex items-center justify-center">
-                          <div className="relative bg-white border-4 border-gray-600 rounded" 
-                               style={{
-                                 width: `${Math.max(120, Math.min(180, actualWidth * 3.5))}px`,
-                                 height: `${Math.max(80, Math.min(120, actualHeight * 2.5))}px`
-                               }}>
+                        <div className="bg-gray-50 border border-gray-300 rounded-lg p-6 h-64">
+                          <div className="flex flex-col h-full">
+                            {/* Dimension Labels */}
+                            <div className="text-center mb-2">
+                              <div className="text-xs text-gray-600">{actualWidth.toFixed(1)}"</div>
+                              <div className="flex justify-center">
+                                <div className="w-32 h-0.5 bg-gray-400 relative">
+                                  <div className="absolute -left-1 -top-1 w-2 h-2 bg-gray-400"></div>
+                                  <div className="absolute -right-1 -top-1 w-2 h-2 bg-gray-400"></div>
+                                </div>
+                              </div>
+                            </div>
                             
-                            {/* Window Operating Elements */}
-                            {item.configuration.operatingType === 'vertical-hung' && (
-                              <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-600 transform -translate-y-0.5"></div>
-                            )}
-                            
-                            {item.configuration.operatingType === 'horizontal-slider' && (
-                              <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-gray-600"></div>
-                            )}
-                            
-                            {/* Grid Pattern */}
-                            {item.configuration.gridPattern === 'colonial' && (
-                              <>
-                                <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-600 opacity-80"></div>
-                                <div className="absolute top-0 bottom-0 left-1/3 w-0.5 bg-gray-600 opacity-80"></div>
-                                <div className="absolute top-0 bottom-0 left-2/3 w-0.5 bg-gray-600 opacity-80"></div>
-                              </>
-                            )}
+                            <div className="flex flex-1 items-center">
+                              {/* Height Label */}
+                              <div className="flex flex-col items-center mr-3">
+                                <div className="h-20 w-0.5 bg-gray-400 relative">
+                                  <div className="absolute -left-1 -top-1 w-2 h-2 bg-gray-400"></div>
+                                  <div className="absolute -left-1 -bottom-1 w-2 h-2 bg-gray-400"></div>
+                                </div>
+                                <div className="text-xs text-gray-600 mt-1 -rotate-90 whitespace-nowrap">{actualHeight.toFixed(1)}"</div>
+                              </div>
+                              
+                              {/* Window Frame */}
+                              <div className="relative bg-white border-4 border-gray-700 rounded-sm shadow-lg" 
+                                   style={{
+                                     width: `${Math.max(140, Math.min(200, actualWidth * 4))}px`,
+                                     height: `${Math.max(100, Math.min(140, actualHeight * 3))}px`,
+                                     backgroundColor: item.configuration.exteriorColor === 'black' ? '#2d2d2d' : 
+                                                    item.configuration.exteriorColor === 'bronze' ? '#8b6914' :
+                                                    item.configuration.exteriorColor === 'tan' ? '#d2b48c' : '#ffffff'
+                                   }}>
+                                
+                                {/* Glass Area */}
+                                <div className="absolute inset-2 bg-blue-50 bg-opacity-30 border border-gray-400"
+                                     style={{
+                                       backgroundColor: item.configuration.outerGlass === 'low-e-max' ? '#e8f4fd' :
+                                                      item.configuration.outerGlass === 'sungaardmax-low-e' ? '#f0f8ff' : '#f8fafc'
+                                     }}>
+                                  
+                                  {/* Operating Elements */}
+                                  {item.configuration.operatingType === 'vertical-hung' && (
+                                    <>
+                                      <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-700 transform -translate-y-0.5"></div>
+                                      {item.configuration.operatingConfiguration === 'single-hung' && (
+                                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                                          <div className="w-0 h-0 border-l-3 border-r-3 border-b-6 border-transparent border-b-gray-800"></div>
+                                        </div>
+                                      )}
+                                      {item.configuration.operatingConfiguration === 'double-hung' && (
+                                        <>
+                                          <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
+                                            <div className="w-0 h-0 border-l-3 border-r-3 border-t-6 border-transparent border-t-gray-800"></div>
+                                          </div>
+                                          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                                            <div className="w-0 h-0 border-l-3 border-r-3 border-b-6 border-transparent border-b-gray-800"></div>
+                                          </div>
+                                        </>
+                                      )}
+                                    </>
+                                  )}
+                                  
+                                  {item.configuration.operatingType === 'horizontal-slider' && (
+                                    <>
+                                      <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-gray-700"></div>
+                                      {item.configuration.operatingConfiguration === 'xo-slider' && (
+                                        <>
+                                          <div className="absolute left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                            <div className="w-0 h-0 border-t-3 border-b-3 border-l-6 border-transparent border-l-gray-800"></div>
+                                          </div>
+                                          <div className="absolute left-2 top-2 text-xs font-bold text-gray-800">X</div>
+                                          <div className="absolute right-2 top-2 text-xs font-bold text-gray-600">O</div>
+                                        </>
+                                      )}
+                                    </>
+                                  )}
+                                  
+                                  {/* Grid Pattern Overlay */}
+                                  {item.configuration.gridPattern === 'colonial' && (
+                                    <>
+                                      <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-700 opacity-90"></div>
+                                      <div className="absolute top-0 bottom-0 left-1/3 w-0.5 bg-gray-700 opacity-90"></div>
+                                      <div className="absolute top-0 bottom-0 left-2/3 w-0.5 bg-gray-700 opacity-90"></div>
+                                    </>
+                                  )}
+                                  
+                                  {item.configuration.gridPattern === 'prairie' && (
+                                    <>
+                                      <div className="absolute top-3 left-3 right-3 h-0.5 bg-gray-700 opacity-80"></div>
+                                      <div className="absolute top-3 bottom-3 left-3 w-0.5 bg-gray-700 opacity-80"></div>
+                                      <div className="absolute top-3 bottom-3 right-3 w-0.5 bg-gray-700 opacity-80"></div>
+                                      <div className="absolute bottom-3 left-3 right-3 h-0.5 bg-gray-700 opacity-80"></div>
+                                    </>
+                                  )}
+                                  
+                                  {/* Energy Star Badge */}
+                                  {energyRatings.energyStar && (
+                                    <div className="absolute top-1 right-1">
+                                      <div className="bg-blue-600 text-white text-xs px-1 py-0.5 rounded font-bold">
+                                        ENERGY STAR
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Glass Type Indicator */}
+                                  <div className="absolute bottom-1 left-1">
+                                    <div className="text-xs text-gray-600 font-medium">
+                                      {item.configuration.outerGlass === 'low-e-max' ? 'Low-E Max' :
+                                       item.configuration.outerGlass === 'sungaardmax-low-e' ? 'SunGuard' : 'Clear'}
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Frame Color Indicator */}
+                                <div className="absolute -bottom-6 left-0 right-0 text-center">
+                                  <div className="text-xs text-gray-600 capitalize">
+                                    {item.configuration.exteriorColor} Frame
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                         
-                        <div className="text-center mt-2">
-                          <div className="text-blue-600 underline cursor-pointer text-sm">View Image</div>
+                        <div className="text-center mt-3 space-y-2">
+                          <button className="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors">
+                            View Technical Drawing
+                          </button>
+                          <div className="text-xs text-gray-500">
+                            Scale: Proportional Preview
+                          </div>
                         </div>
                       </div>
                     </div>
