@@ -656,17 +656,17 @@ export default function QuotePage() {
                                 {item.configuration.gridPattern === 'colonial' && (
                                   <>
                                     {/* Upper sash (top half) - 2 columns x 3 rows */}
-                                    {/* Horizontal lines for 3 rows in upper sash */}
+                                    {/* Horizontal lines dividing upper sash into 3 equal rows */}
                                     <div className="absolute left-0 right-0 h-0.5 bg-gray-700 opacity-80" style={{ top: '16.67%' }}></div>
                                     <div className="absolute left-0 right-0 h-0.5 bg-gray-700 opacity-80" style={{ top: '33.33%' }}></div>
-                                    {/* Vertical line for 2 columns in upper sash */}
+                                    {/* Vertical line for 2 columns in upper sash - KEEP PERFECT */}
                                     <div className="absolute top-0 bottom-1/2 left-1/2 w-0.5 bg-gray-700 opacity-80"></div>
                                     
                                     {/* Lower sash (bottom half) - 2 columns x 3 rows */}
-                                    {/* Horizontal lines for 3 rows in lower sash */}
+                                    {/* Horizontal lines dividing lower sash into 3 equal rows */}
                                     <div className="absolute left-0 right-0 h-0.5 bg-gray-700 opacity-80" style={{ top: '66.67%' }}></div>
                                     <div className="absolute left-0 right-0 h-0.5 bg-gray-700 opacity-80" style={{ top: '83.33%' }}></div>
-                                    {/* Vertical line for 2 columns in lower sash */}
+                                    {/* Vertical line for 2 columns in lower sash - KEEP PERFECT */}
                                     <div className="absolute top-1/2 bottom-0 left-1/2 w-0.5 bg-gray-700 opacity-80"></div>
                                   </>
                                 )}
@@ -1687,17 +1687,17 @@ export default function QuotePage() {
                             {currentItem.configuration.gridPattern === 'colonial' && (
                               <>
                                 {/* Upper sash (top half) - 2 columns x 3 rows */}
-                                {/* Horizontal lines for 3 rows in upper sash */}
+                                {/* Horizontal lines dividing upper sash into 3 equal rows */}
                                 <div className="absolute left-0 right-0 h-0.5 bg-gray-600 opacity-80" style={{ top: '16.67%' }}></div>
                                 <div className="absolute left-0 right-0 h-0.5 bg-gray-600 opacity-80" style={{ top: '33.33%' }}></div>
-                                {/* Vertical line for 2 columns in upper sash */}
+                                {/* Vertical line for 2 columns in upper sash - KEEP PERFECT */}
                                 <div className="absolute top-0 bottom-1/2 left-1/2 w-0.5 bg-gray-600 opacity-80"></div>
                                 
                                 {/* Lower sash (bottom half) - 2 columns x 3 rows */}
-                                {/* Horizontal lines for 3 rows in lower sash */}
+                                {/* Horizontal lines dividing lower sash into 3 equal rows */}
                                 <div className="absolute left-0 right-0 h-0.5 bg-gray-600 opacity-80" style={{ top: '66.67%' }}></div>
                                 <div className="absolute left-0 right-0 h-0.5 bg-gray-600 opacity-80" style={{ top: '83.33%' }}></div>
-                                {/* Vertical line for 2 columns in lower sash */}
+                                {/* Vertical line for 2 columns in lower sash - KEEP PERFECT */}
                                 <div className="absolute top-1/2 bottom-0 left-1/2 w-0.5 bg-gray-600 opacity-80"></div>
                               </>
                             )}
