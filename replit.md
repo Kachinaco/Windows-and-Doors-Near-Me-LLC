@@ -180,6 +180,9 @@ Changelog:
 - June 19, 2025. Moved "Add Item" button to bottom of configurator for better user workflow
 - June 19, 2025. Implemented rough opening calculation adjustment - subtracts 0.5" from each dimension for actual window size since rough opening measurements are frame-to-frame
 - June 19, 2025. Enhanced window preview display with larger minimum sizes and accurate dimension representation for rough opening calculations
+- June 20, 2025. Updated quote summary to match detailed technical specification format with comprehensive window details and professional layout
+- June 20, 2025. Added installation services checkbox to quote request contact form for customer service requirements
+- June 20, 2025. Replaced modern 3D window preview with consistent configurator tool preview for unified user experience
 
 ## User Preferences
 
