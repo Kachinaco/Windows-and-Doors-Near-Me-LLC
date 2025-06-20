@@ -655,15 +655,17 @@ export default function QuotePage() {
                                 {/* Grid Patterns */}
                                 {item.configuration.gridPattern === 'colonial' && (
                                   <>
-                                    {/* Upper sash (top half) - 3x2 grid */}
-                                    <div className="absolute top-1/6 left-0 right-0 h-0.5 bg-gray-700 opacity-80"></div>
-                                    <div className="absolute top-1/3 left-0 right-0 h-0.5 bg-gray-700 opacity-80"></div>
+                                    {/* Upper sash (top half) - 3 columns x 2 rows */}
+                                    {/* Horizontal line separating 2 rows in upper sash */}
+                                    <div className="absolute top-1/4 left-0 right-0 h-0.5 bg-gray-700 opacity-80"></div>
+                                    {/* Vertical lines for 3 columns in upper sash */}
                                     <div className="absolute top-0 bottom-1/2 left-1/3 w-0.5 bg-gray-700 opacity-80"></div>
                                     <div className="absolute top-0 bottom-1/2 left-2/3 w-0.5 bg-gray-700 opacity-80"></div>
                                     
-                                    {/* Lower sash (bottom half) - 3x2 grid */}
-                                    <div className="absolute top-2/3 left-0 right-0 h-0.5 bg-gray-700 opacity-80"></div>
-                                    <div className="absolute top-5/6 left-0 right-0 h-0.5 bg-gray-700 opacity-80"></div>
+                                    {/* Lower sash (bottom half) - 3 columns x 2 rows */}
+                                    {/* Horizontal line separating 2 rows in lower sash */}
+                                    <div className="absolute top-3/4 left-0 right-0 h-0.5 bg-gray-700 opacity-80"></div>
+                                    {/* Vertical lines for 3 columns in lower sash */}
                                     <div className="absolute top-1/2 bottom-0 left-1/3 w-0.5 bg-gray-700 opacity-80"></div>
                                     <div className="absolute top-1/2 bottom-0 left-2/3 w-0.5 bg-gray-700 opacity-80"></div>
                                   </>
@@ -1684,15 +1686,17 @@ export default function QuotePage() {
                           <div className="absolute inset-0 pointer-events-none">
                             {currentItem.configuration.gridPattern === 'colonial' && (
                               <>
-                                {/* Upper sash (top half) - 3x2 grid */}
-                                <div className="absolute top-1/6 left-0 right-0 h-0.5 bg-gray-600 opacity-80"></div>
-                                <div className="absolute top-1/3 left-0 right-0 h-0.5 bg-gray-600 opacity-80"></div>
+                                {/* Upper sash (top half) - 3 columns x 2 rows */}
+                                {/* Horizontal line separating 2 rows in upper sash */}
+                                <div className="absolute top-1/4 left-0 right-0 h-0.5 bg-gray-600 opacity-80"></div>
+                                {/* Vertical lines for 3 columns in upper sash */}
                                 <div className="absolute top-0 bottom-1/2 left-1/3 w-0.5 bg-gray-600 opacity-80"></div>
                                 <div className="absolute top-0 bottom-1/2 left-2/3 w-0.5 bg-gray-600 opacity-80"></div>
                                 
-                                {/* Lower sash (bottom half) - 3x2 grid */}
-                                <div className="absolute top-2/3 left-0 right-0 h-0.5 bg-gray-600 opacity-80"></div>
-                                <div className="absolute top-5/6 left-0 right-0 h-0.5 bg-gray-600 opacity-80"></div>
+                                {/* Lower sash (bottom half) - 3 columns x 2 rows */}
+                                {/* Horizontal line separating 2 rows in lower sash */}
+                                <div className="absolute top-3/4 left-0 right-0 h-0.5 bg-gray-600 opacity-80"></div>
+                                {/* Vertical lines for 3 columns in lower sash */}
                                 <div className="absolute top-1/2 bottom-0 left-1/3 w-0.5 bg-gray-600 opacity-80"></div>
                                 <div className="absolute top-1/2 bottom-0 left-2/3 w-0.5 bg-gray-600 opacity-80"></div>
                               </>
