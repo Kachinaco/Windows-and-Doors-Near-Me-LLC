@@ -194,6 +194,7 @@ Changelog:
 - June 21, 2025. Added complete database schema for business management including leads, jobs, proposals, communication logs, user availability, and blog content management
 - June 21, 2025. Created scheduling interface with calendar views, crew availability tracking, and job status management (not scheduled, scheduled, completed) with contractor acceptance workflow (pending, accepted, declined)
 - June 21, 2025. Implemented streamlined 11-stage project pipeline displaying count-only view: New Leads → Need Attention → Sent Estimate → Signed → Need Ordered → Ordered → Need Scheduled → Scheduled → In Progress → Complete → Follow Up
+- June 21, 2025. Created comprehensive activity feed system with dedicated updates page (/updates), database table for project activities, API endpoints for fetching/creating updates, and fixed non-functional "Share something..." button on dashboard to link to activity feed
 
 ## User Preferences
 
