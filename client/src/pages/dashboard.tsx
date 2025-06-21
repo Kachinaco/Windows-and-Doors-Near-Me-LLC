@@ -428,7 +428,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Recent Updates */}
+          {/* Updates */}
           <Card className="border-gray-200 dark:border-gray-700">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
