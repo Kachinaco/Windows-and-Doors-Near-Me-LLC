@@ -3,6 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Building2, 
   Users, 
@@ -19,7 +23,13 @@ import {
   FileText,
   BarChart3,
   CalendarDays,
-  Activity
+  Activity,
+  Heart,
+  Share,
+  MoreHorizontal,
+  Send,
+  Camera,
+  Smile
 } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -27,6 +37,36 @@ import { useState } from "react";
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [previewRole, setPreviewRole] = useState<string | null>(null);
+  const [postContent, setPostContent] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const createPostMutation = useMutation({
+    mutationFn: async (content: string) => {
+      return await apiRequest("POST", "/api/company-posts", { content });
+    },
+    onSuccess: () => {
+      setPostContent("");
+      queryClient.invalidateQueries({ queryKey: ["/api/company-posts"] });
+      toast({
+        title: "Post shared!",
+        description: "Your update has been shared with the team.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to share post. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handlePostSubmit = () => {
+    if (postContent.trim()) {
+      createPostMutation.mutate(postContent);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -269,24 +309,124 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Quick Share */}
-          <Link href="/updates">
-            <Card className="bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <MessageSquare className="h-4 w-4 text-white" />
+          {/* Company Social Feed */}
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardContent className="p-4">
+              {/* Post Creation */}
+              <div className="flex items-start space-x-3 mb-4">
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <Textarea
+                    placeholder="Share something with the team..."
+                    value={postContent}
+                    onChange={(e) => setPostContent(e.target.value)}
+                    className="min-h-[80px] resize-none border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400"
+                  />
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center space-x-2">
+                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <Camera className="h-4 w-4 mr-1" />
+                        Photo
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <Smile className="h-4 w-4 mr-1" />
+                        Feeling
+                      </Button>
+                    </div>
+                    <Button 
+                      onClick={handlePostSubmit}
+                      disabled={!postContent.trim() || createPostMutation.isPending}
+                      size="sm"
+                      className="bg-blue-500 hover:bg-blue-600 text-white"
+                    >
+                      {createPostMutation.isPending ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4 mr-1" />
+                          Share
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Sample Company Posts */}
+              <div className="border-t border-gray-200 dark:border-gray-600 pt-4 space-y-4">
+                {/* Sample Post 1 */}
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex-1">
-                    <span className="text-gray-600 dark:text-gray-400 text-sm">
-                      Share something...
-                    </span>
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="font-medium text-gray-900 dark:text-white text-sm">Sarah Johnson</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">2 hours ago</span>
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      Great job everyone on completing the Henderson project! The client was thrilled with the new Milgard windows. 🎉
+                    </p>
+                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                      <button className="flex items-center space-x-1 hover:text-blue-500">
+                        <Heart className="h-3 w-3" />
+                        <span>Like</span>
+                      </button>
+                      <button className="flex items-center space-x-1 hover:text-blue-500">
+                        <MessageSquare className="h-3 w-3" />
+                        <span>Comment</span>
+                      </button>
+                      <button className="flex items-center space-x-1 hover:text-blue-500">
+                        <Share className="h-3 w-3" />
+                        <span>Share</span>
+                      </button>
+                    </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
+
+                {/* Sample Post 2 */}
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="font-medium text-gray-900 dark:text-white text-sm">Mike Torres</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">4 hours ago</span>
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      Reminder: Team meeting tomorrow at 9 AM to discuss the upcoming Mesa installation projects.
+                    </p>
+                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                      <button className="flex items-center space-x-1 hover:text-blue-500">
+                        <Heart className="h-3 w-3" />
+                        <span>Like</span>
+                      </button>
+                      <button className="flex items-center space-x-1 hover:text-blue-500">
+                        <MessageSquare className="h-3 w-3" />
+                        <span>Comment</span>
+                      </button>
+                      <button className="flex items-center space-x-1 hover:text-blue-500">
+                        <Share className="h-3 w-3" />
+                        <span>Share</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* View More Link */}
+              <div className="text-center mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
+                <Link href="/updates">
+                  <span className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer">
+                    View all activity →
+                  </span>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Recent Updates */}
           <Card className="border-gray-200 dark:border-gray-700">
