@@ -47,6 +47,11 @@ export default function ProjectsPage() {
     enabled: user?.role === 'admin' || user?.role === 'contractor_paid',
   });
 
+  const { data: leads = [] } = useQuery({
+    queryKey: ["/api/leads"],
+    enabled: user?.role === 'admin' || user?.role === 'employee' || user?.role === 'contractor_paid',
+  });
+
   const form = useForm<InsertProject>({
     resolver: zodResolver(insertProjectSchema),
     defaultValues: {
@@ -328,6 +333,50 @@ export default function ProjectsPage() {
                         <SelectItem value="Door Replacement">Door Replacement</SelectItem>
                         <SelectItem value="Home Improvement">Home Improvement</SelectItem>
                         <SelectItem value="Repair Service">Repair Service</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Lead Assignment and Project Status */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="leadId">Link to Existing Lead (Optional)</Label>
+                    <Select 
+                      value={form.watch("leadId")?.toString() || ""} 
+                      onValueChange={(value) => form.setValue("leadId", value ? parseInt(value) : undefined)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select existing lead" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">No Lead - New Customer</SelectItem>
+                        {Array.isArray(leads) && leads.map((lead: any) => (
+                          <SelectItem key={lead.id} value={lead.id.toString()}>
+                            {lead.firstName} {lead.lastName} - {lead.source}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="projectStatus">Project Status</Label>
+                    <Select 
+                      value={form.watch("projectStatus") || "new_lead"} 
+                      onValueChange={(value) => form.setValue("projectStatus", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select project status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="new_lead">New Lead</SelectItem>
+                        <SelectItem value="scheduled">Scheduled</SelectItem>
+                        <SelectItem value="work_order">Work Order</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="on_hold">On Hold</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
