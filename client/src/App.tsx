@@ -27,6 +27,7 @@ import ProjectDetailPage from "@/pages/project-detail";
 import SubscriptionPage from "@/pages/subscription";
 import QuotesDashboard from "@/pages/quotes-dashboard";
 import SettingsPage from "@/pages/settings";
+import CalendarView from "@/pages/calendar";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
