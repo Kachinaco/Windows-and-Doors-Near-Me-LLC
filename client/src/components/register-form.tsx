@@ -141,6 +141,19 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="companyName">Company Name</Label>
+            <Input
+              id="companyName"
+              type="text"
+              {...form.register("companyName")}
+              placeholder="Kachina Windows and Doors"
+            />
+            {form.formState.errors.companyName && (
+              <p className="text-sm text-red-600">{form.formState.errors.companyName.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input
               id="username"
