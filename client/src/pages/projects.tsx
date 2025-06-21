@@ -628,7 +628,7 @@ export default function ProjectsPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                {filteredProjects.length === 0 ? (
+                {sortedFilteredProjects.length === 0 ? (
                   <div className="text-center py-12">
                     <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No projects in {getStageDisplayName(stageFilter)}</h3>
@@ -643,88 +643,13 @@ export default function ProjectsPage() {
                     </Dialog>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-gray-50 dark:bg-gray-800">
-                          <TableHead className="font-semibold">Project</TableHead>
-                          <TableHead className="font-semibold">Client</TableHead>
-                          <TableHead className="font-semibold">Status</TableHead>
-                          <TableHead className="font-semibold">Priority</TableHead>
-                          <TableHead className="font-semibold">Estimated Cost</TableHead>
-                          <TableHead className="font-semibold">Start Date</TableHead>
-                          <TableHead className="font-semibold">Contact</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredProjects.map((project) => (
-                          <TableRow key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <TableCell>
-                              <Link href={`/projects/${project.id}`}>
-                                <div className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
-                                  {project.title}
-                                </div>
-                              </Link>
-                              <div className="text-sm text-gray-500">{project.serviceType}</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-sm">
-                                {project.address && (
-                                  <div className="flex items-center gap-1 text-gray-600">
-                                    <MapPin className="h-3 w-3" />
-                                    {project.address}
-                                  </div>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant="outline" 
-                                className={getStatusColor(project.status)}
-                              >
-                                {project.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant="outline" 
-                                className={getPriorityColor(project.priority)}
-                              >
-                                {project.priority}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1 text-green-600">
-                                <DollarSign className="h-3 w-3" />
-                                {project.estimatedCost || 'TBD'}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {project.startDate && (
-                                <div className="flex items-center gap-1 text-gray-600">
-                                  <Calendar className="h-3 w-3" />
-                                  {new Date(project.startDate).toLocaleDateString()}
-                                </div>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <div className="space-y-1">
-                                {project.phone && (
-                                  <div className="flex items-center gap-1 text-gray-600 text-sm">
-                                    <Phone className="h-3 w-3" />
-                                    {project.phone}
-                                  </div>
-                                )}
-                                {project.email && (
-                                  <div className="text-sm text-gray-600">{project.email}</div>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <CustomizableProjectTable
+                    projects={sortedFilteredProjects}
+                    layout={layout}
+                    onSort={handleSort}
+                    sortColumn={sortColumn}
+                    sortDirection={sortDirection}
+                  />
                 )}
               </CardContent>
             </Card>
