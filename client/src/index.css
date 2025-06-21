@@ -148,6 +148,202 @@
     animation: subtleFloat 4s ease-in-out infinite;
   }
 
+  /* Enhanced Calendar Styling */
+  .rbc-event {
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .rbc-event:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  .rbc-calendar {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border: 1px solid rgb(229, 231, 235);
+  }
+
+  .dark .rbc-calendar {
+    background: rgb(31, 41, 55);
+    color: rgb(243, 244, 246);
+    border: 1px solid rgb(75, 85, 99);
+  }
+
+  .rbc-header {
+    background: rgb(249, 250, 251);
+    border-bottom: 1px solid rgb(229, 231, 235);
+    padding: 16px 12px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: rgb(55, 65, 81);
+    text-align: center;
+  }
+
+  .dark .rbc-header {
+    background: rgb(55, 65, 81);
+    border-bottom: 1px solid rgb(75, 85, 99);
+    color: rgb(243, 244, 246);
+  }
+
+  .rbc-today {
+    background-color: rgba(59, 130, 246, 0.05) !important;
+  }
+
+  .dark .rbc-today {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+  }
+
+  .rbc-date-cell {
+    padding: 12px 8px;
+    text-align: right;
+    font-weight: 500;
+    color: rgb(75, 85, 99);
+  }
+
+  .dark .rbc-date-cell {
+    color: rgb(156, 163, 175);
+  }
+
+  .rbc-date-cell.rbc-today {
+    background-color: rgb(59, 130, 246);
+    color: white;
+    border-radius: 6px;
+    margin: 2px;
+  }
+
+  .rbc-month-view, .rbc-time-view {
+    border: none;
+    border-radius: 8px;
+  }
+
+  .rbc-time-header {
+    border-bottom: 2px solid rgb(229, 231, 235);
+    background: rgb(249, 250, 251);
+  }
+
+  .dark .rbc-time-header {
+    border-bottom: 2px solid rgb(75, 85, 99);
+    background: rgb(55, 65, 81);
+  }
+
+  .rbc-timeslot-group {
+    border-bottom: 1px solid rgb(243, 244, 246);
+    min-height: 40px;
+  }
+
+  .dark .rbc-timeslot-group {
+    border-bottom: 1px solid rgb(55, 65, 81);
+  }
+
+  .rbc-time-gutter .rbc-timeslot-group {
+    border-right: 2px solid rgb(229, 231, 235);
+    background: rgb(249, 250, 251);
+  }
+
+  .dark .rbc-time-gutter .rbc-timeslot-group {
+    border-right: 2px solid rgb(75, 85, 99);
+    background: rgb(55, 65, 81);
+  }
+
+  .rbc-time-gutter .rbc-time-slot {
+    color: rgb(107, 114, 128);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 4px 8px;
+    text-align: center;
+  }
+
+  .dark .rbc-time-gutter .rbc-time-slot {
+    color: rgb(156, 163, 175);
+  }
+
+  .rbc-day-slot .rbc-time-slot {
+    border-top: 1px solid rgb(243, 244, 246);
+  }
+
+  .dark .rbc-day-slot .rbc-time-slot {
+    border-top: 1px solid rgb(55, 65, 81);
+  }
+
+  .rbc-current-time-indicator {
+    background-color: rgb(239, 68, 68);
+    height: 2px;
+    border-radius: 1px;
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.4);
+  }
+
+  .rbc-agenda-view {
+    border: none;
+    border-radius: 8px;
+    background: white;
+  }
+
+  .dark .rbc-agenda-view {
+    background: rgb(31, 41, 55);
+  }
+
+  .rbc-agenda-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .rbc-agenda-table tbody > tr > td {
+    padding: 16px;
+    border-bottom: 1px solid rgb(243, 244, 246);
+    vertical-align: top;
+  }
+
+  .dark .rbc-agenda-table tbody > tr > td {
+    border-bottom: 1px solid rgb(55, 65, 81);
+  }
+
+  .rbc-agenda-table tbody > tr:hover > td {
+    background-color: rgb(249, 250, 251);
+  }
+
+  .dark .rbc-agenda-table tbody > tr:hover > td {
+    background-color: rgb(55, 65, 81);
+  }
+
+  .rbc-show-more {
+    background: linear-gradient(135deg, rgb(59, 130, 246), rgb(37, 99, 235));
+    color: white;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    transition: all 0.2s ease;
+  }
+
+  .rbc-show-more:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  .rbc-slot-selection {
+    background-color: rgba(59, 130, 246, 0.1);
+    border: 2px dashed rgb(59, 130, 246);
+    border-radius: 4px;
+  }
+
+  .rbc-selected {
+    background-color: rgb(59, 130, 246);
+    color: white;
+  }
+
   .subtle-animation-delay {
     animation: subtleFloat 4s ease-in-out infinite;
     animation-delay: -2s;
