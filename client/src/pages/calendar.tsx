@@ -580,7 +580,7 @@ export default function CalendarView() {
                             Connected
                           </Badge>
                         ) : (
-                          <Button onClick={connectToGoogle}>Connect</Button>
+                          <Button onClick={connectToGoogle} className="h-9 min-w-[100px]">Connect</Button>
                         )}
                       </div>
                     </div>
@@ -727,6 +727,7 @@ export default function CalendarView() {
                   {selectedEvent.type === 'job' && (
                     <Button
                       variant="outline"
+                      className="h-9 min-w-[180px]"
                       onClick={() => createGoogleEvent({
                         summary: selectedEvent.title,
                         description: selectedEvent.description,
@@ -740,7 +741,7 @@ export default function CalendarView() {
                       Add to Google Calendar
                     </Button>
                   )}
-                  <Button onClick={() => setIsEventDialogOpen(false)}>
+                  <Button onClick={() => setIsEventDialogOpen(false)} className="h-9 min-w-[80px]">
                     Close
                   </Button>
                 </div>
