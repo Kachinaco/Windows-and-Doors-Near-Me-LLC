@@ -15,6 +15,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertProjectSchema, type InsertProject, type Project, type User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLayoutConfig } from "@/hooks/useLayoutConfig";
+import LayoutCustomizer from "@/components/LayoutCustomizer";
+import CustomizableProjectTable from "@/components/CustomizableProjectTable";
 import { 
   PlusCircle, 
   Building2, 
@@ -47,6 +50,11 @@ export default function ProjectsPage() {
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [location] = useLocation();
+  const [sortColumn, setSortColumn] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  
+  // Layout configuration
+  const { layout, saveLayout } = useLayoutConfig();
   
   // Get stage filter from URL parameters
   const urlParams = new URLSearchParams(location.split('?')[1] || '');
@@ -230,6 +238,35 @@ export default function ProjectsPage() {
     createProjectMutation.mutate(data);
   };
 
+  const handleSort = (column: string, direction: 'asc' | 'desc') => {
+    setSortColumn(column);
+    setSortDirection(direction);
+  };
+
+  const sortedFilteredProjects = useMemo(() => {
+    if (!sortColumn) return filteredProjects;
+    
+    return [...filteredProjects].sort((a, b) => {
+      let aVal = a[sortColumn as keyof Project];
+      let bVal = b[sortColumn as keyof Project];
+      
+      // Handle different data types
+      if (aVal instanceof Date) aVal = aVal.getTime();
+      if (bVal instanceof Date) bVal = bVal.getTime();
+      if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+      if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+      
+      if (aVal === null || aVal === undefined) aVal = '';
+      if (bVal === null || bVal === undefined) bVal = '';
+      
+      if (sortDirection === 'asc') {
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      } else {
+        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+      }
+    });
+  }, [filteredProjects, sortColumn, sortDirection]);
+
   const ProjectTable = ({ title, projects, icon: Icon, count }: { 
     title: string; 
     projects: Project[]; 
@@ -376,10 +413,11 @@ export default function ProjectsPage() {
                 </span>
               </div>
               
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
+              <LayoutCustomizer
+                currentLayout={layout}
+                onLayoutChange={saveLayout}
+                onSaveLayout={saveLayout}
+              />
               
               <Button variant="outline" size="sm" onClick={logout}>
                 <LogOut className="h-4 w-4 mr-2" />
