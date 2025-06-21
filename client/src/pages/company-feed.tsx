@@ -331,6 +331,11 @@ export default function CompanyFeedPage() {
                         <span className="font-medium text-gray-900 dark:text-white">
                           {user?.firstName} {user?.lastName}
                         </span>
+                        {post.feeling && (
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            is feeling {post.feeling}
+                          </span>
+                        )}
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                           {formatRelativeTime(post.createdAt)}
                         </span>
@@ -339,6 +344,18 @@ export default function CompanyFeedPage() {
                       <p className="text-gray-900 dark:text-white mb-4 whitespace-pre-wrap">
                         {post.content}
                       </p>
+
+                      {/* Display uploaded image */}
+                      {post.imageUrl && (
+                        <div className="mb-4">
+                          <img
+                            src={post.imageUrl}
+                            alt="Post image"
+                            className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-90 transition-opacity"
+                            style={{ maxHeight: '400px' }}
+                          />
+                        </div>
+                      )}
                       
                       <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
                         <button className="flex items-center space-x-2 hover:text-blue-500 transition-colors">

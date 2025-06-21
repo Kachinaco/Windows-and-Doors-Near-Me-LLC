@@ -531,6 +531,11 @@ export default function Dashboard() {
                           <span className="font-medium text-gray-900 dark:text-white text-sm">
                             {user?.firstName} {user?.lastName}
                           </span>
+                          {post.feeling && (
+                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                              is feeling {post.feeling}
+                            </span>
+                          )}
                           <span className="text-xs text-gray-500 dark:text-gray-400">
                             {formatRelativeTime(post.createdAt)}
                           </span>
@@ -538,6 +543,18 @@ export default function Dashboard() {
                         <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
                           {post.content}
                         </p>
+
+                        {/* Display uploaded image */}
+                        {post.imageUrl && (
+                          <div className="mb-2">
+                            <img
+                              src={post.imageUrl}
+                              alt="Post image"
+                              className="max-w-full h-auto rounded border border-gray-200 dark:border-gray-600"
+                              style={{ maxHeight: '200px' }}
+                            />
+                          </div>
+                        )}
                         <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
                           <button className="flex items-center space-x-1 hover:text-blue-500">
                             <Heart className="h-3 w-3" />
