@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Building2, 
@@ -41,6 +41,11 @@ export default function Dashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Fetch company posts
+  const { data: companyPosts = [] } = useQuery<any[]>({
+    queryKey: ["/api/company-posts"],
+  });
+
   const createPostMutation = useMutation({
     mutationFn: async (content: string) => {
       return await apiRequest("POST", "/api/company-posts", { content });
@@ -66,6 +71,18 @@ export default function Dashboard() {
     if (postContent.trim()) {
       createPostMutation.mutate(postContent);
     }
+  };
+
+  const formatRelativeTime = (date: string) => {
+    const now = new Date();
+    const postDate = new Date(date);
+    const diffInMinutes = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)}d ago`;
+    return postDate.toLocaleDateString();
   };
 
   const handleLogout = () => {
@@ -354,67 +371,105 @@ export default function Dashboard() {
                 </div>
               </div>
               
-              {/* Sample Company Posts */}
+              {/* Company Posts Feed */}
               <div className="border-t border-gray-200 dark:border-gray-600 pt-4 space-y-4">
-                {/* Sample Post 1 */}
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="font-medium text-gray-900 dark:text-white text-sm">Sarah Johnson</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">2 hours ago</span>
+                {companyPosts.length > 0 ? (
+                  companyPosts.map((post: any) => (
+                    <div key={post.id} className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="font-medium text-gray-900 dark:text-white text-sm">
+                            {user?.firstName} {user?.lastName}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatRelativeTime(post.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                          {post.content}
+                        </p>
+                        <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                          <button className="flex items-center space-x-1 hover:text-blue-500">
+                            <Heart className="h-3 w-3" />
+                            <span>Like ({post.likesCount || 0})</span>
+                          </button>
+                          <button className="flex items-center space-x-1 hover:text-blue-500">
+                            <MessageSquare className="h-3 w-3" />
+                            <span>Comment ({post.commentsCount || 0})</span>
+                          </button>
+                          <button className="flex items-center space-x-1 hover:text-blue-500">
+                            <Share className="h-3 w-3" />
+                            <span>Share</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                      Great job everyone on completing the Henderson project! The client was thrilled with the new Milgard windows. 🎉
-                    </p>
-                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-                      <button className="flex items-center space-x-1 hover:text-blue-500">
-                        <Heart className="h-3 w-3" />
-                        <span>Like</span>
-                      </button>
-                      <button className="flex items-center space-x-1 hover:text-blue-500">
-                        <MessageSquare className="h-3 w-3" />
-                        <span>Comment</span>
-                      </button>
-                      <button className="flex items-center space-x-1 hover:text-blue-500">
-                        <Share className="h-3 w-3" />
-                        <span>Share</span>
-                      </button>
+                  ))
+                ) : (
+                  <>
+                    {/* Sample Posts when no real posts exist */}
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="font-medium text-gray-900 dark:text-white text-sm">Sarah Johnson</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">2 hours ago</span>
+                        </div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                          Great job everyone on completing the Henderson project! The client was thrilled with the new Milgard windows. 🎉
+                        </p>
+                        <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                          <button className="flex items-center space-x-1 hover:text-blue-500">
+                            <Heart className="h-3 w-3" />
+                            <span>Like</span>
+                          </button>
+                          <button className="flex items-center space-x-1 hover:text-blue-500">
+                            <MessageSquare className="h-3 w-3" />
+                            <span>Comment</span>
+                          </button>
+                          <button className="flex items-center space-x-1 hover:text-blue-500">
+                            <Share className="h-3 w-3" />
+                            <span>Share</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                {/* Sample Post 2 */}
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="h-4 w-4 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="font-medium text-gray-900 dark:text-white text-sm">Mike Torres</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">4 hours ago</span>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="font-medium text-gray-900 dark:text-white text-sm">Mike Torres</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">4 hours ago</span>
+                        </div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                          Reminder: Team meeting tomorrow at 9 AM to discuss the upcoming Mesa installation projects.
+                        </p>
+                        <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                          <button className="flex items-center space-x-1 hover:text-blue-500">
+                            <Heart className="h-3 w-3" />
+                            <span>Like</span>
+                          </button>
+                          <button className="flex items-center space-x-1 hover:text-blue-500">
+                            <MessageSquare className="h-3 w-3" />
+                            <span>Comment</span>
+                          </button>
+                          <button className="flex items-center space-x-1 hover:text-blue-500">
+                            <Share className="h-3 w-3" />
+                            <span>Share</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                      Reminder: Team meeting tomorrow at 9 AM to discuss the upcoming Mesa installation projects.
-                    </p>
-                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-                      <button className="flex items-center space-x-1 hover:text-blue-500">
-                        <Heart className="h-3 w-3" />
-                        <span>Like</span>
-                      </button>
-                      <button className="flex items-center space-x-1 hover:text-blue-500">
-                        <MessageSquare className="h-3 w-3" />
-                        <span>Comment</span>
-                      </button>
-                      <button className="flex items-center space-x-1 hover:text-blue-500">
-                        <Share className="h-3 w-3" />
-                        <span>Share</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
               
               {/* View More Link */}
