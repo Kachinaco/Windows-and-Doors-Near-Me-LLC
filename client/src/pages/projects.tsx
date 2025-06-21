@@ -643,19 +643,206 @@ export default function ProjectsPage() {
                     </Dialog>
                   </div>
                 ) : (
-                  <CustomizableProjectTable
-                    projects={sortedFilteredProjects}
-                    layout={layout}
-                    onSort={handleSort}
-                    sortColumn={sortColumn}
-                    sortDirection={sortDirection}
-                  />
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50 dark:bg-gray-800">
+                          <TableHead className="font-semibold">Project</TableHead>
+                          <TableHead className="font-semibold">Client</TableHead>
+                          <TableHead className="font-semibold">Status</TableHead>
+                          <TableHead className="font-semibold">Priority</TableHead>
+                          <TableHead className="font-semibold">Estimated Cost</TableHead>
+                          <TableHead className="font-semibold">Start Date</TableHead>
+                          <TableHead className="font-semibold">Contact</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sortedFilteredProjects.map((project) => (
+                          <TableRow key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <TableCell>
+                              <Link href={`/projects/${project.id}`}>
+                                <div className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
+                                  {project.title}
+                                </div>
+                              </Link>
+                              <div className="text-sm text-gray-500">{project.serviceType}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                {project.address && (
+                                  <div className="flex items-center gap-1 text-gray-600">
+                                    <MapPin className="h-3 w-3" />
+                                    {project.address}
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={getStatusColor(project.status)}
+                              >
+                                {project.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={getPriorityColor(project.priority)}
+                              >
+                                {project.priority}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-green-600">
+                                <DollarSign className="h-3 w-3" />
+                                {project.estimatedCost || 'TBD'}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {project.startDate && (
+                                <div className="flex items-center gap-1 text-gray-600">
+                                  <Calendar className="h-3 w-3" />
+                                  {new Date(project.startDate).toLocaleDateString()}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-1">
+                                {project.phone && (
+                                  <div className="flex items-center gap-1 text-gray-600 text-sm">
+                                    <Phone className="h-3 w-3" />
+                                    {project.phone}
+                                  </div>
+                                )}
+                                {project.email && (
+                                  <div className="text-sm text-gray-600">{project.email}</div>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
           ) : (
             // Default grouped view
             <>
+              {/* Pipeline Selection Overview - Shows filtered projects based on user's last pipeline selection */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-blue-600" />
+                    Current Focus
+                    <Badge variant="outline" className="ml-2">
+                      {projects.filter(p => p.status === 'new_lead' || p.status === 'need_attention').length} active
+                    </Badge>
+                  </CardTitle>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Projects requiring immediate attention based on your pipeline focus
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50 dark:bg-gray-800">
+                          <TableHead className="font-semibold">Project</TableHead>
+                          <TableHead className="font-semibold">Client</TableHead>
+                          <TableHead className="font-semibold">Status</TableHead>
+                          <TableHead className="font-semibold">Priority</TableHead>
+                          <TableHead className="font-semibold">Estimated Cost</TableHead>
+                          <TableHead className="font-semibold">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {projects
+                          .filter(p => p.status === 'new_lead' || p.status === 'need_attention')
+                          .slice(0, 5)
+                          .map((project) => (
+                          <TableRow key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <TableCell>
+                              <Link href={`/projects/${project.id}`}>
+                                <div className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
+                                  {project.title}
+                                </div>
+                              </Link>
+                              <div className="text-sm text-gray-500">{project.serviceType}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                {project.address && (
+                                  <div className="flex items-center gap-1 text-gray-600">
+                                    <MapPin className="h-3 w-3" />
+                                    {project.address}
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={getStatusColor(project.status)}
+                              >
+                                {project.status.replace('_', ' ').toUpperCase()}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={getPriorityColor(project.priority)}
+                              >
+                                {project.priority}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-green-600">
+                                <DollarSign className="h-3 w-3" />
+                                {project.estimatedCost || 'TBD'}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Button size="sm" variant="outline" asChild>
+                                  <Link href={`/projects/${project.id}`}>
+                                    <FileText className="h-3 w-3 mr-1" />
+                                    View
+                                  </Link>
+                                </Button>
+                                <Button size="sm" variant="outline">
+                                  <MessageSquare className="h-3 w-3 mr-1" />
+                                  Contact
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  {projects.filter(p => p.status === 'new_lead' || p.status === 'need_attention').length > 5 && (
+                    <div className="flex justify-center mt-4">
+                      <Button variant="outline" asChild>
+                        <Link href="/projects?stage=new_leads">
+                          View All Active Projects ({projects.filter(p => p.status === 'new_lead' || p.status === 'need_attention').length})
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Recent Projects Section - moved down */}
+              <ProjectTable 
+                title="Recent Projects" 
+                projects={projects.slice(0, 5)} 
+                icon={Clock}
+                count={projects.length}
+              />
+              
               <ProjectTable 
                 title="Scheduled" 
                 projects={groupedProjects.scheduled} 
