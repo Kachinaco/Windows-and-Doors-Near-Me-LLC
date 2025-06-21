@@ -20,7 +20,8 @@ import {
   RefreshCw,
   ExternalLink,
   ArrowLeft,
-  Building2
+  Building2,
+  Plus
 } from "lucide-react";
 import { format } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
@@ -38,6 +39,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view }: any) => {
         <Button
           variant="outline"
           size="sm"
+          className="min-w-[80px] h-9"
           onClick={() => onNavigate('PREV')}
         >
           ← Previous
@@ -45,6 +47,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view }: any) => {
         <Button
           variant="outline"
           size="sm"
+          className="min-w-[70px] h-9"
           onClick={() => onNavigate('TODAY')}
         >
           Today
@@ -52,6 +55,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view }: any) => {
         <Button
           variant="outline"
           size="sm"
+          className="min-w-[70px] h-9"
           onClick={() => onNavigate('NEXT')}
         >
           Next →
@@ -66,6 +70,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view }: any) => {
         <Button
           variant={view === 'month' ? 'default' : 'outline'}
           size="sm"
+          className="min-w-[70px] h-9"
           onClick={() => onView('month')}
         >
           Month
@@ -73,6 +78,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view }: any) => {
         <Button
           variant={view === 'week' ? 'default' : 'outline'}
           size="sm"
+          className="min-w-[70px] h-9"
           onClick={() => onView('week')}
         >
           Week
@@ -80,6 +86,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view }: any) => {
         <Button
           variant={view === 'day' ? 'default' : 'outline'}
           size="sm"
+          className="min-w-[70px] h-9"
           onClick={() => onView('day')}
         >
           Day
@@ -87,6 +94,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view }: any) => {
         <Button
           variant={view === 'agenda' ? 'default' : 'outline'}
           size="sm"
+          className="min-w-[70px] h-9"
           onClick={() => onView('agenda')}
         >
           Agenda
@@ -740,6 +748,29 @@ export default function CalendarView() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Floating Action Button */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <Button
+            size="lg"
+            className="rounded-full h-16 w-16 shadow-xl hover:shadow-2xl transition-all duration-300 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            onClick={() => {
+              const now = new Date();
+              const newEvent: CalendarEvent = {
+                id: `quick-${Date.now()}`,
+                title: 'New Appointment',
+                start: now,
+                end: new Date(now.getTime() + 60 * 60 * 1000),
+                type: 'appointment',
+                description: 'Quick scheduled appointment'
+              };
+              setSelectedEvent(newEvent);
+              setIsEventDialogOpen(true);
+            }}
+          >
+            <Plus className="h-7 w-7 text-white" />
+          </Button>
+        </div>
       </main>
     </div>
   );
