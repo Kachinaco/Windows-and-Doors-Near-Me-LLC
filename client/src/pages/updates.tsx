@@ -29,7 +29,7 @@ export default function UpdatesPage() {
   const [filterType, setFilterType] = useState("all");
   const [filterProject, setFilterProject] = useState("all");
 
-  const { data: updates = [], isLoading: updatesLoading } = useQuery({
+  const { data: updates = [], isLoading: updatesLoading } = useQuery<any[]>({
     queryKey: ["/api/project-updates"],
   });
 
@@ -37,9 +37,8 @@ export default function UpdatesPage() {
     queryKey: ["/api/projects"],
   });
 
-  const filteredUpdates = updates.filter((update: ProjectUpdate) => {
-    const matchesSearch = update.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         update.projectTitle?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredUpdates = updates.filter((update: any) => {
+    const matchesSearch = update.message?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
     const matchesType = filterType === "all" || update.updateType === filterType;
     const matchesProject = filterProject === "all" || update.projectId?.toString() === filterProject;
     
@@ -220,18 +219,18 @@ export default function UpdatesPage() {
                           <Badge variant="secondary" className="text-xs">
                             {getUpdateTypeLabel(update.updateType)}
                           </Badge>
-                          {update.projectTitle && (
+                          {update.projectId && (
                             <Link href={`/projects/${update.projectId}`}>
                               <Badge variant="outline" className="text-xs hover:bg-blue-50 cursor-pointer">
                                 <Building2 className="h-3 w-3 mr-1" />
-                                {update.projectTitle}
+                                Project #{update.projectId}
                               </Badge>
                             </Link>
                           )}
                         </div>
                         <div className="flex items-center text-sm text-gray-500">
                           <Clock className="h-4 w-4 mr-1" />
-                          {formatRelativeTime(update.createdAt)}
+                          {formatRelativeTime(update.createdAt.toString())}
                         </div>
                       </div>
                       
@@ -242,7 +241,7 @@ export default function UpdatesPage() {
                       {update.performedBy && (
                         <div className="flex items-center text-sm text-gray-600">
                           <User className="h-4 w-4 mr-1" />
-                          <span>by {update.performedByName || `User ${update.performedBy}`}</span>
+                          <span>by User #{update.performedBy}</span>
                         </div>
                       )}
                     </div>

@@ -113,7 +113,7 @@ export interface IStorage {
   getBlogPostsByCategory(category: string): Promise<BlogPost[]>;
   
   // Project updates operations
-  getAllProjectUpdates(): Promise<ProjectUpdate[]>;
+  getAllProjectUpdates(): Promise<any[]>;
   getProjectUpdates(projectId: number): Promise<ProjectUpdate[]>;
   createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate>;
 }
@@ -651,6 +651,26 @@ export class DatabaseStorage implements IStorage {
 
     return await db.select().from(users)
       .where(inArray(users.id, userIds));
+  }
+
+  // Project updates operations
+  async getAllProjectUpdates(): Promise<ProjectUpdate[]> {
+    return await db.select().from(projectUpdates)
+      .orderBy(desc(projectUpdates.createdAt));
+  }
+
+  async getProjectUpdates(projectId: number): Promise<ProjectUpdate[]> {
+    return await db.select().from(projectUpdates)
+      .where(eq(projectUpdates.projectId, projectId))
+      .orderBy(desc(projectUpdates.createdAt));
+  }
+
+  async createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate> {
+    const [newUpdate] = await db
+      .insert(projectUpdates)
+      .values(update)
+      .returning();
+    return newUpdate;
   }
 }
 
