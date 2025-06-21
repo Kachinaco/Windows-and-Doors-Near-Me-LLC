@@ -19,7 +19,8 @@ import {
   Settings,
   RefreshCw,
   ExternalLink,
-  ArrowLeft
+  ArrowLeft,
+  Building2
 } from "lucide-react";
 import { format } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
@@ -28,6 +29,124 @@ import { Link } from "wouter";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const localizer = momentLocalizer(moment);
+
+// Custom Calendar Components
+const CustomToolbar = ({ label, onNavigate, onView, view }: any) => {
+  return (
+    <div className="flex flex-col sm:flex-row justify-between items-center mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+      <div className="flex items-center space-x-2 mb-2 sm:mb-0">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onNavigate('PREV')}
+        >
+          ← Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onNavigate('TODAY')}
+        >
+          Today
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onNavigate('NEXT')}
+        >
+          Next →
+        </Button>
+      </div>
+      
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 sm:mb-0">
+        {label}
+      </h2>
+      
+      <div className="flex items-center space-x-1">
+        <Button
+          variant={view === 'month' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => onView('month')}
+        >
+          Month
+        </Button>
+        <Button
+          variant={view === 'week' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => onView('week')}
+        >
+          Week
+        </Button>
+        <Button
+          variant={view === 'day' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => onView('day')}
+        >
+          Day
+        </Button>
+        <Button
+          variant={view === 'agenda' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => onView('agenda')}
+        >
+          Agenda
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const CustomEvent = ({ event }: { event: CalendarEvent }) => {
+  return (
+    <div className="p-1 text-xs font-medium">
+      <div className="flex items-center space-x-1">
+        {event.type === 'job' && <Building2 className="h-3 w-3" />}
+        {event.type === 'google' && <ExternalLink className="h-3 w-3" />}
+        <span className="truncate">{event.title}</span>
+      </div>
+      {event.location && (
+        <div className="flex items-center space-x-1 mt-1 opacity-80">
+          <MapPin className="h-2 w-2" />
+          <span className="truncate text-xs">{event.location}</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CustomMonthEvent = ({ event }: { event: CalendarEvent }) => {
+  return (
+    <div className="px-1 py-0.5 text-xs font-medium rounded">
+      <div className="flex items-center space-x-1">
+        {event.type === 'job' && <Building2 className="h-2 w-2" />}
+        {event.type === 'google' && <ExternalLink className="h-2 w-2" />}
+        <span className="truncate">{event.title}</span>
+      </div>
+    </div>
+  );
+};
+
+const CustomWeekHeader = ({ date, label }: { date: Date; label: string }) => {
+  const isToday = moment(date).isSame(moment(), 'day');
+  return (
+    <div className={`text-center p-2 ${isToday ? 'bg-blue-100 dark:bg-blue-900 rounded' : ''}`}>
+      <div className={`font-semibold ${isToday ? 'text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-white'}`}>
+        {label}
+      </div>
+    </div>
+  );
+};
+
+const CustomDayHeader = ({ date, label }: { date: Date; label: string }) => {
+  const isToday = moment(date).isSame(moment(), 'day');
+  return (
+    <div className={`text-center p-3 ${isToday ? 'bg-blue-100 dark:bg-blue-900 rounded-lg' : ''}`}>
+      <div className={`text-lg font-bold ${isToday ? 'text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-white'}`}>
+        {label}
+      </div>
+    </div>
+  );
+};
 
 interface CalendarEvent {
   id: string;
@@ -346,13 +465,16 @@ export default function CalendarView() {
                     </div>
                   </div>
                 ) : (
-                  <div className="h-96 sm:h-[600px]">
+                  <div className="h-[500px] sm:h-[700px] lg:h-[800px]">
                     <Calendar
                       localizer={localizer}
                       events={allEvents}
                       startAccessor="start"
                       endAccessor="end"
-                      style={{ height: '100%' }}
+                      style={{ 
+                        height: '100%',
+                        fontFamily: 'Inter, system-ui, sans-serif'
+                      }}
                       view={view}
                       onView={setView}
                       date={date}
@@ -360,10 +482,43 @@ export default function CalendarView() {
                       onSelectEvent={handleSelectEvent}
                       onSelectSlot={handleSelectSlot}
                       selectable
+                      popup
+                      showMultiDayTimes
+                      step={30}
+                      timeslots={2}
+                      defaultView={Views.MONTH}
+                      views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
                       eventPropGetter={eventStyleGetter}
+                      dayPropGetter={(date) => ({
+                        style: {
+                          backgroundColor: date.getDay() === 0 || date.getDay() === 6 ? '#f8fafc' : 'white',
+                        }
+                      })}
                       formats={{
+                        monthHeaderFormat: 'MMMM YYYY',
+                        dayHeaderFormat: 'dddd MMM DD',
+                        dayRangeHeaderFormat: ({ start, end }, culture, localizer) =>
+                          localizer?.format(start, 'MMM DD', culture) + ' - ' + localizer?.format(end, 'MMM DD YYYY', culture),
+                        agendaDateFormat: 'MMM DD ddd',
+                        agendaTimeFormat: 'h:mm A',
+                        agendaTimeRangeFormat: ({ start, end }, culture, localizer) =>
+                          localizer?.format(start, 'h:mm A', culture) + ' - ' + localizer?.format(end, 'h:mm A', culture),
                         eventTimeRangeFormat: ({ start, end }, culture, localizer) =>
-                          localizer?.format(start, 'h:mm A', culture) + ' - ' + localizer?.format(end, 'h:mm A', culture)
+                          localizer?.format(start, 'h:mm A', culture) + ' - ' + localizer?.format(end, 'h:mm A', culture),
+                        timeGutterFormat: 'h A',
+                      }}
+                      components={{
+                        toolbar: CustomToolbar,
+                        event: CustomEvent,
+                        month: {
+                          event: CustomMonthEvent,
+                        },
+                        week: {
+                          header: CustomWeekHeader,
+                        },
+                        day: {
+                          header: CustomDayHeader,
+                        }
                       }}
                     />
                   </div>
