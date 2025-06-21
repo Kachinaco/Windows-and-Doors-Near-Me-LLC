@@ -89,10 +89,12 @@ export default function Dashboard() {
                 </div>
               )}
               
-              <Button variant="outline" size="sm" className="hidden sm:flex">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
+              <Link href="/settings">
+                <Button variant="outline" size="sm" className="hidden sm:flex">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </Button>
+              </Link>
               
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 sm:mr-2" />
