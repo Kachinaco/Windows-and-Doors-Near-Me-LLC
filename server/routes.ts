@@ -13,6 +13,7 @@ import {
   insertOrderSchema,
   insertContactSubmissionSchema,
   insertProjectSchema,
+  insertProjectUpdateSchema,
 } from "@shared/schema";
 
 interface AuthenticatedRequest extends Request {
@@ -856,6 +857,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error setting user availability:", error);
       res.status(500).json({ message: "Failed to set user availability" });
+    }
+  });
+
+  // Project updates routes
+  app.get("/api/project-updates", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const updates = await storage.getAllProjectUpdates();
+      res.json(updates);
+    } catch (error: any) {
+      console.error("Error fetching project updates:", error);
+      res.status(500).json({ message: "Failed to fetch project updates" });
+    }
+  });
+
+  app.post("/api/project-updates", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const updateData = {
+        ...req.body,
+        performedBy: req.user!.id
+      };
+      const update = await storage.createProjectUpdate(updateData);
+      res.status(201).json(update);
+    } catch (error: any) {
+      console.error("Error creating project update:", error);
+      res.status(500).json({ message: "Failed to create project update" });
     }
   });
 

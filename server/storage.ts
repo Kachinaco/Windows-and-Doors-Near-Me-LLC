@@ -13,6 +13,7 @@ import {
   proposals,
   communicationLogs,
   userAvailability,
+  projectUpdates,
   type User,
   type InsertUser,
   type Product,
@@ -41,6 +42,8 @@ import {
   type InsertCommunicationLog,
   type UserAvailability,
   type InsertUserAvailability,
+  type ProjectUpdate,
+  type InsertProjectUpdate,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
@@ -108,6 +111,11 @@ export interface IStorage {
   updateBlogPost(id: number, updates: Partial<InsertBlogPost>): Promise<BlogPost>;
   deleteBlogPost(id: number): Promise<void>;
   getBlogPostsByCategory(category: string): Promise<BlogPost[]>;
+  
+  // Project updates operations
+  getAllProjectUpdates(): Promise<ProjectUpdate[]>;
+  getProjectUpdates(projectId: number): Promise<ProjectUpdate[]>;
+  createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate>;
 }
 
 export class DatabaseStorage implements IStorage {
