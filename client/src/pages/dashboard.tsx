@@ -2,13 +2,20 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { 
   Building2, 
   Users, 
   LogOut,
   User,
   Settings,
-  Eye
+  Eye,
+  CheckCircle,
+  Clock,
+  Bell,
+  MessageSquare,
+  Calendar,
+  ChevronRight
 } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -171,6 +178,104 @@ export default function Dashboard() {
               </Card>
             </Link>
           )}
+        </div>
+
+        {/* Mobile-Only Notifications Section */}
+        <div className="lg:hidden mb-6 space-y-4">
+          {/* Task Notification */}
+          <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-purple-500 rounded-xl">
+                    <CheckCircle className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">
+                      3 tasks are waiting for you in Quick Tasks
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button variant="ghost" size="sm" className="text-purple-600 dark:text-purple-400">
+                    Open
+                  </Button>
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Share */}
+          <Card className="bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <User className="h-4 w-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <input 
+                    type="text" 
+                    placeholder="Share something..." 
+                    className="w-full bg-transparent text-gray-500 dark:text-gray-400 text-sm border-none outline-none"
+                    readOnly
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Updates */}
+          <Card className="border-gray-200 dark:border-gray-700">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">
+                      {user?.firstName} {user?.lastName}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Updates</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="secondary" className="text-xs">
+                    ✓ Seen
+                  </Badge>
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                </div>
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="font-medium text-gray-900 dark:text-white mb-1">
+                  System Update Available
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  {new Date().toLocaleDateString()}
+                </p>
+                <p>
+                  New project management features have been added to improve your workflow efficiency.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Notification Banner */}
+          <Card className="bg-blue-600 text-white border-blue-700">
+            <CardContent className="p-4">
+              <div className="text-center">
+                <h3 className="font-semibold mb-2">Accept Scheduled Jobs Promptly</h3>
+                <p className="text-sm text-blue-100 mb-3">
+                  Respond to job assignments as soon as they appear on your schedule
+                </p>
+                <div className="flex items-center justify-center space-x-2 bg-blue-500/30 rounded-lg p-3">
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-xs">Check your schedule regularly for new job assignments</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Welcome Message - Mobile Optimized */}
