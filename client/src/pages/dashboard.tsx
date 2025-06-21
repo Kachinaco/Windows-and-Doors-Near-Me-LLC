@@ -141,7 +141,11 @@ export default function Dashboard() {
 
   const handlePostSubmit = () => {
     if (postContent.trim()) {
-      createPostMutation.mutate(postContent);
+      createPostMutation.mutate({
+        content: postContent,
+        feeling: selectedFeeling,
+        image: selectedImage || undefined,
+      });
     }
   };
 
@@ -413,16 +417,87 @@ export default function Dashboard() {
                     onChange={(e) => setPostContent(e.target.value)}
                     className="min-h-[80px] resize-none border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400"
                   />
+                  
+                  {/* Image Preview */}
+                  {imagePreview && (
+                    <div className="mt-3 relative">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="max-w-full h-48 object-cover rounded-lg border"
+                      />
+                      <Button
+                        onClick={removeImage}
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Selected Feeling Display */}
+                  {selectedFeeling && (
+                    <div className="mt-3 flex items-center space-x-2">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Feeling {selectedFeeling}
+                      </span>
+                      <Button
+                        onClick={() => setSelectedFeeling("")}
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                      <Input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
                         <Camera className="h-4 w-4 mr-1" />
                         Photo
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                        <Smile className="h-4 w-4 mr-1" />
-                        Feeling
-                      </Button>
+                      
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                            <Smile className="h-4 w-4 mr-1" />
+                            Feeling
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80">
+                          <div className="grid grid-cols-4 gap-2 p-2">
+                            {feelings.map((feeling) => (
+                              <Button
+                                key={feeling.label}
+                                variant="ghost"
+                                className="h-12 flex flex-col items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
+                                onClick={() => {
+                                  setSelectedFeeling(`${feeling.emoji} ${feeling.label}`);
+                                }}
+                              >
+                                <span className="text-lg">{feeling.emoji}</span>
+                                <span className="text-xs capitalize">{feeling.label}</span>
+                              </Button>
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <Button 
                       onClick={handlePostSubmit}
