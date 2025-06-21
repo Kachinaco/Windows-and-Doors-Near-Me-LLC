@@ -401,17 +401,17 @@ export default function CalendarView() {
               </h1>
             </div>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" onClick={syncWithGoogle} disabled={!isGoogleConnected}>
+              <Button variant="outline" size="sm" onClick={syncWithGoogle} disabled={!isGoogleConnected} className="h-9 min-w-[80px]">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Sync
               </Button>
               {!isGoogleConnected ? (
-                <Button onClick={connectToGoogle}>
+                <Button onClick={connectToGoogle} className="h-9 min-w-[180px]">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Connect Google Calendar
                 </Button>
               ) : (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Badge variant="secondary" className="bg-green-100 text-green-800 h-9 px-4 flex items-center">
                   Google Connected
                 </Badge>
               )}
