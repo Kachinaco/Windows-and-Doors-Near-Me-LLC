@@ -241,6 +241,8 @@ export const blogPostsRelations = relations(blogPosts, ({ one }) => ({
 export const companyPosts = pgTable("company_posts", {
   id: serial("id").primaryKey(),
   content: text("content").notNull(),
+  imageUrl: text("image_url"),
+  feeling: text("feeling"),
   authorId: integer("author_id").references(() => users.id).notNull(),
   likesCount: integer("likes_count").default(0),
   commentsCount: integer("comments_count").default(0),
