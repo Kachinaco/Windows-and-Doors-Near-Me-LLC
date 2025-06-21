@@ -93,13 +93,13 @@ export default function Dashboard() {
               )}
               
               <Link href="/settings">
-                <Button variant="outline" size="sm" className="hidden sm:flex">
+                <Button variant="outline" size="sm" className="hidden sm:flex h-9 min-w-[100px]">
                   <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </Button>
               </Link>
               
-              <Button variant="outline" size="sm" onClick={handleLogout}>
+              <Button variant="outline" size="sm" onClick={handleLogout} className="h-9 min-w-[80px]">
                 <LogOut className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Logout</span>
               </Button>
@@ -259,7 +259,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button variant="ghost" size="sm" className="text-purple-600 dark:text-purple-400">
+                  <Button variant="ghost" size="sm" className="text-purple-600 dark:text-purple-400 h-9 min-w-[60px]">
                     Open
                   </Button>
                   <ChevronRight className="h-4 w-4 text-gray-400" />
