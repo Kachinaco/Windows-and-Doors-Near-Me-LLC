@@ -134,6 +134,17 @@ export const projects = pgTable("projects", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Project updates/activity feed
+export const projectUpdates = pgTable("project_updates", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
+  updateType: text("update_type").notNull(), // status_change, comment, task_completion, priority_change, assignment, document, schedule
+  message: text("message").notNull(),
+  performedBy: integer("performed_by").references(() => users.id),
+  metadata: jsonb("metadata"), // Additional context data
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   cartItems: many(cartItems),
@@ -185,6 +196,21 @@ export const quoteActivitiesRelations = relations(quoteActivities, ({ one }) => 
     fields: [quoteActivities.performedBy],
     references: [users.id],
   }),
+}));
+
+export const projectUpdatesRelations = relations(projectUpdates, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectUpdates.projectId],
+    references: [projects.id],
+  }),
+  performedByUser: one(users, {
+    fields: [projectUpdates.performedBy],
+    references: [users.id],
+  }),
+}));
+
+export const projectsRelations = relations(projects, ({ many }) => ({
+  updates: many(projectUpdates),
 }));
 
 // Blog posts for home improvement tips
@@ -269,6 +295,11 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
   updatedAt: true,
 });
 
+export const insertProjectUpdateSchema = createInsertSchema(projectUpdates).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -294,6 +325,9 @@ export type InsertQuoteRequest = z.infer<typeof insertQuoteRequestSchema>;
 
 export type QuoteActivity = typeof quoteActivities.$inferSelect;
 export type InsertQuoteActivity = z.infer<typeof insertQuoteActivitySchema>;
+
+export type ProjectUpdate = typeof projectUpdates.$inferSelect;
+export type InsertProjectUpdate = z.infer<typeof insertProjectUpdateSchema>;
 
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
