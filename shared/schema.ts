@@ -138,9 +138,9 @@ export const projects = pgTable("projects", {
 export const projectUpdates = pgTable("project_updates", {
   id: serial("id").primaryKey(),
   projectId: integer("project_id").references(() => projects.id),
-  updateType: text("update_type").notNull(), // status_change, comment, task_completion, priority_change, assignment, document, schedule
+  userId: integer("user_id").references(() => users.id),
   message: text("message").notNull(),
-  performedBy: integer("performed_by").references(() => users.id),
+  type: text("type").notNull(), // status_change, comment, task_completion, priority_change, assignment, document, schedule
   metadata: jsonb("metadata"), // Additional context data
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -203,8 +203,8 @@ export const projectUpdatesRelations = relations(projectUpdates, ({ one }) => ({
     fields: [projectUpdates.projectId],
     references: [projects.id],
   }),
-  performedByUser: one(users, {
-    fields: [projectUpdates.performedBy],
+  user: one(users, {
+    fields: [projectUpdates.userId],
     references: [users.id],
   }),
 }));

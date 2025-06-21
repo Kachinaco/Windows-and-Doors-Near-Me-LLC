@@ -654,8 +654,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Project updates operations
-  async getAllProjectUpdates(): Promise<ProjectUpdate[]> {
-    return await db.select().from(projectUpdates)
+  async getAllProjectUpdates(): Promise<any[]> {
+    return await db.select({
+      id: projectUpdates.id,
+      projectId: projectUpdates.projectId,
+      updateType: projectUpdates.type,
+      message: projectUpdates.message,
+      performedBy: projectUpdates.userId,
+      metadata: projectUpdates.metadata,
+      createdAt: projectUpdates.createdAt
+    }).from(projectUpdates)
       .orderBy(desc(projectUpdates.createdAt));
   }
 
@@ -668,7 +676,13 @@ export class DatabaseStorage implements IStorage {
   async createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate> {
     const [newUpdate] = await db
       .insert(projectUpdates)
-      .values(update)
+      .values({
+        projectId: update.projectId,
+        userId: update.performedBy,
+        message: update.message,
+        type: update.updateType,
+        metadata: update.metadata
+      })
       .returning();
     return newUpdate;
   }
