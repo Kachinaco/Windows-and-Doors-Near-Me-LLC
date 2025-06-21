@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -29,29 +31,99 @@ import {
   MoreHorizontal,
   Send,
   Camera,
-  Smile
+  Smile,
+  X
 } from "lucide-react";
 import { Link } from "wouter";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [previewRole, setPreviewRole] = useState<string | null>(null);
   const [postContent, setPostContent] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFeeling, setSelectedFeeling] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const feelings = [
+    { emoji: "😊", label: "happy" },
+    { emoji: "😢", label: "sad" },
+    { emoji: "😍", label: "loved" },
+    { emoji: "😴", label: "tired" },
+    { emoji: "🎉", label: "excited" },
+    { emoji: "😤", label: "frustrated" },
+    { emoji: "🤔", label: "thoughtful" },
+    { emoji: "😎", label: "cool" },
+    { emoji: "🥳", label: "celebrating" },
+    { emoji: "💪", label: "motivated" },
+    { emoji: "🤗", label: "grateful" },
+    { emoji: "🔥", label: "fired up" },
+  ];
 
   // Fetch company posts
   const { data: companyPosts = [] } = useQuery<any[]>({
     queryKey: ["/api/company-posts"],
   });
 
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const createPostMutation = useMutation({
-    mutationFn: async (content: string) => {
-      return await apiRequest("POST", "/api/company-posts", { content });
+    mutationFn: async (postData: { content: string; feeling?: string; image?: File }) => {
+      const formData = new FormData();
+      formData.append('content', postData.content);
+      if (postData.feeling) {
+        formData.append('feeling', postData.feeling);
+      }
+      if (postData.image) {
+        formData.append('image', postData.image);
+      }
+      
+      const response = await fetch("/api/company-posts", {
+        method: "POST",
+        body: formData,
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create post');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       setPostContent("");
+      setSelectedFeeling("");
+      removeImage();
       queryClient.invalidateQueries({ queryKey: ["/api/company-posts"] });
       toast({
         title: "Post shared!",
