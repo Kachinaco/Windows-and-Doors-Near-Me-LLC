@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertProjectSchema, type InsertProject, type Project, type User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { 
   PlusCircle, 
   Building2, 
@@ -29,7 +30,15 @@ import {
   DollarSign,
   CheckCircle,
   AlertTriangle,
-  Play
+  Play,
+  TrendingUp,
+  Activity,
+  Briefcase,
+  Target,
+  ArrowRight,
+  Plus,
+  MessageSquare,
+  FileText
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -51,6 +60,37 @@ export default function ProjectsPage() {
     queryKey: ["/api/leads"],
     enabled: user?.role === 'admin' || user?.role === 'employee' || user?.role === 'contractor_paid',
   });
+
+  // Calculate dashboard statistics
+  const dashboardStats = useMemo(() => {
+    const totalProjects = projects.length;
+    const newLeads = projects.filter(p => p.projectStatus === 'new_lead' || p.status === 'pending').length;
+    const inProgress = projects.filter(p => p.projectStatus === 'in_progress' || p.projectStatus === 'scheduled').length;
+    const completed = projects.filter(p => p.projectStatus === 'completed' || p.status === 'completed').length;
+    
+    const totalRevenue = projects
+      .filter(p => p.projectStatus === 'completed')
+      .reduce((sum, p) => {
+        const cost = parseFloat(p.estimatedCost?.replace(/[^0-9.]/g, '') || '0');
+        return sum + cost;
+      }, 0);
+
+    const recentProjects = projects
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .slice(0, 5);
+
+    const urgentTasks = projects.filter(p => p.priority === 'high' || p.priority === 'urgent').length;
+
+    return {
+      totalProjects,
+      newLeads,
+      inProgress,
+      completed,
+      totalRevenue,
+      recentProjects,
+      urgentTasks
+    };
+  }, [projects]);
 
   const form = useForm<InsertProject>({
     resolver: zodResolver(insertProjectSchema),
