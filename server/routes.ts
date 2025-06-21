@@ -1,8 +1,12 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import { storage } from "./storage";
 import { googleCalendarService } from "./google-calendar";
 import {
@@ -25,6 +29,36 @@ interface AuthenticatedRequest extends Request {
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+// Configure multer for file uploads
+const uploadStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = 'uploads/';
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `post-${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({
+  storage: uploadStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPEG, PNG, and GIF images are allowed.'));
+    }
+  }
+});
 
 // Authentication middleware
 const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -97,6 +131,9 @@ const checkSubscriptionAccess = async (req: AuthenticatedRequest, res: Response,
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve uploaded files
+  app.use('/uploads', express.static('uploads'));
+  
   // Session configuration
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-session-secret',
@@ -980,20 +1017,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/company-posts", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/company-posts", authenticateToken, upload.single('image'), async (req: AuthenticatedRequest, res) => {
     try {
-      const { content } = req.body;
+      const { content, feeling } = req.body;
       
       if (!content || content.trim().length === 0) {
         return res.status(400).json({ message: "Content is required" });
       }
 
-      const newPost = await storage.createCompanyPost({
+      const postData: any = {
         content: content.trim(),
         authorId: req.user!.id,
         likesCount: 0,
         commentsCount: 0
-      });
+      };
+
+      // Add feeling if provided
+      if (feeling) {
+        postData.feeling = feeling;
+      }
+
+      // Add image URL if file was uploaded
+      if (req.file) {
+        postData.imageUrl = `/uploads/${req.file.filename}`;
+      }
+
+      const newPost = await storage.createCompanyPost(postData);
 
       res.status(201).json(newPost);
     } catch (error: any) {
