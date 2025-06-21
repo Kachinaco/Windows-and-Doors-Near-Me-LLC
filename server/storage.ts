@@ -673,14 +673,14 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(projectUpdates.createdAt));
   }
 
-  async createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate> {
+  async createProjectUpdate(update: any): Promise<ProjectUpdate> {
     const [newUpdate] = await db
       .insert(projectUpdates)
       .values({
         projectId: update.projectId,
-        userId: update.performedBy,
+        userId: update.performedBy || update.userId,
         message: update.message,
-        type: update.updateType,
+        type: update.updateType || update.type,
         metadata: update.metadata
       })
       .returning();
