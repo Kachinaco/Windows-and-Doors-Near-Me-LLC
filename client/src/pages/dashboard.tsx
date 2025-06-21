@@ -15,7 +15,10 @@ import {
   Bell,
   MessageSquare,
   Calendar,
-  ChevronRight
+  ChevronRight,
+  FileText,
+  BarChart3,
+  CalendarDays
 } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -120,40 +123,21 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Quick Actions - Mobile Optimized */}
+        {/* Main Action Cards - 2x3 Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          {/* Project Management for Contractors */}
-          {(effectiveUser?.role === 'contractor_trial' || effectiveUser?.role === 'contractor_paid' || effectiveUser?.role === 'admin') && (
-            <Link href="/projects">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
-                <CardContent className="p-6 sm:p-8">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="p-4 bg-blue-600 rounded-2xl shadow-lg">
-                      <Building2 className="h-8 w-8 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Project Management</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Manage installation projects
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          )}
-
-          <Link href="/subscription">
-            <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+          {/* Row 1 */}
+          {/* Project Management */}
+          <Link href="/projects">
+            <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
               <CardContent className="p-6 sm:p-8">
                 <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-green-600 rounded-2xl shadow-lg">
-                    <Users className="h-8 w-8 text-white" />
+                  <div className="p-4 bg-blue-600 rounded-2xl shadow-lg">
+                    <Building2 className="h-8 w-8 text-white" />
                   </div>
                   <div>
-                    <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Subscription</p>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Project Management</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Manage subscription
+                      Manage installation projects
                     </p>
                   </div>
                 </div>
@@ -161,25 +145,101 @@ export default function Dashboard() {
             </Card>
           </Link>
 
-          {(effectiveUser?.role === 'admin' || effectiveUser?.role === 'contractor_paid') && (
-            <Link href="/leads">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border-yellow-200 dark:border-yellow-800">
-                <CardContent className="p-6 sm:p-8">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="p-4 bg-yellow-600 rounded-2xl shadow-lg">
-                      <Users className="h-8 w-8 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Manage Leads</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        View customer inquiries
-                      </p>
-                    </div>
+          {/* Calendar */}
+          <Link href="/scheduling">
+            <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="p-4 bg-purple-600 rounded-2xl shadow-lg">
+                    <CalendarDays className="h-8 w-8 text-white" />
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
-          )}
+                  <div>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Calendar</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Schedule and track jobs
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Manage Leads */}
+          <Link href="/leads">
+            <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border-yellow-200 dark:border-yellow-800">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="p-4 bg-yellow-600 rounded-2xl shadow-lg">
+                    <Users className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Manage Leads</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      View customer inquiries
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Row 2 */}
+          {/* Forms */}
+          <Link href="/quotes">
+            <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="p-4 bg-green-600 rounded-2xl shadow-lg">
+                    <FileText className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Forms</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Quote requests and forms
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Settings */}
+          <Link href="/settings">
+            <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20 border-gray-200 dark:border-gray-800">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="p-4 bg-gray-600 rounded-2xl shadow-lg">
+                    <Settings className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Settings</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Configure your account
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Reports */}
+          <Link href="/pipeline">
+            <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-800">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="p-4 bg-indigo-600 rounded-2xl shadow-lg">
+                    <BarChart3 className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Reports</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Analytics and insights
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Mobile-Only Notifications Section */}
@@ -305,6 +365,27 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Bottom Subscription Tab */}
+        <div className="mt-8 flex justify-center">
+          <Link href="/subscription">
+            <Card className="hover:shadow-md transition-all duration-200 cursor-pointer bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 border-green-200 dark:border-green-800 max-w-sm">
+              <CardContent className="px-6 py-3">
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="p-2 bg-green-600 rounded-lg">
+                    <Users className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">Subscription</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      Manage subscription
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
       </main>
     </div>
   );
