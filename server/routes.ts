@@ -588,6 +588,227 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Lead management routes
+  app.get("/api/leads", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const leads = await storage.getAllLeads();
+      res.json(leads);
+    } catch (error: any) {
+      console.error("Error fetching leads:", error);
+      res.status(500).json({ message: "Failed to fetch leads" });
+    }
+  });
+
+  app.post("/api/leads", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const lead = await storage.createLead(req.body);
+      res.status(201).json(lead);
+    } catch (error: any) {
+      console.error("Error creating lead:", error);
+      res.status(500).json({ message: "Failed to create lead" });
+    }
+  });
+
+  app.get("/api/leads/:id", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const lead = await storage.getLead(parseInt(req.params.id));
+      if (!lead) {
+        return res.status(404).json({ message: "Lead not found" });
+      }
+      res.json(lead);
+    } catch (error: any) {
+      console.error("Error fetching lead:", error);
+      res.status(500).json({ message: "Failed to fetch lead" });
+    }
+  });
+
+  app.put("/api/leads/:id", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const lead = await storage.updateLead(parseInt(req.params.id), req.body);
+      res.json(lead);
+    } catch (error: any) {
+      console.error("Error updating lead:", error);
+      res.status(500).json({ message: "Failed to update lead" });
+    }
+  });
+
+  app.delete("/api/leads/:id", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      await storage.deleteLead(parseInt(req.params.id));
+      res.status(204).send();
+    } catch (error: any) {
+      console.error("Error deleting lead:", error);
+      res.status(500).json({ message: "Failed to delete lead" });
+    }
+  });
+
+  // Job scheduling routes
+  app.get("/api/jobs", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { startDate, endDate, assignee } = req.query;
+      let jobs;
+
+      if (startDate && endDate) {
+        jobs = await storage.getJobsByDateRange(new Date(startDate as string), new Date(endDate as string));
+      } else if (assignee) {
+        jobs = await storage.getJobsByAssignee(parseInt(assignee as string));
+      } else {
+        jobs = await storage.getAllJobs();
+      }
+
+      res.json(jobs);
+    } catch (error: any) {
+      console.error("Error fetching jobs:", error);
+      res.status(500).json({ message: "Failed to fetch jobs" });
+    }
+  });
+
+  app.post("/api/jobs", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const job = await storage.createJob(req.body);
+      res.status(201).json(job);
+    } catch (error: any) {
+      console.error("Error creating job:", error);
+      res.status(500).json({ message: "Failed to create job" });
+    }
+  });
+
+  app.get("/api/jobs/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const job = await storage.getJob(parseInt(req.params.id));
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+      res.json(job);
+    } catch (error: any) {
+      console.error("Error fetching job:", error);
+      res.status(500).json({ message: "Failed to fetch job" });
+    }
+  });
+
+  app.put("/api/jobs/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const job = await storage.updateJob(parseInt(req.params.id), req.body);
+      res.json(job);
+    } catch (error: any) {
+      console.error("Error updating job:", error);
+      res.status(500).json({ message: "Failed to update job" });
+    }
+  });
+
+  app.delete("/api/jobs/:id", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      await storage.deleteJob(parseInt(req.params.id));
+      res.status(204).send();
+    } catch (error: any) {
+      console.error("Error deleting job:", error);
+      res.status(500).json({ message: "Failed to delete job" });
+    }
+  });
+
+  // Proposal routes
+  app.get("/api/proposals", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { status, leadId } = req.query;
+      let proposals;
+
+      if (status) {
+        proposals = await storage.getProposalsByStatus(status as string);
+      } else if (leadId) {
+        proposals = await storage.getProposalsByLead(parseInt(leadId as string));
+      } else {
+        proposals = await storage.getAllProposals();
+      }
+
+      res.json(proposals);
+    } catch (error: any) {
+      console.error("Error fetching proposals:", error);
+      res.status(500).json({ message: "Failed to fetch proposals" });
+    }
+  });
+
+  app.post("/api/proposals", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const proposalData = {
+        ...req.body,
+        createdById: req.user!.id
+      };
+      const proposal = await storage.createProposal(proposalData);
+      res.status(201).json(proposal);
+    } catch (error: any) {
+      console.error("Error creating proposal:", error);
+      res.status(500).json({ message: "Failed to create proposal" });
+    }
+  });
+
+  app.put("/api/proposals/:id", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const updates = req.body;
+      if (updates.status === 'sent' && !updates.sentAt) {
+        updates.sentAt = new Date();
+      }
+      if (['approved', 'rejected'].includes(updates.status) && !updates.respondedAt) {
+        updates.respondedAt = new Date();
+      }
+
+      const proposal = await storage.updateProposal(parseInt(req.params.id), updates);
+      res.json(proposal);
+    } catch (error: any) {
+      console.error("Error updating proposal:", error);
+      res.status(500).json({ message: "Failed to update proposal" });
+    }
+  });
+
+  // Communication log routes
+  app.get("/api/communications", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { leadId, jobId } = req.query;
+      const logs = await storage.getCommunicationLogs(
+        leadId ? parseInt(leadId as string) : undefined,
+        jobId ? parseInt(jobId as string) : undefined
+      );
+      res.json(logs);
+    } catch (error: any) {
+      console.error("Error fetching communication logs:", error);
+      res.status(500).json({ message: "Failed to fetch communication logs" });
+    }
+  });
+
+  app.post("/api/communications", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const logData = {
+        ...req.body,
+        userId: req.user!.id
+      };
+      const log = await storage.createCommunicationLog(logData);
+      res.status(201).json(log);
+    } catch (error: any) {
+      console.error("Error creating communication log:", error);
+      res.status(500).json({ message: "Failed to create communication log" });
+    }
+  });
+
+  // User availability routes
+  app.get("/api/availability/:userId", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const availability = await storage.getUserAvailability(parseInt(req.params.userId));
+      res.json(availability);
+    } catch (error: any) {
+      console.error("Error fetching user availability:", error);
+      res.status(500).json({ message: "Failed to fetch user availability" });
+    }
+  });
+
+  app.post("/api/availability", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const availability = await storage.setUserAvailability(req.body);
+      res.json(availability);
+    } catch (error: any) {
+      console.error("Error setting user availability:", error);
+      res.status(500).json({ message: "Failed to set user availability" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -638,8 +638,11 @@ export class DatabaseStorage implements IStorage {
 
     if (availableUserIds.length === 0) return [];
 
+    const userIds = availableUserIds.map(u => u.userId).filter(id => id !== null);
+    if (userIds.length === 0) return [];
+
     return await db.select().from(users)
-      .where(inArray(users.id, availableUserIds.map(u => u.userId)));
+      .where(inArray(users.id, userIds));
   }
 }
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a modern business website for Windows & Doors Near Me LLC, a window and door installation company serving Gilbert, Arizona and surrounding areas. The application is built as a full-stack web application with a React frontend and Express.js backend, featuring a professional marketing website with contact form functionality.
+This is a comprehensive business management platform for Windows & Doors Near Me LLC, a window and door installation company serving Gilbert, Arizona and surrounding areas. The application combines a professional marketing website with a full-featured business management system including e-commerce, project management, lead tracking, job scheduling, and CRM tools. Built as a full-stack web application with React frontend and Express.js backend.
 
 ## System Architecture
 
