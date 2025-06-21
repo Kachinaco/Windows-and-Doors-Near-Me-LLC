@@ -92,8 +92,17 @@ export default function CompanyFeedPage() {
         formData.append('image', postData.image);
       }
       
+      // Get auth token from localStorage
+      const token = localStorage.getItem("authToken");
+      const headers: Record<string, string> = {};
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      
       const response = await fetch("/api/company-posts", {
         method: "POST",
+        headers,
         body: formData,
         credentials: 'include',
       });
