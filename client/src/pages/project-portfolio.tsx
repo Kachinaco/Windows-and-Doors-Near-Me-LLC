@@ -548,7 +548,11 @@ export default function ProjectPortfolioPage() {
         {/* Project Pipeline */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Project Pipeline</h2>
+            <Link href="/pipeline">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white hover:text-blue-600 cursor-pointer transition-colors">
+                Project Pipeline
+              </h2>
+            </Link>
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-500">Total Pipeline Value: ${dashboardStats.totalRevenue.toLocaleString()}</span>
             </div>
