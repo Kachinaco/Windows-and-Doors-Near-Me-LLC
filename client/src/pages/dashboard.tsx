@@ -28,19 +28,20 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8">
+          {/* Top row - Logo and User Info */}
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Building2 className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
+            <div className="flex items-center min-w-0">
+              <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
+              <span className="ml-2 text-lg sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
                 Windows & Doors Near Me
               </span>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="hidden sm:flex items-center space-x-2">
                 <User className="h-5 w-5 text-gray-500" />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   {user?.firstName} {user?.lastName} ({effectiveUser?.role})
@@ -48,9 +49,24 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              {/* Admin Role Switcher */}
+              {/* Mobile User Dropdown */}
+              <div className="sm:hidden">
+                <Select value={previewRole || user?.role} onValueChange={setPreviewRole}>
+                  <SelectTrigger className="w-32 h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin (Default)</SelectItem>
+                    <SelectItem value="customer">Customer (Free)</SelectItem>
+                    <SelectItem value="contractor_trial">Contractor (Trial)</SelectItem>
+                    <SelectItem value="contractor_paid">Contractor (Paid)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Desktop Admin Role Switcher */}
               {user?.role === 'admin' && (
-                <div className="flex items-center space-x-2">
+                <div className="hidden sm:flex items-center space-x-2">
                   <Eye className="h-4 w-4 text-gray-500" />
                   <Select value={previewRole || user.role} onValueChange={setPreviewRole}>
                     <SelectTrigger className="w-48">
@@ -66,71 +82,50 @@ export default function Dashboard() {
                 </div>
               )}
               
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="hidden sm:flex">
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
               
               <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+      {/* Main Content - Mobile Optimized */}
+      <main className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             Milgard Product Dashboard
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
             Welcome back, {user?.firstName}! 
-            {effectiveUser?.role === 'customer' ? ' Browse our Milgard windows and doors catalog.' : 
+            {effectiveUser?.role === 'customer' ? ' You have admin access to all system features.' : 
              effectiveUser?.role === 'contractor_trial' ? ' You have access to project management during your 30-day trial.' :
              effectiveUser?.role === 'contractor_paid' ? ' You have full access to all contractor features.' :
              ' You have admin access to all system features.'}
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {/* Product Catalog for Customers */}
-          {effectiveUser?.role === 'customer' && (
-            <Link href="/catalog">
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                      <Building2 className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-lg font-medium text-gray-900 dark:text-white">Browse Products</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        View Milgard windows and doors
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          )}
-
+        {/* Quick Actions - Mobile Optimized */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Project Management for Contractors */}
           {(effectiveUser?.role === 'contractor_trial' || effectiveUser?.role === 'contractor_paid' || effectiveUser?.role === 'admin') && (
             <Link href="/projects">
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                      <Building2 className="h-6 w-6 text-blue-600" />
+              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+                <CardContent className="p-6 sm:p-8">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="p-4 bg-blue-600 rounded-2xl shadow-lg">
+                      <Building2 className="h-8 w-8 text-white" />
                     </div>
-                    <div className="ml-4">
-                      <p className="text-lg font-medium text-gray-900 dark:text-white">Project Management</p>
+                    <div>
+                      <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Project Management</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {effectiveUser?.role === 'contractor_trial' ? 'Manage projects (trial)' : 'Manage installation projects'}
+                        Manage installation projects
                       </p>
                     </div>
                   </div>
@@ -140,18 +135,16 @@ export default function Dashboard() {
           )}
 
           <Link href="/subscription">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                    <Users className="h-6 w-6 text-green-600" />
+            <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="p-4 bg-green-600 rounded-2xl shadow-lg">
+                    <Users className="h-8 w-8 text-white" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-lg font-medium text-gray-900 dark:text-white">Subscription</p>
+                  <div>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Subscription</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {effectiveUser?.role === 'customer' ? 'Upgrade to contractor' : 
-                       effectiveUser?.role === 'contractor_trial' ? 'Upgrade to paid plan' :
-                       'Manage subscription'}
+                      Manage subscription
                     </p>
                   </div>
                 </div>
@@ -161,14 +154,14 @@ export default function Dashboard() {
 
           {(effectiveUser?.role === 'admin' || effectiveUser?.role === 'contractor_paid') && (
             <Link href="/leads">
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                      <Users className="h-6 w-6 text-yellow-600" />
+              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border-yellow-200 dark:border-yellow-800">
+                <CardContent className="p-6 sm:p-8">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="p-4 bg-yellow-600 rounded-2xl shadow-lg">
+                      <Users className="h-8 w-8 text-white" />
                     </div>
-                    <div className="ml-4">
-                      <p className="text-lg font-medium text-gray-900 dark:text-white">Manage Leads</p>
+                    <div>
+                      <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Manage Leads</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         View customer inquiries
                       </p>
@@ -180,24 +173,24 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Welcome Message */}
-        <Card>
-          <CardContent className="p-6">
+        {/* Welcome Message - Mobile Optimized */}
+        <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 border-blue-200 dark:border-blue-800">
+          <CardContent className="p-6 sm:p-8">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 Welcome to your Milgard Product Portal
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm sm:text-base max-w-2xl mx-auto">
                 Browse our complete catalog of Milgard windows and doors. Add items to your cart and submit orders for quotes.
               </p>
-              <div className="flex justify-center space-x-4">
-                <Link href="/catalog">
-                  <Button className="bg-blue-600 hover:bg-blue-700">
+              <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+                <Link href="/catalog" className="w-full sm:w-auto">
+                  <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-12 text-base font-medium">
                     Start Shopping
                   </Button>
                 </Link>
-                <Link href="/">
-                  <Button variant="outline">
+                <Link href="/" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto h-12 text-base font-medium border-2">
                     Visit Website
                   </Button>
                 </Link>
