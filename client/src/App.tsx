@@ -21,6 +21,7 @@ import ProjectsPage from "@/pages/projects";
 import LeadsPage from "@/pages/leads";
 import SchedulingPage from "@/pages/scheduling";
 import ProposalsPage from "@/pages/proposals";
+import ProjectDetailPage from "@/pages/project-detail";
 import SubscriptionPage from "@/pages/subscription";
 import QuotesDashboard from "@/pages/quotes-dashboard";
 
@@ -60,6 +61,7 @@ function Router() {
           <Route path="/catalog" component={CatalogPage} />
           <Route path="/quote" component={QuotePage} />
           <Route path="/projects" component={ProjectsPage} />
+          <Route path="/projects/:id" component={ProjectDetailPage} />
           <Route path="/leads" component={LeadsPage} />
           <Route path="/scheduling" component={SchedulingPage} />
           <Route path="/proposals" component={ProposalsPage} />
