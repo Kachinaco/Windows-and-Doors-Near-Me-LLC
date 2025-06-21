@@ -193,6 +193,7 @@ Changelog:
 - June 21, 2025. Implemented comprehensive project portfolio system with three core modules: 1) Scheduling System for job assignments with contractor acceptance tracking and payout management, 2) Lead Flow Dashboard capturing leads from website, Yelp, Thumbtack, and phone calls with central routing and assignment capabilities, 3) CRM Tools foundation with communication logging structure ready for OpenPhone and Gmail integration
 - June 21, 2025. Added complete database schema for business management including leads, jobs, proposals, communication logs, user availability, and blog content management
 - June 21, 2025. Created scheduling interface with calendar views, crew availability tracking, and job status management (not scheduled, scheduled, completed) with contractor acceptance workflow (pending, accepted, declined)
+- June 21, 2025. Implemented streamlined 11-stage project pipeline displaying count-only view: New Leads → Need Attention → Sent Estimate → Signed → Need Ordered → Ordered → Need Scheduled → Scheduled → In Progress → Complete → Follow Up
 
 ## User Preferences
 
