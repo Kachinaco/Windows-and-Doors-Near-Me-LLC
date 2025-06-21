@@ -154,7 +154,7 @@ export default function Dashboard() {
                     <CalendarDays className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Calendar</p>
+                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Calendar & Scheduling</p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
                       Schedule and track jobs
                     </p>
@@ -173,7 +173,7 @@ export default function Dashboard() {
                     <Users className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Manage Leads</p>
+                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Manage Leads & Forms</p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
                       View customer inquiries
                     </p>
@@ -193,7 +193,7 @@ export default function Dashboard() {
                     <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Forms</p>
+                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Forms & Requests</p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
                       Quote requests and forms
                     </p>
@@ -212,7 +212,7 @@ export default function Dashboard() {
                     <Settings className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Settings</p>
+                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Settings & Configuration</p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
                       Configure your account
                     </p>
@@ -231,7 +231,7 @@ export default function Dashboard() {
                     <BarChart3 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Reports</p>
+                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Reports & Analytics</p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
                       Analytics and insights
                     </p>
