@@ -8,6 +8,11 @@ import {
   quoteRequests,
   quoteActivities,
   blogPosts,
+  leads,
+  jobs,
+  proposals,
+  communicationLogs,
+  userAvailability,
   type User,
   type InsertUser,
   type Product,
@@ -26,9 +31,19 @@ import {
   type InsertQuoteActivity,
   type BlogPost,
   type InsertBlogPost,
+  type Lead,
+  type InsertLead,
+  type Job,
+  type InsertJob,
+  type Proposal,
+  type InsertProposal,
+  type CommunicationLog,
+  type InsertCommunicationLog,
+  type UserAvailability,
+  type InsertUserAvailability,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 // Interface for storage operations - simplified for e-commerce
@@ -429,6 +444,202 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(blogPosts)
       .where(and(eq(blogPosts.category, category), eq(blogPosts.isPublished, true)))
       .orderBy(desc(blogPosts.publishedAt));
+  }
+
+  // Lead operations
+  async getAllLeads(): Promise<Lead[]> {
+    return await db.select().from(leads).orderBy(desc(leads.createdAt));
+  }
+
+  async getLead(id: number): Promise<Lead | undefined> {
+    const [lead] = await db.select().from(leads).where(eq(leads.id, id));
+    return lead;
+  }
+
+  async getLeadsByAssignee(assigneeId: number): Promise<Lead[]> {
+    return await db.select().from(leads)
+      .where(eq(leads.assignedToId, assigneeId))
+      .orderBy(desc(leads.createdAt));
+  }
+
+  async getLeadsByStatus(status: string): Promise<Lead[]> {
+    return await db.select().from(leads)
+      .where(eq(leads.status, status))
+      .orderBy(desc(leads.createdAt));
+  }
+
+  async createLead(insertLead: InsertLead): Promise<Lead> {
+    const [lead] = await db
+      .insert(leads)
+      .values(insertLead)
+      .returning();
+    return lead;
+  }
+
+  async updateLead(id: number, updates: Partial<InsertLead>): Promise<Lead> {
+    const [lead] = await db
+      .update(leads)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(leads.id, id))
+      .returning();
+    return lead;
+  }
+
+  async deleteLead(id: number): Promise<void> {
+    await db.delete(leads).where(eq(leads.id, id));
+  }
+
+  // Job operations
+  async getAllJobs(): Promise<Job[]> {
+    return await db.select().from(jobs).orderBy(desc(jobs.createdAt));
+  }
+
+  async getJob(id: number): Promise<Job | undefined> {
+    const [job] = await db.select().from(jobs).where(eq(jobs.id, id));
+    return job;
+  }
+
+  async getJobsByAssignee(assigneeId: number): Promise<Job[]> {
+    return await db.select().from(jobs)
+      .where(eq(jobs.assignedToId, assigneeId))
+      .orderBy(desc(jobs.shiftStartDate));
+  }
+
+  async getJobsByCustomer(customerId: number): Promise<Job[]> {
+    return await db.select().from(jobs)
+      .where(eq(jobs.customerId, customerId))
+      .orderBy(desc(jobs.createdAt));
+  }
+
+  async getJobsByDateRange(startDate: Date, endDate: Date): Promise<Job[]> {
+    return await db.select().from(jobs)
+      .where(and(
+        gte(jobs.shiftStartDate, startDate),
+        lte(jobs.shiftStartDate, endDate)
+      ))
+      .orderBy(jobs.shiftStartDate);
+  }
+
+  async createJob(insertJob: InsertJob): Promise<Job> {
+    const [job] = await db
+      .insert(jobs)
+      .values(insertJob)
+      .returning();
+    return job;
+  }
+
+  async updateJob(id: number, updates: Partial<InsertJob>): Promise<Job> {
+    const [job] = await db
+      .update(jobs)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(jobs.id, id))
+      .returning();
+    return job;
+  }
+
+  async deleteJob(id: number): Promise<void> {
+    await db.delete(jobs).where(eq(jobs.id, id));
+  }
+
+  // Proposal operations
+  async getAllProposals(): Promise<Proposal[]> {
+    return await db.select().from(proposals).orderBy(desc(proposals.createdAt));
+  }
+
+  async getProposal(id: number): Promise<Proposal | undefined> {
+    const [proposal] = await db.select().from(proposals).where(eq(proposals.id, id));
+    return proposal;
+  }
+
+  async getProposalsByLead(leadId: number): Promise<Proposal[]> {
+    return await db.select().from(proposals)
+      .where(eq(proposals.leadId, leadId))
+      .orderBy(desc(proposals.createdAt));
+  }
+
+  async getProposalsByStatus(status: string): Promise<Proposal[]> {
+    return await db.select().from(proposals)
+      .where(eq(proposals.status, status))
+      .orderBy(desc(proposals.createdAt));
+  }
+
+  async createProposal(insertProposal: InsertProposal): Promise<Proposal> {
+    const [proposal] = await db
+      .insert(proposals)
+      .values(insertProposal)
+      .returning();
+    return proposal;
+  }
+
+  async updateProposal(id: number, updates: Partial<InsertProposal>): Promise<Proposal> {
+    const [proposal] = await db
+      .update(proposals)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(proposals.id, id))
+      .returning();
+    return proposal;
+  }
+
+  async deleteProposal(id: number): Promise<void> {
+    await db.delete(proposals).where(eq(proposals.id, id));
+  }
+
+  // Communication log operations
+  async getCommunicationLogs(leadId?: number, jobId?: number): Promise<CommunicationLog[]> {
+    const conditions = [];
+    if (leadId) conditions.push(eq(communicationLogs.leadId, leadId));
+    if (jobId) conditions.push(eq(communicationLogs.jobId, jobId));
+    
+    return await db.select().from(communicationLogs)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(communicationLogs.createdAt));
+  }
+
+  async createCommunicationLog(insertLog: InsertCommunicationLog): Promise<CommunicationLog> {
+    const [log] = await db
+      .insert(communicationLogs)
+      .values(insertLog)
+      .returning();
+    return log;
+  }
+
+  // User availability operations
+  async getUserAvailability(userId: number): Promise<UserAvailability[]> {
+    return await db.select().from(userAvailability)
+      .where(eq(userAvailability.userId, userId))
+      .orderBy(userAvailability.dayOfWeek);
+  }
+
+  async setUserAvailability(insertAvailability: InsertUserAvailability): Promise<UserAvailability> {
+    const [availability] = await db
+      .insert(userAvailability)
+      .values(insertAvailability)
+      .onConflictDoUpdate({
+        target: [userAvailability.userId, userAvailability.dayOfWeek],
+        set: {
+          startTime: insertAvailability.startTime,
+          endTime: insertAvailability.endTime,
+          isAvailable: insertAvailability.isAvailable,
+        },
+      })
+      .returning();
+    return availability;
+  }
+
+  async getAvailableUsers(dayOfWeek: number, startTime: string, endTime: string): Promise<User[]> {
+    const availableUserIds = await db.select({ userId: userAvailability.userId })
+      .from(userAvailability)
+      .where(and(
+        eq(userAvailability.dayOfWeek, dayOfWeek),
+        eq(userAvailability.isAvailable, true),
+        lte(userAvailability.startTime, startTime),
+        gte(userAvailability.endTime, endTime)
+      ));
+
+    if (availableUserIds.length === 0) return [];
+
+    return await db.select().from(users)
+      .where(inArray(users.id, availableUserIds.map(u => u.userId)));
   }
 }
 
