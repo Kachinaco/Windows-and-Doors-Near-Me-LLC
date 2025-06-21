@@ -12,6 +12,7 @@ export const users = pgTable("users", {
   firstName: text("first_name"),
   lastName: text("last_name"),
   phone: text("phone"),
+  companyName: text("company_name"), // User's company name
   role: text("role").notNull().default("customer"), // customer, contractor_trial, contractor_paid, employee, admin
   subscriptionType: text("subscription_type").notNull().default("free"), // free, trial, paid
   subscriptionStatus: text("subscription_status").notNull().default("active"), // active, cancelled, expired

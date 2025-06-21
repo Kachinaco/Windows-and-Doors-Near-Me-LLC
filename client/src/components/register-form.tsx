@@ -29,6 +29,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
       firstName: "",
       lastName: "",
       phone: "",
+      companyName: "",
       role: "customer",
       subscriptionType: "free",
       subscriptionStatus: "active",
