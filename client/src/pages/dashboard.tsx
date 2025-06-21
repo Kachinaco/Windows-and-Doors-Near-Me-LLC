@@ -270,23 +270,23 @@ export default function Dashboard() {
           </Card>
 
           {/* Quick Share */}
-          <Card className="bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-white" />
+          <Link href="/updates">
+            <Card className="bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                    <MessageSquare className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-gray-600 dark:text-gray-400 text-sm">
+                      Share something...
+                    </span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
                 </div>
-                <div className="flex-1">
-                  <input 
-                    type="text" 
-                    placeholder="Share something..." 
-                    className="w-full bg-transparent text-gray-500 dark:text-gray-400 text-sm border-none outline-none"
-                    readOnly
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
 
           {/* Recent Updates */}
           <Card className="border-gray-200 dark:border-gray-700">
