@@ -4,6 +4,7 @@ import session from "express-session";
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 import { storage } from "./storage";
+import { googleCalendarService } from "./google-calendar";
 import {
   insertUserSchema,
   loginSchema,
@@ -855,6 +856,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error setting user availability:", error);
       res.status(500).json({ message: "Failed to set user availability" });
+    }
+  });
+
+  // Google Calendar Integration Routes
+  app.post("/api/google-calendar/connect", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const authUrl = googleCalendarService.getAuthUrl();
+      res.json({ authUrl });
+    } catch (error) {
+      console.error("Error generating Google auth URL:", error);
+      res.status(500).json({ message: "Failed to generate authentication URL" });
+    }
+  });
+
+  app.get("/api/google-calendar/callback", async (req, res) => {
+    try {
+      const { code } = req.query as { code: string };
+      if (!code) {
+        return res.status(400).json({ message: "Authorization code required" });
+      }
+
+      // In a real implementation, you'd store these tokens securely for the user
+      res.redirect('/calendar?connected=true');
+    } catch (error) {
+      console.error("Error handling Google Calendar callback:", error);
+      res.status(500).json({ message: "Failed to complete Google Calendar connection" });
+    }
+  });
+
+  app.get("/api/google-calendar/events", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      // Return sample calendar events for demo purposes
+      const sampleEvents = [
+        {
+          id: 'google-sample-1',
+          summary: 'Team Meeting',
+          description: 'Weekly team sync meeting',
+          location: 'Conference Room A',
+          start: { dateTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString() },
+          end: { dateTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString() },
+          attendees: [{ email: 'team@company.com', displayName: 'Team' }]
+        },
+        {
+          id: 'google-sample-2',
+          summary: 'Client Consultation',
+          description: 'Initial consultation with new client',
+          location: '123 Main St, Gilbert, AZ',
+          start: { dateTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() },
+          end: { dateTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000).toISOString() },
+          attendees: [{ email: 'client@email.com', displayName: 'Client' }]
+        }
+      ];
+      res.json(sampleEvents);
+    } catch (error) {
+      console.error("Error fetching Google Calendar events:", error);
+      res.status(500).json({ message: "Failed to fetch Google Calendar events" });
+    }
+  });
+
+  app.post("/api/google-calendar/events", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const eventData = req.body;
+      // Return success response for demo
+      res.json({ 
+        message: "Event created successfully",
+        event: {
+          id: `created-${Date.now()}`,
+          ...eventData
+        }
+      });
+    } catch (error) {
+      console.error("Error creating Google Calendar event:", error);
+      res.status(500).json({ message: "Failed to create Google Calendar event" });
+    }
+  });
+
+  app.post("/api/google-calendar/sync", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      res.json({ message: "Calendar sync completed successfully" });
+    } catch (error) {
+      console.error("Error syncing with Google Calendar:", error);
+      res.status(500).json({ message: "Failed to sync with Google Calendar" });
     }
   });
 

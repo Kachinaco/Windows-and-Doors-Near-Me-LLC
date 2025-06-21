@@ -146,7 +146,7 @@ export default function Dashboard() {
           </Link>
 
           {/* Calendar */}
-          <Link href="/scheduling">
+          <Link href="/calendar">
             <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
               <CardContent className="p-3 sm:p-6">
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
