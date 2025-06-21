@@ -65,12 +65,12 @@ export default function ProjectPortfolioPage() {
   // Calculate dashboard statistics
   const dashboardStats = useMemo(() => {
     const totalProjects = projects.length;
-    const newLeads = projects.filter(p => p.projectStatus === 'new_lead' || p.status === 'pending').length;
-    const inProgress = projects.filter(p => p.projectStatus === 'in_progress' || p.projectStatus === 'scheduled').length;
-    const completed = projects.filter(p => p.projectStatus === 'completed' || p.status === 'completed').length;
+    const newLeads = projects.filter(p => p.status === 'pending' || p.status === 'new_lead').length;
+    const inProgress = projects.filter(p => p.status === 'in_progress' || p.status === 'scheduled').length;
+    const completed = projects.filter(p => p.status === 'completed').length;
     
     const totalRevenue = projects
-      .filter(p => p.projectStatus === 'completed')
+      .filter(p => p.status === 'completed')
       .reduce((sum, p) => {
         const cost = parseFloat(p.estimatedCost?.replace(/[^0-9.]/g, '') || '0');
         return sum + cost;
@@ -521,7 +521,7 @@ export default function ProjectPortfolioPage() {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Projects</h2>
-            <Link href="/projects">
+            <Link href="/projects-list">
               <Button>
                 View All Projects <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
@@ -562,8 +562,8 @@ export default function ProjectPortfolioPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(project.projectStatus || project.status)}>
-                            {project.projectStatus || project.status}
+                          <Badge className={getStatusColor(project.status)}>
+                            {project.status}
                           </Badge>
                         </TableCell>
                         <TableCell>
