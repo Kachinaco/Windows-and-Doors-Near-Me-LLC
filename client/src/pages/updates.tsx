@@ -39,7 +39,7 @@ export default function UpdatesPage() {
 
   const filteredUpdates = updates.filter((update: any) => {
     const matchesSearch = update.message?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
-    const matchesType = filterType === "all" || update.updateType === filterType;
+    const matchesType = filterType === "all" || update.type === filterType;
     const matchesProject = filterProject === "all" || update.projectId?.toString() === filterProject;
     
     return matchesSearch && matchesType && matchesProject;
@@ -210,14 +210,14 @@ export default function UpdatesPage() {
                 <CardContent className="p-6">
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
-                      {getUpdateIcon(update.updateType)}
+                      {getUpdateIcon(update.type)}
                     </div>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           <Badge variant="secondary" className="text-xs">
-                            {getUpdateTypeLabel(update.updateType)}
+                            {getUpdateTypeLabel(update.type)}
                           </Badge>
                           {update.projectId && (
                             <Link href={`/projects/${update.projectId}`}>
@@ -238,10 +238,10 @@ export default function UpdatesPage() {
                         {update.message}
                       </p>
                       
-                      {update.performedBy && (
+                      {update.userId && (
                         <div className="flex items-center text-sm text-gray-600">
                           <User className="h-4 w-4 mr-1" />
-                          <span>by User #{update.performedBy}</span>
+                          <span>by User #{update.userId}</span>
                         </div>
                       )}
                     </div>
