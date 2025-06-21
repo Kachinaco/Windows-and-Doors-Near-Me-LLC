@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { 
@@ -14,27 +16,98 @@ import {
   Share,
   Send,
   Camera,
-  Smile
+  Smile,
+  X,
+  Image as ImageIcon
 } from "lucide-react";
 import { Link } from "wouter";
 
 export default function CompanyFeedPage() {
   const { user } = useAuth();
   const [postContent, setPostContent] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFeeling, setSelectedFeeling] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const feelings = [
+    { emoji: "😊", label: "happy" },
+    { emoji: "😢", label: "sad" },
+    { emoji: "😍", label: "loved" },
+    { emoji: "😴", label: "tired" },
+    { emoji: "🎉", label: "excited" },
+    { emoji: "😤", label: "frustrated" },
+    { emoji: "🤔", label: "thoughtful" },
+    { emoji: "😎", label: "cool" },
+    { emoji: "🥳", label: "celebrating" },
+    { emoji: "💪", label: "motivated" },
+    { emoji: "🤗", label: "grateful" },
+    { emoji: "🔥", label: "fired up" },
+  ];
 
   // Fetch company posts
   const { data: companyPosts = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/company-posts"],
   });
 
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const createPostMutation = useMutation({
-    mutationFn: async (content: string) => {
-      return await apiRequest("POST", "/api/company-posts", { content });
+    mutationFn: async (postData: { content: string; feeling?: string; image?: File }) => {
+      const formData = new FormData();
+      formData.append('content', postData.content);
+      if (postData.feeling) {
+        formData.append('feeling', postData.feeling);
+      }
+      if (postData.image) {
+        formData.append('image', postData.image);
+      }
+      
+      const response = await fetch("/api/company-posts", {
+        method: "POST",
+        body: formData,
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create post');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       setPostContent("");
+      setSelectedFeeling("");
+      removeImage();
       queryClient.invalidateQueries({ queryKey: ["/api/company-posts"] });
       toast({
         title: "Post shared!",
@@ -52,7 +125,11 @@ export default function CompanyFeedPage() {
 
   const handlePostSubmit = () => {
     if (postContent.trim()) {
-      createPostMutation.mutate(postContent);
+      createPostMutation.mutate({
+        content: postContent,
+        feeling: selectedFeeling,
+        image: selectedImage || undefined,
+      });
     }
   };
 
@@ -127,16 +204,86 @@ export default function CompanyFeedPage() {
                   onChange={(e) => setPostContent(e.target.value)}
                   className="min-h-[100px] resize-none border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400"
                 />
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div className="mt-3 relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="max-w-full h-48 object-cover rounded-lg border"
+                    />
+                    <Button
+                      onClick={removeImage}
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* Selected Feeling Display */}
+                {selectedFeeling && (
+                  <div className="mt-3 flex items-center space-x-2">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      Feeling {selectedFeeling}
+                    </span>
+                    <Button
+                      onClick={() => setSelectedFeeling("")}
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between mt-3">
                   <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <Input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
                       <Camera className="h-4 w-4 mr-1" />
                       Photo
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                      <Smile className="h-4 w-4 mr-1" />
-                      Feeling
-                    </Button>
+                    
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                          <Smile className="h-4 w-4 mr-1" />
+                          Feeling
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="grid grid-cols-4 gap-2 p-2">
+                          {feelings.map((feeling) => (
+                            <Button
+                              key={feeling.label}
+                              variant="ghost"
+                              className="h-12 flex flex-col items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
+                              onClick={() => {
+                                setSelectedFeeling(`${feeling.emoji} ${feeling.label}`);
+                              }}
+                            >
+                              <span className="text-lg">{feeling.emoji}</span>
+                              <span className="text-xs capitalize">{feeling.label}</span>
+                            </Button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <Button 
                     onClick={handlePostSubmit}
