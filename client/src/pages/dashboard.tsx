@@ -474,9 +474,9 @@ export default function Dashboard() {
               
               {/* View More Link */}
               <div className="text-center mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
-                <Link href="/updates">
+                <Link href="/company-feed">
                   <span className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer">
-                    View all activity →
+                    View all status updates →
                   </span>
                 </Link>
               </div>

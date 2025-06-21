@@ -196,6 +196,7 @@ Changelog:
 - June 21, 2025. Implemented streamlined 11-stage project pipeline displaying count-only view: New Leads → Need Attention → Sent Estimate → Signed → Need Ordered → Ordered → Need Scheduled → Scheduled → In Progress → Complete → Follow Up
 - June 21, 2025. Created comprehensive activity feed system with dedicated updates page (/updates), database table for project activities, API endpoints for fetching/creating updates, and fixed non-functional "Share something..." button on dashboard to link to activity feed
 - June 21, 2025. Renamed "Activity Feed" to "Activity" and implemented Facebook-like company social feed on dashboard with post creation, sample team posts, interactive UI elements (like, comment, share buttons), and backend API endpoints for company posts functionality
+- June 21, 2025. Created dedicated company feed page (/company-feed) for viewing all status updates, modified "View all activity" link to show company status updates instead of project activity, implemented real-time post display with newest posts at top
 
 ## User Preferences
 
