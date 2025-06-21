@@ -179,6 +179,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: user.email, 
         firstName: user.firstName,
         lastName: user.lastName,
+        phone: user.phone,
+        companyName: user.companyName,
         role: user.role,
         subscriptionType: user.subscriptionType,
         subscriptionStatus: user.subscriptionStatus,
@@ -186,6 +188,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch user data" });
+    }
+  });
+
+  // Profile update endpoint
+  app.put("/api/users/:id/profile", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Users can only update their own profile or admin can update any
+      if (req.user!.id !== userId && req.user!.role !== 'admin') {
+        return res.status(403).json({ message: "Unauthorized to update this profile" });
+      }
+
+      const { firstName, lastName, email, phone } = req.body;
+      const updatedUser = await storage.updateUser(userId, {
+        firstName,
+        lastName,
+        email,
+        phone
+      });
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // Company update endpoint
+  app.put("/api/users/:id/company", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Users can only update their own company or admin can update any
+      if (req.user!.id !== userId && req.user!.role !== 'admin') {
+        return res.status(403).json({ message: "Unauthorized to update this company" });
+      }
+
+      const { companyName } = req.body;
+      const updatedUser = await storage.updateUser(userId, {
+        companyName
+      });
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating company:", error);
+      res.status(500).json({ message: "Failed to update company" });
     }
   });
 

@@ -26,6 +26,7 @@ import ProposalsPage from "@/pages/proposals";
 import ProjectDetailPage from "@/pages/project-detail";
 import SubscriptionPage from "@/pages/subscription";
 import QuotesDashboard from "@/pages/quotes-dashboard";
+import SettingsPage from "@/pages/settings";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -71,6 +72,7 @@ function Router() {
           <Route path="/proposals" component={ProposalsPage} />
           <Route path="/quotes" component={QuotesDashboard} />
           <Route path="/subscription" component={SubscriptionPage} />
+          <Route path="/settings" component={SettingsPage} />
         </>
       ) : (
         <>
