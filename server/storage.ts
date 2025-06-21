@@ -8,6 +8,7 @@ import {
   quoteRequests,
   quoteActivities,
   blogPosts,
+  companyPosts,
   leads,
   jobs,
   proposals,
@@ -32,6 +33,8 @@ import {
   type InsertQuoteActivity,
   type BlogPost,
   type InsertBlogPost,
+  type CompanyPost,
+  type InsertCompanyPost,
   type Lead,
   type InsertLead,
   type Job,
@@ -452,6 +455,24 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(blogPosts)
       .where(and(eq(blogPosts.category, category), eq(blogPosts.isPublished, true)))
       .orderBy(desc(blogPosts.publishedAt));
+  }
+
+  // Company posts operations
+  async getAllCompanyPosts(): Promise<CompanyPost[]> {
+    return await db.select().from(companyPosts).orderBy(desc(companyPosts.createdAt));
+  }
+
+  async getCompanyPost(id: number): Promise<CompanyPost | undefined> {
+    const [post] = await db.select().from(companyPosts).where(eq(companyPosts.id, id));
+    return post;
+  }
+
+  async createCompanyPost(insertCompanyPost: InsertCompanyPost): Promise<CompanyPost> {
+    const [post] = await db
+      .insert(companyPosts)
+      .values(insertCompanyPost)
+      .returning();
+    return post;
   }
 
   // Lead operations
