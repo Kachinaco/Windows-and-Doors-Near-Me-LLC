@@ -123,7 +123,7 @@ export default function UpdatesPage() {
               <div className="flex items-center">
                 <Activity className="h-8 w-8 text-blue-600" />
                 <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
-                  Activity Feed
+                  Activity
                 </span>
               </div>
             </div>

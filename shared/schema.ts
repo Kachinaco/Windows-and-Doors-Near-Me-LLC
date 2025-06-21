@@ -237,6 +237,24 @@ export const blogPostsRelations = relations(blogPosts, ({ one }) => ({
   }),
 }));
 
+// Company posts for internal social feed
+export const companyPosts = pgTable("company_posts", {
+  id: serial("id").primaryKey(),
+  content: text("content").notNull(),
+  authorId: integer("author_id").references(() => users.id).notNull(),
+  likesCount: integer("likes_count").default(0),
+  commentsCount: integer("comments_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const companyPostsRelations = relations(companyPosts, ({ one }) => ({
+  author: one(users, {
+    fields: [companyPosts.authorId],
+    references: [users.id],
+  }),
+}));
+
 // Schemas for validation
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -492,6 +510,13 @@ export const userAvailabilityRelations = relations(userAvailability, ({ one }) =
   }),
 }));
 
+// Company posts schema
+export const insertCompanyPostSchema = createInsertSchema(companyPosts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type Lead = typeof leads.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
@@ -503,3 +528,5 @@ export type CommunicationLog = typeof communicationLogs.$inferSelect;
 export type InsertCommunicationLog = z.infer<typeof insertCommunicationLogSchema>;
 export type UserAvailability = typeof userAvailability.$inferSelect;
 export type InsertUserAvailability = z.infer<typeof insertUserAvailabilitySchema>;
+export type CompanyPost = typeof companyPosts.$inferSelect;
+export type InsertCompanyPost = z.infer<typeof insertCompanyPostSchema>;
