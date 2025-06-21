@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,19 @@ export default function ProjectsPage() {
   // Get stage filter from URL parameters
   const urlParams = new URLSearchParams(location.split('?')[1] || '');
   const stageFilter = urlParams.get('stage');
+
+  // Auto-scroll to stage section when stage filter is provided
+  useEffect(() => {
+    if (stageFilter) {
+      // Wait for the component to render, then scroll to the stage section
+      setTimeout(() => {
+        const stageElement = document.getElementById(`stage-${stageFilter}`);
+        if (stageElement) {
+          stageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, [stageFilter]);
 
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
@@ -558,7 +571,7 @@ export default function ProjectsPage() {
         <div className="space-y-6">
           {stageFilter ? (
             // Stage-filtered view
-            <Card>
+            <Card id={`stage-${stageFilter}`}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">

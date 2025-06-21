@@ -563,7 +563,7 @@ export default function ProjectPortfolioPage() {
             <div className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-4">
               <Card 
                 className="bg-blue-50 border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects?stage=new_leads', '_blank')}
+                onClick={() => window.open('/projects-list?stage=new_leads', '_blank')}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-blue-700 flex items-center gap-1">
@@ -578,7 +578,7 @@ export default function ProjectPortfolioPage() {
 
               <Card 
                 className="bg-red-50 border-red-200 hover:bg-red-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects?stage=need_attention', '_blank')}
+                onClick={() => window.open('/projects-list?stage=need_attention', '_blank')}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-red-700 flex items-center gap-1">
@@ -593,7 +593,7 @@ export default function ProjectPortfolioPage() {
 
               <Card 
                 className="bg-yellow-50 border-yellow-200 hover:bg-yellow-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects?stage=sent_estimate', '_blank')}
+                onClick={() => window.open('/projects-list?stage=sent_estimate', '_blank')}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-yellow-700 flex items-center gap-1">
@@ -608,7 +608,7 @@ export default function ProjectPortfolioPage() {
 
               <Card 
                 className="bg-emerald-50 border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects?stage=signed', '_blank')}
+                onClick={() => window.open('/projects-list?stage=signed', '_blank')}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-emerald-700 flex items-center gap-1">
@@ -623,7 +623,7 @@ export default function ProjectPortfolioPage() {
 
               <Card 
                 className="bg-indigo-50 border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects?stage=need_ordered', '_blank')}
+                onClick={() => window.open('/projects-list?stage=need_ordered', '_blank')}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-indigo-700 flex items-center gap-1">
@@ -638,7 +638,7 @@ export default function ProjectPortfolioPage() {
 
               <Card 
                 className="bg-cyan-50 border-cyan-200 hover:bg-cyan-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects?stage=ordered', '_blank')}
+                onClick={() => window.open('/projects-list?stage=ordered', '_blank')}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-cyan-700 flex items-center gap-1">
@@ -656,7 +656,7 @@ export default function ProjectPortfolioPage() {
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-8">
               <Card 
                 className="bg-pink-50 border-pink-200 hover:bg-pink-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects?stage=need_scheduled', '_blank')}
+                onClick={() => window.open('/projects-list?stage=need_scheduled', '_blank')}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-pink-700 flex items-center gap-1">
@@ -671,7 +671,7 @@ export default function ProjectPortfolioPage() {
 
               <Card 
                 className="bg-purple-50 border-purple-200 hover:bg-purple-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects?stage=scheduled', '_blank')}
+                onClick={() => window.open('/projects-list?stage=scheduled', '_blank')}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-purple-700 flex items-center gap-1">
@@ -686,7 +686,7 @@ export default function ProjectPortfolioPage() {
 
               <Card 
                 className="bg-orange-50 border-orange-200 hover:bg-orange-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects?stage=in_progress', '_blank')}
+                onClick={() => window.open('/projects-list?stage=in_progress', '_blank')}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-orange-700 flex items-center gap-1">
@@ -701,7 +701,7 @@ export default function ProjectPortfolioPage() {
 
               <Card 
                 className="bg-green-50 border-green-200 hover:bg-green-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects?stage=completed', '_blank')}
+                onClick={() => window.open('/projects-list?stage=completed', '_blank')}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-green-700 flex items-center gap-1">
@@ -716,7 +716,7 @@ export default function ProjectPortfolioPage() {
 
               <Card 
                 className="bg-slate-50 border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects?stage=follow_up', '_blank')}
+                onClick={() => window.open('/projects-list?stage=follow_up', '_blank')}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-slate-700 flex items-center gap-1">
