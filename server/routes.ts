@@ -971,7 +971,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/company-posts", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const posts = await storage.getAllCompanyPosts();
-      res.json(posts);
+      // Sort posts by creation date, newest first
+      const sortedPosts = posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      res.json(sortedPosts);
     } catch (error: any) {
       console.error("Error fetching company posts:", error);
       res.status(500).json({ message: "Failed to fetch company posts" });
