@@ -74,6 +74,7 @@ function Router() {
           <Route path="/quotes" component={QuotesDashboard} />
           <Route path="/subscription" component={SubscriptionPage} />
           <Route path="/settings" component={SettingsPage} />
+          <Route path="/calendar" component={CalendarView} />
         </>
       ) : (
         <>
