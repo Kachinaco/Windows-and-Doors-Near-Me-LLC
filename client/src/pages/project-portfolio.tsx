@@ -188,6 +188,12 @@ export default function ProjectPortfolioPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm" className="h-9 min-w-[140px]">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </Link>
               <Building2 className="h-8 w-8 text-blue-600" />
               <div>
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
