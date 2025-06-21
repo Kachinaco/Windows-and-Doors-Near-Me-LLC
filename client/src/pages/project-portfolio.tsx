@@ -553,19 +553,7 @@ export default function ProjectPortfolioPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-lg font-bold text-blue-900 mb-2">{dashboardStats.newLeads}</div>
-                  {projects
-                    .filter(p => p.status === 'pending' || p.status === 'new_lead')
-                    .slice(0, 1)
-                    .map(project => (
-                      <div key={project.id} className="bg-white p-1 rounded border text-xs">
-                        <Link href={`/projects/${project.id}`}>
-                          <div className="font-medium text-blue-700 hover:text-blue-900 cursor-pointer truncate">
-                            {project.title}
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-blue-900">{dashboardStats.newLeads}</div>
                 </CardContent>
               </Card>
 
@@ -577,19 +565,7 @@ export default function ProjectPortfolioPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-lg font-bold text-red-900 mb-2">{dashboardStats.needAttention}</div>
-                  {projects
-                    .filter(p => p.status === 'need_attention')
-                    .slice(0, 1)
-                    .map(project => (
-                      <div key={project.id} className="bg-white p-1 rounded border text-xs">
-                        <Link href={`/projects/${project.id}`}>
-                          <div className="font-medium text-red-700 hover:text-red-900 cursor-pointer truncate">
-                            {project.title}
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-red-900">{dashboardStats.needAttention}</div>
                 </CardContent>
               </Card>
 
@@ -601,19 +577,7 @@ export default function ProjectPortfolioPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-lg font-bold text-yellow-900 mb-2">{dashboardStats.sentEstimate}</div>
-                  {projects
-                    .filter(p => p.status === 'sent_estimate' || p.status === 'quoted')
-                    .slice(0, 1)
-                    .map(project => (
-                      <div key={project.id} className="bg-white p-1 rounded border text-xs">
-                        <Link href={`/projects/${project.id}`}>
-                          <div className="font-medium text-yellow-700 hover:text-yellow-900 cursor-pointer truncate">
-                            {project.title}
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-yellow-900">{dashboardStats.sentEstimate}</div>
                 </CardContent>
               </Card>
 
@@ -625,19 +589,7 @@ export default function ProjectPortfolioPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-lg font-bold text-emerald-900 mb-2">{dashboardStats.signed}</div>
-                  {projects
-                    .filter(p => p.status === 'signed' || p.status === 'contracted')
-                    .slice(0, 1)
-                    .map(project => (
-                      <div key={project.id} className="bg-white p-1 rounded border text-xs">
-                        <Link href={`/projects/${project.id}`}>
-                          <div className="font-medium text-emerald-700 hover:text-emerald-900 cursor-pointer truncate">
-                            {project.title}
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-emerald-900">{dashboardStats.signed}</div>
                 </CardContent>
               </Card>
 
@@ -649,19 +601,7 @@ export default function ProjectPortfolioPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-lg font-bold text-indigo-900 mb-2">{dashboardStats.needOrdered}</div>
-                  {projects
-                    .filter(p => p.status === 'need_ordered')
-                    .slice(0, 1)
-                    .map(project => (
-                      <div key={project.id} className="bg-white p-1 rounded border text-xs">
-                        <Link href={`/projects/${project.id}`}>
-                          <div className="font-medium text-indigo-700 hover:text-indigo-900 cursor-pointer truncate">
-                            {project.title}
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-indigo-900">{dashboardStats.needOrdered}</div>
                 </CardContent>
               </Card>
 
@@ -673,19 +613,7 @@ export default function ProjectPortfolioPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-lg font-bold text-cyan-900 mb-2">{dashboardStats.ordered}</div>
-                  {projects
-                    .filter(p => p.status === 'ordered')
-                    .slice(0, 1)
-                    .map(project => (
-                      <div key={project.id} className="bg-white p-1 rounded border text-xs">
-                        <Link href={`/projects/${project.id}`}>
-                          <div className="font-medium text-cyan-700 hover:text-cyan-900 cursor-pointer truncate">
-                            {project.title}
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-cyan-900">{dashboardStats.ordered}</div>
                 </CardContent>
               </Card>
             </div>
@@ -700,19 +628,7 @@ export default function ProjectPortfolioPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-lg font-bold text-pink-900 mb-2">{dashboardStats.needScheduled}</div>
-                  {projects
-                    .filter(p => p.status === 'need_scheduled')
-                    .slice(0, 1)
-                    .map(project => (
-                      <div key={project.id} className="bg-white p-1 rounded border text-xs">
-                        <Link href={`/projects/${project.id}`}>
-                          <div className="font-medium text-pink-700 hover:text-pink-900 cursor-pointer truncate">
-                            {project.title}
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-pink-900">{dashboardStats.needScheduled}</div>
                 </CardContent>
               </Card>
 
@@ -724,19 +640,7 @@ export default function ProjectPortfolioPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-lg font-bold text-purple-900 mb-2">{dashboardStats.scheduled}</div>
-                  {projects
-                    .filter(p => p.status === 'scheduled')
-                    .slice(0, 1)
-                    .map(project => (
-                      <div key={project.id} className="bg-white p-1 rounded border text-xs">
-                        <Link href={`/projects/${project.id}`}>
-                          <div className="font-medium text-purple-700 hover:text-purple-900 cursor-pointer truncate">
-                            {project.title}
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-purple-900">{dashboardStats.scheduled}</div>
                 </CardContent>
               </Card>
 
@@ -748,19 +652,7 @@ export default function ProjectPortfolioPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-lg font-bold text-orange-900 mb-2">{dashboardStats.inProgress}</div>
-                  {projects
-                    .filter(p => p.status === 'in_progress')
-                    .slice(0, 1)
-                    .map(project => (
-                      <div key={project.id} className="bg-white p-1 rounded border text-xs">
-                        <Link href={`/projects/${project.id}`}>
-                          <div className="font-medium text-orange-700 hover:text-orange-900 cursor-pointer truncate">
-                            {project.title}
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-orange-900">{dashboardStats.inProgress}</div>
                 </CardContent>
               </Card>
 
@@ -772,19 +664,7 @@ export default function ProjectPortfolioPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-lg font-bold text-green-900 mb-2">{dashboardStats.completed}</div>
-                  {projects
-                    .filter(p => p.status === 'completed')
-                    .slice(0, 1)
-                    .map(project => (
-                      <div key={project.id} className="bg-white p-1 rounded border text-xs">
-                        <Link href={`/projects/${project.id}`}>
-                          <div className="font-medium text-green-700 hover:text-green-900 cursor-pointer truncate">
-                            {project.title}
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-green-900">{dashboardStats.completed}</div>
                 </CardContent>
               </Card>
 
@@ -796,19 +676,7 @@ export default function ProjectPortfolioPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-lg font-bold text-slate-900 mb-2">{dashboardStats.followUp}</div>
-                  {projects
-                    .filter(p => p.status === 'follow_up')
-                    .slice(0, 1)
-                    .map(project => (
-                      <div key={project.id} className="bg-white p-1 rounded border text-xs">
-                        <Link href={`/projects/${project.id}`}>
-                          <div className="font-medium text-slate-700 hover:text-slate-900 cursor-pointer truncate">
-                            {project.title}
-                          </div>
-                        </Link>
-                      </div>
-                    ))}
+                  <div className="text-2xl font-bold text-slate-900">{dashboardStats.followUp}</div>
                 </CardContent>
               </Card>
             </div>
