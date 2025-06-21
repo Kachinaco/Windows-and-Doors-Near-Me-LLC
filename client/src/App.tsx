@@ -28,6 +28,7 @@ import SubscriptionPage from "@/pages/subscription";
 import QuotesDashboard from "@/pages/quotes-dashboard";
 import SettingsPage from "@/pages/settings";
 import CalendarView from "@/pages/calendar";
+import UpdatesPage from "@/pages/updates";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -75,6 +76,7 @@ function Router() {
           <Route path="/subscription" component={SubscriptionPage} />
           <Route path="/settings" component={SettingsPage} />
           <Route path="/calendar" component={CalendarView} />
+          <Route path="/updates" component={UpdatesPage} />
         </>
       ) : (
         <>
