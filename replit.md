@@ -52,6 +52,12 @@ This is a comprehensive business management platform for Windows & Doors Near Me
 - **Contact Submissions Table**: Lead management system with status tracking and conversion capabilities
 - **Quote Requests Table**: Online quote request system with window configurations, customer info, and status tracking
 - **Quote Activities Table**: Activity logging for quote communications and status changes
+- **Leads Table**: Comprehensive lead management from multiple sources (website, Yelp, Thumbtack, phone calls)
+- **Jobs Table**: Job scheduling system with contractor assignments, acceptance status, and payout tracking
+- **Proposals Table**: Proposal management with status tracking, file storage, and approval workflow
+- **Communication Logs Table**: CRM communication tracking for calls, SMS, and emails with OpenPhone/Gmail integration
+- **User Availability Table**: Crew scheduling and availability management for job assignments
+- **Blog Posts Table**: Content management system for home improvement tips and company blog
 - **Relations**: Comprehensive database relationships using Drizzle ORM relations for data integrity
 - **Type Safety**: Full Drizzle-zod integration for runtime validation and TypeScript types
 
@@ -183,6 +189,10 @@ Changelog:
 - June 20, 2025. Updated quote summary to match detailed technical specification format with comprehensive window details and professional layout
 - June 20, 2025. Added installation services checkbox to quote request contact form for customer service requirements
 - June 20, 2025. Replaced modern 3D window preview with consistent configurator tool preview for unified user experience
+- June 21, 2025. Fixed colonial grid patterns to show separate 3x2 grids in upper and lower window sashes for accurate double-hung window representation
+- June 21, 2025. Implemented comprehensive project portfolio system with three core modules: 1) Scheduling System for job assignments with contractor acceptance tracking and payout management, 2) Lead Flow Dashboard capturing leads from website, Yelp, Thumbtack, and phone calls with central routing and assignment capabilities, 3) CRM Tools foundation with communication logging structure ready for OpenPhone and Gmail integration
+- June 21, 2025. Added complete database schema for business management including leads, jobs, proposals, communication logs, user availability, and blog content management
+- June 21, 2025. Created scheduling interface with calendar views, crew availability tracking, and job status management (not scheduled, scheduled, completed) with contractor acceptance workflow (pending, accepted, declined)
 
 ## User Preferences
 
