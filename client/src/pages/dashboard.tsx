@@ -18,7 +18,8 @@ import {
   ChevronRight,
   FileText,
   BarChart3,
-  CalendarDays
+  CalendarDays,
+  Activity
 } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -222,18 +223,18 @@ export default function Dashboard() {
             </Card>
           </Link>
 
-          {/* Reports */}
-          <Link href="/pipeline">
+          {/* Activity Feed */}
+          <Link href="/updates">
             <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-800">
               <CardContent className="p-3 sm:p-6">
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-indigo-600 rounded-xl sm:rounded-2xl shadow-lg">
-                    <BarChart3 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                    <Activity className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Reports & Analytics</p>
+                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Activity Feed</p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                      Analytics and insights
+                      Recent project updates
                     </p>
                   </div>
                 </div>
