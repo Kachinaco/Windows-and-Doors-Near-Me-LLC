@@ -561,161 +561,172 @@ export default function ProjectPortfolioPage() {
           <div className="relative">
             {/* First Row - Initial Pipeline Stages */}
             <div className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-4">
-              <Card className="bg-blue-50 border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer">
-                <Link href="/projects?stage=new_leads" target="_blank">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-blue-700 flex items-center gap-1">
-                      <Target className="h-3 w-3" />
-                      New Leads
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-blue-900">{dashboardStats.newLeads}</div>
-                  </CardContent>
-                </Link>
+              <Card 
+                className="bg-blue-50 border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
+                onClick={() => window.open('/projects?stage=new_leads', '_blank')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-blue-700 flex items-center gap-1">
+                    <Target className="h-3 w-3" />
+                    New Leads
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl font-bold text-blue-900">{dashboardStats.newLeads}</div>
+                </CardContent>
               </Card>
 
-              <Card className="bg-red-50 border-red-200 hover:bg-red-100 transition-colors cursor-pointer">
-                <Link href="/projects?stage=need_attention" target="_blank">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-red-700 flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3" />
-                      Need Attention
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-red-900">{dashboardStats.needAttention}</div>
-                  </CardContent>
-                </Link>
+              <Card 
+                className="bg-red-50 border-red-200 hover:bg-red-100 transition-colors cursor-pointer"
+                onClick={() => window.open('/projects?stage=need_attention', '_blank')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-red-700 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    Need Attention
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl font-bold text-red-900">{dashboardStats.needAttention}</div>
+                </CardContent>
               </Card>
 
-              <Card className="bg-yellow-50 border-yellow-200 hover:bg-yellow-100 transition-colors cursor-pointer">
-                <Link href="/projects?stage=sent_estimate" target="_blank">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-yellow-700 flex items-center gap-1">
-                      <FileText className="h-3 w-3" />
-                      Sent Estimate
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-yellow-900">{dashboardStats.sentEstimate}</div>
-                  </CardContent>
-                </Link>
+              <Card 
+                className="bg-yellow-50 border-yellow-200 hover:bg-yellow-100 transition-colors cursor-pointer"
+                onClick={() => window.open('/projects?stage=sent_estimate', '_blank')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-yellow-700 flex items-center gap-1">
+                    <FileText className="h-3 w-3" />
+                    Sent Estimate
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl font-bold text-yellow-900">{dashboardStats.sentEstimate}</div>
+                </CardContent>
               </Card>
 
-              <Card className="bg-emerald-50 border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer">
-                <Link href="/projects?stage=signed" target="_blank">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-emerald-700 flex items-center gap-1">
-                      <CheckCircle className="h-3 w-3" />
-                      Signed
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-emerald-900">{dashboardStats.signed}</div>
-                  </CardContent>
-                </Link>
+              <Card 
+                className="bg-emerald-50 border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer"
+                onClick={() => window.open('/projects?stage=signed', '_blank')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-emerald-700 flex items-center gap-1">
+                    <CheckCircle className="h-3 w-3" />
+                    Signed
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl font-bold text-emerald-900">{dashboardStats.signed}</div>
+                </CardContent>
               </Card>
 
-              <Card className="bg-indigo-50 border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer">
-                <Link href="/projects?stage=need_ordered" target="_blank">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-indigo-700 flex items-center gap-1">
-                      <Plus className="h-3 w-3" />
-                      Need Ordered
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-indigo-900">{dashboardStats.needOrdered}</div>
-                  </CardContent>
-                </Link>
+              <Card 
+                className="bg-indigo-50 border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer"
+                onClick={() => window.open('/projects?stage=need_ordered', '_blank')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-indigo-700 flex items-center gap-1">
+                    <Plus className="h-3 w-3" />
+                    Need Ordered
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl font-bold text-indigo-900">{dashboardStats.needOrdered}</div>
+                </CardContent>
               </Card>
 
-              <Card className="bg-cyan-50 border-cyan-200 hover:bg-cyan-100 transition-colors cursor-pointer">
-                <Link href="/projects?stage=ordered" target="_blank">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-cyan-700 flex items-center gap-1">
-                      <Briefcase className="h-3 w-3" />
-                      Ordered
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-cyan-900">{dashboardStats.ordered}</div>
-                  </CardContent>
-                </Link>
+              <Card 
+                className="bg-cyan-50 border-cyan-200 hover:bg-cyan-100 transition-colors cursor-pointer"
+                onClick={() => window.open('/projects?stage=ordered', '_blank')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-cyan-700 flex items-center gap-1">
+                    <Briefcase className="h-3 w-3" />
+                    Ordered
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl font-bold text-cyan-900">{dashboardStats.ordered}</div>
+                </CardContent>
               </Card>
             </div>
 
             {/* Second Row - Completion Pipeline Stages */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-8">
-              <Card className="bg-pink-50 border-pink-200 hover:bg-pink-100 transition-colors cursor-pointer">
-                <Link href="/projects?stage=need_scheduled" target="_blank">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-pink-700 flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      Need Scheduled
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-pink-900">{dashboardStats.needScheduled}</div>
-                  </CardContent>
-                </Link>
+              <Card 
+                className="bg-pink-50 border-pink-200 hover:bg-pink-100 transition-colors cursor-pointer"
+                onClick={() => window.open('/projects?stage=need_scheduled', '_blank')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-pink-700 flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Need Scheduled
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl font-bold text-pink-900">{dashboardStats.needScheduled}</div>
+                </CardContent>
               </Card>
 
-              <Card className="bg-purple-50 border-purple-200 hover:bg-purple-100 transition-colors cursor-pointer">
-                <Link href="/projects?stage=scheduled" target="_blank">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-purple-700 flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      Scheduled
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-purple-900">{dashboardStats.scheduled}</div>
-                  </CardContent>
-                </Link>
+              <Card 
+                className="bg-purple-50 border-purple-200 hover:bg-purple-100 transition-colors cursor-pointer"
+                onClick={() => window.open('/projects?stage=scheduled', '_blank')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-purple-700 flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Scheduled
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl font-bold text-purple-900">{dashboardStats.scheduled}</div>
+                </CardContent>
               </Card>
 
-              <Card className="bg-orange-50 border-orange-200 hover:bg-orange-100 transition-colors cursor-pointer">
-                <Link href="/projects?stage=in_progress" target="_blank">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-orange-700 flex items-center gap-1">
-                      <Activity className="h-3 w-3" />
-                      In Progress
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-orange-900">{dashboardStats.inProgress}</div>
-                  </CardContent>
-                </Link>
+              <Card 
+                className="bg-orange-50 border-orange-200 hover:bg-orange-100 transition-colors cursor-pointer"
+                onClick={() => window.open('/projects?stage=in_progress', '_blank')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-orange-700 flex items-center gap-1">
+                    <Activity className="h-3 w-3" />
+                    In Progress
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl font-bold text-orange-900">{dashboardStats.inProgress}</div>
+                </CardContent>
               </Card>
 
-              <Card className="bg-green-50 border-green-200 hover:bg-green-100 transition-colors cursor-pointer">
-                <Link href="/projects?stage=completed" target="_blank">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-green-700 flex items-center gap-1">
-                      <CheckCircle className="h-3 w-3" />
-                      Complete
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-green-900">{dashboardStats.completed}</div>
-                  </CardContent>
-                </Link>
+              <Card 
+                className="bg-green-50 border-green-200 hover:bg-green-100 transition-colors cursor-pointer"
+                onClick={() => window.open('/projects?stage=completed', '_blank')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-green-700 flex items-center gap-1">
+                    <CheckCircle className="h-3 w-3" />
+                    Complete
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl font-bold text-green-900">{dashboardStats.completed}</div>
+                </CardContent>
               </Card>
 
-              <Card className="bg-slate-50 border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer">
-                <Link href="/projects?stage=follow_up" target="_blank">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-slate-700 flex items-center gap-1">
-                      <MessageSquare className="h-3 w-3" />
-                      Follow Up
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="text-2xl font-bold text-slate-900">{dashboardStats.followUp}</div>
-                  </CardContent>
-                </Link>
+              <Card 
+                className="bg-slate-50 border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer"
+                onClick={() => window.open('/projects?stage=follow_up', '_blank')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-slate-700 flex items-center gap-1">
+                    <MessageSquare className="h-3 w-3" />
+                    Follow Up
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-2xl font-bold text-slate-900">{dashboardStats.followUp}</div>
+                </CardContent>
               </Card>
             </div>
           </div>
