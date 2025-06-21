@@ -234,7 +234,7 @@ export default function Dashboard() {
                     <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Forms & Requests</p>
+                    <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Reports</p>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
                       Quote requests and forms
                     </p>
