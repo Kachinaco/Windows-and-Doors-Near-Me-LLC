@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, varchar, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, varchar, integer, boolean, jsonb, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -296,3 +296,175 @@ export type InsertQuoteActivity = z.infer<typeof insertQuoteActivitySchema>;
 
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+
+// Leads table for lead management
+export const leads = pgTable("leads", {
+  id: serial("id").primaryKey(),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 20 }),
+  address: text("address"),
+  city: varchar("city", { length: 100 }),
+  state: varchar("state", { length: 50 }),
+  zipCode: varchar("zip_code", { length: 10 }),
+  source: varchar("source", { length: 50 }).notNull(), // website, yelp, thumbtack, phone
+  status: varchar("status", { length: 50 }).default("new"), // new, contacted, estimate_sent, won, lost
+  assignedToId: integer("assigned_to_id").references(() => users.id),
+  notes: text("notes"),
+  estimatedValue: decimal("estimated_value", { precision: 10, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Jobs/Scheduling table
+export const jobs = pgTable("jobs", {
+  id: serial("id").primaryKey(),
+  jobName: varchar("job_name", { length: 255 }).notNull(),
+  customerId: integer("customer_id").references(() => leads.id),
+  projectId: integer("project_id").references(() => projects.id),
+  assignedToId: integer("assigned_to_id").references(() => users.id),
+  teamMembers: integer("team_members").array(),
+  customerSchedulingStatus: varchar("customer_scheduling_status", { length: 50 }).default("not_scheduled"), // not_scheduled, scheduled, completed
+  contractorAcceptanceStatus: varchar("contractor_acceptance_status", { length: 50 }).default("pending"), // pending, accepted, declined
+  shiftStartDate: timestamp("shift_start_date"),
+  shiftEndDate: timestamp("shift_end_date"),
+  duration: integer("duration_hours"),
+  payoutAmount: decimal("payout_amount", { precision: 10, scale: 2 }),
+  description: text("description"),
+  requirements: text("requirements"),
+  googleCalendarEventId: varchar("google_calendar_event_id", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Proposals table
+export const proposals = pgTable("proposals", {
+  id: serial("id").primaryKey(),
+  leadId: integer("lead_id").references(() => leads.id),
+  projectId: integer("project_id").references(() => projects.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }),
+  status: varchar("status", { length: 50 }).default("draft"), // draft, sent, approved, rejected
+  fileUrl: varchar("file_url", { length: 500 }),
+  linkUrl: varchar("link_url", { length: 500 }),
+  validUntil: timestamp("valid_until"),
+  sentAt: timestamp("sent_at"),
+  respondedAt: timestamp("responded_at"),
+  createdById: integer("created_by_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Communication logs for CRM
+export const communicationLogs = pgTable("communication_logs", {
+  id: serial("id").primaryKey(),
+  leadId: integer("lead_id").references(() => leads.id),
+  jobId: integer("job_id").references(() => jobs.id),
+  type: varchar("type", { length: 50 }).notNull(), // call, sms, email
+  direction: varchar("direction", { length: 20 }).notNull(), // inbound, outbound
+  content: text("content"),
+  phoneNumber: varchar("phone_number", { length: 20 }),
+  emailAddress: varchar("email_address", { length: 255 }),
+  duration: integer("duration_seconds"), // for calls
+  recordingUrl: varchar("recording_url", { length: 500 }),
+  openPhoneId: varchar("open_phone_id", { length: 255 }),
+  gmailThreadId: varchar("gmail_thread_id", { length: 255 }),
+  userId: integer("user_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User availability for scheduling
+export const userAvailability = pgTable("user_availability", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  dayOfWeek: integer("day_of_week").notNull(), // 0 = Sunday, 1 = Monday, etc.
+  startTime: varchar("start_time", { length: 10 }).notNull(), // HH:MM format
+  endTime: varchar("end_time", { length: 10 }).notNull(), // HH:MM format
+  isAvailable: boolean("is_available").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Schema validation
+const insertLeadSchema = createInsertSchema(leads);
+const insertJobSchema = createInsertSchema(jobs);
+const insertProposalSchema = createInsertSchema(proposals);
+const insertCommunicationLogSchema = createInsertSchema(communicationLogs);
+const insertUserAvailabilitySchema = createInsertSchema(userAvailability);
+
+// Relations
+export const leadsRelations = relations(leads, ({ one, many }) => ({
+  assignedTo: one(users, {
+    fields: [leads.assignedToId],
+    references: [users.id],
+  }),
+  jobs: many(jobs),
+  proposals: many(proposals),
+  communications: many(communicationLogs),
+}));
+
+export const jobsRelations = relations(jobs, ({ one, many }) => ({
+  customer: one(leads, {
+    fields: [jobs.customerId],
+    references: [leads.id],
+  }),
+  project: one(projects, {
+    fields: [jobs.projectId],
+    references: [projects.id],
+  }),
+  assignedTo: one(users, {
+    fields: [jobs.assignedToId],
+    references: [users.id],
+  }),
+  communications: many(communicationLogs),
+}));
+
+export const proposalsRelations = relations(proposals, ({ one }) => ({
+  lead: one(leads, {
+    fields: [proposals.leadId],
+    references: [leads.id],
+  }),
+  project: one(projects, {
+    fields: [proposals.projectId],
+    references: [projects.id],
+  }),
+  createdBy: one(users, {
+    fields: [proposals.createdById],
+    references: [users.id],
+  }),
+}));
+
+export const communicationLogsRelations = relations(communicationLogs, ({ one }) => ({
+  lead: one(leads, {
+    fields: [communicationLogs.leadId],
+    references: [leads.id],
+  }),
+  job: one(jobs, {
+    fields: [communicationLogs.jobId],
+    references: [jobs.id],
+  }),
+  user: one(users, {
+    fields: [communicationLogs.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userAvailabilityRelations = relations(userAvailability, ({ one }) => ({
+  user: one(users, {
+    fields: [userAvailability.userId],
+    references: [users.id],
+  }),
+}));
+
+// Types
+export type Lead = typeof leads.$inferSelect;
+export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type Job = typeof jobs.$inferSelect;
+export type InsertJob = z.infer<typeof insertJobSchema>;
+export type Proposal = typeof proposals.$inferSelect;
+export type InsertProposal = z.infer<typeof insertProposalSchema>;
+export type CommunicationLog = typeof communicationLogs.$inferSelect;
+export type InsertCommunicationLog = z.infer<typeof insertCommunicationLogSchema>;
+export type UserAvailability = typeof userAvailability.$inferSelect;
+export type InsertUserAvailability = z.infer<typeof insertUserAvailabilitySchema>;
