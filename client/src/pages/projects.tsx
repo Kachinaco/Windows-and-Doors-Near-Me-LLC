@@ -40,16 +40,71 @@ import {
   MessageSquare,
   FileText
 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function ProjectsPage() {
   const { user, logout } = useAuth();
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [location] = useLocation();
+  
+  // Get stage filter from URL parameters
+  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const stageFilter = urlParams.get('stage');
 
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
+
+  // Filter projects based on stage parameter
+  const filteredProjects = useMemo(() => {
+    if (!stageFilter) return projects;
+    
+    switch (stageFilter) {
+      case 'new_leads':
+        return projects.filter(p => p.status === 'pending' || p.status === 'new_lead');
+      case 'need_attention':
+        return projects.filter(p => p.status === 'need_attention');
+      case 'sent_estimate':
+        return projects.filter(p => p.status === 'sent_estimate' || p.status === 'quoted');
+      case 'signed':
+        return projects.filter(p => p.status === 'signed' || p.status === 'contracted');
+      case 'need_ordered':
+        return projects.filter(p => p.status === 'need_ordered');
+      case 'ordered':
+        return projects.filter(p => p.status === 'ordered');
+      case 'need_scheduled':
+        return projects.filter(p => p.status === 'need_scheduled');
+      case 'scheduled':
+        return projects.filter(p => p.status === 'scheduled');
+      case 'in_progress':
+        return projects.filter(p => p.status === 'in_progress');
+      case 'completed':
+        return projects.filter(p => p.status === 'completed');
+      case 'follow_up':
+        return projects.filter(p => p.status === 'follow_up');
+      default:
+        return projects;
+    }
+  }, [projects, stageFilter]);
+
+  // Get stage display name
+  const getStageDisplayName = (stage: string) => {
+    const stageNames: Record<string, string> = {
+      'new_leads': 'New Leads',
+      'need_attention': 'Need Attention',
+      'sent_estimate': 'Sent Estimate',
+      'signed': 'Signed',
+      'need_ordered': 'Need Ordered',
+      'ordered': 'Ordered',
+      'need_scheduled': 'Need Scheduled',
+      'scheduled': 'Scheduled',
+      'in_progress': 'In Progress',
+      'completed': 'Complete',
+      'follow_up': 'Follow Up'
+    };
+    return stageNames[stage] || 'All Projects';
+  };
 
   const { data: employees = [] } = useQuery<User[]>({
     queryKey: ["/api/employees"],
@@ -501,33 +556,159 @@ export default function ProjectsPage() {
 
         {/* Project Tables */}
         <div className="space-y-6">
-          <ProjectTable 
-            title="Scheduled" 
-            projects={groupedProjects.scheduled} 
-            icon={Calendar}
-            count={groupedProjects.scheduled.length}
-          />
-          
-          <ProjectTable 
-            title="Work Orders" 
-            projects={groupedProjects.work_orders} 
-            icon={Play}
-            count={groupedProjects.work_orders.length}
-          />
-          
-          <ProjectTable 
-            title="Completed - To Be Paid" 
-            projects={groupedProjects.completed} 
-            icon={CheckCircle}
-            count={groupedProjects.completed.length}
-          />
-          
-          <ProjectTable 
-            title="Paid" 
-            projects={groupedProjects.paid} 
-            icon={DollarSign}
-            count={groupedProjects.paid.length}
-          />
+          {stageFilter ? (
+            // Stage-filtered view
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Link href="/project-portfolio">
+                      <Button variant="outline" size="sm">
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to Pipeline
+                      </Button>
+                    </Link>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Target className="h-5 w-5 text-blue-600" />
+                      {getStageDisplayName(stageFilter)}
+                      <Badge variant="secondary" className="ml-2">{filteredProjects.length} projects</Badge>
+                    </CardTitle>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {filteredProjects.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No projects in {getStageDisplayName(stageFilter)}</h3>
+                    <p className="text-gray-500 mb-4">There are currently 0 projects in this pipeline stage.</p>
+                    <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <PlusCircle className="h-4 w-4 mr-2" />
+                          Create New Project
+                        </Button>
+                      </DialogTrigger>
+                    </Dialog>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50 dark:bg-gray-800">
+                          <TableHead className="font-semibold">Project</TableHead>
+                          <TableHead className="font-semibold">Client</TableHead>
+                          <TableHead className="font-semibold">Status</TableHead>
+                          <TableHead className="font-semibold">Priority</TableHead>
+                          <TableHead className="font-semibold">Estimated Cost</TableHead>
+                          <TableHead className="font-semibold">Start Date</TableHead>
+                          <TableHead className="font-semibold">Contact</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredProjects.map((project) => (
+                          <TableRow key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <TableCell>
+                              <Link href={`/projects/${project.id}`}>
+                                <div className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
+                                  {project.title}
+                                </div>
+                              </Link>
+                              <div className="text-sm text-gray-500">{project.serviceType}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                {project.address && (
+                                  <div className="flex items-center gap-1 text-gray-600">
+                                    <MapPin className="h-3 w-3" />
+                                    {project.address}
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={getStatusColor(project.status)}
+                              >
+                                {project.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={getPriorityColor(project.priority)}
+                              >
+                                {project.priority}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-green-600">
+                                <DollarSign className="h-3 w-3" />
+                                {project.estimatedCost || 'TBD'}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {project.startDate && (
+                                <div className="flex items-center gap-1 text-gray-600">
+                                  <Calendar className="h-3 w-3" />
+                                  {new Date(project.startDate).toLocaleDateString()}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-1">
+                                {project.phone && (
+                                  <div className="flex items-center gap-1 text-gray-600 text-sm">
+                                    <Phone className="h-3 w-3" />
+                                    {project.phone}
+                                  </div>
+                                )}
+                                {project.email && (
+                                  <div className="text-sm text-gray-600">{project.email}</div>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            // Default grouped view
+            <>
+              <ProjectTable 
+                title="Scheduled" 
+                projects={groupedProjects.scheduled} 
+                icon={Calendar}
+                count={groupedProjects.scheduled.length}
+              />
+              
+              <ProjectTable 
+                title="Work Orders" 
+                projects={groupedProjects.work_orders} 
+                icon={Play}
+                count={groupedProjects.work_orders.length}
+              />
+              
+              <ProjectTable 
+                title="Completed - To Be Paid" 
+                projects={groupedProjects.completed} 
+                icon={CheckCircle}
+                count={groupedProjects.completed.length}
+              />
+              
+              <ProjectTable 
+                title="Paid" 
+                projects={groupedProjects.paid} 
+                icon={DollarSign}
+                count={groupedProjects.paid.length}
+              />
+            </>
+          )}
         </div>
       </main>
     </div>
