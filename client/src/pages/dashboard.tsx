@@ -107,7 +107,7 @@ export default function Dashboard() {
       <main className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            Milgard Product Dashboard
+            {user?.companyName || 'Business Dashboard'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
             Welcome back, {user?.firstName}! 
@@ -283,10 +283,10 @@ export default function Dashboard() {
           <CardContent className="p-6 sm:p-8">
             <div className="text-center">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Welcome to your Milgard Product Portal
+                Welcome to your {user?.companyName || 'Business'} Portal
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm sm:text-base max-w-2xl mx-auto">
-                Browse our complete catalog of Milgard windows and doors. Add items to your cart and submit orders for quotes.
+                Manage your window and door projects, track leads, and grow your business with our comprehensive management tools.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
                 <Link href="/catalog" className="w-full sm:w-auto">
