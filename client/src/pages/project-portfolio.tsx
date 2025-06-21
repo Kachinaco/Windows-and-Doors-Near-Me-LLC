@@ -517,10 +517,185 @@ export default function ProjectPortfolioPage() {
           </Card>
         </div>
 
+        {/* Project Pipeline */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Project Pipeline</h2>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500">Total Pipeline Value: ${dashboardStats.totalRevenue.toLocaleString()}</span>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+              {/* Pipeline Flow Arrows */}
+              <div className="hidden md:block absolute top-1/2 left-1/5 transform -translate-y-1/2 z-10">
+                <ArrowRight className="h-6 w-6 text-gray-300" />
+              </div>
+              <div className="hidden md:block absolute top-1/2 left-2/5 transform -translate-y-1/2 z-10">
+                <ArrowRight className="h-6 w-6 text-gray-300" />
+              </div>
+              <div className="hidden md:block absolute top-1/2 left-3/5 transform -translate-y-1/2 z-10">
+                <ArrowRight className="h-6 w-6 text-gray-300" />
+              </div>
+              <div className="hidden md:block absolute top-1/2 left-4/5 transform -translate-y-1/2 z-10">
+                <ArrowRight className="h-6 w-6 text-gray-300" />
+              </div>
+
+              {/* Pipeline Stages */}
+              <Card className="bg-blue-50 border-blue-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-blue-700 flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  New Leads
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-2xl font-bold text-blue-900">{dashboardStats.newLeads}</div>
+                  {projects
+                    .filter(p => p.status === 'pending' || p.status === 'new_lead')
+                    .slice(0, 2)
+                    .map(project => (
+                      <div key={project.id} className="bg-white p-2 rounded border">
+                        <Link href={`/projects/${project.id}`}>
+                          <div className="text-xs font-medium text-blue-700 hover:text-blue-900 cursor-pointer">
+                            {project.title}
+                          </div>
+                        </Link>
+                        <div className="text-xs text-gray-500">{project.estimatedCost}</div>
+                      </div>
+                    ))}
+                  {projects.filter(p => p.status === 'pending' || p.status === 'new_lead').length > 2 && (
+                    <div className="text-xs text-gray-500">
+                      +{projects.filter(p => p.status === 'pending' || p.status === 'new_lead').length - 2} more
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-yellow-50 border-yellow-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-yellow-700 flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Proposals
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-2xl font-bold text-yellow-900">
+                    {projects.filter(p => p.status === 'proposal' || p.status === 'quoted').length}
+                  </div>
+                  {projects
+                    .filter(p => p.status === 'proposal' || p.status === 'quoted')
+                    .slice(0, 2)
+                    .map(project => (
+                      <div key={project.id} className="bg-white p-2 rounded border">
+                        <Link href={`/projects/${project.id}`}>
+                          <div className="text-xs font-medium text-yellow-700 hover:text-yellow-900 cursor-pointer">
+                            {project.title}
+                          </div>
+                        </Link>
+                        <div className="text-xs text-gray-500">{project.estimatedCost}</div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-purple-50 border-purple-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-purple-700 flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Scheduled
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-2xl font-bold text-purple-900">
+                    {projects.filter(p => p.status === 'scheduled').length}
+                  </div>
+                  {projects
+                    .filter(p => p.status === 'scheduled')
+                    .slice(0, 2)
+                    .map(project => (
+                      <div key={project.id} className="bg-white p-2 rounded border">
+                        <Link href={`/projects/${project.id}`}>
+                          <div className="text-xs font-medium text-purple-700 hover:text-purple-900 cursor-pointer">
+                            {project.title}
+                          </div>
+                        </Link>
+                        <div className="text-xs text-gray-500">{project.estimatedCost}</div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-orange-50 border-orange-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-orange-700 flex items-center gap-2">
+                  <Activity className="h-4 w-4" />
+                  In Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-2xl font-bold text-orange-900">
+                    {projects.filter(p => p.status === 'in_progress').length}
+                  </div>
+                  {projects
+                    .filter(p => p.status === 'in_progress')
+                    .slice(0, 2)
+                    .map(project => (
+                      <div key={project.id} className="bg-white p-2 rounded border">
+                        <Link href={`/projects/${project.id}`}>
+                          <div className="text-xs font-medium text-orange-700 hover:text-orange-900 cursor-pointer">
+                            {project.title}
+                          </div>
+                        </Link>
+                        <div className="text-xs text-gray-500">{project.estimatedCost}</div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-green-50 border-green-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-green-700 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Completed
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-2xl font-bold text-green-900">{dashboardStats.completed}</div>
+                  {projects
+                    .filter(p => p.status === 'completed')
+                    .slice(0, 2)
+                    .map(project => (
+                      <div key={project.id} className="bg-white p-2 rounded border">
+                        <Link href={`/projects/${project.id}`}>
+                          <div className="text-xs font-medium text-green-700 hover:text-green-900 cursor-pointer">
+                            {project.title}
+                          </div>
+                        </Link>
+                        <div className="text-xs text-gray-500">{project.estimatedCost}</div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+            </div>
+          </div>
+        </div>
+
         {/* Projects Section */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Projects</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recent Projects</h2>
             <Link href="/projects-list">
               <Button>
                 View All Projects <ArrowRight className="h-4 w-4 ml-2" />
