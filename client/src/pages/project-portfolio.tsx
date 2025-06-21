@@ -449,19 +449,26 @@ export default function ProjectPortfolioPage() {
             </CardContent>
           </Card>
 
-          {/* Recent Projects */}
+          {/* New Leads Only */}
           <Card className="bg-white">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Leads ({dashboardStats.newLeads})</CardTitle>
-              <Button variant="ghost" size="sm">
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+              <CardTitle className="text-lg font-semibold">New Leads ({dashboardStats.newLeads})</CardTitle>
+              <Link href="/projects?stage=new_leads">
+                <Button variant="ghost" size="sm">
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent className="space-y-4">
-              {dashboardStats.recentProjects.slice(0, 4).map((project) => (
+              {projects
+                .filter(p => p.status === 'pending' || p.status === 'new_lead')
+                .slice(0, 4)
+                .map((project) => (
                 <div key={project.id} className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="font-medium text-sm">{project.title}</p>
+                    <Link href={`/projects/${project.id}`}>
+                      <p className="font-medium text-sm text-blue-600 hover:text-blue-800 cursor-pointer">{project.title}</p>
+                    </Link>
                     <p className="text-xs text-gray-500">{project.serviceType}</p>
                   </div>
                   <div className="text-right">
@@ -471,9 +478,14 @@ export default function ProjectPortfolioPage() {
                   </div>
                 </div>
               ))}
-              <Link href="/leads">
+              {projects.filter(p => p.status === 'pending' || p.status === 'new_lead').length === 0 && (
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-500">No new leads at this time</p>
+                </div>
+              )}
+              <Link href="/projects?stage=new_leads">
                 <Button variant="ghost" size="sm" className="w-full mt-4">
-                  Go to Inquiries <ArrowRight className="h-4 w-4 ml-2" />
+                  View All New Leads <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
             </CardContent>
