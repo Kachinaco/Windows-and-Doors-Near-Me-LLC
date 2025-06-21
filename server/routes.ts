@@ -967,6 +967,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Company posts endpoints for social feed
+  app.get("/api/company-posts", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const posts = await storage.getAllCompanyPosts();
+      res.json(posts);
+    } catch (error: any) {
+      console.error("Error fetching company posts:", error);
+      res.status(500).json({ message: "Failed to fetch company posts" });
+    }
+  });
+
+  app.post("/api/company-posts", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { content } = req.body;
+      
+      if (!content || content.trim().length === 0) {
+        return res.status(400).json({ message: "Content is required" });
+      }
+
+      const newPost = await storage.createCompanyPost({
+        content: content.trim(),
+        authorId: req.user!.id,
+        likesCount: 0,
+        commentsCount: 0
+      });
+
+      res.status(201).json(newPost);
+    } catch (error: any) {
+      console.error("Error creating company post:", error);
+      res.status(500).json({ message: "Failed to create company post" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
