@@ -35,7 +35,7 @@ import {
   X
 } from "lucide-react";
 import { Link } from "wouter";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -66,6 +66,36 @@ export default function Dashboard() {
   // Fetch company posts
   const { data: companyPosts = [] } = useQuery<any[]>({
     queryKey: ["/api/company-posts"],
+  });
+
+  // Record post views when component mounts or posts change
+  useEffect(() => {
+    if (companyPosts.length > 0 && user?.id) {
+      companyPosts.forEach((post: any) => {
+        // Record view for each post (API will handle duplicate prevention)
+        apiRequest("POST", `/api/company-posts/${post.id}/view`).catch(() => {
+          // Silently fail if view recording fails
+        });
+      });
+    }
+  }, [companyPosts, user?.id]);
+
+  // Fetch viewers for posts
+  const { data: postViewers = {} } = useQuery<Record<string, any[]>>({
+    queryKey: ["/api/post-viewers", companyPosts.map((p: any) => p.id)],
+    enabled: companyPosts.length > 0,
+    queryFn: async () => {
+      const viewersData: Record<string, any[]> = {};
+      for (const post of companyPosts) {
+        try {
+          const response = await apiRequest("GET", `/api/company-posts/${post.id}/viewers`);
+          viewersData[post.id] = await response.json();
+        } catch (error) {
+          viewersData[post.id] = [];
+        }
+      }
+      return viewersData;
+    },
   });
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -566,19 +596,32 @@ export default function Dashboard() {
                             />
                           </div>
                         )}
-                        <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-                          <button className="flex items-center space-x-1 hover:text-blue-500">
-                            <Heart className="h-3 w-3" />
-                            <span>Like ({post.likesCount || 0})</span>
-                          </button>
-                          <button className="flex items-center space-x-1 hover:text-blue-500">
-                            <MessageSquare className="h-3 w-3" />
-                            <span>Comment ({post.commentsCount || 0})</span>
-                          </button>
-                          <button className="flex items-center space-x-1 hover:text-blue-500">
-                            <Share className="h-3 w-3" />
-                            <span>Share</span>
-                          </button>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                            <button className="flex items-center space-x-1 hover:text-blue-500">
+                              <Heart className="h-3 w-3" />
+                              <span>Like ({post.likesCount || 0})</span>
+                            </button>
+                            <button className="flex items-center space-x-1 hover:text-blue-500">
+                              <MessageSquare className="h-3 w-3" />
+                              <span>Comment ({post.commentsCount || 0})</span>
+                            </button>
+                            <button className="flex items-center space-x-1 hover:text-blue-500">
+                              <Share className="h-3 w-3" />
+                              <span>Share</span>
+                            </button>
+                          </div>
+                          
+                          {/* Post Viewers */}
+                          {postViewers[post.id] && postViewers[post.id].length > 0 && (
+                            <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
+                              <Eye className="h-3 w-3" />
+                              <span>
+                                Viewed by {postViewers[post.id].slice(0, 3).map((viewer: any) => viewer.user.firstName || viewer.user.username).join(", ")}
+                                {postViewers[post.id].length > 3 && ` and ${postViewers[post.id].length - 3} others`}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
