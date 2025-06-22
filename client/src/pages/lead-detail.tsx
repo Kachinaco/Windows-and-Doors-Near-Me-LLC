@@ -363,23 +363,40 @@ export default function LeadDetail() {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Badge 
-                      variant={lead.status === 'new' ? 'default' : 
-                              lead.status === 'contacted' ? 'secondary' :
-                              lead.status === 'qualified' ? 'outline' : 'destructive'}
-                      className="capitalize"
-                    >
-                      {lead.status}
-                    </Badge>
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        lead.status === 'new' ? 'bg-blue-500' :
+                        lead.status === 'contacted' ? 'bg-yellow-500' :
+                        lead.status === 'qualified' ? 'bg-green-500' :
+                        lead.status === 'proposal_sent' ? 'bg-purple-500' :
+                        lead.status === 'closed_won' ? 'bg-emerald-500' :
+                        'bg-red-500'
+                      }`}></div>
+                      <Badge 
+                        variant={lead.status === 'new' ? 'default' : 
+                                lead.status === 'contacted' ? 'secondary' :
+                                lead.status === 'qualified' ? 'outline' : 'destructive'}
+                        className="capitalize font-medium"
+                      >
+                        {lead.status?.replace('_', ' ')}
+                      </Badge>
+                    </div>
                   )}
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-2">
+                  <Label className="text-sm font-medium text-gray-600 block mb-2">
                     Source
-                  </label>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <span className="text-gray-900 capitalize">{lead.source}</span>
+                  </Label>
+                  <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-3 rounded-lg">
+                    <div className={`w-2 h-2 rounded-full ${
+                      lead.source === 'website' ? 'bg-blue-500' :
+                      lead.source === 'yelp' ? 'bg-red-500' :
+                      lead.source === 'thumbtack' ? 'bg-green-500' :
+                      lead.source === 'phone' ? 'bg-purple-500' :
+                      'bg-gray-500'
+                    }`}></div>
+                    <span className="text-gray-900 capitalize font-medium">{lead.source}</span>
                   </div>
                 </div>
               </CardContent>
