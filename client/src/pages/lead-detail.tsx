@@ -77,9 +77,22 @@ export default function LeadDetail() {
       phone: lead?.phone || "",
       address: lead?.address || "",
       notes: lead?.notes || "",
-      status: lead?.status || "",
+      status: lead?.status || "new",
     });
   };
+
+  // Initialize edited lead when lead data changes
+  useEffect(() => {
+    if (lead && isEditing) {
+      setEditedLead({
+        email: lead.email || "",
+        phone: lead.phone || "",
+        address: lead.address || "",
+        notes: lead.notes || "",
+        status: lead.status || "new",
+      });
+    }
+  }, [lead, isEditing]);
 
   const handleSave = () => {
     console.log("Save button clicked");
@@ -271,9 +284,10 @@ export default function LeadDetail() {
                   {isEditing ? (
                     <Input
                       type="email"
-                      value={editedLead.email || ""}
+                      value={editedLead.email !== undefined ? String(editedLead.email || "") : String(lead?.email || "")}
                       onChange={(e) => setEditedLead(prev => ({ ...prev, email: e.target.value }))}
                       className="w-full"
+                      placeholder="Enter email address"
                     />
                   ) : (
                     <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
@@ -297,9 +311,10 @@ export default function LeadDetail() {
                   {isEditing ? (
                     <Input
                       type="tel"
-                      value={editedLead.phone || ""}
+                      value={editedLead.phone !== undefined ? String(editedLead.phone || "") : String(lead?.phone || "")}
                       onChange={(e) => setEditedLead(prev => ({ ...prev, phone: e.target.value }))}
                       className="w-full"
+                      placeholder="Enter phone number"
                     />
                   ) : (
                     <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
@@ -323,7 +338,7 @@ export default function LeadDetail() {
                   {isEditing ? (
                     <Input
                       type="text"
-                      value={editedLead.address || ""}
+                      value={editedLead.address !== undefined ? String(editedLead.address || "") : String(lead?.address || "")}
                       onChange={(e) => setEditedLead(prev => ({ ...prev, address: e.target.value }))}
                       className="w-full"
                       placeholder="Enter address"
@@ -353,7 +368,7 @@ export default function LeadDetail() {
                   </Label>
                   {isEditing ? (
                     <Textarea
-                      value={editedLead.notes || ""}
+                      value={editedLead.notes !== undefined ? String(editedLead.notes || "") : String(lead?.notes || "")}
                       onChange={(e) => setEditedLead(prev => ({ ...prev, notes: e.target.value }))}
                       className="w-full"
                       placeholder="Enter notes"
