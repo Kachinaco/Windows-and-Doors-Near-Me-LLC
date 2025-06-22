@@ -33,6 +33,7 @@ import CompanyFeedPage from "@/pages/company-feed";
 import LeadDetailPage from "@/pages/lead-detail";
 import ProjectDashboardPage from "@/pages/project-dashboard";
 import CompanySettingsPage from "@/pages/company-settings";
+import QuoteDashboard from "@/pages/quote-dashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -68,6 +69,7 @@ function Router() {
         <>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/catalog" component={CatalogPage} />
+          <Route path="/quotes-manager" component={QuoteDashboard} />
           <Route path="/quote" component={QuotePage} />
           <Route path="/projects" component={ProjectPortfolioPage} />
           <Route path="/projects/:id" component={ProjectDashboardPage} />
