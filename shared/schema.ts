@@ -466,6 +466,8 @@ export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  estimatedCost: z.union([z.string(), z.number()]).transform(val => String(val)).optional(),
 });
 
 export const insertQuoteRequestSchema = createInsertSchema(quoteRequests).omit({
