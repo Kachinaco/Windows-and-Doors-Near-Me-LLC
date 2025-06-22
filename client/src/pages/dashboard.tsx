@@ -638,22 +638,22 @@ export default function Dashboard() {
 
         {/* Company Activity Feed - Only for Contractors */}
         {effectiveUser?.role !== 'customer' && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Create Post Section */}
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-4">
+              <CardContent className="p-3 sm:p-6">
+                <div className="flex items-start space-x-2 sm:space-x-4">
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                      <User className="h-5 w-5 text-white" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                     </div>
                   </div>
-                  <div className="flex-1 space-y-3">
+                  <div className="flex-1 space-y-2 sm:space-y-3">
                     <Textarea
                       placeholder="Share something with your team..."
                       value={postContent}
                       onChange={(e) => setPostContent(e.target.value)}
-                      className="min-h-[100px] resize-none border-0 shadow-none focus-visible:ring-0 p-0 text-base"
+                      className="min-h-[80px] sm:min-h-[100px] resize-none border-0 shadow-none focus-visible:ring-0 p-0 text-sm sm:text-base"
                     />
                     
                     {/* Image Preview */}
@@ -662,12 +662,12 @@ export default function Dashboard() {
                         <img 
                           src={imagePreview} 
                           alt="Preview" 
-                          className="max-w-xs max-h-48 rounded-lg object-cover"
+                          className="max-w-full sm:max-w-xs max-h-32 sm:max-h-48 rounded-lg object-cover"
                         />
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                          className="absolute -top-2 -right-2 h-5 w-5 sm:h-6 sm:w-6 rounded-full p-0"
                           onClick={handleRemoveImage}
                         >
                           <X className="h-3 w-3" />
@@ -675,15 +675,15 @@ export default function Dashboard() {
                       </div>
                     )}
                     
-                    <div className="flex items-center justify-between pt-3 border-t">
-                      <div className="flex items-center space-x-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0 sm:justify-between pt-3 border-t">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => fileInputRef.current?.click()}
-                          className="text-gray-500 hover:text-gray-700"
+                          className="text-gray-500 hover:text-gray-700 text-xs sm:text-sm"
                         >
-                          <Camera className="h-4 w-4 mr-2" />
+                          <Camera className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                           Photo
                         </Button>
                         
@@ -692,29 +692,29 @@ export default function Dashboard() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-gray-500 hover:text-gray-700"
+                              className="text-gray-500 hover:text-gray-700 text-xs sm:text-sm"
                             >
-                              <Smile className="h-4 w-4 mr-2" />
-                              Feeling
+                              <Smile className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                              <span className="hidden sm:inline">Feeling</span>
                               {selectedFeeling && (
-                                <span className="ml-2">
+                                <span className="ml-1 sm:ml-2">
                                   {feelings.find(f => f.label === selectedFeeling)?.emoji}
                                 </span>
                               )}
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-64 p-2">
-                            <div className="grid grid-cols-4 gap-2">
+                          <PopoverContent className="w-56 sm:w-64 p-2">
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                               {feelings.map((feeling) => (
                                 <Button
                                   key={feeling.label}
                                   variant="ghost"
                                   size="sm"
-                                  className="h-12 flex flex-col items-center justify-center hover:bg-gray-100"
+                                  className="h-10 sm:h-12 flex flex-col items-center justify-center hover:bg-gray-100"
                                   onClick={() => setSelectedFeeling(feeling.label)}
                                 >
-                                  <span className="text-lg">{feeling.emoji}</span>
-                                  <span className="text-xs capitalize">{feeling.label}</span>
+                                  <span className="text-sm sm:text-lg">{feeling.emoji}</span>
+                                  <span className="text-[10px] sm:text-xs capitalize">{feeling.label}</span>
                                 </Button>
                               ))}
                             </div>
@@ -724,7 +724,7 @@ export default function Dashboard() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setSelectedFeeling("")}
-                                  className="w-full text-red-600 hover:text-red-700"
+                                  className="w-full text-red-600 hover:text-red-700 text-xs sm:text-sm"
                                 >
                                   Remove feeling
                                 </Button>
@@ -745,9 +745,9 @@ export default function Dashboard() {
                       <Button
                         onClick={handleSubmitPost}
                         disabled={createPostMutation.isPending || (!postContent.trim() && !selectedImage)}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm"
                       >
-                        <Send className="h-4 w-4 mr-2" />
+                        <Send className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         Share
                       </Button>
                     </div>
@@ -757,29 +757,31 @@ export default function Dashboard() {
             </Card>
 
             {/* Posts Feed */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {companyPosts.map((post: any) => (
                 <Card key={post.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex items-start space-x-2 sm:space-x-4">
                       <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                          <User className="h-5 w-5 text-white" />
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                          <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                         </div>
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="font-semibold text-gray-900 dark:text-white">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-2">
+                          <span className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">
                             {post.user?.firstName} {post.user?.lastName}
                           </span>
-                          {post.feeling && (
-                            <span className="text-sm text-gray-500">
-                              is feeling {feelings.find(f => f.label === post.feeling)?.emoji} {post.feeling}
+                          <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500">
+                            {post.feeling && (
+                              <span>
+                                is feeling {feelings.find(f => f.label === post.feeling)?.emoji} {post.feeling}
+                              </span>
+                            )}
+                            <span>
+                              {formatTimeAgo(post.createdAt)}
                             </span>
-                          )}
-                          <span className="text-sm text-gray-500">
-                            {formatTimeAgo(post.createdAt)}
-                          </span>
+                          </div>
                         </div>
                         
                         <p className="text-gray-900 dark:text-white mb-3">{post.content}</p>
