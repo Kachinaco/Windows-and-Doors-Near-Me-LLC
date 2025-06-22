@@ -63,11 +63,11 @@ export default function LeadsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: leads = [], isLoading } = useQuery({
+  const { data: leads = [], isLoading } = useQuery<Lead[]>({
     queryKey: ["/api/leads"],
   });
 
-  const { data: employees = [] } = useQuery({
+  const { data: employees = [] } = useQuery<any[]>({
     queryKey: ["/api/employees"],
   });
 
@@ -346,7 +346,11 @@ export default function LeadsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredLeads.map((lead: Lead) => (
-            <Card key={lead.id} className="hover:shadow-lg transition-shadow">
+            <Card 
+              key={lead.id} 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setLocation(`/leads/${lead.id}`)}
+            >
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <CardTitle className="text-lg">
