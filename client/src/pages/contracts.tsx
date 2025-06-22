@@ -93,10 +93,20 @@ export default function ContractsPage() {
 
   const { data: projects = [] } = useQuery({
     queryKey: ["/api/projects"],
+    queryFn: async () => {
+      const response = await fetch("/api/projects");
+      if (!response.ok) throw new Error("Failed to fetch projects");
+      return response.json();
+    },
   });
 
   const { data: contractTemplates = [] } = useQuery({
     queryKey: ["/api/contract-templates"],
+    queryFn: async () => {
+      const response = await fetch("/api/contract-templates");
+      if (!response.ok) throw new Error("Failed to fetch templates");
+      return response.json();
+    },
   });
 
   const createContractMutation = useMutation({

@@ -38,6 +38,7 @@ import PayrollPage from "@/pages/payroll";
 import CustomerOrdersPage from "@/pages/customer-orders";
 import CustomerDeliveryPage from "@/pages/customer-delivery";
 import CustomerSettingsPage from "@/pages/customer-settings";
+import ContractsPage from "@/pages/contracts";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -92,6 +93,7 @@ function Router() {
           <Route path="/updates" component={UpdatesPage} />
           <Route path="/company-feed" component={CompanyFeedPage} />
           <Route path="/payroll" component={PayrollPage} />
+          <Route path="/contracts" component={ContractsPage} />
           <Route path="/customer-orders" component={CustomerOrdersPage} />
           <Route path="/customer-delivery" component={CustomerDeliveryPage} />
           <Route path="/customer-settings" component={CustomerSettingsPage} />
