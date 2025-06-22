@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,11 @@ import {
   Plus,
   Search,
   Filter,
-  MoreHorizontal,
   CheckCircle,
   Clock,
   AlertCircle,
-  DollarSign
+  DollarSign,
+  Eye
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -33,29 +33,42 @@ export default function ProjectPortfolioPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { data: projects = [] } = useQuery<Project[]>({
+  const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
-  const { data: employees = [] } = useQuery({
-    queryKey: ["/api/employees"],
-  });
-
+  // Optimized filtering
   const filteredProjects = useMemo(() => {
-    return projects.filter(project => {
-      const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!projects || projects.length === 0) return [];
+    
+    return projects.filter((project: Project) => {
+      const matchesSearch = searchTerm === "" || 
+        project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.id.toString().includes(searchTerm);
       const matchesStatus = statusFilter === "all" || project.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [projects, searchTerm, statusFilter]);
 
+  // Optimized stats calculation
   const stats = useMemo(() => {
+    if (!projects || projects.length === 0) return { total: 0, active: 0, pending: 0, completed: 0 };
+    
+    let active = 0, pending = 0, completed = 0;
+    
+    projects.forEach((p: Project) => {
+      if (p.status === "in_progress" || p.status === "scheduled") active++;
+      else if (p.status === "new_lead" || p.status === "need_attention") pending++;
+      else if (p.status === "completed") completed++;
+    });
+
     return {
       total: projects.length,
-      active: projects.filter(p => p.status === "in_progress" || p.status === "scheduled").length,
-      pending: projects.filter(p => p.status === "new_lead" || p.status === "need_attention").length,
-      completed: projects.filter(p => p.status === "completed").length,
+      active,
+      pending,
+      completed,
     };
   }, [projects]);
 
@@ -72,11 +85,16 @@ export default function ProjectPortfolioPage() {
 
   const createProjectMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/projects", data);
-      if (!response.ok) {
-        throw new Error(`Failed to create project: ${response.statusText}`);
+      setIsLoading(true);
+      try {
+        const response = await apiRequest("POST", "/api/projects", data);
+        if (!response.ok) {
+          throw new Error(`Failed to create project: ${response.statusText}`);
+        }
+        return response.json();
+      } finally {
+        setIsLoading(false);
       }
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -96,9 +114,22 @@ export default function ProjectPortfolioPage() {
     },
   });
 
-  const onSubmit = (data: any) => {
+  // Optimized callbacks
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  }, []);
+
+  const handleStatusFilterChange = useCallback((value: string) => {
+    setStatusFilter(value);
+  }, []);
+
+  const handleCreateProject = useCallback(() => {
+    setIsCreateDialogOpen(true);
+  }, []);
+
+  const onSubmit = useCallback((data: any) => {
     createProjectMutation.mutate(data);
-  };
+  }, [createProjectMutation]);
 
   const getStatusBadge = (status: string) => {
     const configs = {
@@ -147,29 +178,29 @@ export default function ProjectPortfolioPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
-              <div className="text-sm text-gray-600">Total Projects</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card className="hover:shadow-sm transition-shadow">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+              <div className="text-xs text-gray-600 mt-1">Total</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-green-600">{stats.active}</div>
-              <div className="text-sm text-gray-600">Active</div>
+          <Card className="hover:shadow-sm transition-shadow">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+              <div className="text-xs text-gray-600 mt-1">Active</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-blue-600">{stats.pending}</div>
-              <div className="text-sm text-gray-600">Pending</div>
+          <Card className="hover:shadow-sm transition-shadow">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600">{stats.pending}</div>
+              <div className="text-xs text-gray-600 mt-1">Pending</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-gray-600">{stats.completed}</div>
-              <div className="text-sm text-gray-600">Completed</div>
+          <Card className="hover:shadow-sm transition-shadow">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-gray-600">{stats.completed}</div>
+              <div className="text-xs text-gray-600 mt-1">Complete</div>
             </CardContent>
           </Card>
         </div>
@@ -200,45 +231,77 @@ export default function ProjectPortfolioPage() {
           </Select>
         </div>
 
+        {/* Loading State */}
+        {projectsLoading && (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="animate-pulse flex items-center justify-between">
+                    <div className="flex items-center space-x-4 flex-1">
+                      <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                    </div>
+                    <div className="flex items-center space-x-6">
+                      <div className="h-4 bg-gray-200 rounded w-16"></div>
+                      <div className="h-6 bg-gray-200 rounded w-20"></div>
+                      <div className="h-4 bg-gray-200 rounded w-16"></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
         {/* Project List */}
-        <div className="space-y-4">
-          {filteredProjects.map((project) => (
-            <Card key={project.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 flex-1">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{project.title}</h3>
-                      <p className="text-sm text-gray-600">Project #{project.id}</p>
+        {!projectsLoading && (
+          <div className="space-y-3">
+            {filteredProjects.map((project: any) => (
+              <Card key={project.id} className="hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4 flex-1">
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-900">{project.title}</h3>
+                        <div className="flex items-center space-x-3 mt-1">
+                          <span className="text-sm text-gray-500">#{project.id}</span>
+                          <span className="text-sm text-gray-400">•</span>
+                          <span className="text-sm text-gray-500 capitalize">{project.serviceType || 'windows'}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-4">
+                      <div className="text-center">
+                        <div className="flex items-center space-x-1">
+                          {getPriorityIcon(project.priority)}
+                          <span className="text-xs text-gray-600 capitalize">{project.priority}</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        {getStatusBadge(project.status)}
+                      </div>
+                      
+                      <div className="text-right min-w-[100px]">
+                        <div className="flex items-center justify-end space-x-1">
+                          <DollarSign className="h-3 w-3 text-gray-400" />
+                          <span className="text-sm font-medium text-gray-900">
+                            {project.estimatedCost ? `${Number(project.estimatedCost).toLocaleString()}` : '0'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center space-x-6">
-                    <div className="flex items-center space-x-2">
-                      {getPriorityIcon(project.priority)}
-                      <span className="text-sm text-gray-600 capitalize">{project.priority}</span>
-                    </div>
-                    
-                    <div>
-                      {getStatusBadge(project.status)}
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <DollarSign className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm font-medium">
-                        ${project.estimatedCost?.toLocaleString() || '0'}
-                      </span>
-                    </div>
-                    
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {filteredProjects.length === 0 && (
           <div className="text-center py-12">
