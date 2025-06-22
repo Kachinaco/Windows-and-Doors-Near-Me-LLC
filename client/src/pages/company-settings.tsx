@@ -140,7 +140,7 @@ export default function CompanySettingsPage() {
       </div>
 
       {/* Content */}
-      <div className="px-6 py-8 space-y-8">
+      <div className="px-6 py-8 space-y-6">
         {/* Company Information */}
         <Card>
           <CardHeader>
@@ -150,18 +150,26 @@ export default function CompanySettingsPage() {
             </CardTitle>
             <p className="text-gray-600">Manage your company details and branding settings.</p>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label className="text-base font-medium mb-3 block">Company Name</Label>
-              <Input
-                value={isEditing ? (formData.companyName || '') : "Windows & Doors Near Me LLC"}
-                onChange={(e) => isEditing && setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                placeholder="Your Company Name"
-                disabled={!isEditing}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                This name will appear in your dashboard header and throughout the application.
-              </p>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Company Name</Label>
+                <Input
+                  value={isEditing ? (formData.companyName || '') : "Windows & Doors Near Me LLC"}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                  placeholder="Your Company Name"
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label>Business Address</Label>
+                <Input
+                  value={isEditing ? (formData.businessAddress || '') : ""}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, businessAddress: e.target.value }))}
+                  placeholder="Gilbert, AZ"
+                  disabled={!isEditing}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -172,107 +180,129 @@ export default function CompanySettingsPage() {
             <CardTitle className="flex items-center space-x-3">
               <Phone className="w-6 h-6 text-blue-600" />
               <span>OpenPhone Integration</span>
-              {settings?.enableOpenphoneSync && (
-                <CheckCircle className="w-5 h-5 text-green-500" />
-              )}
             </CardTitle>
-            <p className="text-gray-600">
-              Connect your OpenPhone account to automatically sync calls, texts, and contact data
-            </p>
+            <p className="text-gray-600">Connect your OpenPhone account to sync calls and texts</p>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-base font-medium">Enable OpenPhone Sync</Label>
-                <p className="text-sm text-gray-600">Automatically log calls and texts from OpenPhone</p>
-              </div>
-              <Switch
-                checked={isEditing ? (formData.enableOpenphoneSync || false) : (settings?.enableOpenphoneSync || false)}
-                onCheckedChange={(checked) => 
-                  isEditing && setFormData(prev => ({ ...prev, enableOpenphoneSync: checked }))
-                }
-                disabled={!isEditing}
-              />
-            </div>
-
-            <Separator />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="flex items-center space-x-2 mb-3">
-                  <Key className="w-4 h-4" />
-                  <span>OpenPhone API Key</span>
-                </Label>
+                <Label>OpenPhone API Key</Label>
                 <Input
                   type={isEditing ? "text" : "password"}
-                  value={isEditing ? (formData.openphoneApiKey || '') : (settings?.openphoneApiKey || '')}
-                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, openphoneApiKey: e.target.value }))}
+                  value={isEditing ? (formData.openphoneApiKey || '') : ""}
+                  onChange={(e) => isEditing && setFormData((prev: any) => ({ ...prev, openphoneApiKey: e.target.value }))}
                   placeholder="Enter your OpenPhone API key"
                   disabled={!isEditing}
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Get your API key from OpenPhone Dashboard → Settings → API
-                </p>
               </div>
-
               <div>
-                <Label className="flex items-center space-x-2 mb-3">
-                  <Phone className="w-4 h-4" />
-                  <span>Business Phone Number</span>
-                </Label>
+                <Label>Business Phone Number</Label>
                 <Input
-                  value={isEditing ? (formData.businessPhoneNumber || '') : (settings?.businessPhoneNumber || "")}
-                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, businessPhoneNumber: e.target.value }))}
+                  value={isEditing ? (formData.businessPhoneNumber || '') : ""}
+                  onChange={(e) => isEditing && setFormData((prev: any) => ({ ...prev, businessPhoneNumber: e.target.value }))}
                   placeholder="+1 (480) 555-0123"
                   disabled={!isEditing}
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Your OpenPhone business number for outbound calls/texts
-                </p>
               </div>
             </div>
+          </CardContent>
+        </Card>
 
+        {/* Gmail Integration */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-3">
+              <Mail className="w-6 h-6 text-red-600" />
+              <span>Gmail Integration</span>
+            </CardTitle>
+            <p className="text-gray-600">Connect Gmail to track email communications</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Gmail Client ID</Label>
+                <Input
+                  value={isEditing ? (formData.gmailClientId || '') : ""}
+                  onChange={(e) => isEditing && setFormData((prev: any) => ({ ...prev, gmailClientId: e.target.value }))}
+                  placeholder="123456789-abc.apps.googleusercontent.com"
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label>Gmail Client Secret</Label>
+                <Input
+                  type={isEditing ? "text" : "password"}
+                  value={isEditing ? (formData.gmailClientSecret || '') : ""}
+                  onChange={(e) => isEditing && setFormData((prev: any) => ({ ...prev, gmailClientSecret: e.target.value }))}
+                  placeholder="Enter Gmail client secret"
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
             <div>
-              <Label className="flex items-center space-x-2 mb-3">
-                <Webhook className="w-4 h-4" />
-                <span>Webhook URL</span>
-              </Label>
+              <Label>Gmail Refresh Token</Label>
               <Input
-                value={isEditing ? (formData.openphoneWebhookUrl || '') : (settings?.openphoneWebhookUrl || "")}
-                onChange={(e) => isEditing && setFormData(prev => ({ ...prev, openphoneWebhookUrl: e.target.value }))}
-                placeholder="https://yourapp.com/api/openphone/webhook"
+                type={isEditing ? "text" : "password"}
+                value={isEditing ? (formData.gmailRefreshToken || '') : ""}
+                onChange={(e) => isEditing && setFormData((prev: any) => ({ ...prev, gmailRefreshToken: e.target.value }))}
+                placeholder="OAuth refresh token for Gmail access"
                 disabled={!isEditing}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Configure this URL in your OpenPhone webhook settings
-              </p>
             </div>
+          </CardContent>
+        </Card>
 
-            {!isEditing && settings?.openphoneApiKey && (
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleTestConnection('openphone')}
-                  disabled={testConnectionMutation.isPending}
-                >
-                  <TestTube className="w-4 h-4 mr-2" />
-                  Test Connection
-                </Button>
+        {/* Additional Services */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-3">
+              <Globe className="w-6 h-6 text-purple-600" />
+              <span>Additional Services</span>
+            </CardTitle>
+            <p className="text-gray-600">Configure payment processing and communication services</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Stripe API Key</Label>
+                <Input
+                  type={isEditing ? "text" : "password"}
+                  value={isEditing ? (formData.stripeApiKey || '') : ""}
+                  onChange={(e) => isEditing && setFormData((prev: any) => ({ ...prev, stripeApiKey: e.target.value }))}
+                  placeholder="sk_test_..."
+                  disabled={!isEditing}
+                />
               </div>
-            )}
-
-            <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
-              <div className="flex items-start space-x-2">
-                <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-amber-900">Phone Number Identification</h4>
-                  <p className="text-sm text-amber-800 mt-1">
-                    All communications will display your OpenPhone business number above. When texting leads, 
-                    they'll see messages coming from this number, not your personal phone. The system will 
-                    automatically validate phone numbers before sending to prevent wrong number issues.
-                  </p>
-                </div>
+              <div>
+                <Label>SendGrid API Key</Label>
+                <Input
+                  type={isEditing ? "text" : "password"}
+                  value={isEditing ? (formData.sendgridApiKey || '') : ""}
+                  onChange={(e) => isEditing && setFormData((prev: any) => ({ ...prev, sendgridApiKey: e.target.value }))}
+                  placeholder="SG...."
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Twilio Account SID</Label>
+                <Input
+                  value={isEditing ? (formData.twilioAccountSid || '') : ""}
+                  onChange={(e) => isEditing && setFormData((prev: any) => ({ ...prev, twilioAccountSid: e.target.value }))}
+                  placeholder="AC..."
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label>Twilio Auth Token</Label>
+                <Input
+                  type={isEditing ? "text" : "password"}
+                  value={isEditing ? (formData.twilioAuthToken || '') : ""}
+                  onChange={(e) => isEditing && setFormData((prev: any) => ({ ...prev, twilioAuthToken: e.target.value }))}
+                  placeholder="Enter Twilio auth token"
+                  disabled={!isEditing}
+                />
               </div>
             </div>
           </CardContent>
