@@ -9,6 +9,7 @@ import {
   quoteActivities,
   blogPosts,
   companyPosts,
+  postViews,
   leads,
   jobs,
   proposals,
@@ -35,6 +36,8 @@ import {
   type InsertBlogPost,
   type CompanyPost,
   type InsertCompanyPost,
+  type PostView,
+  type InsertPostView,
   type Lead,
   type InsertLead,
   type Job,
@@ -473,6 +476,43 @@ export class DatabaseStorage implements IStorage {
       .values(insertCompanyPost)
       .returning();
     return post;
+  }
+
+  // Post view operations
+  async recordPostView(postId: number, userId: number): Promise<void> {
+    try {
+      await db
+        .insert(postViews)
+        .values({ postId, userId })
+        .onConflictDoNothing();
+      
+      // Update views count
+      const currentPost = await db.select().from(companyPosts).where(eq(companyPosts.id, postId)).limit(1);
+      if (currentPost.length > 0) {
+        await db
+          .update(companyPosts)
+          .set({ 
+            viewsCount: (currentPost[0].viewsCount || 0) + 1
+          })
+          .where(eq(companyPosts.id, postId));
+      }
+    } catch (error) {
+      // Ignore conflicts - user already viewed this post
+    }
+  }
+
+  async getPostViewers(postId: number): Promise<{ user: User; viewedAt: Date }[]> {
+    const views = await db
+      .select({
+        user: users,
+        viewedAt: postViews.viewedAt,
+      })
+      .from(postViews)
+      .innerJoin(users, eq(postViews.userId, users.id))
+      .where(eq(postViews.postId, postId))
+      .orderBy(desc(postViews.viewedAt));
+    
+    return views;
   }
 
   // Lead operations
