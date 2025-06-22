@@ -23,7 +23,8 @@ import {
   Plus,
   Edit3,
   Save,
-  X
+  X,
+  ExternalLink
 } from "lucide-react";
 import type { Lead } from "@shared/schema";
 
@@ -286,11 +287,19 @@ export default function LeadDetail() {
                   )}
                 </div>
 
-                {lead.address && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">
-                      Address
-                    </label>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600 block mb-2">
+                    Address
+                  </Label>
+                  {isEditing ? (
+                    <Input
+                      type="text"
+                      value={editedLead.address || ""}
+                      onChange={(e) => setEditedLead(prev => ({ ...prev, address: e.target.value }))}
+                      className="w-full"
+                      placeholder="Enter address"
+                    />
+                  ) : lead.address ? (
                     <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
                       <span className="text-gray-900">{lead.address}</span>
                       <Button
@@ -302,32 +311,67 @@ export default function LeadDetail() {
                         <Copy className="w-4 h-4" />
                       </Button>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="bg-gray-50 p-3 rounded-lg text-gray-500">
+                      No address provided
+                    </div>
+                  )}
+                </div>
 
-                {lead.notes && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">
-                      Notes
-                    </label>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600 block mb-2">
+                    Notes
+                  </Label>
+                  {isEditing ? (
+                    <Textarea
+                      value={editedLead.notes || ""}
+                      onChange={(e) => setEditedLead(prev => ({ ...prev, notes: e.target.value }))}
+                      className="w-full"
+                      placeholder="Enter notes"
+                      rows={3}
+                    />
+                  ) : lead.notes ? (
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <span className="text-gray-900">{lead.notes}</span>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="bg-gray-50 p-3 rounded-lg text-gray-500">
+                      No notes available
+                    </div>
+                  )}
+                </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-2">
+                  <Label className="text-sm font-medium text-gray-600 block mb-2">
                     Status
-                  </label>
-                  <Badge 
-                    variant={lead.status === 'new' ? 'default' : 
-                            lead.status === 'contacted' ? 'secondary' :
-                            lead.status === 'qualified' ? 'outline' : 'destructive'}
-                    className="capitalize"
-                  >
-                    {lead.status}
-                  </Badge>
+                  </Label>
+                  {isEditing ? (
+                    <Select
+                      value={editedLead.status || (lead.status ?? "new")}
+                      onValueChange={(value) => setEditedLead(prev => ({ ...prev, status: value }))}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="new">New</SelectItem>
+                        <SelectItem value="contacted">Contacted</SelectItem>
+                        <SelectItem value="qualified">Qualified</SelectItem>
+                        <SelectItem value="proposal_sent">Proposal Sent</SelectItem>
+                        <SelectItem value="closed_won">Closed Won</SelectItem>
+                        <SelectItem value="closed_lost">Closed Lost</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Badge 
+                      variant={lead.status === 'new' ? 'default' : 
+                              lead.status === 'contacted' ? 'secondary' :
+                              lead.status === 'qualified' ? 'outline' : 'destructive'}
+                      className="capitalize"
+                    >
+                      {lead.status}
+                    </Badge>
+                  )}
                 </div>
 
                 <div>
@@ -341,21 +385,7 @@ export default function LeadDetail() {
               </CardContent>
             </Card>
 
-            {/* Related Organizations */}
-            <Card>
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center space-x-2 text-lg">
-                  <Building className="w-5 h-5" />
-                  <span>Related organizations</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Building className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>There are no related organizations yet</p>
-                </div>
-              </CardContent>
-            </Card>
+
 
             {/* Related Projects */}
             <Card>
