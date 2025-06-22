@@ -525,6 +525,21 @@ export type InsertProjectUpdate = z.infer<typeof insertProjectUpdateSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 
+export type Lead = typeof leads.$inferSelect;
+export type InsertLead = z.infer<typeof insertLeadSchema>;
+
+export type Job = typeof jobs.$inferSelect;
+export type InsertJob = z.infer<typeof insertJobSchema>;
+
+export type Proposal = typeof proposals.$inferSelect;
+export type InsertProposal = z.infer<typeof insertProposalSchema>;
+
+export type CommunicationLog = typeof communicationLogs.$inferSelect;
+export type InsertCommunicationLog = z.infer<typeof insertCommunicationLogSchema>;
+
+export type UserAvailability = typeof userAvailability.$inferSelect;
+export type InsertUserAvailability = z.infer<typeof insertUserAvailabilitySchema>;
+
 // Leads table for lead management
 export const leads = pgTable("leads", {
   id: serial("id").primaryKey(),
@@ -631,6 +646,11 @@ export const insertProposalSchema = createInsertSchema(proposals).omit({
   updatedAt: true,
 });
 export const insertCommunicationLogSchema = createInsertSchema(communicationLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserAvailabilitySchema = createInsertSchema(userAvailability).omit({
   id: true,
   createdAt: true,
 });
@@ -846,11 +866,6 @@ export const enhancedUsersRelations = relations(users, ({ many }) => ({
   interactions: many(customerInteractions),
   assignedProjects: many(projects),
 }));
-
-const insertUserAvailabilitySchema = createInsertSchema(userAvailability).omit({
-  id: true,
-  createdAt: true,
-});
 
 // Company posts schema
 export const insertCompanyPostSchema = createInsertSchema(companyPosts).omit({
