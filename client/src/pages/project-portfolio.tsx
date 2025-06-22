@@ -2,9 +2,9 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,19 +17,14 @@ import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft,
   Building2, 
-  Users, 
   LogOut,
   Plus,
   Target,
   Activity,
   AlertTriangle,
   DollarSign,
-  CheckCircle,
-  MessageSquare,
-  Briefcase,
   Calendar,
-  ArrowRight,
-  TrendingUp
+  Users
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -39,7 +34,7 @@ export default function ProjectPortfolioPage() {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const { data: projects = [], isLoading } = useQuery<Project[]>({
+  const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
@@ -51,40 +46,29 @@ export default function ProjectPortfolioPage() {
     const stats = {
       totalProjects: projects.length,
       newLeads: projects.filter(p => p.status === "new_lead").length,
-      needAttention: projects.filter(p => p.status === "need_attention").length,
-      sentEstimate: projects.filter(p => p.status === "sent_estimate").length,
-      signed: projects.filter(p => p.status === "signed").length,
-      needOrdered: projects.filter(p => p.status === "need_ordered").length,
-      ordered: projects.filter(p => p.status === "ordered").length,
-      needScheduled: projects.filter(p => p.status === "need_scheduled").length,
-      scheduled: projects.filter(p => p.status === "scheduled").length,
       inProgress: projects.filter(p => p.status === "in_progress").length,
+      scheduled: projects.filter(p => p.status === "scheduled").length,
       completed: projects.filter(p => p.status === "completed").length,
-      followUp: projects.filter(p => p.status === "follow_up").length,
-      totalRevenue: projects.reduce((sum, p) => sum + (p.estimatedCost || 0), 0),
-      activeProjects: projects.filter(p => ["in_progress", "scheduled", "signed"].includes(p.status)).length,
+      totalRevenue: projects.reduce((sum, p) => sum + (typeof p.estimatedCost === 'string' ? parseFloat(p.estimatedCost) || 0 : p.estimatedCost || 0), 0),
       urgentTasks: projects.filter(p => p.priority === "urgent").length,
     };
     return stats;
   }, [projects]);
 
-  const form = useForm<InsertProject>({
-    resolver: zodResolver(insertProjectSchema),
+  const form = useForm({
     defaultValues: {
       title: "",
       description: "",
       status: "new_lead",
       priority: "medium",
-      assignedTo: "",
-      customerName: "",
-      customerEmail: "",
-      customerPhone: "",
+      serviceType: "windows",
+      assignedTo: undefined,
       estimatedCost: 0,
     },
   });
 
   const createProjectMutation = useMutation({
-    mutationFn: async (data: InsertProject) => {
+    mutationFn: async (data: any) => {
       const response = await apiRequest("POST", "/api/projects", data);
       if (!response.ok) {
         throw new Error(`Failed to create project: ${response.statusText}`);
@@ -109,7 +93,7 @@ export default function ProjectPortfolioPage() {
     },
   });
 
-  const onSubmit = (data: InsertProject) => {
+  const onSubmit = (data: any) => {
     createProjectMutation.mutate(data);
   };
 
@@ -131,306 +115,238 @@ export default function ProjectPortfolioPage() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "bg-red-50 text-red-700 border-red-200";
       case "high":
-        return "bg-orange-100 text-orange-800 border-orange-200";
+        return "bg-orange-50 text-orange-700 border-orange-200";
       case "medium":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-yellow-50 text-yellow-700 border-yellow-200";
       case "low":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-green-50 text-green-700 border-green-200";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-gray-50 text-gray-700 border-gray-200";
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="px-4 sm:px-6 lg:px-8">
+      {/* Clean Header */}
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="px-6 lg:px-12">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-6">
               <Link href="/dashboard">
                 <Button variant="ghost" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Dashboard
                 </Button>
               </Link>
-              <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Workspaces
+                Project Management
               </h1>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
+              <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                New Project
+              </Button>
+              
+              <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-medium">
                     {user?.username?.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {user?.username}
-                </span>
+                <Button variant="outline" size="sm" onClick={logout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
               </div>
-              
-              <Button variant="outline" size="sm" onClick={logout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Workspace Selection */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Windows and Doors
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Main workspace for project management
-                </p>
-              </div>
-            </div>
-            <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Project
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-6">
-        {/* Workspace Boards */}
-        <div className="space-y-6">
-          {/* Windows 2025 Board */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-                    <Activity className="h-4 w-4 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Windows Projects 2025
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Changed last week • {projects.length} items
-                    </p>
-                  </div>
+      <div className="px-6 lg:px-12 py-8">
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          <Card className="bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                  <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="text-xs">
-                    {dashboardStats.inProgress + dashboardStats.scheduled} Active
-                  </Badge>
-                  <Button variant="ghost" size="sm">
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">New Leads</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{dashboardStats.newLeads}</p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                  <Activity className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Projects</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{dashboardStats.inProgress + dashboardStats.scheduled}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl">
+                  <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Urgent Tasks</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{dashboardStats.urgentTasks}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+                  <DollarSign className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Revenue</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">${dashboardStats.totalRevenue.toLocaleString()}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Projects Board */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="p-8 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+                  <Building2 className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    Projects
+                  </h2>
+                  <p className="text-gray-500 dark:text-gray-400 mt-1">
+                    {projects.length} total projects
+                  </p>
+                </div>
+              </div>
+              <Badge variant="secondary" className="px-4 py-2 text-sm">
+                {dashboardStats.inProgress + dashboardStats.scheduled} Active
+              </Badge>
             </div>
-            
-            {/* Project Board Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Project
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Priority
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Assignee
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Customer
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Budget
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {projects.map((project) => (
-                    <tr key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 w-10 h-10">
-                            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                              <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              {project.title}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              Project #{project.id}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge className={getStatusColor(project.status)}>
-                          {project.status.replace('_', ' ')}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge variant="outline" className={getPriorityColor(project.priority)}>
-                          {project.priority}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                              {project.assignedTo ? String(project.assignedTo).charAt(0).toUpperCase() : 'U'}
-                            </span>
-                          </div>
-                          <span className="ml-2 text-sm text-gray-900 dark:text-white">
-                            {project.assignedTo || 'Unassigned'}
+          </div>
+          
+          {/* Project List */}
+          <div className="p-8">
+            <div className="space-y-6">
+              {projects.map((project) => (
+                <div key={project.id} className="flex items-center justify-between p-6 bg-gray-50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <div className="flex items-center space-x-6 flex-1">
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center">
+                      <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        {project.title}
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400 mt-1">
+                        Project #{project.id} • {project.serviceType}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-8">
+                    <div className="text-center">
+                      <Badge className={getStatusColor(project.status)}>
+                        {project.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    
+                    <div className="text-center min-w-[100px]">
+                      <Badge variant="outline" className={getPriorityColor(project.priority)}>
+                        {project.priority}
+                      </Badge>
+                    </div>
+                    
+                    <div className="text-center min-w-[120px]">
+                      <div className="flex items-center justify-center">
+                        <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center mr-3">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {project.assignedTo ? String(project.assignedTo).charAt(0).toUpperCase() : 'U'}
                           </span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {project.customerName || 'No customer'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <span className="text-sm text-gray-900 dark:text-white">
+                          {project.assignedTo || 'Unassigned'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="text-center min-w-[120px]">
+                      <span className="text-lg font-semibold text-gray-900 dark:text-white">
                         ${project.estimatedCost?.toLocaleString() || '0'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+        </div>
 
-          {/* Quick Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">New Leads</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats.newLeads}</p>
-                  </div>
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                    <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
+        {/* Additional Boards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+          <Card className="bg-white dark:bg-gray-800 shadow-sm">
+            <CardContent className="p-8">
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-white" />
                 </div>
-              </CardContent>
-            </Card>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Schedule</h3>
+                  <p className="text-gray-500 dark:text-gray-400">Installation calendar</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="text-gray-600 dark:text-gray-400">Today: 3 installations</div>
+                <div className="text-gray-600 dark:text-gray-400">This week: 12 jobs</div>
+                <div className="text-gray-600 dark:text-gray-400">Next week: 8 jobs</div>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Projects</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats.inProgress + dashboardStats.scheduled}</p>
-                  </div>
-                  <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                    <Activity className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  </div>
+          <Card className="bg-white dark:bg-gray-800 shadow-sm">
+            <CardContent className="p-8">
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center">
+                  <Users className="h-5 w-5 text-white" />
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Urgent Tasks</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats.urgentTasks}</p>
-                  </div>
-                  <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                    <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                  </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Team</h3>
+                  <p className="text-gray-500 dark:text-gray-400">Active crew members</p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">${dashboardStats.totalRevenue.toLocaleString()}</p>
-                  </div>
-                  <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                    <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Additional Workspace Boards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Inventory Board */}
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-6 h-6 bg-green-600 rounded flex items-center justify-center">
-                      <Briefcase className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Inventory</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Track window stock</p>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm">
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">V300 Series: 24 units</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">V400 Series: 18 units</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Hardware: 156 sets</div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Calendar Board */}
-            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center">
-                      <Calendar className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Schedule</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Installation calendar</p>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm">
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Today: 3 installations</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">This week: 12 jobs</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Next week: 8 jobs</div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+              <div className="space-y-4">
+                <div className="text-gray-600 dark:text-gray-400">Available: 5 installers</div>
+                <div className="text-gray-600 dark:text-gray-400">On job: 3 crews</div>
+                <div className="text-gray-600 dark:text-gray-400">Off duty: 2 members</div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -440,7 +356,7 @@ export default function ProjectPortfolioPage() {
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
           </DialogHeader>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Project Title</Label>
@@ -451,32 +367,17 @@ export default function ProjectPortfolioPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="customerName">Customer Name</Label>
-                <Input
-                  id="customerName"
-                  {...form.register("customerName")}
-                  placeholder="Enter customer name"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="customerEmail">Customer Email</Label>
-                <Input
-                  id="customerEmail"
-                  type="email"
-                  {...form.register("customerEmail")}
-                  placeholder="customer@example.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="customerPhone">Customer Phone</Label>
-                <Input
-                  id="customerPhone"
-                  {...form.register("customerPhone")}
-                  placeholder="(555) 123-4567"
-                />
+                <Label htmlFor="serviceType">Service Type</Label>
+                <Select onValueChange={(value) => form.setValue("serviceType", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select service" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="windows">Windows</SelectItem>
+                    <SelectItem value="doors">Doors</SelectItem>
+                    <SelectItem value="both">Windows & Doors</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -502,13 +403,8 @@ export default function ProjectPortfolioPage() {
                     <SelectItem value="need_attention">Need Attention</SelectItem>
                     <SelectItem value="sent_estimate">Sent Estimate</SelectItem>
                     <SelectItem value="signed">Signed</SelectItem>
-                    <SelectItem value="need_ordered">Need Ordered</SelectItem>
-                    <SelectItem value="ordered">Ordered</SelectItem>
-                    <SelectItem value="need_scheduled">Need Scheduled</SelectItem>
-                    <SelectItem value="scheduled">Scheduled</SelectItem>
                     <SelectItem value="in_progress">In Progress</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="follow_up">Follow Up</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -541,12 +437,12 @@ export default function ProjectPortfolioPage() {
 
             <div className="space-y-2">
               <Label htmlFor="assignedTo">Assign To</Label>
-              <Select onValueChange={(value) => form.setValue("assignedTo", parseInt(value))}>
+              <Select onValueChange={(value) => form.setValue("assignedTo", value ? parseInt(value) : undefined)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select employee" />
                 </SelectTrigger>
                 <SelectContent>
-                  {employees.map((employee: any) => (
+                  {(employees as any[]).map((employee) => (
                     <SelectItem key={employee.id} value={employee.id.toString()}>
                       {employee.username}
                     </SelectItem>
@@ -555,7 +451,7 @@ export default function ProjectPortfolioPage() {
               </Select>
             </div>
 
-            <div className="flex justify-end space-x-2 pt-4">
+            <div className="flex justify-end space-x-4 pt-6">
               <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
