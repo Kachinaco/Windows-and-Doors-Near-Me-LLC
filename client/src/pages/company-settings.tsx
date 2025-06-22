@@ -175,7 +175,7 @@ export default function CompanySettingsPage() {
                     <p className="text-sm text-gray-600">Automatically log calls and texts from OpenPhone</p>
                   </div>
                   <Switch
-                    checked={isEditing ? formData.enableOpenphoneSync : settings?.enableOpenphoneSync}
+                    checked={isEditing ? (formData.enableOpenphoneSync || false) : (settings?.enableOpenphoneSync || false)}
                     onCheckedChange={(checked) => 
                       isEditing && setFormData(prev => ({ ...prev, enableOpenphoneSync: checked }))
                     }
@@ -193,7 +193,7 @@ export default function CompanySettingsPage() {
                     </Label>
                     <Input
                       type="password"
-                      value={isEditing ? formData.openphoneApiKey : "••••••••••••••••"}
+                      value={isEditing ? (formData.openphoneApiKey || '') : "••••••••••••••••"}
                       onChange={(e) => isEditing && setFormData(prev => ({ ...prev, openphoneApiKey: e.target.value }))}
                       placeholder="Enter your OpenPhone API key"
                       disabled={!isEditing}
@@ -209,7 +209,7 @@ export default function CompanySettingsPage() {
                       <span>Webhook URL</span>
                     </Label>
                     <Input
-                      value={isEditing ? formData.openphoneWebhookUrl : settings?.openphoneWebhookUrl || ""}
+                      value={isEditing ? (formData.openphoneWebhookUrl || '') : (settings?.openphoneWebhookUrl || "")}
                       onChange={(e) => isEditing && setFormData(prev => ({ ...prev, openphoneWebhookUrl: e.target.value }))}
                       placeholder="https://yourapp.com/api/openphone/webhook"
                       disabled={!isEditing}
@@ -263,7 +263,7 @@ export default function CompanySettingsPage() {
                     <p className="text-sm text-gray-600">Automatically log emails sent to and from leads</p>
                   </div>
                   <Switch
-                    checked={isEditing ? formData.enableGmailSync : settings?.enableGmailSync}
+                    checked={isEditing ? (formData.enableGmailSync || false) : (settings?.enableGmailSync || false)}
                     onCheckedChange={(checked) => 
                       isEditing && setFormData(prev => ({ ...prev, enableGmailSync: checked }))
                     }
