@@ -268,6 +268,15 @@ export default function LeadDetail() {
               <CardContent className="space-y-6">
                 <div>
                   <Label className="text-sm font-medium text-gray-600 block mb-2">
+                    Customer Name
+                  </Label>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <span className="text-gray-900 font-medium">{lead.firstName} {lead.lastName}</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium text-gray-600 block mb-2">
                     Email address
                   </Label>
                   {isEditing ? (
@@ -278,7 +287,7 @@ export default function LeadDetail() {
                       className="w-full"
                       placeholder="Enter email address"
                     />
-                  ) : (
+                  ) : lead.email ? (
                     <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
                       <span className="text-gray-900">{lead.email}</span>
                       <Button
@@ -289,6 +298,10 @@ export default function LeadDetail() {
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <span className="text-gray-500 italic">No email provided</span>
                     </div>
                   )}
                 </div>
@@ -305,7 +318,7 @@ export default function LeadDetail() {
                       className="w-full"
                       placeholder="Enter phone number"
                     />
-                  ) : (
+                  ) : lead.phone ? (
                     <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
                       <span className="text-gray-900">{lead.phone}</span>
                       <Button
@@ -316,6 +329,10 @@ export default function LeadDetail() {
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <span className="text-gray-500 italic">No phone number provided</span>
                     </div>
                   )}
                 </div>
