@@ -21,8 +21,10 @@ import {
   AlertCircle,
   Building2,
   MapPin,
-  Globe
+  Globe,
+  ArrowLeft
 } from "lucide-react";
+import { useLocation } from "wouter";
 import type { CompanySettings } from "@shared/schema";
 
 export default function CompanySettingsPage() {
@@ -30,6 +32,7 @@ export default function CompanySettingsPage() {
   const [formData, setFormData] = useState<any>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   const { data: settings, isLoading } = useQuery<CompanySettings>({
     queryKey: ["/api/company-settings"],
@@ -80,7 +83,25 @@ export default function CompanySettingsPage() {
 
   const handleEdit = () => {
     setIsEditing(true);
-    setFormData(settings || {});
+    // Initialize form data with current settings
+    setFormData({
+      companyName: settings?.companyName || '',
+      businessAddress: settings?.businessAddress || '',
+      businessWebsite: settings?.businessWebsite || '',
+      licenseNumber: settings?.licenseNumber || '',
+      openphoneApiKey: settings?.openphoneApiKey || '',
+      businessPhoneNumber: settings?.businessPhoneNumber || '',
+      openphoneWebhookUrl: settings?.openphoneWebhookUrl || '',
+      gmailClientId: settings?.gmailClientId || '',
+      gmailClientSecret: settings?.gmailClientSecret || '',
+      gmailRefreshToken: settings?.gmailRefreshToken || '',
+      stripeApiKey: settings?.stripeApiKey || '',
+      sendgridApiKey: settings?.sendgridApiKey || '',
+      twilioAccountSid: settings?.twilioAccountSid || '',
+      twilioAuthToken: settings?.twilioAuthToken || '',
+      enableOpenphoneSync: settings?.enableOpenphoneSync || false,
+      enableGmailSync: settings?.enableGmailSync || false,
+    });
   };
 
   const handleCancel = () => {
@@ -108,6 +129,18 @@ export default function CompanySettingsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
+        {/* Back Button */}
+        <div className="mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => setLocation("/settings")}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Settings</span>
+          </Button>
+        </div>
+        
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Settings className="w-8 h-8 text-blue-600" />
@@ -155,7 +188,7 @@ export default function CompanySettingsPage() {
               <div>
                 <Label>Company Name</Label>
                 <Input
-                  value={isEditing ? (formData.companyName || '') : "Windows & Doors Near Me LLC"}
+                  value={isEditing ? (formData.companyName || '') : (settings?.companyName || "Windows & Doors Near Me LLC")}
                   onChange={(e) => isEditing && setFormData(prev => ({ ...prev, companyName: e.target.value }))}
                   placeholder="Your Company Name"
                   disabled={!isEditing}
@@ -164,7 +197,7 @@ export default function CompanySettingsPage() {
               <div>
                 <Label>Business Address</Label>
                 <Input
-                  value={isEditing ? (formData.businessAddress || '') : ""}
+                  value={isEditing ? (formData.businessAddress || '') : (settings?.businessAddress || "")}
                   onChange={(e) => isEditing && setFormData(prev => ({ ...prev, businessAddress: e.target.value }))}
                   placeholder="Gilbert, AZ"
                   disabled={!isEditing}
