@@ -37,7 +37,7 @@ export default function LeadDetail() {
   const queryClient = useQueryClient();
   const leadId = params?.id ? parseInt(params.id) : null;
 
-  const { data: lead, isLoading } = useQuery<Lead>({
+  const { data: lead, isLoading, refetch } = useQuery<Lead>({
     queryKey: ["/api/leads", leadId],
     enabled: !!leadId,
   });
@@ -47,16 +47,13 @@ export default function LeadDetail() {
       const response = await apiRequest("PUT", `/api/leads/${leadId}`, updates);
       return await response.json();
     },
-    onSuccess: (updatedLead) => {
-      // Force a complete refetch instead of trying to update cache
-      queryClient.invalidateQueries({ queryKey: ["/api/leads", leadId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/leads"] });
+    onSuccess: async (updatedLead) => {
+      // Force immediate refetch of the current lead data
+      await refetch();
       
-      // Small delay to ensure the invalidation takes effect
-      setTimeout(() => {
-        setIsEditing(false);
-        setEditedLead({});
-      }, 100);
+      // Exit edit mode
+      setIsEditing(false);
+      setEditedLead({});
       
       toast({
         title: "Success",
@@ -73,30 +70,18 @@ export default function LeadDetail() {
   });
 
   const handleEdit = () => {
-    setIsEditing(true);
+    if (!lead) return;
+    
     setEditedLead({
-      email: lead?.email || "",
-      phone: lead?.phone || "",
-      address: lead?.address || "",
-      notes: lead?.notes || "",
-      status: lead?.status || "new",
-      source: lead?.source || "google",
+      email: lead.email || "",
+      phone: lead.phone || "",
+      address: lead.address || "",
+      notes: lead.notes || "",
+      status: lead.status || "new",
+      source: lead.source || "google",
     });
+    setIsEditing(true);
   };
-
-  // Initialize edited lead when lead data changes
-  useEffect(() => {
-    if (lead && isEditing) {
-      setEditedLead({
-        email: lead.email || "",
-        phone: lead.phone || "",
-        address: lead.address || "",
-        notes: lead.notes || "",
-        status: lead.status || "new",
-        source: lead.source || "google",
-      });
-    }
-  }, [lead, isEditing]);
 
   const handleSave = () => {
     console.log("Save button clicked");
@@ -288,7 +273,7 @@ export default function LeadDetail() {
                   {isEditing ? (
                     <Input
                       type="email"
-                      value={editedLead.email !== undefined ? String(editedLead.email || "") : String(lead?.email || "")}
+                      value={editedLead.email || ""}
                       onChange={(e) => setEditedLead(prev => ({ ...prev, email: e.target.value }))}
                       className="w-full"
                       placeholder="Enter email address"
@@ -315,7 +300,7 @@ export default function LeadDetail() {
                   {isEditing ? (
                     <Input
                       type="tel"
-                      value={editedLead.phone !== undefined ? String(editedLead.phone || "") : String(lead?.phone || "")}
+                      value={editedLead.phone || ""}
                       onChange={(e) => setEditedLead(prev => ({ ...prev, phone: e.target.value }))}
                       className="w-full"
                       placeholder="Enter phone number"
@@ -342,7 +327,7 @@ export default function LeadDetail() {
                   {isEditing ? (
                     <Input
                       type="text"
-                      value={editedLead.address !== undefined ? String(editedLead.address || "") : String(lead?.address || "")}
+                      value={editedLead.address || ""}
                       onChange={(e) => setEditedLead(prev => ({ ...prev, address: e.target.value }))}
                       className="w-full"
                       placeholder="Enter address"
@@ -372,7 +357,7 @@ export default function LeadDetail() {
                   </Label>
                   {isEditing ? (
                     <Textarea
-                      value={editedLead.notes !== undefined ? String(editedLead.notes || "") : String(lead?.notes || "")}
+                      value={editedLead.notes || ""}
                       onChange={(e) => setEditedLead(prev => ({ ...prev, notes: e.target.value }))}
                       className="w-full"
                       placeholder="Enter notes"
