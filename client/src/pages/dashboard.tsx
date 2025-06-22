@@ -496,6 +496,127 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Mobile-Only Notifications Section - Only for Contractors */}
+        {effectiveUser?.role !== 'customer' && (
+          <div className="lg:hidden mb-6 space-y-4">
+            {/* Task Notification */}
+            <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-purple-500 rounded-xl">
+                      <CheckCircle className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">
+                        3 tasks are waiting for you in Quick Tasks
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="ghost" size="sm" className="text-purple-600 dark:text-purple-400 h-9 min-w-[60px]">
+                      Open
+                    </Button>
+                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Lead Notification */}
+            <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-yellow-500 rounded-xl">
+                      <Bell className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">
+                        2 new leads need your attention
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        From website contact form
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="ghost" size="sm" className="text-yellow-600 dark:text-yellow-400 h-9 min-w-[60px]">
+                      View
+                    </Button>
+                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Project Pipeline Status - Only for Contractors */}
+        {effectiveUser?.role !== 'customer' && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Project Pipeline</h2>
+              <Link href="/projects">
+                <Button variant="outline" size="sm">
+                  View All
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+              {/* New Leads */}
+              <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                <CardContent className="p-3 text-center">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">12</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">New Leads</div>
+                </CardContent>
+              </Card>
+
+              {/* Need Attention */}
+              <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+                <CardContent className="p-3 text-center">
+                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">5</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Need Attention</div>
+                </CardContent>
+              </Card>
+
+              {/* Sent Estimate */}
+              <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800">
+                <CardContent className="p-3 text-center">
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">8</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Sent Estimate</div>
+                </CardContent>
+              </Card>
+
+              {/* Signed */}
+              <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+                <CardContent className="p-3 text-center">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">3</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Signed</div>
+                </CardContent>
+              </Card>
+
+              {/* In Progress */}
+              <Card className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
+                <CardContent className="p-3 text-center">
+                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">7</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">In Progress</div>
+                </CardContent>
+              </Card>
+
+              {/* Complete */}
+              <Card className="bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800">
+                <CardContent className="p-3 text-center">
+                  <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">15</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Complete</div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
         {/* Company Activity Feed - Only for Contractors */}
         {effectiveUser?.role !== 'customer' && (
           <div className="space-y-6">
