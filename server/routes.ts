@@ -1150,9 +1150,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         leadId,
         type: 'text',
         direction: 'outbound',
-        contactInfo: phoneNumber,
         content: message,
-        metadata: { fromNumber, sentVia: 'OpenPhone' }
+        metadata: { fromNumber, sentVia: 'OpenPhone', phoneNumber }
       });
 
       res.json({ success: true, message: "Text message logged successfully" });
@@ -1171,9 +1170,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         leadId,
         type: 'call',
         direction: 'outbound',
-        contactInfo: phoneNumber,
         content: notes,
-        metadata: { fromNumber, madeVia: 'OpenPhone' }
+        metadata: { fromNumber, madeVia: 'OpenPhone', phoneNumber }
       });
 
       res.json({ success: true, message: "Call logged successfully" });
