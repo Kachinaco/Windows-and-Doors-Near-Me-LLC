@@ -6,26 +6,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft, 
   Phone, 
   Mail, 
   FileText, 
-  ExternalLink, 
   Copy, 
   MoreVertical,
   User,
-  Building,
   FolderOpen,
-  Plus
+  Plus,
+  Edit3,
+  Save,
+  X
 } from "lucide-react";
 import type { Lead } from "@shared/schema";
 
 export default function LeadDetail() {
   const [, params] = useRoute("/leads/:id");
   const [, setLocation] = useLocation();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedLead, setEditedLead] = useState<Partial<Lead>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const leadId = params?.id ? parseInt(params.id) : null;
@@ -34,6 +40,48 @@ export default function LeadDetail() {
     queryKey: ["/api/leads", leadId],
     enabled: !!leadId,
   });
+
+  const updateLeadMutation = useMutation({
+    mutationFn: async (updates: Partial<Lead>) => {
+      return apiRequest("PUT", `/api/leads/${leadId}`, updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/leads", leadId] });
+      setIsEditing(false);
+      setEditedLead({});
+      toast({
+        title: "Success",
+        description: "Lead updated successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditedLead({
+      email: lead?.email || "",
+      phone: lead?.phone || "",
+      address: lead?.address || "",
+      notes: lead?.notes || "",
+      status: lead?.status || "",
+    });
+  };
+
+  const handleSave = () => {
+    updateLeadMutation.mutate(editedLead);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditedLead({});
+  };
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
@@ -127,8 +175,8 @@ export default function LeadDetail() {
             variant="ghost"
             className="flex flex-col items-center space-y-2 h-auto py-4 text-blue-600 hover:bg-blue-50"
           >
-            <ExternalLink className="w-6 h-6" />
-            <span className="text-sm font-medium">Pay link</span>
+            <FileText className="w-6 h-6" />
+            <span className="text-sm font-medium">New file</span>
           </Button>
         </div>
       </div>
@@ -146,44 +194,96 @@ export default function LeadDetail() {
             {/* Contact Info */}
             <Card>
               <CardHeader className="pb-4">
-                <CardTitle className="flex items-center space-x-2 text-lg">
-                  <User className="w-5 h-5" />
-                  <span>Contact info</span>
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center space-x-2 text-lg">
+                    <User className="w-5 h-5" />
+                    <span>Contact info</span>
+                  </CardTitle>
+                  {!isEditing ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleEdit}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <Edit3 className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCancel}
+                        className="text-gray-600 hover:text-gray-800"
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleSave}
+                        disabled={updateLeadMutation.isPending}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Save className="w-4 h-4 mr-1" />
+                        Save
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-2">
+                  <Label className="text-sm font-medium text-gray-600 block mb-2">
                     Email address
-                  </label>
-                  <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                    <span className="text-gray-900">{lead.email}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard(lead.email || "", "Email address")}
-                      className="text-gray-600 hover:text-gray-900"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  </Label>
+                  {isEditing ? (
+                    <Input
+                      type="email"
+                      value={editedLead.email || ""}
+                      onChange={(e) => setEditedLead(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                      <span className="text-gray-900">{lead.email}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyToClipboard(lead.email || "", "Email address")}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600 block mb-2">
+                  <Label className="text-sm font-medium text-gray-600 block mb-2">
                     Phone number
-                  </label>
-                  <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                    <span className="text-gray-900">{lead.phone}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard(lead.phone || "", "Phone number")}
-                      className="text-gray-600 hover:text-gray-900"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  </Label>
+                  {isEditing ? (
+                    <Input
+                      type="tel"
+                      value={editedLead.phone || ""}
+                      onChange={(e) => setEditedLead(prev => ({ ...prev, phone: e.target.value }))}
+                      className="w-full"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                      <span className="text-gray-900">{lead.phone}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copyToClipboard(lead.phone || "", "Phone number")}
+                        className="text-gray-600 hover:text-gray-900"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {lead.address && (
