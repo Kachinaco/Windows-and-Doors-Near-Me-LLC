@@ -208,6 +208,7 @@ Changelog:
 - June 22, 2025. Separated "Manage Leads & Forms" into distinct buttons: created separate "Manage Leads" (orange) and "Forms" (green) buttons, plus added new "Payroll" button (cyan) with comprehensive employee payment management interface
 - June 22, 2025. Restored full company settings for contractors: fixed settings page to show simple profile settings for customers while giving contractors access to complete company management including API integrations (OpenPhone, Gmail, Stripe, SendGrid, Twilio), business information, and connection testing tools
 - June 22, 2025. Completely redesigned project management dashboard: replaced complex Monday.com-inspired workspace layout with streamlined, optimized interface featuring compact stats cards, efficient search/filtering, loading states with skeleton animations, memoized callbacks for performance, and cleaner project cards with better visual hierarchy and responsiveness
+- June 22, 2025. Transformed project management into folder-based system: implemented Monday.com-style interface where projects are organized in status folders that open into individual project dashboards with task tables, team assignments, contact information, and detailed project management views matching user's attached screenshots
 
 ## User Preferences
 
