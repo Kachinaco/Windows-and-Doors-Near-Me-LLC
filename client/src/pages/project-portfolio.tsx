@@ -4,7 +4,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,33 +11,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertProjectSchema, type InsertProject, type Project, type User } from "@shared/schema";
+import { insertProjectSchema, type InsertProject, type Project } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  PlusCircle, 
+  ArrowLeft,
   Building2, 
   Users, 
   LogOut,
-  User as UserIcon,
-  Settings,
-  ArrowLeft,
-  Phone,
-  MapPin,
-  Calendar,
-  Clock,
+  Plus,
+  Target,
+  Activity,
+  AlertTriangle,
   DollarSign,
   CheckCircle,
-  AlertTriangle,
-  Play,
-  TrendingUp,
-  Activity,
-  Briefcase,
-  Target,
-  ArrowRight,
-  Plus,
   MessageSquare,
-  FileText
+  Briefcase,
+  Calendar,
+  ArrowRight,
+  TrendingUp
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -52,81 +43,52 @@ export default function ProjectPortfolioPage() {
     queryKey: ["/api/projects"],
   });
 
-  const { data: employees = [] } = useQuery<User[]>({
+  const { data: employees = [] } = useQuery({
     queryKey: ["/api/employees"],
-    enabled: user?.role === 'admin' || user?.role === 'contractor_paid',
   });
 
-  const { data: leads = [] } = useQuery({
-    queryKey: ["/api/leads"],
-    enabled: user?.role === 'admin' || user?.role === 'employee' || user?.role === 'contractor_paid',
-  });
-
-  // Calculate dashboard statistics
   const dashboardStats = useMemo(() => {
-    const totalProjects = projects.length;
-    const newLeads = projects.filter(p => p.status === 'pending' || p.status === 'new_lead').length;
-    const needAttention = projects.filter(p => p.status === 'need_attention').length;
-    const sentEstimate = projects.filter(p => p.status === 'sent_estimate' || p.status === 'quoted').length;
-    const signed = projects.filter(p => p.status === 'signed' || p.status === 'contracted').length;
-    const needOrdered = projects.filter(p => p.status === 'need_ordered').length;
-    const ordered = projects.filter(p => p.status === 'ordered').length;
-    const needScheduled = projects.filter(p => p.status === 'need_scheduled').length;
-    const scheduled = projects.filter(p => p.status === 'scheduled').length;
-    const inProgress = projects.filter(p => p.status === 'in_progress').length;
-    const completed = projects.filter(p => p.status === 'completed').length;
-    const followUp = projects.filter(p => p.status === 'follow_up').length;
-    
-    const totalRevenue = projects
-      .filter(p => p.status === 'completed')
-      .reduce((sum, p) => {
-        const cost = parseFloat(p.estimatedCost?.replace(/[^0-9.]/g, '') || '0');
-        return sum + cost;
-      }, 0);
-
-    const recentProjects = projects
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-      .slice(0, 5);
-
-    const urgentTasks = projects.filter(p => p.priority === 'high' || p.priority === 'urgent').length;
-
-    return {
-      totalProjects,
-      newLeads,
-      needAttention,
-      sentEstimate,
-      signed,
-      needOrdered,
-      ordered,
-      needScheduled,
-      scheduled,
-      inProgress,
-      completed,
-      followUp,
-      totalRevenue,
-      recentProjects,
-      urgentTasks
+    const stats = {
+      totalProjects: projects.length,
+      newLeads: projects.filter(p => p.status === "new_lead").length,
+      needAttention: projects.filter(p => p.status === "need_attention").length,
+      sentEstimate: projects.filter(p => p.status === "sent_estimate").length,
+      signed: projects.filter(p => p.status === "signed").length,
+      needOrdered: projects.filter(p => p.status === "need_ordered").length,
+      ordered: projects.filter(p => p.status === "ordered").length,
+      needScheduled: projects.filter(p => p.status === "need_scheduled").length,
+      scheduled: projects.filter(p => p.status === "scheduled").length,
+      inProgress: projects.filter(p => p.status === "in_progress").length,
+      completed: projects.filter(p => p.status === "completed").length,
+      followUp: projects.filter(p => p.status === "follow_up").length,
+      totalRevenue: projects.reduce((sum, p) => sum + (p.estimatedCost || 0), 0),
+      activeProjects: projects.filter(p => ["in_progress", "scheduled", "signed"].includes(p.status)).length,
+      urgentTasks: projects.filter(p => p.priority === "urgent").length,
     };
+    return stats;
   }, [projects]);
 
   const form = useForm<InsertProject>({
     resolver: zodResolver(insertProjectSchema),
     defaultValues: {
       title: "",
-      serviceType: "",
-      email: "",
-      phone: "",
-      address: "",
-      assignedTo: null,
+      description: "",
+      status: "new_lead",
       priority: "medium",
-      status: "scheduled",
-      clientId: null,
+      assignedTo: "",
+      customerName: "",
+      customerEmail: "",
+      customerPhone: "",
+      estimatedCost: 0,
     },
   });
 
   const createProjectMutation = useMutation({
     mutationFn: async (data: InsertProject) => {
       const response = await apiRequest("POST", "/api/projects", data);
+      if (!response.ok) {
+        throw new Error(`Failed to create project: ${response.statusText}`);
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -184,34 +146,32 @@ export default function ProjectPortfolioPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="h-9 min-w-[140px]">
+                <Button variant="ghost" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Dashboard
+                  Dashboard
                 </Button>
               </Link>
-              <Building2 className="h-8 w-8 text-blue-600" />
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Good morning, {user?.username}
-                </h1>
-                <p className="text-sm text-gray-500">Windows & Doors Near Me LLC</p>
-              </div>
+              <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Workspaces
+              </h1>
             </div>
             
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <UserIcon className="h-5 w-5 text-gray-400" />
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-medium">
+                    {user?.username?.charAt(0).toUpperCase()}
+                  </span>
+                </div>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {user?.username}
                 </span>
-                <Badge variant="outline" className="text-xs">
-                  {user?.role}
-                </Badge>
               </div>
               
               <Button variant="outline" size="sm" onClick={logout}>
@@ -223,590 +183,389 @@ export default function ProjectPortfolioPage() {
         </div>
       </header>
 
-      {/* Dashboard Overview */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">New leads</p>
-                  <p className="text-3xl font-bold text-gray-900">{dashboardStats.newLeads}</p>
-                </div>
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <Target className="h-6 w-6 text-blue-600" />
-                </div>
+      {/* Workspace Selection */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Building2 className="h-6 w-6 text-white" />
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Unread messages</p>
-                  <p className="text-3xl font-bold text-gray-900">6</p>
-                </div>
-                <div className="p-3 bg-orange-100 rounded-lg">
-                  <MessageSquare className="h-6 w-6 text-orange-600" />
-                </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Windows and Doors
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Main workspace for project management
+                </p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Tasks</p>
-                  <p className="text-3xl font-bold text-gray-900">{dashboardStats.urgentTasks}</p>
-                </div>
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">2025 Revenue</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    ${dashboardStats.totalRevenue.toLocaleString()}
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+            <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Project
+            </Button>
+          </div>
         </div>
+      </div>
 
-        {/* Action Cards and Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          {/* Create Actions */}
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Create</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-start p-3 h-auto">
-                    <Plus className="h-4 w-4 mr-3 text-blue-600" />
-                    <span>New project</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Create New Project</DialogTitle>
-                  </DialogHeader>
-                  
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="title">Project Title</Label>
-                        <Input
-                          id="title"
-                          {...form.register("title")}
-                          placeholder="Window Installation Project"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="serviceType">Service Type</Label>
-                        <Select 
-                          value={form.watch("serviceType")} 
-                          onValueChange={(value) => form.setValue("serviceType", value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select service type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Window Installation">Window Installation</SelectItem>
-                            <SelectItem value="Door Installation">Door Installation</SelectItem>
-                            <SelectItem value="Window Replacement">Window Replacement</SelectItem>
-                            <SelectItem value="Door Replacement">Door Replacement</SelectItem>
-                            <SelectItem value="Home Improvement">Home Improvement</SelectItem>
-                            <SelectItem value="Repair Service">Repair Service</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          {...form.register("email")}
-                          placeholder="customer@example.com"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Phone</Label>
-                        <Input
-                          id="phone"
-                          {...form.register("phone")}
-                          placeholder="(555) 123-4567"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="address">Address</Label>
-                      <Input
-                        id="address"
-                        {...form.register("address")}
-                        placeholder="123 Main St, Gilbert, AZ 85234"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="estimatedCost">Estimated Cost</Label>
-                        <Input
-                          id="estimatedCost"
-                          {...form.register("estimatedCost")}
-                          placeholder="$5,000"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="priority">Priority</Label>
-                        <Select 
-                          value={form.watch("priority")} 
-                          onValueChange={(value) => form.setValue("priority", value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="low">Low</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="urgent">Urgent</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="notes">Notes</Label>
-                      <Textarea
-                        id="notes"
-                        {...form.register("notes")}
-                        placeholder="Additional project details..."
-                        rows={3}
-                      />
-                    </div>
-
-                    <div className="flex justify-end space-x-2 pt-4">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => setIsCreateDialogOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        type="submit" 
-                        disabled={createProjectMutation.isPending}
-                      >
-                        {createProjectMutation.isPending ? "Creating..." : "Create Project"}
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-
-              <Link href="/leads">
-                <Button variant="ghost" className="w-full justify-start p-3 h-auto">
-                  <Plus className="h-4 w-4 mr-3 text-green-600" />
-                  <span>New contact</span>
-                </Button>
-              </Link>
-
-              <Button variant="ghost" className="w-full justify-start p-3 h-auto">
-                <Plus className="h-4 w-4 mr-3 text-purple-600" />
-                <span>New invoice</span>
-              </Button>
-
-              <Button variant="ghost" className="w-full justify-start p-3 h-auto">
-                <Plus className="h-4 w-4 mr-3 text-orange-600" />
-                <span>New contract</span>
-              </Button>
-
-              <Button variant="ghost" className="w-full justify-start p-3 h-auto">
-                <Plus className="h-4 w-4 mr-3 text-red-600" />
-                <span>New meeting</span>
-              </Button>
-
-              <Button variant="ghost" className="w-full justify-start p-3 h-auto">
-                <Plus className="h-4 w-4 mr-3 text-indigo-600" />
-                <span>New lead form</span>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* New Leads Only */}
-          <Card className="bg-white">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg font-semibold">New Leads ({dashboardStats.newLeads})</CardTitle>
-              <Link href="/projects?stage=new_leads">
-                <Button variant="ghost" size="sm">
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {projects
-                .filter(p => p.status === 'pending' || p.status === 'new_lead')
-                .slice(0, 4)
-                .map((project) => (
-                <div key={project.id} className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <Link href={`/projects/${project.id}`}>
-                      <p className="font-medium text-sm text-blue-600 hover:text-blue-800 cursor-pointer">{project.title}</p>
-                    </Link>
-                    <p className="text-xs text-gray-500">{project.serviceType}</p>
+      {/* Main Content */}
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-6">
+        {/* Workspace Boards */}
+        <div className="space-y-6">
+          {/* Windows 2025 Board */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
+                    <Activity className="h-4 w-4 text-white" />
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-400">
-                      {new Date(project.updatedAt).toLocaleDateString()}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Windows Projects 2025
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Changed last week • {projects.length} items
                     </p>
                   </div>
                 </div>
-              ))}
-              {projects.filter(p => p.status === 'pending' || p.status === 'new_lead').length === 0 && (
-                <div className="text-center py-4">
-                  <p className="text-sm text-gray-500">No new leads at this time</p>
-                </div>
-              )}
-              <Link href="/projects?stage=new_leads">
-                <Button variant="ghost" size="sm" className="w-full mt-4">
-                  View All New Leads <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          {/* Calendar/Schedule */}
-          <Card className="bg-white">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Calendar</CardTitle>
-              <Button variant="ghost" size="sm">
-                <Plus className="h-4 w-4" />
-                Meeting
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="text-center">
-                    <div className="text-xs font-medium text-gray-500">JUN</div>
-                    <div className="text-lg font-bold">21</div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Project kickoff</p>
-                    <p className="text-xs text-gray-500">10:00 AM</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="text-center">
-                    <div className="text-xs font-medium text-gray-500">JUL</div>
-                    <div className="text-lg font-bold">20</div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Site visit</p>
-                    <p className="text-xs text-gray-500">2:00 PM</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="text-center">
-                    <div className="text-xs font-medium text-gray-500">AUG</div>
-                    <div className="text-lg font-bold">10</div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Installation</p>
-                    <p className="text-xs text-gray-500">9:00 AM</p>
-                  </div>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline" className="text-xs">
+                    {dashboardStats.inProgress + dashboardStats.scheduled} Active
+                  </Badge>
+                  <Button variant="ghost" size="sm">
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-
-              <Link href="/scheduling">
-                <Button variant="ghost" size="sm" className="w-full mt-4">
-                  Go to calendar <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Project Pipeline */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <Link href="/pipeline">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white hover:text-blue-600 cursor-pointer transition-colors">
-                Project Pipeline
-              </h2>
-            </Link>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-500">Total Pipeline Value: ${dashboardStats.totalRevenue.toLocaleString()}</span>
             </div>
-          </div>
-
-          <div className="relative">
-            {/* First Row - Initial Pipeline Stages */}
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-4">
-              <Card 
-                className="bg-blue-50 border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects-list?stage=new_leads', '_blank')}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-medium text-blue-700 flex items-center gap-1">
-                    <Target className="h-3 w-3" />
-                    New Leads
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-2xl font-bold text-blue-900">{dashboardStats.newLeads}</div>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="bg-red-50 border-red-200 hover:bg-red-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects-list?stage=need_attention', '_blank')}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-medium text-red-700 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    Need Attention
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-2xl font-bold text-red-900">{dashboardStats.needAttention}</div>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="bg-yellow-50 border-yellow-200 hover:bg-yellow-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects-list?stage=sent_estimate', '_blank')}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-medium text-yellow-700 flex items-center gap-1">
-                    <FileText className="h-3 w-3" />
-                    Sent Estimate
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-2xl font-bold text-yellow-900">{dashboardStats.sentEstimate}</div>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="bg-emerald-50 border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects-list?stage=signed', '_blank')}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-medium text-emerald-700 flex items-center gap-1">
-                    <CheckCircle className="h-3 w-3" />
-                    Signed
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-2xl font-bold text-emerald-900">{dashboardStats.signed}</div>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="bg-indigo-50 border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects-list?stage=need_ordered', '_blank')}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-medium text-indigo-700 flex items-center gap-1">
-                    <Plus className="h-3 w-3" />
-                    Need Ordered
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-2xl font-bold text-indigo-900">{dashboardStats.needOrdered}</div>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="bg-cyan-50 border-cyan-200 hover:bg-cyan-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects-list?stage=ordered', '_blank')}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-medium text-cyan-700 flex items-center gap-1">
-                    <Briefcase className="h-3 w-3" />
-                    Ordered
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-2xl font-bold text-cyan-900">{dashboardStats.ordered}</div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Second Row - Completion Pipeline Stages */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-8">
-              <Card 
-                className="bg-pink-50 border-pink-200 hover:bg-pink-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects-list?stage=need_scheduled', '_blank')}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-medium text-pink-700 flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    Need Scheduled
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-2xl font-bold text-pink-900">{dashboardStats.needScheduled}</div>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="bg-purple-50 border-purple-200 hover:bg-purple-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects-list?stage=scheduled', '_blank')}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-medium text-purple-700 flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    Scheduled
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-2xl font-bold text-purple-900">{dashboardStats.scheduled}</div>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="bg-orange-50 border-orange-200 hover:bg-orange-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects-list?stage=in_progress', '_blank')}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-medium text-orange-700 flex items-center gap-1">
-                    <Activity className="h-3 w-3" />
-                    In Progress
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-2xl font-bold text-orange-900">{dashboardStats.inProgress}</div>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="bg-green-50 border-green-200 hover:bg-green-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects-list?stage=completed', '_blank')}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-medium text-green-700 flex items-center gap-1">
-                    <CheckCircle className="h-3 w-3" />
-                    Complete
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-2xl font-bold text-green-900">{dashboardStats.completed}</div>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="bg-slate-50 border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer"
-                onClick={() => window.open('/projects-list?stage=follow_up', '_blank')}
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-medium text-slate-700 flex items-center gap-1">
-                    <MessageSquare className="h-3 w-3" />
-                    Follow Up
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-2xl font-bold text-slate-900">{dashboardStats.followUp}</div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-
-        {/* Projects Section */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Recent Projects</h2>
-            <Link href="/projects-list">
-              <Button>
-                View All Projects <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50 dark:bg-gray-800">
-                      <TableHead className="font-semibold">Project</TableHead>
-                      <TableHead className="font-semibold">Customer</TableHead>
-                      <TableHead className="font-semibold">Status</TableHead>
-                      <TableHead className="font-semibold">Priority</TableHead>
-                      <TableHead className="font-semibold">Cost</TableHead>
-                      <TableHead className="font-semibold">Updated</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {dashboardStats.recentProjects.map((project) => (
-                      <TableRow key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <TableCell className="font-medium">
-                          <Link href={`/projects/${project.id}`}>
-                            <div className="font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">
-                              {project.title}
-                            </div>
-                          </Link>
-                          <div className="text-sm text-gray-500">{project.serviceType}</div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <div>
-                              <div className="text-sm font-medium">{project.email}</div>
-                              <div className="text-sm text-gray-500">{project.phone}</div>
+            
+            {/* Project Board Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Project
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Priority
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Assignee
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Customer
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Budget
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {projects.map((project) => (
+                    <tr key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 w-10 h-10">
+                            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                              <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                             </div>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={getStatusColor(project.status)}>
-                            {project.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={getPriorityColor(project.priority)}>
-                            {project.priority}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {project.estimatedCost}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-500">
-                          {new Date(project.updatedAt).toLocaleDateString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {project.title}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              Project #{project.id}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Badge className={getStatusColor(project.status)}>
+                          {project.status.replace('_', ' ')}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Badge variant="outline" className={getPriorityColor(project.priority)}>
+                          {project.priority}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                              {project.assignedTo ? String(project.assignedTo).charAt(0).toUpperCase() : 'U'}
+                            </span>
+                          </div>
+                          <span className="ml-2 text-sm text-gray-900 dark:text-white">
+                            {project.assignedTo || 'Unassigned'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {project.customerName || 'No customer'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        ${project.estimatedCost?.toLocaleString() || '0'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Quick Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">New Leads</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats.newLeads}</p>
+                  </div>
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                    <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Projects</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats.inProgress + dashboardStats.scheduled}</p>
+                  </div>
+                  <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                    <Activity className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Urgent Tasks</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats.urgentTasks}</p>
+                  </div>
+                  <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                    <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Revenue</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">${dashboardStats.totalRevenue.toLocaleString()}</p>
+                  </div>
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                    <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Additional Workspace Boards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Inventory Board */}
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-6 h-6 bg-green-600 rounded flex items-center justify-center">
+                      <Briefcase className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Inventory</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Track window stock</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm">
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">V300 Series: 24 units</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">V400 Series: 18 units</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Hardware: 156 sets</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Calendar Board */}
+            <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center">
+                      <Calendar className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Schedule</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Installation calendar</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm">
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Today: 3 installations</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">This week: 12 jobs</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Next week: 8 jobs</div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
+
+      {/* Create Project Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Project Title</Label>
+                <Input
+                  id="title"
+                  {...form.register("title")}
+                  placeholder="Enter project title"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="customerName">Customer Name</Label>
+                <Input
+                  id="customerName"
+                  {...form.register("customerName")}
+                  placeholder="Enter customer name"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="customerEmail">Customer Email</Label>
+                <Input
+                  id="customerEmail"
+                  type="email"
+                  {...form.register("customerEmail")}
+                  placeholder="customer@example.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="customerPhone">Customer Phone</Label>
+                <Input
+                  id="customerPhone"
+                  {...form.register("customerPhone")}
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                {...form.register("description")}
+                placeholder="Enter project description"
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select onValueChange={(value) => form.setValue("status", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new_lead">New Lead</SelectItem>
+                    <SelectItem value="need_attention">Need Attention</SelectItem>
+                    <SelectItem value="sent_estimate">Sent Estimate</SelectItem>
+                    <SelectItem value="signed">Signed</SelectItem>
+                    <SelectItem value="need_ordered">Need Ordered</SelectItem>
+                    <SelectItem value="ordered">Ordered</SelectItem>
+                    <SelectItem value="need_scheduled">Need Scheduled</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="follow_up">Follow Up</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priority</Label>
+                <Select onValueChange={(value) => form.setValue("priority", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="estimatedCost">Budget</Label>
+                <Input
+                  id="estimatedCost"
+                  type="number"
+                  {...form.register("estimatedCost", { valueAsNumber: true })}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="assignedTo">Assign To</Label>
+              <Select onValueChange={(value) => form.setValue("assignedTo", parseInt(value))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select employee" />
+                </SelectTrigger>
+                <SelectContent>
+                  {employees.map((employee: any) => (
+                    <SelectItem key={employee.id} value={employee.id.toString()}>
+                      {employee.username}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createProjectMutation.isPending}>
+                {createProjectMutation.isPending ? "Creating..." : "Create Project"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
