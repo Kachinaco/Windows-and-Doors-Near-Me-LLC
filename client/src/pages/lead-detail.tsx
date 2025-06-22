@@ -47,20 +47,34 @@ export default function LeadDetail() {
       console.log("Updating lead with data:", updates);
       console.log("Lead ID:", leadId);
       const response = await apiRequest("PUT", `/api/leads/${leadId}`, updates);
+      console.log("API response status:", response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const updatedLead = await response.json();
+      console.log("Parsed response data:", updatedLead);
       return updatedLead;
     },
     onSuccess: async (updatedLead) => {
-      console.log("Update successful:", updatedLead);
+      console.log("Mutation onSuccess called with:", updatedLead);
+      console.log("Setting cache data for key:", ["/api/leads", leadId]);
       
       // Update the cache directly with the new data
       queryClient.setQueryData(["/api/leads", leadId], updatedLead);
+      
+      // Verify cache was updated
+      const cachedData = queryClient.getQueryData(["/api/leads", leadId]);
+      console.log("Cache data after update:", cachedData);
       
       // Also invalidate the leads list
       queryClient.invalidateQueries({ queryKey: ["/api/leads"] });
       
       setIsEditing(false);
       setEditedLead({});
+      console.log("Edit mode disabled, showing updated data");
+      
       toast({
         title: "Success",
         description: "Lead updated successfully",
