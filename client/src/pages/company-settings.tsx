@@ -192,8 +192,8 @@ export default function CompanySettingsPage() {
                       <span>OpenPhone API Key</span>
                     </Label>
                     <Input
-                      type="password"
-                      value={isEditing ? (formData.openphoneApiKey || '') : "••••••••••••••••"}
+                      type={isEditing ? "text" : "password"}
+                      value={isEditing ? (formData.openphoneApiKey || '') : (settings?.openphoneApiKey || '')}
                       onChange={(e) => isEditing && setFormData(prev => ({ ...prev, openphoneApiKey: e.target.value }))}
                       placeholder="Enter your OpenPhone API key"
                       disabled={!isEditing}
@@ -335,8 +335,8 @@ export default function CompanySettingsPage() {
                       <span>Gmail Client Secret</span>
                     </Label>
                     <Input
-                      type="password"
-                      value={isEditing ? (formData.gmailClientSecret || '') : "••••••••••••••••"}
+                      type={isEditing ? "text" : "password"}
+                      value={isEditing ? (formData.gmailClientSecret || '') : (settings?.gmailClientSecret || '')}
                       onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gmailClientSecret: e.target.value }))}
                       placeholder="Enter Gmail client secret"
                       disabled={!isEditing}
@@ -350,8 +350,8 @@ export default function CompanySettingsPage() {
                     <span>Gmail Refresh Token</span>
                   </Label>
                   <Input
-                    type="password"
-                    value={isEditing ? (formData.gmailRefreshToken || '') : "••••••••••••••••"}
+                    type={isEditing ? "text" : "password"}
+                    value={isEditing ? (formData.gmailRefreshToken || '') : (settings?.gmailRefreshToken || '')}
                     onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gmailRefreshToken: e.target.value }))}
                     placeholder="OAuth refresh token for Gmail access"
                     disabled={!isEditing}
