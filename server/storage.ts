@@ -16,6 +16,7 @@ import {
   communicationLogs,
   userAvailability,
   projectUpdates,
+  companySettings,
   type User,
   type InsertUser,
   type Product,
@@ -38,6 +39,8 @@ import {
   type InsertCompanyPost,
   type PostView,
   type InsertPostView,
+  type CompanySettings,
+  type InsertCompanySettings,
   type Lead,
   type InsertLead,
   type Job,
@@ -746,6 +749,31 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return newUpdate;
+  }
+
+  // Company settings operations
+  async getCompanySettings(): Promise<CompanySettings | undefined> {
+    const [settings] = await db.select().from(companySettings).limit(1);
+    return settings;
+  }
+
+  async updateCompanySettings(updates: Partial<InsertCompanySettings>): Promise<CompanySettings> {
+    const existingSettings = await this.getCompanySettings();
+    
+    if (existingSettings) {
+      const [settings] = await db
+        .update(companySettings)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(companySettings.id, existingSettings.id))
+        .returning();
+      return settings;
+    } else {
+      const [settings] = await db
+        .insert(companySettings)
+        .values(updates)
+        .returning();
+      return settings;
+    }
   }
 }
 
