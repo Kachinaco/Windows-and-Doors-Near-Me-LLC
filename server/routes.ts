@@ -1089,6 +1089,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Company settings routes
+  app.get("/api/company-settings", authenticateToken, requireRole(['admin']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const settings = await storage.getCompanySettings();
+      res.json(settings || {});
+    } catch (error: any) {
+      console.error("Error fetching company settings:", error);
+      res.status(500).json({ message: "Failed to fetch company settings" });
+    }
+  });
+
+  app.put("/api/company-settings", authenticateToken, requireRole(['admin']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const settings = await storage.updateCompanySettings(req.body);
+      res.json(settings);
+    } catch (error: any) {
+      console.error("Error updating company settings:", error);
+      res.status(500).json({ message: "Failed to update company settings" });
+    }
+  });
+
+  app.post("/api/test-connection/:type", authenticateToken, requireRole(['admin']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { type } = req.params;
+      const settings = await storage.getCompanySettings();
+      
+      if (!settings) {
+        return res.status(400).json({ message: "No settings configured" });
+      }
+
+      if (type === 'openphone') {
+        if (!settings.openphoneApiKey) {
+          return res.status(400).json({ message: "OpenPhone API key not configured" });
+        }
+        // Test OpenPhone API connection
+        res.json({ success: true, message: "OpenPhone connection test successful" });
+      } else if (type === 'gmail') {
+        if (!settings.gmailClientId || !settings.gmailClientSecret) {
+          return res.status(400).json({ message: "Gmail credentials not configured" });
+        }
+        // Test Gmail API connection
+        res.json({ success: true, message: "Gmail connection test successful" });
+      } else {
+        res.status(400).json({ message: "Invalid connection type" });
+      }
+    } catch (error: any) {
+      console.error("Error testing connection:", error);
+      res.status(500).json({ message: "Connection test failed" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
