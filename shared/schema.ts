@@ -355,11 +355,7 @@ export const insertProjectUpdateSchema = createInsertSchema(projectUpdates).omit
   createdAt: true,
 });
 
-export const insertCompanySettingsSchema = createInsertSchema(companySettings).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+
 
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -487,6 +483,12 @@ const insertLeadSchema = createInsertSchema(leads);
 const insertJobSchema = createInsertSchema(jobs);
 const insertProposalSchema = createInsertSchema(proposals);
 const insertCommunicationLogSchema = createInsertSchema(communicationLogs);
+
+export const insertCompanySettingsSchema = createInsertSchema(companySettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 const insertUserAvailabilitySchema = createInsertSchema(userAvailability);
 
 // Relations
