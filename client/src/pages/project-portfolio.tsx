@@ -4,31 +4,21 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { useForm } from "react-hook-form";
 import { type Project } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft,
   Plus,
   Search,
-  Filter,
   CheckCircle,
   Clock,
   AlertCircle,
   DollarSign,
   FolderOpen,
   ChevronRight,
-  MoreHorizontal,
   Users,
   Calendar,
-  Phone,
-  MapPin,
   BarChart3,
   GripVertical
 } from "lucide-react";
@@ -221,7 +211,6 @@ export default function ProjectPortfolioPage() {
   const { user, logout } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 
@@ -347,104 +336,55 @@ export default function ProjectPortfolioPage() {
     }));
   }, [projects]);
 
-  const form = useForm({
-    defaultValues: {
-      title: "",
-      description: "",
-      status: "new_lead",
-      priority: "medium",
-      serviceType: "windows",
-      estimatedCost: 0,
-    },
-  });
-
-  const createProjectMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/projects", data);
-      if (!response.ok) {
-        throw new Error(`Failed to create project: ${response.statusText}`);
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      setIsCreateDialogOpen(false);
-      form.reset();
-      toast({
-        title: "Success",
-        description: "Project created successfully",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  const totalProjects = projects.length;
+  const activeProjectsCount = projects.filter(p => ['sent_estimate', 'signed', 'need_ordered', 'ordered'].includes(p.status)).length;
+  const completedProjectsCount = projects.filter(p => ['completed', 'follow_up'].includes(p.status)).length;
 
   const handleOpenProject = useCallback((project: Project) => {
-    // Navigate to the dedicated project dashboard page instead of inline view
-    window.location.href = `/projects/${project.id}`;
+    window.location.href = `/project-detail/${project.id}`;
   }, []);
-
-  const onSubmit = useCallback((data: any) => {
-    createProjectMutation.mutate(data);
-  }, [createProjectMutation]);
-
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case "high": return <AlertCircle className="h-4 w-4 text-red-500" />;
-      case "medium": return <Clock className="h-4 w-4 text-yellow-500" />;
-      case "low": return <CheckCircle className="h-4 w-4 text-green-500" />;
-      default: return <Clock className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusMap = {
-      "new_lead": { label: "New Lead", variant: "secondary" as const },
-      "need_attention": { label: "Need Attention", variant: "destructive" as const },
-      "sent_estimate": { label: "Sent Estimate", variant: "outline" as const },
-      "signed": { label: "Signed", variant: "default" as const },
-      "need_ordered": { label: "Need Ordered", variant: "secondary" as const },
-      "ordered": { label: "Ordered", variant: "outline" as const },
-      "need_scheduled": { label: "Need Scheduled", variant: "secondary" as const },
-      "scheduled": { label: "Scheduled", variant: "default" as const },
-      "in_progress": { label: "In Progress", variant: "default" as const },
-      "completed": { label: "Completed", variant: "secondary" as const },
-      "follow_up": { label: "Follow Up", variant: "outline" as const },
-    };
-    
-    const statusInfo = statusMap[status as keyof typeof statusMap] || { label: status, variant: "outline" as const };
-    return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
-  };
-
-
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                <Button variant="ghost" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to Dashboard
                 </Button>
               </Link>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Project Management</h1>
-                <p className="text-gray-600 mt-1">Organize and track your projects by status</p>
+                <h1 className="text-2xl font-bold text-gray-900">Project Management</h1>
+                <p className="text-sm text-gray-600">Organize and track your projects by status</p>
               </div>
             </div>
-            <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-5 w-5 mr-2" />
-              New Project
-            </Button>
+            
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-6 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-gray-600">{totalProjects} Total</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-gray-600">{activeProjectsCount} Active</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-600">{completedProjectsCount} Completed</span>
+                </div>
+              </div>
+              <Link href="/projects">
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Project
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -482,225 +422,46 @@ export default function ProjectPortfolioPage() {
           </div>
         )}
 
-        {/* Project Folders */}
+        {/* Project Folders with Drag and Drop */}
         {!projectsLoading && (
-          <div className="space-y-8">
-            {projectFolders.map((folder) => (
-              <div key={folder.name}>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-4 h-4 rounded ${folder.color}`}></div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-gray-900">{folder.name}</h2>
-                      <p className="text-sm text-gray-600">{folder.description}</p>
-                    </div>
-                    <Badge variant="secondary" className="ml-2">{folder.count}</Badge>
-                  </div>
-                  
-                  {/* Quick Actions */}
-                  <div className="flex items-center space-x-2">
-                    {folder.name === 'New Leads' && (
-                      <Link href="/leads">
-                        <Button variant="outline" size="sm">
-                          View All Leads
-                        </Button>
-                      </Link>
-                    )}
-                    {folder.name === 'Scheduled Work' && (
-                      <Link href="/scheduling">
-                        <Button variant="outline" size="sm">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Schedule
-                        </Button>
-                      </Link>
-                    )}
-                    {folder.name === 'Active Projects' && (
-                      <Link href="/pipeline">
-                        <Button variant="outline" size="sm">
-                          <BarChart3 className="h-4 w-4 mr-1" />
-                          Pipeline
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {folder.projects
-                    .filter(project => 
-                      searchTerm === "" || 
-                      project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      project.id.toString().includes(searchTerm)
-                    )
-                    .map((project) => (
-                    <Card 
-                      key={project.id} 
-                      className="hover:shadow-lg transition-all duration-200 cursor-pointer border-2 border-transparent hover:border-blue-200 group"
-                      onClick={() => handleOpenProject(project)}
-                    >
-                      <CardContent className="p-6">
-                        <div className="space-y-4">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">
-                              {project.title}
-                            </h3>
-                            <p className="text-sm text-gray-500 mt-1">Project #{project.id}</p>
-                            {project.description && (
-                              <p className="text-xs text-gray-400 mt-1 line-clamp-2">{project.description}</p>
-                            )}
-                          </div>
-                          
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              {getPriorityIcon(project.priority)}
-                              <span className="text-sm capitalize text-gray-600">{project.priority}</span>
-                            </div>
-                            {getStatusBadge(project.status)}
-                          </div>
-                          
-                          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                            <div className="flex items-center space-x-1">
-                              <DollarSign className="h-4 w-4 text-gray-400" />
-                              <span className="text-lg font-semibold text-gray-900">
-                                ${project.estimatedCost?.toLocaleString() || '0'}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-1 text-gray-400">
-                              <span className="text-xs">View Details</span>
-                              <ChevronRight className="h-4 w-4 group-hover:text-blue-600 transition-colors" />
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-                
-                {folder.projects.length === 0 && (
-                  <Card className="border-2 border-dashed border-gray-200">
-                    <CardContent className="text-center py-12">
-                      <FolderOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p className="text-gray-500 mb-4">No projects in {folder.name.toLowerCase()}</p>
-                      {folder.name === 'New Leads' && (
-                        <Link href="/leads">
-                          <Button variant="outline" size="sm">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Lead
-                          </Button>
-                        </Link>
-                      )}
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            ))}
-          </div>
+          <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="space-y-8">
+              {projectFolders.map((folder) => (
+                <DroppableFolder 
+                  key={folder.name} 
+                  folder={folder}
+                  onPipelineClick={() => window.location.href = '/pipeline'}
+                />
+              ))}
+            </div>
+            
+            <DragOverlay>
+              {activeId ? (
+                <DraggableProjectCard 
+                  project={projects.find((p: Project) => p.id === activeId)!} 
+                />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         )}
 
-        {/* Create Project Dialog */}
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Create New Project</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <Label htmlFor="title">Project Title</Label>
-                <Input
-                  id="title"
-                  {...form.register("title", { required: "Title is required" })}
-                  placeholder="Enter project title"
-                />
+        {/* Instructions for drag and drop */}
+        {!projectsLoading && projects.length > 0 && (
+          <Card className="mt-6 bg-blue-50 border-blue-200">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-blue-800">
+                <GripVertical className="h-4 w-4" />
+                <span className="text-sm font-medium">
+                  Drag and drop projects between folders to update their status
+                </span>
               </div>
-              
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  {...form.register("description")}
-                  placeholder="Project description (optional)"
-                  rows={3}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="status">Status</Label>
-                  <Select value={form.watch("status")} onValueChange={(value) => form.setValue("status", value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new_lead">New Lead</SelectItem>
-                      <SelectItem value="need_attention">Need Attention</SelectItem>
-                      <SelectItem value="sent_estimate">Sent Estimate</SelectItem>
-                      <SelectItem value="signed">Signed</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="priority">Priority</Label>
-                  <Select value={form.watch("priority")} onValueChange={(value) => form.setValue("priority", value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="serviceType">Service Type</Label>
-                  <Select value={form.watch("serviceType")} onValueChange={(value) => form.setValue("serviceType", value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="windows">Windows</SelectItem>
-                      <SelectItem value="doors">Doors</SelectItem>
-                      <SelectItem value="both">Windows & Doors</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="estimatedCost">Estimated Cost</Label>
-                  <Input
-                    id="estimatedCost"
-                    type="number"
-                    {...form.register("estimatedCost", { valueAsNumber: true })}
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-              
-              <div className="flex justify-end space-x-3 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsCreateDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={createProjectMutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {createProjectMutation.isPending ? "Creating..." : "Create Project"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
