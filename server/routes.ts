@@ -1140,6 +1140,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Phone communication endpoints
+  app.post("/api/send-text", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { leadId, phoneNumber, message, fromNumber } = req.body;
+      
+      // Log the text message to database
+      await storage.createCommunicationLog({
+        leadId,
+        type: 'text',
+        direction: 'outbound',
+        contactInfo: phoneNumber,
+        content: message,
+        metadata: { fromNumber, sentVia: 'OpenPhone' }
+      });
+
+      res.json({ success: true, message: "Text message logged successfully" });
+    } catch (error: any) {
+      console.error("Error sending text:", error);
+      res.status(500).json({ message: "Failed to send text" });
+    }
+  });
+
+  app.post("/api/log-call", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { leadId, phoneNumber, notes, fromNumber } = req.body;
+      
+      // Log the call to database
+      await storage.createCommunicationLog({
+        leadId,
+        type: 'call',
+        direction: 'outbound',
+        contactInfo: phoneNumber,
+        content: notes,
+        metadata: { fromNumber, madeVia: 'OpenPhone' }
+      });
+
+      res.json({ success: true, message: "Call logged successfully" });
+    } catch (error: any) {
+      console.error("Error logging call:", error);
+      res.status(500).json({ message: "Failed to log call" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
