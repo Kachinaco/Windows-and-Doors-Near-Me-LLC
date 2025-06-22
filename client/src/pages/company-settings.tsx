@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -19,7 +18,10 @@ import {
   TestTube,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Building2,
+  MapPin,
+  Globe
 } from "lucide-react";
 import type { CompanySettings } from "@shared/schema";
 
@@ -58,44 +60,36 @@ export default function CompanySettingsPage() {
 
   const testConnectionMutation = useMutation({
     mutationFn: async (type: string) => {
-      const response = await apiRequest("POST", `/api/test-connection/${type}`);
+      const response = await apiRequest("POST", `/api/test-connection/${type}`, {});
       return await response.json();
     },
     onSuccess: (data, type) => {
       toast({
-        title: "Connection Successful",
-        description: `${type === 'openphone' ? 'OpenPhone' : 'Gmail'} API connection is working`,
+        title: "Connection Test",
+        description: `${type} connection successful!`,
       });
     },
     onError: (error: Error, type) => {
       toast({
         title: "Connection Failed",
-        description: `${type === 'openphone' ? 'OpenPhone' : 'Gmail'} API connection failed: ${error.message}`,
+        description: `${type} connection failed: ${error.message}`,
         variant: "destructive",
       });
     },
   });
 
   const handleEdit = () => {
-    setFormData({
-      openphoneApiKey: settings?.openphoneApiKey || "",
-      openphoneWebhookUrl: settings?.openphoneWebhookUrl || "",
-      gmailClientId: settings?.gmailClientId || "",
-      gmailClientSecret: settings?.gmailClientSecret || "",
-      gmailRefreshToken: settings?.gmailRefreshToken || "",
-      enableOpenphoneSync: settings?.enableOpenphoneSync || false,
-      enableGmailSync: settings?.enableGmailSync || false,
-    });
     setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    updateSettingsMutation.mutate(formData);
+    setFormData(settings || {});
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setFormData({});
+  };
+
+  const handleSave = () => {
+    updateSettingsMutation.mutate(formData);
   };
 
   const handleTestConnection = (type: string) => {
@@ -146,287 +140,372 @@ export default function CompanySettingsPage() {
       </div>
 
       {/* Content */}
-      <div className="px-6 py-8">
-        <Tabs defaultValue="integrations" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="integrations">API Integrations</TabsTrigger>
-            <TabsTrigger value="webhooks">Webhooks & Sync</TabsTrigger>
-          </TabsList>
+      <div className="px-6 py-8 space-y-8">
+        {/* Company Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-3">
+              <Building2 className="w-6 h-6 text-blue-600" />
+              <span>Company Information</span>
+            </CardTitle>
+            <p className="text-gray-600">Manage your company details and branding settings.</p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <Label className="text-base font-medium mb-3 block">Company Name</Label>
+              <Input
+                value={isEditing ? (formData.companyName || '') : "Windows & Doors Near Me LLC"}
+                onChange={(e) => isEditing && setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                placeholder="Your Company Name"
+                disabled={!isEditing}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This name will appear in your dashboard header and throughout the application.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-          <TabsContent value="integrations" className="space-y-6">
-            {/* OpenPhone Integration */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-3">
-                  <Phone className="w-6 h-6 text-blue-600" />
-                  <span>OpenPhone Integration</span>
-                  {settings?.enableOpenphoneSync && (
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                  )}
-                </CardTitle>
-                <p className="text-gray-600">
-                  Connect your OpenPhone account to automatically sync calls, texts, and contact data
+        {/* OpenPhone Integration */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-3">
+              <Phone className="w-6 h-6 text-blue-600" />
+              <span>OpenPhone Integration</span>
+              {settings?.enableOpenphoneSync && (
+                <CheckCircle className="w-5 h-5 text-green-500" />
+              )}
+            </CardTitle>
+            <p className="text-gray-600">
+              Connect your OpenPhone account to automatically sync calls, texts, and contact data
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-base font-medium">Enable OpenPhone Sync</Label>
+                <p className="text-sm text-gray-600">Automatically log calls and texts from OpenPhone</p>
+              </div>
+              <Switch
+                checked={isEditing ? (formData.enableOpenphoneSync || false) : (settings?.enableOpenphoneSync || false)}
+                onCheckedChange={(checked) => 
+                  isEditing && setFormData(prev => ({ ...prev, enableOpenphoneSync: checked }))
+                }
+                disabled={!isEditing}
+              />
+            </div>
+
+            <Separator />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label className="flex items-center space-x-2 mb-3">
+                  <Key className="w-4 h-4" />
+                  <span>OpenPhone API Key</span>
+                </Label>
+                <Input
+                  type={isEditing ? "text" : "password"}
+                  value={isEditing ? (formData.openphoneApiKey || '') : (settings?.openphoneApiKey || '')}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, openphoneApiKey: e.target.value }))}
+                  placeholder="Enter your OpenPhone API key"
+                  disabled={!isEditing}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Get your API key from OpenPhone Dashboard → Settings → API
                 </p>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-base font-medium">Enable OpenPhone Sync</Label>
-                    <p className="text-sm text-gray-600">Automatically log calls and texts from OpenPhone</p>
-                  </div>
-                  <Switch
-                    checked={isEditing ? (formData.enableOpenphoneSync || false) : (settings?.enableOpenphoneSync || false)}
-                    onCheckedChange={(checked) => 
-                      isEditing && setFormData(prev => ({ ...prev, enableOpenphoneSync: checked }))
-                    }
-                    disabled={!isEditing}
-                  />
-                </div>
+              </div>
 
-                <Separator />
+              <div>
+                <Label className="flex items-center space-x-2 mb-3">
+                  <Phone className="w-4 h-4" />
+                  <span>Business Phone Number</span>
+                </Label>
+                <Input
+                  value={isEditing ? (formData.businessPhoneNumber || '') : (settings?.businessPhoneNumber || "")}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, businessPhoneNumber: e.target.value }))}
+                  placeholder="+1 (480) 555-0123"
+                  disabled={!isEditing}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Your OpenPhone business number for outbound calls/texts
+                </p>
+              </div>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="flex items-center space-x-2 mb-3">
-                      <Key className="w-4 h-4" />
-                      <span>OpenPhone API Key</span>
-                    </Label>
-                    <Input
-                      type={isEditing ? "text" : "password"}
-                      value={isEditing ? (formData.openphoneApiKey || '') : (settings?.openphoneApiKey || '')}
-                      onChange={(e) => isEditing && setFormData(prev => ({ ...prev, openphoneApiKey: e.target.value }))}
-                      placeholder="Enter your OpenPhone API key"
-                      disabled={!isEditing}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Get your API key from OpenPhone Dashboard → Settings → API
-                    </p>
-                  </div>
+            <div>
+              <Label className="flex items-center space-x-2 mb-3">
+                <Webhook className="w-4 h-4" />
+                <span>Webhook URL</span>
+              </Label>
+              <Input
+                value={isEditing ? (formData.openphoneWebhookUrl || '') : (settings?.openphoneWebhookUrl || "")}
+                onChange={(e) => isEditing && setFormData(prev => ({ ...prev, openphoneWebhookUrl: e.target.value }))}
+                placeholder="https://yourapp.com/api/openphone/webhook"
+                disabled={!isEditing}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Configure this URL in your OpenPhone webhook settings
+              </p>
+            </div>
 
-                  <div>
-                    <Label className="flex items-center space-x-2 mb-3">
-                      <Phone className="w-4 h-4" />
-                      <span>Business Phone Number</span>
-                    </Label>
-                    <Input
-                      value={isEditing ? (formData.businessPhoneNumber || '') : (settings?.businessPhoneNumber || "")}
-                      onChange={(e) => isEditing && setFormData(prev => ({ ...prev, businessPhoneNumber: e.target.value }))}
-                      placeholder="+1 (480) 555-0123"
-                      disabled={!isEditing}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Your OpenPhone business number for outbound calls/texts
-                    </p>
-                  </div>
-                </div>
+            {!isEditing && settings?.openphoneApiKey && (
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleTestConnection('openphone')}
+                  disabled={testConnectionMutation.isPending}
+                >
+                  <TestTube className="w-4 h-4 mr-2" />
+                  Test Connection
+                </Button>
+              </div>
+            )}
 
+            <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
                 <div>
-                  <Label className="flex items-center space-x-2 mb-3">
-                    <Webhook className="w-4 h-4" />
-                    <span>Webhook URL</span>
-                  </Label>
-                  <Input
-                    value={isEditing ? (formData.openphoneWebhookUrl || '') : (settings?.openphoneWebhookUrl || "")}
-                    onChange={(e) => isEditing && setFormData(prev => ({ ...prev, openphoneWebhookUrl: e.target.value }))}
-                    placeholder="https://yourapp.com/api/openphone/webhook"
-                    disabled={!isEditing}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Configure this URL in your OpenPhone webhook settings
+                  <h4 className="font-medium text-amber-900">Phone Number Identification</h4>
+                  <p className="text-sm text-amber-800 mt-1">
+                    All communications will display your OpenPhone business number above. When texting leads, 
+                    they'll see messages coming from this number, not your personal phone. The system will 
+                    automatically validate phone numbers before sending to prevent wrong number issues.
                   </p>
                 </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-                <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
-                  <div className="flex items-start space-x-2">
-                    <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-amber-900">Phone Number Identification</h4>
-                      <p className="text-sm text-amber-800 mt-1">
-                        All communications will display your OpenPhone business number above. When texting leads, 
-                        they'll see messages coming from this number, not your personal phone. The system will 
-                        automatically validate phone numbers before sending to prevent wrong number issues.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+        {/* Gmail Integration */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-3">
+              <Mail className="w-6 h-6 text-red-600" />
+              <span>Gmail Integration</span>
+              {settings?.enableGmailSync && (
+                <CheckCircle className="w-5 h-5 text-green-500" />
+              )}
+            </CardTitle>
+            <p className="text-gray-600">
+              Connect your Gmail account to automatically track email communications with leads
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-base font-medium">Enable Gmail Sync</Label>
+                <p className="text-sm text-gray-600">Automatically log emails sent to and from leads</p>
+              </div>
+              <Switch
+                checked={isEditing ? (formData.enableGmailSync || false) : (settings?.enableGmailSync || false)}
+                onCheckedChange={(checked) => 
+                  isEditing && setFormData(prev => ({ ...prev, enableGmailSync: checked }))
+                }
+                disabled={!isEditing}
+              />
+            </div>
 
-                {!isEditing && settings?.openphoneApiKey && (
-                  <div className="flex items-center space-x-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => handleTestConnection('openphone')}
-                      disabled={testConnectionMutation.isPending}
-                      className="flex items-center space-x-2"
-                    >
-                      <TestTube className="w-4 h-4" />
-                      <span>Test Connection</span>
-                    </Button>
-                    {settings.enableOpenphoneSync && (
-                      <div className="flex items-center space-x-2 text-green-600">
-                        <CheckCircle className="w-4 h-4" />
-                        <span className="text-sm font-medium">Active & Syncing</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <Separator />
 
-            {/* Gmail Integration */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-3">
-                  <Mail className="w-6 h-6 text-red-600" />
-                  <span>Gmail Integration</span>
-                  {settings?.enableGmailSync && (
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                  )}
-                </CardTitle>
-                <p className="text-gray-600">
-                  Connect your Gmail account to automatically track email communications with leads
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-base font-medium">Enable Gmail Sync</Label>
-                    <p className="text-sm text-gray-600">Automatically log emails sent to and from leads</p>
-                  </div>
-                  <Switch
-                    checked={isEditing ? (formData.enableGmailSync || false) : (settings?.enableGmailSync || false)}
-                    onCheckedChange={(checked) => 
-                      isEditing && setFormData(prev => ({ ...prev, enableGmailSync: checked }))
-                    }
-                    disabled={!isEditing}
-                  />
-                </div>
-
-                <Separator />
-
-                <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                  <div className="flex items-start space-x-2">
-                    <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-blue-900">Gmail OAuth Setup Required</h4>
-                      <p className="text-sm text-blue-800 mt-1">
-                        To connect Gmail, you'll need to create a Google Cloud project and obtain OAuth credentials.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="flex items-center space-x-2 mb-3">
-                      <Key className="w-4 h-4" />
-                      <span>Gmail Client ID</span>
-                    </Label>
-                    <Input
-                      value={isEditing ? (formData.gmailClientId || '') : (settings?.gmailClientId || "")}
-                      onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gmailClientId: e.target.value }))}
-                      placeholder="123456789-abc.apps.googleusercontent.com"
-                      disabled={!isEditing}
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="flex items-center space-x-2 mb-3">
-                      <Key className="w-4 h-4" />
-                      <span>Gmail Client Secret</span>
-                    </Label>
-                    <Input
-                      type={isEditing ? "text" : "password"}
-                      value={isEditing ? (formData.gmailClientSecret || '') : (settings?.gmailClientSecret || '')}
-                      onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gmailClientSecret: e.target.value }))}
-                      placeholder="Enter Gmail client secret"
-                      disabled={!isEditing}
-                    />
-                  </div>
-                </div>
-
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
                 <div>
-                  <Label className="flex items-center space-x-2 mb-3">
-                    <Key className="w-4 h-4" />
-                    <span>Gmail Refresh Token</span>
-                  </Label>
-                  <Input
-                    type={isEditing ? "text" : "password"}
-                    value={isEditing ? (formData.gmailRefreshToken || '') : (settings?.gmailRefreshToken || '')}
-                    onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gmailRefreshToken: e.target.value }))}
-                    placeholder="OAuth refresh token for Gmail access"
-                    disabled={!isEditing}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    This token is generated during the OAuth flow and allows continuous access to Gmail
+                  <h4 className="font-medium text-blue-900">Gmail OAuth Setup Required</h4>
+                  <p className="text-sm text-blue-800 mt-1">
+                    To connect Gmail, you'll need to create a Google Cloud project and obtain OAuth credentials.
                   </p>
                 </div>
+              </div>
+            </div>
 
-                {!isEditing && settings?.gmailClientId && (
-                  <div className="flex items-center space-x-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => handleTestConnection('gmail')}
-                      disabled={testConnectionMutation.isPending}
-                      className="flex items-center space-x-2"
-                    >
-                      <TestTube className="w-4 h-4" />
-                      <span>Test Connection</span>
-                    </Button>
-                    {settings.enableGmailSync && (
-                      <div className="flex items-center space-x-2 text-green-600">
-                        <CheckCircle className="w-4 h-4" />
-                        <span className="text-sm font-medium">Active & Syncing</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label className="flex items-center space-x-2 mb-3">
+                  <Key className="w-4 h-4" />
+                  <span>Gmail Client ID</span>
+                </Label>
+                <Input
+                  value={isEditing ? (formData.gmailClientId || '') : (settings?.gmailClientId || "")}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gmailClientId: e.target.value }))}
+                  placeholder="123456789-abc.apps.googleusercontent.com"
+                  disabled={!isEditing}
+                />
+              </div>
 
-          <TabsContent value="webhooks" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-3">
-                  <Webhook className="w-6 h-6 text-purple-600" />
-                  <span>Webhook Configuration</span>
-                </CardTitle>
-                <p className="text-gray-600">
-                  Configure webhook endpoints for real-time data synchronization
+              <div>
+                <Label className="flex items-center space-x-2 mb-3">
+                  <Key className="w-4 h-4" />
+                  <span>Gmail Client Secret</span>
+                </Label>
+                <Input
+                  type={isEditing ? "text" : "password"}
+                  value={isEditing ? (formData.gmailClientSecret || '') : (settings?.gmailClientSecret || '')}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gmailClientSecret: e.target.value }))}
+                  placeholder="Enter Gmail client secret"
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="flex items-center space-x-2 mb-3">
+                <Key className="w-4 h-4" />
+                <span>Gmail Refresh Token</span>
+              </Label>
+              <Input
+                type={isEditing ? "text" : "password"}
+                value={isEditing ? (formData.gmailRefreshToken || '') : (settings?.gmailRefreshToken || '')}
+                onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gmailRefreshToken: e.target.value }))}
+                placeholder="OAuth refresh token for Gmail access"
+                disabled={!isEditing}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This token is generated during the OAuth flow and allows continuous access to Gmail
+              </p>
+            </div>
+
+            {!isEditing && settings?.gmailClientId && (
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleTestConnection('gmail')}
+                  disabled={testConnectionMutation.isPending}
+                >
+                  <TestTube className="w-4 h-4 mr-2" />
+                  Test Connection
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Additional Integrations */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-3">
+              <Globe className="w-6 h-6 text-purple-600" />
+              <span>Additional Services</span>
+            </CardTitle>
+            <p className="text-gray-600">
+              Configure additional third-party services and integrations
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label className="flex items-center space-x-2 mb-3">
+                  <Key className="w-4 h-4" />
+                  <span>Stripe API Key</span>
+                </Label>
+                <Input
+                  type={isEditing ? "text" : "password"}
+                  value={isEditing ? (formData.stripeApiKey || '') : (settings?.stripeApiKey || '')}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, stripeApiKey: e.target.value }))}
+                  placeholder="sk_test_..."
+                  disabled={!isEditing}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  For processing payments and managing subscriptions
                 </p>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2">Available Webhook Endpoints</h4>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center justify-between">
-                      <code className="bg-white px-2 py-1 rounded">/api/webhooks/openphone</code>
-                      <span className="text-green-600">For OpenPhone call/SMS events</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <code className="bg-white px-2 py-1 rounded">/api/webhooks/gmail</code>
-                      <span className="text-red-600">For Gmail email events</span>
-                    </div>
-                  </div>
-                </div>
+              </div>
 
-                <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-                  <div className="flex items-start space-x-2">
-                    <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-yellow-900">Setup Instructions</h4>
-                      <ol className="text-sm text-yellow-800 mt-2 space-y-1">
-                        <li>1. Configure your OpenPhone webhooks to point to the endpoints above</li>
-                        <li>2. Set up Gmail push notifications using Google Pub/Sub</li>
-                        <li>3. Test the connections using the test buttons in the API Integrations tab</li>
-                      </ol>
-                    </div>
-                  </div>
+              <div>
+                <Label className="flex items-center space-x-2 mb-3">
+                  <Key className="w-4 h-4" />
+                  <span>SendGrid API Key</span>
+                </Label>
+                <Input
+                  type={isEditing ? "text" : "password"}
+                  value={isEditing ? (formData.sendgridApiKey || '') : (settings?.sendgridApiKey || '')}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, sendgridApiKey: e.target.value }))}
+                  placeholder="SG...."
+                  disabled={!isEditing}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  For automated email notifications and marketing
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label className="flex items-center space-x-2 mb-3">
+                  <Key className="w-4 h-4" />
+                  <span>Twilio Account SID</span>
+                </Label>
+                <Input
+                  value={isEditing ? (formData.twilioAccountSid || '') : (settings?.twilioAccountSid || '')}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, twilioAccountSid: e.target.value }))}
+                  placeholder="AC..."
+                  disabled={!isEditing}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Backup SMS service for critical notifications
+                </p>
+              </div>
+
+              <div>
+                <Label className="flex items-center space-x-2 mb-3">
+                  <Key className="w-4 h-4" />
+                  <span>Twilio Auth Token</span>
+                </Label>
+                <Input
+                  type={isEditing ? "text" : "password"}
+                  value={isEditing ? (formData.twilioAuthToken || '') : (settings?.twilioAuthToken || '')}
+                  onChange={(e) => isEditing && setFormData(prev => ({ ...prev, twilioAuthToken: e.target.value }))}
+                  placeholder="Enter Twilio auth token"
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Webhook Configuration */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-3">
+              <Webhook className="w-6 h-6 text-purple-600" />
+              <span>Webhook Configuration</span>
+            </CardTitle>
+            <p className="text-gray-600">
+              Configure webhook endpoints for real-time data synchronization
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-medium text-gray-900 mb-2">Available Webhook Endpoints</h4>
+              <div className="space-y-2 text-sm text-gray-600">
+                <div className="flex items-center justify-between">
+                  <code className="bg-white px-2 py-1 rounded">/api/webhooks/openphone</code>
+                  <span className="text-green-600">For OpenPhone call/SMS events</span>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                <div className="flex items-center justify-between">
+                  <code className="bg-white px-2 py-1 rounded">/api/webhooks/gmail</code>
+                  <span className="text-red-600">For Gmail email events</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-yellow-900">Setup Instructions</h4>
+                  <ol className="text-sm text-yellow-800 mt-2 space-y-1">
+                    <li>1. Configure your OpenPhone webhooks to point to the endpoints above</li>
+                    <li>2. Set up Gmail push notifications using Google Pub/Sub</li>
+                    <li>3. Test the connections using the test buttons in the API Integrations sections</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
