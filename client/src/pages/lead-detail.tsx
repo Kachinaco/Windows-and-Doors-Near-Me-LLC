@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft, 
@@ -26,19 +27,26 @@ import {
   X,
   ExternalLink
 } from "lucide-react";
-import type { Lead } from "@shared/schema";
+import type { Lead, CommunicationLog } from "@shared/schema";
 
 export default function LeadDetail() {
   const [, params] = useRoute("/leads/:id");
   const [, setLocation] = useLocation();
   const [isEditing, setIsEditing] = useState(false);
   const [editedLead, setEditedLead] = useState<Partial<Lead>>({});
+  const [logDialogOpen, setLogDialogOpen] = useState<string | null>(null);
+  const [logForm, setLogForm] = useState({ content: "", duration: "", subject: "" });
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const leadId = params?.id ? parseInt(params.id) : null;
 
   const { data: lead, isLoading, refetch } = useQuery<Lead>({
     queryKey: [`/api/leads/${leadId}`],
+    enabled: !!leadId,
+  });
+
+  const { data: communications = [] } = useQuery<CommunicationLog[]>({
+    queryKey: [`/api/communications?leadId=${leadId}`],
     enabled: !!leadId,
   });
 
@@ -61,6 +69,27 @@ export default function LeadDetail() {
       toast({
         title: "Success",
         description: "Lead updated successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createCommunicationMutation = useMutation({
+    mutationFn: async (logData: any) => {
+      const response = await apiRequest("POST", "/api/communications", logData);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/communications?leadId=${leadId}`] });
+      toast({
+        title: "Success",
+        description: "Communication logged successfully",
       });
     },
     onError: (error: Error) => {
@@ -538,13 +567,125 @@ export default function LeadDetail() {
           </TabsContent>
 
           <TabsContent value="communication" className="space-y-6">
-            <Card>
-              <CardContent className="py-8 text-center text-gray-500">
-                <Mail className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p>No communication history yet</p>
-                <p className="text-sm mt-1">Communications will appear here once you start connecting with this lead</p>
-              </CardContent>
-            </Card>
+            {/* Communication Actions */}
+            <div className="grid grid-cols-3 gap-4">
+              <Button
+                className="flex flex-col items-center space-y-2 h-auto py-6 bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => window.open(`tel:${lead.phone}`, '_self')}
+              >
+                <Phone className="w-8 h-8" />
+                <span className="font-medium">Make Call</span>
+                <span className="text-xs opacity-90">Start & log call</span>
+              </Button>
+              
+              <Button
+                className="flex flex-col items-center space-y-2 h-auto py-6 bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => window.open(`mailto:${lead.email}`, '_self')}
+              >
+                <Mail className="w-8 h-8" />
+                <span className="font-medium">Send Email</span>
+                <span className="text-xs opacity-90">Open email client</span>
+              </Button>
+              
+              <Button
+                className="flex flex-col items-center space-y-2 h-auto py-6 bg-purple-600 hover:bg-purple-700 text-white"
+                onClick={() => window.open(`sms:${lead.phone}`, '_self')}
+              >
+                <Phone className="w-8 h-8" />
+                <span className="font-medium">Send Text</span>
+                <span className="text-xs opacity-90">Open messaging</span>
+              </Button>
+            </div>
+
+            {/* Communication History */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Calls Section */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center space-x-2 text-lg">
+                    <Phone className="w-5 h-5 text-blue-600" />
+                    <span>Calls</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-blue-900">Outbound Call</span>
+                      <span className="text-xs text-blue-700">Today, 2:30 PM</span>
+                    </div>
+                    <div className="text-sm text-blue-800">Duration: 5 min 32 sec</div>
+                    <div className="text-xs text-blue-600 mt-1">Initial consultation about window replacement</div>
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-blue-600 border-blue-200 hover:bg-blue-50"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Log Call
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Emails Section */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center space-x-2 text-lg">
+                    <Mail className="w-5 h-5 text-green-600" />
+                    <span>Emails</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-green-900">Quote Sent</span>
+                      <span className="text-xs text-green-700">Yesterday, 4:15 PM</span>
+                    </div>
+                    <div className="text-sm text-green-800">Subject: Window Replacement Quote</div>
+                    <div className="text-xs text-green-600 mt-1">Sent pricing for 8 windows - $25,000</div>
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-green-600 border-green-200 hover:bg-green-50"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Log Email
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Texts Section */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center space-x-2 text-lg">
+                    <Phone className="w-5 h-5 text-purple-600" />
+                    <span>Texts</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-purple-900">Appointment Reminder</span>
+                      <span className="text-xs text-purple-700">Today, 9:00 AM</span>
+                    </div>
+                    <div className="text-sm text-purple-800">"Hi David, reminder about our consultation tomorrow at 2 PM"</div>
+                    <div className="text-xs text-purple-600 mt-1">Status: Delivered</div>
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-purple-600 border-purple-200 hover:bg-purple-50"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Log Text
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="paylinks" className="space-y-6">
