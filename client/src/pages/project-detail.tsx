@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { 
@@ -212,63 +211,414 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/projects">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Projects
-                </Button>
-              </Link>
+      {/* Top Navigation */}
+      <div className="bg-white dark:bg-gray-800 border-b px-4 py-2">
+        <div className="flex items-center justify-between">
+          <Link href="/projects">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Projects
+            </Button>
+          </Link>
+          
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm">
+              <Calendar className="h-4 w-4 mr-2" />
+              Schedule
+            </Button>
+            <Button variant="outline" size="sm">
+              Attach
+            </Button>
+            <Button variant="outline" size="sm">
+              AI ACTIONS
+            </Button>
+            <Button className="bg-gray-900 hover:bg-gray-800 text-white">
+              CREATE FILE
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Hero Banner Section */}
+      <div className="relative bg-gradient-to-r from-gray-800 to-gray-900 text-white">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative px-6 py-12">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {project.title}
-                </h1>
-                <p className="text-sm text-gray-500">Project #{project.id}</p>
+                <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">
+                  <span>Other</span>
+                  <span>•</span>
+                  <span>Tab</span>
+                </div>
+                <h1 className="text-4xl font-bold mb-2">{project.title}</h1>
+                <div className="flex items-center gap-4 text-sm text-gray-300">
+                  <span>Visible to you • 1 participant</span>
+                </div>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                {!isEditing ? (
+                  <Button onClick={handleEdit} variant="outline" className="border-gray-300 text-gray-800 bg-white hover:bg-gray-50">
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Project
+                  </Button>
+                ) : (
+                  <div className="flex space-x-2">
+                    <Button onClick={handleSave} disabled={updateProjectMutation.isPending} className="bg-blue-600 hover:bg-blue-700">
+                      <Save className="h-4 w-4 mr-2" />
+                      Save
+                    </Button>
+                    <Button onClick={handleCancel} variant="outline" className="border-gray-300 text-gray-800 bg-white hover:bg-gray-50">
+                      Cancel
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
-            
-            <div className="flex items-center space-x-2">
-              {getStatusBadge(project.projectStatus || project.status)}
-              {getPriorityBadge(project.priority)}
+
+            {/* Participant Avatars */}
+            <div className="mt-6 flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                  {user?.username?.charAt(0).toUpperCase() || 'Y'}
+                </div>
+                <span className="text-sm">You</span>
+              </div>
               
-              {!isEditing ? (
-                <Button onClick={handleEdit} variant="outline" size="sm">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Project
-                </Button>
-              ) : (
-                <div className="flex space-x-2">
-                  <Button onClick={handleSave} size="sm" disabled={updateProjectMutation.isPending}>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save
-                  </Button>
-                  <Button onClick={handleCancel} variant="outline" size="sm">
-                    Cancel
-                  </Button>
+              {project.assignedEmployee && (
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                    {project.assignedEmployee.firstName?.charAt(0).toUpperCase() || 'E'}
+                  </div>
+                  <span className="text-sm">{project.assignedEmployee.firstName} {project.assignedEmployee.lastName}</span>
                 </div>
               )}
+              
+              <Button variant="ghost" size="sm" className="text-white border border-gray-400 hover:bg-white/10">
+                <Plus className="h-4 w-4 mr-2" />
+                Add
+              </Button>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="details">Project Details</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            <TabsTrigger value="files">Files & Documents</TabsTrigger>
-          </TabsList>
+      {/* Tabs Navigation */}
+      <div className="bg-white dark:bg-gray-800 border-b">
+        <div className="max-w-7xl mx-auto px-6">
+          <Tabs defaultValue="activity" className="space-y-0">
+            <TabsList className="bg-transparent border-0 p-0 h-auto">
+              <TabsTrigger 
+                value="activity" 
+                className="border-0 bg-transparent data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none px-4 py-3"
+              >
+                Activity
+              </TabsTrigger>
+              <TabsTrigger 
+                value="files"
+                className="border-0 bg-transparent data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none px-4 py-3"
+              >
+                Files
+              </TabsTrigger>
+              <TabsTrigger 
+                value="tasks"
+                className="border-0 bg-transparent data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none px-4 py-3"
+              >
+                Tasks
+                <Badge className="ml-2 bg-orange-100 text-orange-800 text-xs">New</Badge>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="payments"
+                className="border-0 bg-transparent data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none px-4 py-3"
+              >
+                Payments
+              </TabsTrigger>
+              <TabsTrigger 
+                value="notes"
+                className="border-0 bg-transparent data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none px-4 py-3"
+              >
+                Notes
+              </TabsTrigger>
+              <TabsTrigger 
+                value="details"
+                className="border-0 bg-transparent data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none px-4 py-3"
+              >
+                Details
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Project Info */}
-              <div className="lg:col-span-2">
+            <div className="max-w-7xl mx-auto py-6">
+              <TabsContent value="activity" className="mt-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Activity Feed */}
+                  <div className="lg:col-span-2 space-y-4">
+                    {/* Reply Input */}
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+                            {user?.username?.charAt(0).toUpperCase() || 'Y'}
+                          </div>
+                          <div className="flex-1">
+                            <div className="bg-gray-50 rounded-lg p-3 text-gray-500 text-sm">
+                              Reply to: "Milestone complete"
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Active Smart Files */}
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium text-gray-700">ACTIVE SMART FILES</CardTitle>
+                        <p className="text-xs text-gray-500">Track the actions and questions your client still needs to complete.</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                          <div className="w-16 h-12 bg-red-600 rounded flex items-center justify-center flex-shrink-0">
+                            <div className="text-white text-xs font-bold">Logo</div>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-medium text-sm mb-1">V300 Milgard Window and Door Estimate</h3>
+                            <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">IN PROGRESS</span>
+                              <span>Sent on Jun 15, 2025 at 5:51 PM</span>
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <span>5 of 5 viewed</span>
+                                <span>•</span>
+                                <span>ACTION:</span>
+                                <span>Invoice (paid 1 of 2)</span>
+                                <span>•</span>
+                                <span>Contract (signed 1 of 5)</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm" className="text-gray-400">
+                            <span className="text-lg">⋯</span>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Recent Activity */}
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium text-gray-700">RECENT ACTIVITY</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+                            BW
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 text-sm mb-1">
+                              <span className="font-medium">From: Brent Wulbrecht</span>
+                              <span className="text-gray-500">To: Cory Analia</span>
+                              <Button variant="ghost" size="sm" className="ml-auto text-gray-400 p-1">
+                                <span className="text-xs">↗</span>
+                              </Button>
+                            </div>
+                            <div className="text-xs text-gray-500 mb-2">Thu, Jun 19, 2025</div>
+                            <div className="bg-gray-50 rounded-lg p-3">
+                              <h4 className="font-medium text-sm mb-2">Re: Milestone complete</h4>
+                              <p className="text-sm text-gray-700 mb-3">Cory,</p>
+                              <p className="text-sm text-gray-700 mb-3">I wanted to follow up and confirm you received the check for the remaining balance.</p>
+                              <p className="text-sm text-gray-700 mb-3">Thank you,</p>
+                              <p className="text-sm text-gray-700">Brent</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Right Sidebar */}
+                  <div className="space-y-4">
+                    {/* Visibility Notice */}
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-2">
+                          <div className="w-4 h-4 bg-gray-300 rounded-full mt-1 flex-shrink-0"></div>
+                          <div>
+                            <h4 className="text-sm font-medium mb-1">Only visible to you</h4>
+                            <p className="text-xs text-gray-500">Private notes for you and your internal team to manage this project.</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Client Portal */}
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                          <User className="w-4 h-4" />
+                          Client portal
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">https://techniciancontractors.com</span>
+                          <Button variant="ghost" size="sm" className="p-1">
+                            <span className="text-xs">📋</span>
+                          </Button>
+                          <Button variant="ghost" size="sm" className="p-1">
+                            <span className="text-xs">↗</span>
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input type="checkbox" className="rounded" />
+                          <span className="text-sm">Include client portal links in files and emails</span>
+                        </div>
+                        <div className="text-xs text-blue-600 underline cursor-pointer">
+                          What is the client portal?
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Stage */}
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium">Stage</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <Select defaultValue="retainer-paid">
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="retainer-paid">Retainer paid</SelectItem>
+                            <SelectItem value="new-lead">New Lead</SelectItem>
+                            <SelectItem value="scheduled">Scheduled</SelectItem>
+                            <SelectItem value="in-progress">In Progress</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </CardContent>
+                    </Card>
+
+                    {/* Lead Source */}
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium">Lead Source</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <Select defaultValue="google">
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="google">Google</SelectItem>
+                            <SelectItem value="yelp">Yelp</SelectItem>
+                            <SelectItem value="thumbtack">Thumbtack</SelectItem>
+                            <SelectItem value="referral">Referral</SelectItem>
+                            <SelectItem value="website">Website</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </CardContent>
+                    </Card>
+
+                    {/* Tags */}
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium">Tags</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="text-sm text-gray-500">Add tags</div>
+                          <div className="text-xs text-blue-600 underline cursor-pointer">
+                            Manage company tags
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="files" className="mt-0">
+                <div className="text-center py-12">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No files yet</h3>
+                  <p className="text-gray-500 mb-4">Upload files and documents related to this project.</p>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Upload File
+                  </Button>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="tasks" className="mt-0">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Project Tasks</h3>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Task
+                    </Button>
+                  </div>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center py-8">
+                        <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <h4 className="text-lg font-medium text-gray-900 mb-2">No tasks yet</h4>
+                        <p className="text-gray-500">Create tasks to track project progress.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="payments" className="mt-0">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Payment History</h3>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Record Payment
+                    </Button>
+                  </div>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center py-8">
+                        <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <h4 className="text-lg font-medium text-gray-900 mb-2">No payments recorded</h4>
+                        <p className="text-gray-500">Track payments and invoices for this project.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="notes" className="mt-0">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Project Notes</h3>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Note
+                    </Button>
+                  </div>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center py-8">
+                        <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <h4 className="text-lg font-medium text-gray-900 mb-2">No notes yet</h4>
+                        <p className="text-gray-500">Add internal notes and comments for this project.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="details" className="mt-0">
                 <Card>
                   <CardHeader>
                     <CardTitle>Project Information</CardTitle>
@@ -403,177 +753,42 @@ export default function ProjectDetailPage() {
                             <p className="mt-1 text-gray-600 dark:text-gray-400">{project.notes}</p>
                           </div>
                         )}
+
+                        <div className="border-t pt-4 mt-4">
+                          <h3 className="font-medium mb-3">Project Timeline</h3>
+                          <div className="space-y-3">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Created:</span>
+                              <span>{formatDate(project.createdAt)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Updated:</span>
+                              <span>{formatDate(project.updatedAt)}</span>
+                            </div>
+                            {project.assignedEmployee && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Assigned:</span>
+                                <span>
+                                  {project.assignedEmployee.firstName} {project.assignedEmployee.lastName}
+                                </span>
+                              </div>
+                            )}
+                            {project.lead && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Lead Source:</span>
+                                <span>{project.lead.source}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </>
                     )}
                   </CardContent>
                 </Card>
-              </div>
-
-              {/* Status & Actions */}
-              <div className="space-y-6">
-                {/* Status Management */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Status Management</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label>Current Status</Label>
-                      <div className="mt-1">
-                        {getStatusBadge(project.projectStatus || project.status)}
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Update Status</Label>
-                      <div className="grid grid-cols-1 gap-2">
-                        {statusOptions.map(option => {
-                          const Icon = option.icon;
-                          return (
-                            <Button
-                              key={option.value}
-                              variant={project.projectStatus === option.value ? "default" : "outline"}
-                              size="sm"
-                              className="justify-start"
-                              onClick={() => handleStatusChange(option.value)}
-                              disabled={updateProjectMutation.isPending}
-                            >
-                              <Icon className="h-3 w-3 mr-2" />
-                              {option.label}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Project Details */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Project Details</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Created:</span>
-                      <span className="text-sm">{formatDate(project.createdAt)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Updated:</span>
-                      <span className="text-sm">{formatDate(project.updatedAt)}</span>
-                    </div>
-                    {project.assignedEmployee && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Assigned:</span>
-                        <span className="text-sm">
-                          {project.assignedEmployee.firstName} {project.assignedEmployee.lastName}
-                        </span>
-                      </div>
-                    )}
-                    {project.lead && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Lead Source:</span>
-                        <span className="text-sm">{project.lead.source}</span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+              </TabsContent>
             </div>
-          </TabsContent>
-
-          <TabsContent value="details">
-            <Card>
-              <CardHeader>
-                <CardTitle>Extended Project Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="font-medium mb-2">Customer Information</h3>
-                      <div className="space-y-2 text-sm">
-                        <div><span className="font-medium">Email:</span> {project.email}</div>
-                        <div><span className="font-medium">Phone:</span> {project.phone}</div>
-                        <div><span className="font-medium">Address:</span> {project.address}</div>
-                      </div>
-                    </div>
-
-                    {project.lead && (
-                      <div>
-                        <h3 className="font-medium mb-2">Lead Information</h3>
-                        <div className="space-y-2 text-sm">
-                          <div><span className="font-medium">Name:</span> {project.lead.firstName} {project.lead.lastName}</div>
-                          <div><span className="font-medium">Source:</span> {project.lead.source}</div>
-                          <div><span className="font-medium">Status:</span> {project.lead.status}</div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {project.notes && (
-                    <div>
-                      <h3 className="font-medium mb-2">Project Notes</h3>
-                      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                        <p className="text-sm whitespace-pre-wrap">{project.notes}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="timeline">
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Timeline</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
-                    <div className="flex-1">
-                      <div className="font-medium">Project Created</div>
-                      <div className="text-sm text-gray-600">{formatDate(project.createdAt)}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <div className="h-2 w-2 bg-green-600 rounded-full"></div>
-                    <div className="flex-1">
-                      <div className="font-medium">Last Updated</div>
-                      <div className="text-sm text-gray-600">{formatDate(project.updatedAt)}</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="files">
-            <Card>
-              <CardHeader>
-                <CardTitle>Files & Documents</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    No files uploaded yet
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Upload project documents, contracts, and images here.
-                  </p>
-                  <Button variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Upload Files
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
