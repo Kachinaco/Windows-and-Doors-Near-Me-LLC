@@ -56,16 +56,7 @@ import {
   type InsertInvoice,
   type ClientMessage,
   type InsertClientMessage,
-  type Lead,
-  type InsertLead,
-  type Job,
-  type InsertJob,
-  type Proposal,
-  type InsertProposal,
-  type CommunicationLog,
-  type InsertCommunicationLog,
-  type UserAvailability,
-  type InsertUserAvailability,
+
   type ProjectUpdate,
   type InsertProjectUpdate,
 } from "@shared/schema";
