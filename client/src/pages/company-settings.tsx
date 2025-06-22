@@ -27,7 +27,7 @@ import type { CompanySettings } from "@shared/schema";
 
 export default function CompanySettingsPage() {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<Partial<CompanySettings>>({});
+  const [formData, setFormData] = useState<any>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
