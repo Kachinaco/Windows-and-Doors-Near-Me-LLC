@@ -258,7 +258,7 @@ export default function ProjectDashboard() {
                       </div>
                       <div className="flex-1">
                         <div className="text-sm text-gray-600 mb-1">
-                          To James Marabella, {project.customerName}
+                          To James Marabella, Client
                         </div>
                         <div className="font-medium text-gray-900 mb-2">
                           Milestone complete
@@ -269,7 +269,7 @@ export default function ProjectDashboard() {
                             This message is to inform you that a milestone has been completed on {project.title} Proposal (2 Doors).
                           </p>
                           <p className="mt-2">
-                            Click below to pay for this milestone. Project name: {project.customerName}
+                            Click below to pay for this milestone. Project name: {project.title}
                           </p>
                           <p className="mt-2">
                             Due date: 06/13/2025
@@ -333,7 +333,7 @@ export default function ProjectDashboard() {
                   <CardContent className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-gray-600">Customer</label>
-                      <p className="text-gray-900">{project.customerName}</p>
+                      <p className="text-gray-900">{project.email || "No customer info"}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">Project Title</label>
