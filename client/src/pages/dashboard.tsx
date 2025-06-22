@@ -427,18 +427,18 @@ export default function Dashboard() {
               </Card>
             </Link>
 
-            {/* Manage Leads */}
+            {/* Manage Leads & Forms */}
             <Link href="/leads">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border-yellow-200 dark:border-yellow-800">
+              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                    <div className="p-2 sm:p-4 bg-yellow-600 rounded-xl sm:rounded-2xl shadow-lg">
+                    <div className="p-2 sm:p-4 bg-orange-600 rounded-xl sm:rounded-2xl shadow-lg">
                       <Users className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                     </div>
                     <div>
                       <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Manage Leads & Forms</p>
                       <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        View customer inquiries
+                        Customer inquiries and forms
                       </p>
                     </div>
                   </div>
