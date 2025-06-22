@@ -29,9 +29,15 @@ import {
   CheckCircle,
   AlertTriangle,
   Play,
-  Pause
+  Pause,
+  Upload,
+  Download,
+  Trash2,
+  Eye,
+  File
 } from "lucide-react";
 import { Link } from "wouter";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface Project {
   id: number;
@@ -91,6 +97,39 @@ export default function ProjectDetailPage() {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Project>>({});
+  const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
+  const [fileForm, setFileForm] = useState({
+    name: '',
+    description: '',
+    category: 'document',
+    file: null as File | null
+  });
+  const [projectFiles, setProjectFiles] = useState([
+    {
+      id: 1,
+      name: 'Window Measurements.pdf',
+      category: 'measurement',
+      size: '2.4 MB',
+      uploadedAt: '2025-06-20T10:30:00Z',
+      uploadedBy: 'Admin User'
+    },
+    {
+      id: 2,
+      name: 'Installation Contract.docx',
+      category: 'contract',
+      size: '156 KB',
+      uploadedAt: '2025-06-19T14:15:00Z',
+      uploadedBy: 'Admin User'
+    },
+    {
+      id: 3,
+      name: 'Before Photos.zip',
+      category: 'photo',
+      size: '8.7 MB',
+      uploadedAt: '2025-06-18T09:45:00Z',
+      uploadedBy: 'Field Tech'
+    }
+  ]);
 
   const { data: project, isLoading } = useQuery({
     queryKey: ["/api/projects", id],
