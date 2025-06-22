@@ -35,6 +35,9 @@ import ProjectDashboardPage from "@/pages/project-dashboard";
 import CompanySettingsPage from "@/pages/company-settings";
 import QuoteDashboard from "@/pages/quote-dashboard";
 import PayrollPage from "@/pages/payroll";
+import CustomerOrdersPage from "@/pages/customer-orders";
+import CustomerDeliveryPage from "@/pages/customer-delivery";
+import CustomerSettingsPage from "@/pages/customer-settings";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -89,6 +92,9 @@ function Router() {
           <Route path="/updates" component={UpdatesPage} />
           <Route path="/company-feed" component={CompanyFeedPage} />
           <Route path="/payroll" component={PayrollPage} />
+          <Route path="/customer-orders" component={CustomerOrdersPage} />
+          <Route path="/customer-delivery" component={CustomerDeliveryPage} />
+          <Route path="/customer-settings" component={CustomerSettingsPage} />
         </>
       ) : (
         <>
