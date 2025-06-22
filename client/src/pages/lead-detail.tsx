@@ -165,6 +165,37 @@ export default function LeadDetail() {
     }
   };
 
+  const handleLogCommunication = (type: string) => {
+    const logData = {
+      leadId: leadId,
+      type: type,
+      direction: "outbound",
+      content: logForm.content,
+      phoneNumber: type === "call" || type === "sms" ? lead?.phone : undefined,
+      emailAddress: type === "email" ? lead?.email : undefined,
+      duration: type === "call" && logForm.duration ? parseInt(logForm.duration) * 60 : undefined,
+    };
+
+    createCommunicationMutation.mutate(logData);
+    setLogDialogOpen(null);
+    setLogForm({ content: "", duration: "", subject: "" });
+  };
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const isYesterday = date.toDateString() === new Date(now.getTime() - 24 * 60 * 60 * 1000).toDateString();
+    
+    if (isToday) {
+      return `Today, ${date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+    } else if (isYesterday) {
+      return `Yesterday, ${date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+    } else {
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
