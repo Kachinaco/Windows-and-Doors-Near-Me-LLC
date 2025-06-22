@@ -538,7 +538,6 @@ export type CommunicationLog = typeof communicationLogs.$inferSelect;
 export type InsertCommunicationLog = z.infer<typeof insertCommunicationLogSchema>;
 
 export type UserAvailability = typeof userAvailability.$inferSelect;
-export type InsertUserAvailability = z.infer<typeof insertUserAvailabilitySchema>;
 
 // Leads table for lead management
 export const leads = pgTable("leads", {
@@ -885,7 +884,6 @@ export type ProjectMetrics = typeof projectMetrics.$inferSelect;
 export type SalesMetrics = typeof salesMetrics.$inferSelect;
 export type CustomerInteraction = typeof customerInteractions.$inferSelect;
 export type PipelineAnalytics = typeof pipelineAnalytics.$inferSelect;
-export type InsertUserAvailability = z.infer<typeof insertUserAvailabilitySchema>;
 export type CompanyPost = typeof companyPosts.$inferSelect;
 export type InsertCompanyPost = z.infer<typeof insertCompanyPostSchema>;
 export type PostView = typeof postViews.$inferSelect;
