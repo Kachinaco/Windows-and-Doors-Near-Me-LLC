@@ -712,7 +712,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/leads/:id", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
     try {
-      const lead = await storage.updateLead(parseInt(req.params.id), req.body);
+      console.log("PUT /api/leads/:id called");
+      console.log("Lead ID:", req.params.id);
+      console.log("Request body:", req.body);
+      console.log("User:", req.user);
+      
+      const leadId = parseInt(req.params.id);
+      if (isNaN(leadId)) {
+        return res.status(400).json({ message: "Invalid lead ID" });
+      }
+      
+      const lead = await storage.updateLead(leadId, req.body);
+      console.log("Updated lead:", lead);
       res.json(lead);
     } catch (error: any) {
       console.error("Error updating lead:", error);

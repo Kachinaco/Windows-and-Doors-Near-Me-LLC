@@ -44,10 +44,15 @@ export default function LeadDetail() {
 
   const updateLeadMutation = useMutation({
     mutationFn: async (updates: Partial<Lead>) => {
-      return apiRequest("PUT", `/api/leads/${leadId}`, updates);
+      console.log("Updating lead with data:", updates);
+      console.log("Lead ID:", leadId);
+      const response = await apiRequest("PUT", `/api/leads/${leadId}`, updates);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Update successful:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/leads", leadId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/leads"] });
       setIsEditing(false);
       setEditedLead({});
       toast({
@@ -56,6 +61,7 @@ export default function LeadDetail() {
       });
     },
     onError: (error: Error) => {
+      console.error("Update error:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -76,7 +82,30 @@ export default function LeadDetail() {
   };
 
   const handleSave = () => {
-    updateLeadMutation.mutate(editedLead);
+    console.log("Save button clicked");
+    console.log("Current editedLead state:", editedLead);
+    console.log("Original lead data:", lead);
+    
+    // Filter out empty values and only include changed fields
+    const updates = Object.entries(editedLead).reduce((acc, [key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as any);
+    
+    console.log("Filtered updates to send:", updates);
+    
+    if (Object.keys(updates).length === 0) {
+      toast({
+        title: "No changes",
+        description: "No changes to save",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    updateLeadMutation.mutate(updates);
   };
 
   const handleCancel = () => {
