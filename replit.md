@@ -199,6 +199,7 @@ Changelog:
 - June 21, 2025. Created dedicated company feed page (/company-feed) for viewing all status updates, modified "View all activity" link to show company status updates instead of project activity, implemented real-time post display with newest posts at top
 - June 21, 2025. Successfully implemented complete photo upload and emoji functionality for company social feed: added image upload with 5MB limit and preview, 12 emoji feelings selector with popover interface, enhanced database schema with image_url and feeling columns, configured multer middleware for file handling, added static file serving for uploaded images, and applied comprehensive authentication fixes for FormData requests
 - June 22, 2025. Fixed lead detail pages to properly display individual lead data: corrected API query to fetch specific lead information, made all contact fields (including customer name) fully editable and saveable, added proper form validation and cache invalidation, enhanced UI with phone icons for consistency
+- June 22, 2025. Implemented role-based dashboard access control: customer free accounts now only see window configuration tool, delivery info, and order tracking; contractor trial/paid accounts get full business management features including project management, calendar, leads, reports, settings, and company activity feed; updated dashboard header to dynamically display company name from company settings instead of hardcoded values
 
 ## User Preferences
 
