@@ -32,14 +32,10 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 
-type ViewMode = 'folders' | 'project-dashboard';
-
 export default function ProjectPortfolioPage() {
   const { user, logout } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [viewMode, setViewMode] = useState<ViewMode>('folders');
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -47,21 +43,41 @@ export default function ProjectPortfolioPage() {
     queryKey: ["/api/projects"],
   });
 
-  // Group projects by status for folder view
+  // Group projects by status for folder view - aligned with pipeline stages
   const projectFolders = useMemo(() => {
     if (!projects || projects.length === 0) return [];
     
     const folders = [
-      { name: 'New Leads', status: 'new_lead', color: 'bg-blue-500' },
-      { name: 'In Progress', status: 'in_progress', color: 'bg-green-500' },
-      { name: 'Scheduled', status: 'scheduled', color: 'bg-orange-500' },
-      { name: 'Completed', status: 'completed', color: 'bg-gray-500' },
+      { 
+        name: 'New Leads', 
+        statuses: ['new_lead', 'need_attention'], 
+        color: 'bg-blue-500',
+        description: 'Fresh inquiries and leads requiring attention'
+      },
+      { 
+        name: 'Active Projects', 
+        statuses: ['sent_estimate', 'signed', 'need_ordered', 'ordered'], 
+        color: 'bg-purple-500',
+        description: 'Projects in progress with estimates or orders'
+      },
+      { 
+        name: 'Scheduled Work', 
+        statuses: ['need_scheduled', 'scheduled', 'in_progress'], 
+        color: 'bg-orange-500',
+        description: 'Jobs ready for scheduling or currently in progress'
+      },
+      { 
+        name: 'Completed', 
+        statuses: ['completed', 'follow_up'], 
+        color: 'bg-green-500',
+        description: 'Finished projects and follow-up tasks'
+      },
     ];
 
     return folders.map(folder => ({
       ...folder,
-      projects: projects.filter(p => p.status === folder.status),
-      count: projects.filter(p => p.status === folder.status).length
+      projects: projects.filter(p => folder.statuses.includes(p.status)),
+      count: projects.filter(p => folder.statuses.includes(p.status)).length
     }));
   }, [projects]);
 
@@ -103,13 +119,8 @@ export default function ProjectPortfolioPage() {
   });
 
   const handleOpenProject = useCallback((project: Project) => {
-    setSelectedProject(project);
-    setViewMode('project-dashboard');
-  }, []);
-
-  const handleBackToFolders = useCallback(() => {
-    setViewMode('folders');
-    setSelectedProject(null);
+    // Navigate to the dedicated project dashboard page instead of inline view
+    window.location.href = `/projects/${project.id}`;
   }, []);
 
   const onSubmit = useCallback((data: any) => {
@@ -144,183 +155,7 @@ export default function ProjectPortfolioPage() {
     return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
   };
 
-  if (viewMode === 'project-dashboard' && selectedProject) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Project Dashboard Header */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleBackToFolders}
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Projects
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{selectedProject.title}</h1>
-                  <p className="text-sm text-gray-600">Project #{selectedProject.id}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                {getStatusBadge(selectedProject.status)}
-                <Button variant="outline" size="sm">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Project Dashboard Content */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            {/* Table Header */}
-            <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <Select defaultValue="main-table">
-                  <SelectTrigger className="w-48 bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="main-table">📋 Main Table</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Table Content */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Task
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Updates
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      People
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Start Time
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Payout
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Phone
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Location
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {/* Coming Soon Section */}
-                  <tr className="bg-blue-50">
-                    <td colSpan={8} className="px-6 py-2 text-sm font-medium text-blue-600">
-                      Coming soon
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      Initial Consultation
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <Users className="h-4 w-4 text-gray-400" />
-                      </Button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-medium">
-                          OA
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className="bg-red-100 text-red-800 border-red-200">
-                        Not Accepted
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      -
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ${selectedProject.estimatedCost?.toLocaleString() || '0'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <Phone className="h-4 w-4 text-gray-400" />
-                      </Button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <MapPin className="h-4 w-4 text-gray-400" />
-                      </Button>
-                    </td>
-                  </tr>
-
-                  {/* Scheduled Section */}
-                  <tr className="bg-green-50">
-                    <td colSpan={8} className="px-6 py-2 text-sm font-medium text-green-600">
-                      Scheduled
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      Window Installation
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <Users className="h-4 w-4 text-gray-400" />
-                      </Button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-medium">
-                          OA
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className="bg-green-100 text-green-800 border-green-200">
-                        Accepted
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      9:00 AM
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      $450
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-600">🇺🇸 (619) 867-6220</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-600">📍 16815 North 62nd</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -385,11 +220,43 @@ export default function ProjectPortfolioPage() {
         {!projectsLoading && (
           <div className="space-y-8">
             {projectFolders.map((folder) => (
-              <div key={folder.status}>
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className={`w-4 h-4 rounded ${folder.color}`}></div>
-                  <h2 className="text-xl font-semibold text-gray-900">{folder.name}</h2>
-                  <Badge variant="secondary" className="ml-2">{folder.count}</Badge>
+              <div key={folder.name}>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-4 h-4 rounded ${folder.color}`}></div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">{folder.name}</h2>
+                      <p className="text-sm text-gray-600">{folder.description}</p>
+                    </div>
+                    <Badge variant="secondary" className="ml-2">{folder.count}</Badge>
+                  </div>
+                  
+                  {/* Quick Actions */}
+                  <div className="flex items-center space-x-2">
+                    {folder.name === 'New Leads' && (
+                      <Link href="/leads">
+                        <Button variant="outline" size="sm">
+                          View All Leads
+                        </Button>
+                      </Link>
+                    )}
+                    {folder.name === 'Scheduled Work' && (
+                      <Link href="/scheduling">
+                        <Button variant="outline" size="sm">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          Schedule
+                        </Button>
+                      </Link>
+                    )}
+                    {folder.name === 'Active Projects' && (
+                      <Link href="/pipeline">
+                        <Button variant="outline" size="sm">
+                          <BarChart3 className="h-4 w-4 mr-1" />
+                          Pipeline
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -402,14 +269,19 @@ export default function ProjectPortfolioPage() {
                     .map((project) => (
                     <Card 
                       key={project.id} 
-                      className="hover:shadow-lg transition-all duration-200 cursor-pointer border-2 border-transparent hover:border-blue-200"
+                      className="hover:shadow-lg transition-all duration-200 cursor-pointer border-2 border-transparent hover:border-blue-200 group"
                       onClick={() => handleOpenProject(project)}
                     >
                       <CardContent className="p-6">
                         <div className="space-y-4">
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900 leading-tight">{project.title}</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">
+                              {project.title}
+                            </h3>
                             <p className="text-sm text-gray-500 mt-1">Project #{project.id}</p>
+                            {project.description && (
+                              <p className="text-xs text-gray-400 mt-1 line-clamp-2">{project.description}</p>
+                            )}
                           </div>
                           
                           <div className="flex items-center justify-between">
@@ -427,7 +299,10 @@ export default function ProjectPortfolioPage() {
                                 ${project.estimatedCost?.toLocaleString() || '0'}
                               </span>
                             </div>
-                            <ChevronRight className="h-5 w-5 text-gray-400" />
+                            <div className="flex items-center space-x-1 text-gray-400">
+                              <span className="text-xs">View Details</span>
+                              <ChevronRight className="h-4 w-4 group-hover:text-blue-600 transition-colors" />
+                            </div>
                           </div>
                         </div>
                       </CardContent>
@@ -436,10 +311,20 @@ export default function ProjectPortfolioPage() {
                 </div>
                 
                 {folder.projects.length === 0 && (
-                  <div className="text-center py-12 text-gray-500">
-                    <FolderOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>No projects in {folder.name.toLowerCase()}</p>
-                  </div>
+                  <Card className="border-2 border-dashed border-gray-200">
+                    <CardContent className="text-center py-12">
+                      <FolderOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <p className="text-gray-500 mb-4">No projects in {folder.name.toLowerCase()}</p>
+                      {folder.name === 'New Leads' && (
+                        <Link href="/leads">
+                          <Button variant="outline" size="sm">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Lead
+                          </Button>
+                        </Link>
+                      )}
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             ))}
