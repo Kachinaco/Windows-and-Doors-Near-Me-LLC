@@ -278,6 +278,20 @@ export const postViewsRelations = relations(postViews, ({ one }) => ({
   }),
 }));
 
+// Company settings for API integrations
+export const companySettings = pgTable("company_settings", {
+  id: serial("id").primaryKey(),
+  openphoneApiKey: text("openphone_api_key"),
+  openphoneWebhookUrl: text("openphone_webhook_url"),
+  gmailClientId: text("gmail_client_id"),
+  gmailClientSecret: text("gmail_client_secret"),
+  gmailRefreshToken: text("gmail_refresh_token"),
+  enableOpenphoneSync: boolean("enable_openphone_sync").default(false),
+  enableGmailSync: boolean("enable_gmail_sync").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Schemas for validation
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -339,6 +353,12 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
 export const insertProjectUpdateSchema = createInsertSchema(projectUpdates).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertCompanySettingsSchema = createInsertSchema(companySettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Types
@@ -560,3 +580,5 @@ export type CompanyPost = typeof companyPosts.$inferSelect;
 export type InsertCompanyPost = z.infer<typeof insertCompanyPostSchema>;
 export type PostView = typeof postViews.$inferSelect;
 export type InsertPostView = z.infer<typeof insertPostViewSchema>;
+export type CompanySettings = typeof companySettings.$inferSelect;
+export type InsertCompanySettings = z.infer<typeof insertCompanySettingsSchema>;
