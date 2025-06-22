@@ -488,81 +488,191 @@ export const userAvailability = pgTable("user_availability", {
 });
 
 // Schema validation
-const insertLeadSchema = createInsertSchema(leads);
-const insertJobSchema = createInsertSchema(jobs);
-const insertProposalSchema = createInsertSchema(proposals);
-const insertCommunicationLogSchema = createInsertSchema(communicationLogs);
+export const insertLeadSchema = createInsertSchema(leads).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertJobSchema = createInsertSchema(jobs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertProposalSchema = createInsertSchema(proposals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertCommunicationLogSchema = createInsertSchema(communicationLogs).omit({
+  id: true,
+  createdAt: true,
+});
 
 export const insertCompanySettingsSchema = createInsertSchema(companySettings).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
-const insertUserAvailabilitySchema = createInsertSchema(userAvailability);
 
-// Relations
-export const leadsRelations = relations(leads, ({ one, many }) => ({
-  assignedTo: one(users, {
-    fields: [leads.assignedToId],
+// Comprehensive Relations for CRM Integration (Single Declaration)
+
+// Analytics and Metrics tables for comprehensive reporting
+export const leadMetrics = pgTable("lead_metrics", {
+  id: serial("id").primaryKey(),
+  leadId: integer("lead_id").references(() => leads.id),
+  source: varchar("source", { length: 50 }).notNull(),
+  conversionRate: decimal("conversion_rate", { precision: 5, scale: 2 }),
+  timeToConversion: integer("time_to_conversion_days"),
+  totalValue: decimal("total_value", { precision: 10, scale: 2 }),
+  followUpCount: integer("follow_up_count").default(0),
+  communicationCount: integer("communication_count").default(0),
+  proposalsSent: integer("proposals_sent").default(0),
+  proposalsAccepted: integer("proposals_accepted").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const projectMetrics = pgTable("project_metrics", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
+  leadSource: varchar("lead_source", { length: 50 }),
+  timeToCompletion: integer("time_to_completion_days"),
+  profitMargin: decimal("profit_margin", { precision: 5, scale: 2 }),
+  customerSatisfactionScore: integer("customer_satisfaction_score"), // 1-10
+  teamEfficiencyScore: decimal("team_efficiency_score", { precision: 5, scale: 2 }),
+  communicationFrequency: integer("communication_frequency"),
+  changeOrderCount: integer("change_order_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const salesMetrics = pgTable("sales_metrics", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  period: varchar("period", { length: 20 }).notNull(), // daily, weekly, monthly, quarterly
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  leadsGenerated: integer("leads_generated").default(0),
+  leadsConverted: integer("leads_converted").default(0),
+  conversionRate: decimal("conversion_rate", { precision: 5, scale: 2 }),
+  totalRevenue: decimal("total_revenue", { precision: 12, scale: 2 }),
+  averageDealSize: decimal("average_deal_size", { precision: 10, scale: 2 }),
+  callsMade: integer("calls_made").default(0),
+  emailsSent: integer("emails_sent").default(0),
+  proposalsSent: integer("proposals_sent").default(0),
+  proposalsAccepted: integer("proposals_accepted").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Customer interaction tracking for complete CRM history
+export const customerInteractions = pgTable("customer_interactions", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id"), // Can reference leads.id or users.id
+  customerType: varchar("customer_type", { length: 20 }).notNull(), // lead, customer
+  interactionType: varchar("interaction_type", { length: 50 }).notNull(), // call, email, meeting, quote, proposal, project_update
+  interactionSource: varchar("interaction_source", { length: 50 }), // website, phone, email, social, referral
+  subject: varchar("subject", { length: 255 }),
+  description: text("description"),
+  outcome: varchar("outcome", { length: 100 }), // scheduled_meeting, sent_quote, closed_deal, follow_up_needed
+  nextAction: text("next_action"),
+  scheduledFollowUp: timestamp("scheduled_follow_up"),
+  performedBy: integer("performed_by").references(() => users.id),
+  relatedProjectId: integer("related_project_id").references(() => projects.id),
+  relatedQuoteId: integer("related_quote_id").references(() => quoteRequests.id),
+  relatedJobId: integer("related_job_id").references(() => jobs.id),
+  metadata: jsonb("metadata"), // Additional context like call duration, email thread, etc.
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Pipeline analytics for business intelligence
+export const pipelineAnalytics = pgTable("pipeline_analytics", {
+  id: serial("id").primaryKey(),
+  stage: varchar("stage", { length: 50 }).notNull(),
+  date: timestamp("date").notNull(),
+  projectCount: integer("project_count").default(0),
+  totalValue: decimal("total_value", { precision: 12, scale: 2 }),
+  averageTimeInStage: decimal("average_time_in_stage_days", { precision: 5, scale: 1 }),
+  conversionRate: decimal("conversion_rate", { precision: 5, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Enhanced Relations for Analytics
+export const leadMetricsRelations = relations(leadMetrics, ({ one }) => ({
+  lead: one(leads, {
+    fields: [leadMetrics.leadId],
+    references: [leads.id],
+  }),
+}));
+
+export const projectMetricsRelations = relations(projectMetrics, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectMetrics.projectId],
+    references: [projects.id],
+  }),
+}));
+
+export const salesMetricsRelations = relations(salesMetrics, ({ one }) => ({
+  user: one(users, {
+    fields: [salesMetrics.userId],
+    references: [users.id],
+  }),
+}));
+
+export const customerInteractionsRelations = relations(customerInteractions, ({ one }) => ({
+  performedByUser: one(users, {
+    fields: [customerInteractions.performedBy],
+    references: [users.id],
+  }),
+  relatedProject: one(projects, {
+    fields: [customerInteractions.relatedProjectId],
+    references: [projects.id],
+  }),
+  relatedQuote: one(quoteRequests, {
+    fields: [customerInteractions.relatedQuoteId],
+    references: [quoteRequests.id],
+  }),
+  relatedJob: one(jobs, {
+    fields: [customerInteractions.relatedJobId],
+    references: [jobs.id],
+  }),
+}));
+
+// Update existing relations to include new connections
+export const enhancedProjectsRelations = relations(projects, ({ one, many }) => ({
+  updates: many(projectUpdates),
+  assignedUser: one(users, {
+    fields: [projects.assignedTo],
     references: [users.id],
   }),
   jobs: many(jobs),
   proposals: many(proposals),
-  communications: many(communicationLogs),
-}));
-
-export const jobsRelations = relations(jobs, ({ one, many }) => ({
-  customer: one(leads, {
-    fields: [jobs.customerId],
-    references: [leads.id],
-  }),
-  project: one(projects, {
-    fields: [jobs.projectId],
-    references: [projects.id],
-  }),
-  assignedTo: one(users, {
-    fields: [jobs.assignedToId],
-    references: [users.id],
-  }),
-  communications: many(communicationLogs),
-}));
-
-export const proposalsRelations = relations(proposals, ({ one }) => ({
-  lead: one(leads, {
-    fields: [proposals.leadId],
-    references: [leads.id],
-  }),
-  project: one(projects, {
-    fields: [proposals.projectId],
-    references: [projects.id],
-  }),
-  createdBy: one(users, {
-    fields: [proposals.createdById],
-    references: [users.id],
+  metrics: one(projectMetrics),
+  interactions: many(customerInteractions),
+  sourceQuote: one(quoteRequests, {
+    fields: [projects.id],
+    references: [quoteRequests.convertedToProjectId],
   }),
 }));
 
-export const communicationLogsRelations = relations(communicationLogs, ({ one }) => ({
-  lead: one(leads, {
-    fields: [communicationLogs.leadId],
-    references: [leads.id],
-  }),
-  job: one(jobs, {
-    fields: [communicationLogs.jobId],
-    references: [jobs.id],
-  }),
-  user: one(users, {
-    fields: [communicationLogs.userId],
-    references: [users.id],
-  }),
+export const enhancedUsersRelations = relations(users, ({ many }) => ({
+  cartItems: many(cartItems),
+  orders: many(orders),
+  assignedQuoteRequests: many(quoteRequests),
+  quoteActivities: many(quoteActivities),
+  assignedLeads: many(leads),
+  assignedJobs: many(jobs),
+  createdProposals: many(proposals),
+  communicationLogs: many(communicationLogs),
+  availability: many(userAvailability),
+  salesMetrics: many(salesMetrics),
+  interactions: many(customerInteractions),
+  assignedProjects: many(projects),
 }));
 
-export const userAvailabilityRelations = relations(userAvailability, ({ one }) => ({
-  user: one(users, {
-    fields: [userAvailability.userId],
-    references: [users.id],
-  }),
-}));
+const insertUserAvailabilitySchema = createInsertSchema(userAvailability).omit({
+  id: true,
+  createdAt: true,
+});
 
 // Company posts schema
 export const insertCompanyPostSchema = createInsertSchema(companyPosts).omit({
@@ -576,16 +686,12 @@ export const insertPostViewSchema = createInsertSchema(postViews).omit({
   viewedAt: true,
 });
 
-// Types
-export type Lead = typeof leads.$inferSelect;
-export type InsertLead = z.infer<typeof insertLeadSchema>;
-export type Job = typeof jobs.$inferSelect;
-export type InsertJob = z.infer<typeof insertJobSchema>;
-export type Proposal = typeof proposals.$inferSelect;
-export type InsertProposal = z.infer<typeof insertProposalSchema>;
-export type CommunicationLog = typeof communicationLogs.$inferSelect;
-export type InsertCommunicationLog = z.infer<typeof insertCommunicationLogSchema>;
-export type UserAvailability = typeof userAvailability.$inferSelect;
+// Additional type exports
+export type LeadMetrics = typeof leadMetrics.$inferSelect;
+export type ProjectMetrics = typeof projectMetrics.$inferSelect;
+export type SalesMetrics = typeof salesMetrics.$inferSelect;
+export type CustomerInteraction = typeof customerInteractions.$inferSelect;
+export type PipelineAnalytics = typeof pipelineAnalytics.$inferSelect;
 export type InsertUserAvailability = z.infer<typeof insertUserAvailabilitySchema>;
 export type CompanyPost = typeof companyPosts.$inferSelect;
 export type InsertCompanyPost = z.infer<typeof insertCompanyPostSchema>;
