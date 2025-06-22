@@ -17,6 +17,11 @@ import {
   userAvailability,
   projectUpdates,
   companySettings,
+  contracts,
+  contractTemplates,
+  proposalTemplates,
+  invoices,
+  clientMessages,
   type User,
   type InsertUser,
   type Product,
@@ -41,6 +46,16 @@ import {
   type InsertPostView,
   type CompanySettings,
   type InsertCompanySettings,
+  type Contract,
+  type InsertContract,
+  type ContractTemplate,
+  type InsertContractTemplate,
+  type ProposalTemplate,
+  type InsertProposalTemplate,
+  type Invoice,
+  type InsertInvoice,
+  type ClientMessage,
+  type InsertClientMessage,
   type Lead,
   type InsertLead,
   type Job,
@@ -125,6 +140,29 @@ export interface IStorage {
   getAllProjectUpdates(): Promise<any[]>;
   getProjectUpdates(projectId: number): Promise<ProjectUpdate[]>;
   createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate>;
+
+  // Contract management operations
+  getAllContracts(): Promise<Contract[]>;
+  getContractById(id: number): Promise<Contract | undefined>;
+  createContract(contract: InsertContract): Promise<Contract>;
+  updateContract(id: number, updates: Partial<InsertContract>): Promise<Contract>;
+  
+  // Contract template operations
+  getAllContractTemplates(): Promise<ContractTemplate[]>;
+  createContractTemplate(template: InsertContractTemplate): Promise<ContractTemplate>;
+  
+  // Proposal template operations
+  getAllProposalTemplates(): Promise<ProposalTemplate[]>;
+  createProposalTemplate(template: InsertProposalTemplate): Promise<ProposalTemplate>;
+  
+  // Invoice operations
+  getAllInvoices(): Promise<Invoice[]>;
+  createInvoice(invoice: InsertInvoice): Promise<Invoice>;
+  
+  // Client message operations
+  getAllClientMessages(): Promise<ClientMessage[]>;
+  getClientMessages(clientId: number): Promise<ClientMessage[]>;
+  createClientMessage(message: InsertClientMessage): Promise<ClientMessage>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -774,6 +812,104 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return settings;
     }
+  }
+
+  // Contract management operations
+  async getAllContracts(): Promise<Contract[]> {
+    return await db.select().from(contracts)
+      .leftJoin(users, eq(contracts.clientId, users.id))
+      .leftJoin(projects, eq(contracts.projectId, projects.id))
+      .orderBy(desc(contracts.createdAt));
+  }
+
+  async getContractById(id: number): Promise<Contract | undefined> {
+    const [contract] = await db.select().from(contracts)
+      .leftJoin(users, eq(contracts.clientId, users.id))
+      .leftJoin(projects, eq(contracts.projectId, projects.id))
+      .where(eq(contracts.id, id));
+    return contract ? contract.contracts : undefined;
+  }
+
+  async createContract(contract: InsertContract): Promise<Contract> {
+    const [newContract] = await db
+      .insert(contracts)
+      .values(contract)
+      .returning();
+    return newContract;
+  }
+
+  async updateContract(id: number, updates: Partial<InsertContract>): Promise<Contract> {
+    const [contract] = await db
+      .update(contracts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(contracts.id, id))
+      .returning();
+    return contract;
+  }
+
+  // Contract template operations
+  async getAllContractTemplates(): Promise<ContractTemplate[]> {
+    return await db.select().from(contractTemplates)
+      .orderBy(desc(contractTemplates.createdAt));
+  }
+
+  async createContractTemplate(template: InsertContractTemplate): Promise<ContractTemplate> {
+    const [newTemplate] = await db
+      .insert(contractTemplates)
+      .values(template)
+      .returning();
+    return newTemplate;
+  }
+
+  // Proposal template operations
+  async getAllProposalTemplates(): Promise<ProposalTemplate[]> {
+    return await db.select().from(proposalTemplates)
+      .orderBy(desc(proposalTemplates.createdAt));
+  }
+
+  async createProposalTemplate(template: InsertProposalTemplate): Promise<ProposalTemplate> {
+    const [newTemplate] = await db
+      .insert(proposalTemplates)
+      .values(template)
+      .returning();
+    return newTemplate;
+  }
+
+  // Invoice operations
+  async getAllInvoices(): Promise<Invoice[]> {
+    return await db.select().from(invoices)
+      .leftJoin(users, eq(invoices.clientId, users.id))
+      .leftJoin(projects, eq(invoices.projectId, projects.id))
+      .orderBy(desc(invoices.createdAt));
+  }
+
+  async createInvoice(invoice: InsertInvoice): Promise<Invoice> {
+    const [newInvoice] = await db
+      .insert(invoices)
+      .values(invoice)
+      .returning();
+    return newInvoice;
+  }
+
+  // Client message operations
+  async getAllClientMessages(): Promise<ClientMessage[]> {
+    return await db.select().from(clientMessages)
+      .leftJoin(users, eq(clientMessages.clientId, users.id))
+      .orderBy(desc(clientMessages.sentAt));
+  }
+
+  async getClientMessages(clientId: number): Promise<ClientMessage[]> {
+    return await db.select().from(clientMessages)
+      .where(eq(clientMessages.clientId, clientId))
+      .orderBy(desc(clientMessages.sentAt));
+  }
+
+  async createClientMessage(message: InsertClientMessage): Promise<ClientMessage> {
+    const [newMessage] = await db
+      .insert(clientMessages)
+      .values(message)
+      .returning();
+    return newMessage;
   }
 }
 
