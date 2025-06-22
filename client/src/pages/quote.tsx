@@ -957,7 +957,7 @@ export default function QuotePage() {
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
-                onClick={() => setLocation('/quote-dashboard')}
+                onClick={() => setLocation('/quotes-manager')}
                 className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
