@@ -303,7 +303,7 @@ export default function Dashboard() {
 
         {/* Role-based Dashboard Content */}
         {effectiveUser?.role === 'customer' ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
             {/* Window Configuration Tool */}
             <Link href="/quote-request">
               <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
@@ -358,6 +358,25 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Profile Settings */}
+            <Link href="/settings">
+              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20 border-gray-200 dark:border-gray-800">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                    <div className="p-2 sm:p-4 bg-gray-600 rounded-xl sm:rounded-2xl shadow-lg">
+                      <Settings className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Profile Settings</p>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                        Update your information
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">

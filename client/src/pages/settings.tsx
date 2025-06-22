@@ -235,15 +235,17 @@ export default function Settings() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className={`grid w-full ${user?.role === 'customer' ? 'grid-cols-1' : 'grid-cols-2'}`}>
             <TabsTrigger value="profile" className="flex items-center space-x-2">
               <User className="h-4 w-4" />
               <span>Profile Settings</span>
             </TabsTrigger>
-            <TabsTrigger value="company" className="flex items-center space-x-2">
-              <Building2 className="h-4 w-4" />
-              <span>Company Settings</span>
-            </TabsTrigger>
+            {user?.role !== 'customer' && (
+              <TabsTrigger value="company" className="flex items-center space-x-2">
+                <Building2 className="h-4 w-4" />
+                <span>Company Settings</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Profile Settings */}
@@ -347,7 +349,8 @@ export default function Settings() {
           </TabsContent>
 
           {/* Company Settings */}
-          <TabsContent value="company" className="space-y-6">
+          {user?.role !== 'customer' && (
+            <TabsContent value="company" className="space-y-6">
             {/* Header Section */}
             <div className="flex items-center justify-between">
               <div>
@@ -660,7 +663,8 @@ export default function Settings() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+            </TabsContent>
+          )}
         </Tabs>
       </main>
     </div>
