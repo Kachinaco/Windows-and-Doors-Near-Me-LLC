@@ -1393,6 +1393,190 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========================
+  // CONTRACT MANAGEMENT ENDPOINTS - HoneyBook Style
+  // ========================
+
+  // Get all contracts
+  app.get("/api/contracts", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const contracts = await storage.getAllContracts();
+      res.json(contracts);
+    } catch (error: any) {
+      console.error("Error fetching contracts:", error);
+      res.status(500).json({ message: "Failed to fetch contracts" });
+    }
+  });
+
+  // Create new contract
+  app.post("/api/contracts", authenticateToken, requireRole(['admin', 'contractor_trial', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const contractData = {
+        ...req.body,
+        createdBy: req.user!.id,
+        createdAt: new Date().toISOString()
+      };
+      const contract = await storage.createContract(contractData);
+      res.status(201).json(contract);
+    } catch (error: any) {
+      console.error("Error creating contract:", error);
+      res.status(500).json({ message: "Failed to create contract" });
+    }
+  });
+
+  // Get contract by ID
+  app.get("/api/contracts/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const contractId = parseInt(req.params.id);
+      const contract = await storage.getContractById(contractId);
+      if (!contract) {
+        return res.status(404).json({ message: "Contract not found" });
+      }
+      res.json(contract);
+    } catch (error: any) {
+      console.error("Error fetching contract:", error);
+      res.status(500).json({ message: "Failed to fetch contract" });
+    }
+  });
+
+  // Update contract
+  app.put("/api/contracts/:id", authenticateToken, requireRole(['admin', 'contractor_trial', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const contractId = parseInt(req.params.id);
+      const contract = await storage.updateContract(contractId, req.body);
+      res.json(contract);
+    } catch (error: any) {
+      console.error("Error updating contract:", error);
+      res.status(500).json({ message: "Failed to update contract" });
+    }
+  });
+
+  // Send contract to client
+  app.post("/api/contracts/:id/send", authenticateToken, requireRole(['admin', 'contractor_trial', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const contractId = parseInt(req.params.id);
+      const contract = await storage.updateContract(contractId, {
+        status: 'sent',
+        sentAt: new Date().toISOString()
+      });
+      res.json(contract);
+    } catch (error: any) {
+      console.error("Error sending contract:", error);
+      res.status(500).json({ message: "Failed to send contract" });
+    }
+  });
+
+  // Get contract templates
+  app.get("/api/contract-templates", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const templates = await storage.getAllContractTemplates();
+      res.json(templates);
+    } catch (error: any) {
+      console.error("Error fetching contract templates:", error);
+      res.status(500).json({ message: "Failed to fetch contract templates" });
+    }
+  });
+
+  // Create contract template
+  app.post("/api/contract-templates", authenticateToken, requireRole(['admin', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const templateData = {
+        ...req.body,
+        createdBy: req.user!.id,
+        createdAt: new Date().toISOString()
+      };
+      const template = await storage.createContractTemplate(templateData);
+      res.status(201).json(template);
+    } catch (error: any) {
+      console.error("Error creating contract template:", error);
+      res.status(500).json({ message: "Failed to create contract template" });
+    }
+  });
+
+  // Get proposal templates
+  app.get("/api/proposal-templates", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const templates = await storage.getAllProposalTemplates();
+      res.json(templates);
+    } catch (error: any) {
+      console.error("Error fetching proposal templates:", error);
+      res.status(500).json({ message: "Failed to fetch proposal templates" });
+    }
+  });
+
+  // Create proposal template
+  app.post("/api/proposal-templates", authenticateToken, requireRole(['admin', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const templateData = {
+        ...req.body,
+        createdBy: req.user!.id,
+        createdAt: new Date().toISOString()
+      };
+      const template = await storage.createProposalTemplate(templateData);
+      res.status(201).json(template);
+    } catch (error: any) {
+      console.error("Error creating proposal template:", error);
+      res.status(500).json({ message: "Failed to create proposal template" });
+    }
+  });
+
+  // Get invoices
+  app.get("/api/invoices", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const invoices = await storage.getAllInvoices();
+      res.json(invoices);
+    } catch (error: any) {
+      console.error("Error fetching invoices:", error);
+      res.status(500).json({ message: "Failed to fetch invoices" });
+    }
+  });
+
+  // Create invoice
+  app.post("/api/invoices", authenticateToken, requireRole(['admin', 'contractor_trial', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const invoiceData = {
+        ...req.body,
+        createdBy: req.user!.id,
+        createdAt: new Date().toISOString()
+      };
+      const invoice = await storage.createInvoice(invoiceData);
+      res.status(201).json(invoice);
+    } catch (error: any) {
+      console.error("Error creating invoice:", error);
+      res.status(500).json({ message: "Failed to create invoice" });
+    }
+  });
+
+  // Get client messages
+  app.get("/api/client-messages", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { clientId } = req.query;
+      const messages = clientId 
+        ? await storage.getClientMessages(parseInt(clientId as string))
+        : await storage.getAllClientMessages();
+      res.json(messages);
+    } catch (error: any) {
+      console.error("Error fetching client messages:", error);
+      res.status(500).json({ message: "Failed to fetch client messages" });
+    }
+  });
+
+  // Send client message
+  app.post("/api/client-messages", authenticateToken, requireRole(['admin', 'contractor_trial', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const messageData = {
+        ...req.body,
+        sentBy: req.user!.id,
+        sentAt: new Date().toISOString()
+      };
+      const message = await storage.createClientMessage(messageData);
+      res.status(201).json(message);
+    } catch (error: any) {
+      console.error("Error sending client message:", error);
+      res.status(500).json({ message: "Failed to send client message" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
