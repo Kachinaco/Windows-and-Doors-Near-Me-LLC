@@ -746,9 +746,9 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Posts Feed */}
+            {/* Posts Feed - Show only first 3 posts */}
             <div className="space-y-3 sm:space-y-4">
-              {companyPosts.map((post: any) => (
+              {companyPosts.slice(0, 3).map((post: any) => (
                 <Card key={post.id}>
                   <CardContent className="p-3 sm:p-6">
                     <div className="flex items-start space-x-2 sm:space-x-4">
@@ -819,6 +819,17 @@ export default function Dashboard() {
                 </Card>
               ))}
             </div>
+
+            {/* View All Updates Button */}
+            {companyPosts.length > 3 && (
+              <div className="text-center pt-4">
+                <Link href="/company-feed">
+                  <Button variant="outline" className="w-full sm:w-auto">
+                    View all updates
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         )}
       </main>
