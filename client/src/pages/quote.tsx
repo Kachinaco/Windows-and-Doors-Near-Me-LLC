@@ -7,10 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Calculator, FileText, Phone, CheckCircle, Image, X } from "lucide-react";
+import { ArrowLeft, Plus, Calculator, FileText, Phone, CheckCircle, Image, X, Save } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 
 interface QuoteItem {
   id: string;
@@ -220,6 +221,7 @@ const windowGalleries = {
 export default function QuotePage() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const [step, setStep] = useState<"configure" | "summary" | "contact">("configure");
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
   const [openGallery, setOpenGallery] = useState<string | null>(null);
@@ -830,14 +832,65 @@ export default function QuotePage() {
     );
   }
 
+  // Save quote functionality
+  const saveQuote = () => {
+    const quoteData = {
+      items: quoteItems,
+      currentItem: currentItem,
+      step: step,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('savedQuote', JSON.stringify(quoteData));
+    toast({
+      title: "Quote Saved",
+      description: "Your window configuration has been saved locally.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-7xl mx-auto">
+        {/* Header with Navigation */}
+        <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                onClick={() => setLocation('/dashboard')}
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+              <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Window Configuration Tool
+              </h1>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                onClick={saveQuote}
+                className="text-blue-600 border-blue-200 hover:bg-blue-50"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Configuration
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Admin View Toggle and Description */}
         <div className="mb-6">
           <div className="flex justify-between items-start mb-2">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Window Configuration Tool
-            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Configure your Milgard windows and get an instant quote
+              {user && (user.role === 'admin' || user.role === 'contractor_paid') && viewAsCustomer && (
+                <span className="ml-2 text-blue-600 dark:text-blue-400 font-medium">
+                  (Customer View - V300/V400 only)
+                </span>
+              )}
+            </p>
             {/* Admin View Toggle */}
             {user && (user.role === 'admin' || user.role === 'contractor_paid') && (
               <div className="flex items-center space-x-2 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg border">
@@ -865,14 +918,6 @@ export default function QuotePage() {
               </div>
             )}
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
-            Configure your Milgard windows and get an instant quote
-            {user && (user.role === 'admin' || user.role === 'contractor_paid') && viewAsCustomer && (
-              <span className="ml-2 text-blue-600 dark:text-blue-400 font-medium">
-                (Customer View - V300/V400 only)
-              </span>
-            )}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
