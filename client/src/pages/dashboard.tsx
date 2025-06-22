@@ -305,7 +305,7 @@ export default function Dashboard() {
         {effectiveUser?.role === 'customer' ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
             {/* Window Configuration Tool */}
-            <Link href="/quote-request">
+            <Link href="/quote">
               <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -381,7 +381,7 @@ export default function Dashboard() {
         ) : (
           <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
             {/* Window Configuration Tool */}
-            <Link href="/quote-request">
+            <Link href="/quote">
               <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
