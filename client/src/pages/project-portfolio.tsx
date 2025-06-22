@@ -28,7 +28,8 @@ import {
   Users,
   Calendar,
   Phone,
-  MapPin
+  MapPin,
+  BarChart3
 } from "lucide-react";
 import { Link } from "wouter";
 
