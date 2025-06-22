@@ -237,6 +237,133 @@ export const blogPostsRelations = relations(blogPosts, ({ one }) => ({
   }),
 }));
 
+// Contracts management - HoneyBook inspired
+export const contracts = pgTable("contracts", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
+  clientId: integer("client_id").references(() => users.id),
+  contractorId: integer("contractor_id").references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  terms: text("terms").notNull(),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }),
+  paymentSchedule: jsonb("payment_schedule"), // milestone-based payments
+  status: text("status").notNull().default("draft"), // draft, sent, viewed, signed, completed, cancelled
+  templateId: integer("template_id").references(() => contractTemplates.id),
+  signedByClient: boolean("signed_by_client").default(false),
+  signedByContractor: boolean("signed_by_contractor").default(false),
+  clientSignatureDate: timestamp("client_signature_date"),
+  contractorSignatureDate: timestamp("contractor_signature_date"),
+  contractUrl: text("contract_url"), // PDF or document URL
+  sentAt: timestamp("sent_at"),
+  viewedAt: timestamp("viewed_at"),
+  dueDate: timestamp("due_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Contract templates for reusability
+export const contractTemplates = pgTable("contract_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  content: text("content").notNull(), // HTML template content
+  category: text("category"), // window-installation, door-installation, full-service
+  isActive: boolean("is_active").default(true),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Enhanced proposals with HoneyBook-style features
+export const proposalTemplates = pgTable("proposal_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  content: text("content").notNull(), // HTML template
+  serviceCategory: text("service_category"), // windows, doors, combined
+  defaultPricing: jsonb("default_pricing"), // base pricing structure
+  sections: jsonb("sections"), // customizable sections
+  isActive: boolean("is_active").default(true),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Enhanced invoicing system
+export const invoices = pgTable("invoices", {
+  id: serial("id").primaryKey(),
+  invoiceNumber: text("invoice_number").notNull().unique(),
+  projectId: integer("project_id").references(() => projects.id),
+  contractId: integer("contract_id").references(() => contracts.id),
+  clientId: integer("client_id").references(() => users.id),
+  contractorId: integer("contractor_id").references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  lineItems: jsonb("line_items").notNull(), // itemized billing
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }),
+  taxAmount: decimal("tax_amount", { precision: 10, scale: 2 }),
+  discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }),
+  status: text("status").notNull().default("draft"), // draft, sent, viewed, paid, overdue, cancelled
+  paymentMethod: text("payment_method"), // credit_card, bank_transfer, check, cash
+  paymentTerms: text("payment_terms").default("net_30"), // net_15, net_30, due_on_receipt
+  sentAt: timestamp("sent_at"),
+  viewedAt: timestamp("viewed_at"),
+  paidAt: timestamp("paid_at"),
+  dueDate: timestamp("due_date"),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Client communication timeline - HoneyBook style
+export const clientMessages = pgTable("client_messages", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
+  senderId: integer("sender_id").references(() => users.id),
+  recipientId: integer("recipient_id").references(() => users.id),
+  messageType: text("message_type").notNull(), // email, sms, in_app, system_notification
+  subject: text("subject"),
+  content: text("content").notNull(),
+  attachments: jsonb("attachments"), // file URLs and metadata
+  status: text("status").notNull().default("sent"), // sent, delivered, read, failed
+  readAt: timestamp("read_at"),
+  emailId: text("email_id"), // for tracking email opens
+  smsId: text("sms_id"), // for SMS delivery status
+  automationTriggered: boolean("automation_triggered").default(false),
+  templateId: integer("template_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Automated workflow system
+export const workflows = pgTable("workflows", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  triggerType: text("trigger_type").notNull(), // project_created, contract_signed, payment_received, etc.
+  triggerConditions: jsonb("trigger_conditions"),
+  actions: jsonb("actions"), // email templates, task creation, status updates
+  isActive: boolean("is_active").default(true),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Workflow execution log
+export const workflowExecutions = pgTable("workflow_executions", {
+  id: serial("id").primaryKey(),
+  workflowId: integer("workflow_id").references(() => workflows.id),
+  projectId: integer("project_id").references(() => projects.id),
+  triggeredBy: text("triggered_by"), // user_action, system_event
+  executionStatus: text("execution_status").notNull(), // pending, completed, failed
+  actionsExecuted: jsonb("actions_executed"),
+  errorLog: text("error_log"),
+  executedAt: timestamp("executed_at").defaultNow().notNull(),
+});
+
 // Company posts for internal social feed
 export const companyPosts = pgTable("company_posts", {
   id: serial("id").primaryKey(),
@@ -513,6 +640,57 @@ export const insertCompanySettingsSchema = createInsertSchema(companySettings).o
   createdAt: true,
   updatedAt: true,
 });
+
+// HoneyBook-inspired schema validations
+export const insertContractSchema = createInsertSchema(contracts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertContractTemplateSchema = createInsertSchema(contractTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertProposalTemplateSchema = createInsertSchema(proposalTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertClientMessageSchema = createInsertSchema(clientMessages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertWorkflowSchema = createInsertSchema(workflows).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types for HoneyBook features
+export type Contract = typeof contracts.$inferSelect;
+export type InsertContract = z.infer<typeof insertContractSchema>;
+export type ContractTemplate = typeof contractTemplates.$inferSelect;
+export type InsertContractTemplate = z.infer<typeof insertContractTemplateSchema>;
+export type ProposalTemplate = typeof proposalTemplates.$inferSelect;
+export type InsertProposalTemplate = z.infer<typeof insertProposalTemplateSchema>;
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+export type ClientMessage = typeof clientMessages.$inferSelect;
+export type InsertClientMessage = z.infer<typeof insertClientMessageSchema>;
+export type Workflow = typeof workflows.$inferSelect;
+export type InsertWorkflow = z.infer<typeof insertWorkflowSchema>;
 
 // Comprehensive Relations for CRM Integration (Single Declaration)
 
