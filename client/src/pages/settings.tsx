@@ -10,17 +10,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { 
   ArrowLeft,
   User,
   Building2,
   Save,
-  Loader2
+  Loader2,
+  Phone,
+  Mail,
+  Cog as SettingsIcon,
+  Key,
+  Webhook,
+  TestTube,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  MapPin,
+  Globe
 } from "lucide-react";
 import { Link } from "wouter";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import type { CompanySettings } from "@shared/schema";
 
 // Form schemas
 const profileSchema = z.object({
