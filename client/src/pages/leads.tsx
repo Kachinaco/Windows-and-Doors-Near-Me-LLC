@@ -167,20 +167,23 @@ export default function LeadsPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            onClick={() => setLocation("/dashboard")}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Dashboard</span>
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Lead Management</h1>
-            <p className="text-gray-600 dark:text-gray-400">Track and manage incoming leads from all sources</p>
-          </div>
+      {/* Back Button */}
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          onClick={() => setLocation("/dashboard")}
+          className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Dashboard</span>
+        </Button>
+      </div>
+      
+      {/* Header Section */}
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Lead Management</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Track and manage incoming leads from all sources</p>
         </div>
         
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
