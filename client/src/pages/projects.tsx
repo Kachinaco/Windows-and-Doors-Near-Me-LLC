@@ -41,9 +41,229 @@ import {
   ArrowRight,
   Plus,
   MessageSquare,
-  FileText
+  FileText,
+  GripVertical
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  UniqueIdentifier,
+  useDroppable,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  CSS,
+} from '@dnd-kit/utilities';
+
+// Draggable Project Card Component
+function DraggableProjectCard({ project, isInFolder = false }: { project: Project; isInFolder?: boolean }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: project.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const getStatusBadgeColor = (status: string) => {
+    const statusColors: Record<string, string> = {
+      pending: "bg-blue-100 text-blue-800",
+      new_lead: "bg-blue-100 text-blue-800",
+      need_attention: "bg-yellow-100 text-yellow-800",
+      sent_estimate: "bg-orange-100 text-orange-800",
+      signed: "bg-green-100 text-green-800",
+      need_ordered: "bg-red-100 text-red-800",
+      ordered: "bg-purple-100 text-purple-800",
+      need_scheduled: "bg-pink-100 text-pink-800",
+      scheduled: "bg-blue-100 text-blue-800",
+      in_progress: "bg-yellow-100 text-yellow-800",
+      complete: "bg-green-100 text-green-800"
+    };
+    return statusColors[status] || "bg-gray-100 text-gray-800";
+  };
+
+  if (isInFolder) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        className={`bg-white rounded-lg border p-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow ${
+          isDragging ? 'shadow-lg ring-2 ring-blue-500' : ''
+        }`}
+      >
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div {...listeners} className="cursor-grab">
+              <GripVertical className="h-4 w-4 text-gray-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">{project.title}</h3>
+              <p className="text-sm text-gray-500">Project #{project.id}</p>
+              {project.description && (
+                <p className="text-sm text-gray-600 mt-1">{project.description}</p>
+              )}
+            </div>
+          </div>
+          <Badge className={getStatusBadgeColor(project.status)}>
+            {project.status === 'new_lead' ? 'New Lead' : project.status.replace('_', ' ')}
+          </Badge>
+        </div>
+        
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              Medium
+            </span>
+            {project.estimatedCost && (
+              <span className="font-medium text-green-600">
+                ${project.estimatedCost}
+              </span>
+            )}
+          </div>
+          <Link href={`/project-detail/${project.id}`}>
+            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+              View Details →
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <TableRow 
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className={`cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''}`}
+    >
+      <TableCell className="font-medium">
+        <div className="flex items-center gap-2">
+          <div {...listeners} className="cursor-grab">
+            <GripVertical className="h-4 w-4 text-gray-400" />
+          </div>
+          {project.title}
+        </div>
+      </TableCell>
+      <TableCell>{project.serviceType}</TableCell>
+      <TableCell>
+        <Badge className={getStatusBadgeColor(project.status)}>
+          {project.status.replace('_', ' ')}
+        </Badge>
+      </TableCell>
+      <TableCell>{project.priority}</TableCell>
+      <TableCell>{project.estimatedCost ? `$${project.estimatedCost}` : '-'}</TableCell>
+      <TableCell>
+        <Link href={`/project-detail/${project.id}`}>
+          <Button variant="ghost" size="sm">
+            View
+          </Button>
+        </Link>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+// Droppable Folder Component
+function DroppableFolder({ 
+  title, 
+  description, 
+  icon: Icon, 
+  color, 
+  projects, 
+  count, 
+  folderId,
+  actionButton 
+}: { 
+  title: string;
+  description: string;
+  icon: any;
+  color: string;
+  projects: Project[];
+  count: number;
+  folderId: string;
+  actionButton?: React.ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: folderId,
+  });
+
+  return (
+    <div 
+      ref={setNodeRef}
+      className={`border rounded-lg bg-white transition-colors ${
+        isOver ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+      }`}
+      id={`stage-${folderId}`}
+    >
+      <div className="p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${color}`}>
+              <Icon className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+              <p className="text-sm text-gray-600">{description}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl font-bold text-gray-900">{count}</span>
+            {actionButton}
+          </div>
+        </div>
+      </div>
+      
+      <div className="p-6">
+        {projects.length > 0 ? (
+          <SortableContext 
+            items={projects.map(p => p.id)} 
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-4">
+              {projects.map((project) => (
+                <DraggableProjectCard key={project.id} project={project} isInFolder={true} />
+              ))}
+            </div>
+          </SortableContext>
+        ) : (
+          <div className="text-center py-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Briefcase className="h-8 w-8 text-gray-400" />
+            </div>
+            <p className="text-gray-500">No projects in {title.toLowerCase()}</p>
+          </div>
+        )}
+        
+        {/* Drop zone indicator */}
+        {isOver && (
+          <div className="mt-4 p-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-100 text-center text-blue-600">
+            Drop project here to move to {title}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function ProjectsPage() {
   const { user, logout } = useAuth();
@@ -52,6 +272,17 @@ export default function ProjectsPage() {
   const [location] = useLocation();
   const [sortColumn, setSortColumn] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const { toast } = useToast();
+  
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
   
   // Layout configuration
   const { layout, saveLayout } = useLayoutConfig();
@@ -76,6 +307,66 @@ export default function ProjectsPage() {
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
+
+  // Mutation to update project status
+  const updateProjectMutation = useMutation({
+    mutationFn: async ({ projectId, status }: { projectId: number; status: string }) => {
+      return await fetch(`/api/projects/${projectId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status }),
+      }).then(res => res.json());
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      toast({
+        title: "Success",
+        description: "Project status updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update project status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Drag and drop handlers
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over) return;
+
+    const projectId = Number(active.id);
+    const newFolderId = String(over.id);
+
+    // Map folder IDs to actual status values
+    const folderToStatusMap: Record<string, string> = {
+      new_leads: "new_lead",
+      active_projects: "in_progress",
+      scheduled_work: "scheduled"
+    };
+
+    const newStatus = folderToStatusMap[newFolderId];
+    if (!newStatus) return;
+
+    // Find the project and check if status actually changed
+    const project = projects.find((p: Project) => p.id === projectId);
+    if (!project || project.status === newStatus) return;
+
+    // Update the project status
+    updateProjectMutation.mutate({ projectId, status: newStatus });
+  };
 
   // Filter projects based on stage parameter
   const filteredProjects = useMemo(() => {
