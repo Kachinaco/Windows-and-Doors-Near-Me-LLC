@@ -380,13 +380,32 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-            {/* Project Management */}
-            <Link href="/projects">
+            {/* Window Configuration Tool */}
+            <Link href="/quote-request">
               <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                     <div className="p-2 sm:p-4 bg-blue-600 rounded-xl sm:rounded-2xl shadow-lg">
                       <Building2 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Window Configuration</p>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                        Design and price windows
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Project Management */}
+            <Link href="/projects">
+              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-800">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                    <div className="p-2 sm:p-4 bg-indigo-600 rounded-xl sm:rounded-2xl shadow-lg">
+                      <BarChart3 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                     </div>
                     <div>
                       <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Project Management</p>
