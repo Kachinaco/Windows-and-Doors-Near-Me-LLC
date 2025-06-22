@@ -1029,7 +1029,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: content.trim(),
         authorId: req.user!.id,
         likesCount: 0,
-        commentsCount: 0
+        commentsCount: 0,
+        viewsCount: 0
       };
 
       // Add feeling if provided
@@ -1048,6 +1049,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error creating company post:", error);
       res.status(500).json({ message: "Failed to create company post" });
+    }
+  });
+
+  // Record post view
+  app.post("/api/company-posts/:id/view", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      
+      await storage.recordPostView(postId, userId);
+      res.status(200).json({ message: "View recorded" });
+    } catch (error: any) {
+      console.error("Error recording post view:", error);
+      res.status(500).json({ message: "Failed to record view" });
+    }
+  });
+
+  // Get post viewers
+  app.get("/api/company-posts/:id/viewers", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const viewers = await storage.getPostViewers(postId);
+      res.json(viewers);
+    } catch (error: any) {
+      console.error("Error fetching post viewers:", error);
+      res.status(500).json({ message: "Failed to fetch viewers" });
     }
   });
 
