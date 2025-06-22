@@ -191,6 +191,70 @@ export default function ProjectDetailPage() {
     updateProjectMutation.mutate(updates);
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFileForm(prev => ({ ...prev, file, name: file.name }));
+    }
+  };
+
+  const handleCreateFile = () => {
+    if (!fileForm.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a file name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newFile = {
+      id: Date.now(),
+      name: fileForm.name,
+      category: fileForm.category,
+      size: fileForm.file ? `${(fileForm.file.size / 1024 / 1024).toFixed(1)} MB` : '0 KB',
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: user?.firstName + ' ' + user?.lastName || 'Unknown User'
+    };
+
+    setProjectFiles(prev => [newFile, ...prev]);
+    setFileForm({ name: '', description: '', category: 'document', file: null });
+    setIsFileDialogOpen(false);
+
+    toast({
+      title: "Success",
+      description: "File uploaded successfully",
+    });
+  };
+
+  const handleDeleteFile = (fileId: number) => {
+    setProjectFiles(prev => prev.filter(f => f.id !== fileId));
+    toast({
+      title: "Success",
+      description: "File deleted successfully",
+    });
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'contract': return FileText;
+      case 'measurement': return FileText;
+      case 'photo': return Eye;
+      case 'document': return File;
+      default: return File;
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'contract': return 'bg-blue-100 text-blue-800';
+      case 'measurement': return 'bg-green-100 text-green-800';
+      case 'photo': return 'bg-purple-100 text-purple-800';
+      case 'document': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const option = statusOptions.find(opt => opt.value === status);
     if (!option) return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
@@ -624,14 +688,144 @@ export default function ProjectDetailPage() {
               </TabsContent>
 
               <TabsContent value="files" className="mt-0">
-                <div className="text-center py-12">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No files yet</h3>
-                  <p className="text-gray-500 mb-4">Upload files and documents related to this project.</p>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Upload File
-                  </Button>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Project Files</h3>
+                    <Dialog open={isFileDialogOpen} onOpenChange={setIsFileDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Upload File
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Upload New File</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="file-upload">Select File</Label>
+                            <Input
+                              id="file-upload"
+                              type="file"
+                              onChange={handleFileUpload}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="file-name">File Name</Label>
+                            <Input
+                              id="file-name"
+                              value={fileForm.name}
+                              onChange={(e) => setFileForm(prev => ({ ...prev, name: e.target.value }))}
+                              placeholder="Enter file name"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="file-category">Category</Label>
+                            <Select value={fileForm.category} onValueChange={(value) => setFileForm(prev => ({ ...prev, category: value }))}>
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="document">Document</SelectItem>
+                                <SelectItem value="contract">Contract</SelectItem>
+                                <SelectItem value="measurement">Measurement</SelectItem>
+                                <SelectItem value="photo">Photo</SelectItem>
+                                <SelectItem value="invoice">Invoice</SelectItem>
+                                <SelectItem value="proposal">Proposal</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="file-description">Description (Optional)</Label>
+                            <Textarea
+                              id="file-description"
+                              value={fileForm.description}
+                              onChange={(e) => setFileForm(prev => ({ ...prev, description: e.target.value }))}
+                              placeholder="Brief description of the file"
+                              className="mt-1"
+                              rows={2}
+                            />
+                          </div>
+                          <div className="flex gap-2 pt-2">
+                            <Button onClick={handleCreateFile} className="flex-1">
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload File
+                            </Button>
+                            <Button variant="outline" onClick={() => setIsFileDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                  
+                  {projectFiles.length > 0 ? (
+                    <div className="space-y-3">
+                      {projectFiles.map((file) => {
+                        const CategoryIcon = getCategoryIcon(file.category);
+                        return (
+                          <Card key={file.id} className="hover:shadow-md transition-shadow">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gray-100 rounded-lg">
+                                  <CategoryIcon className="h-5 w-5 text-gray-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="font-medium text-gray-900 truncate">{file.name}</h4>
+                                    <Badge className={getCategoryColor(file.category)} variant="secondary">
+                                      {file.category}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                                    <span>{file.size}</span>
+                                    <span>•</span>
+                                    <span>Uploaded by {file.uploadedBy}</span>
+                                    <span>•</span>
+                                    <span>{new Date(file.uploadedAt).toLocaleDateString()}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-700 hover:bg-gray-50">
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    onClick={() => handleDeleteFile(file.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <Card>
+                      <CardContent className="p-8">
+                        <div className="text-center">
+                          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <h4 className="text-lg font-medium text-gray-900 mb-2">No files yet</h4>
+                          <p className="text-gray-500 mb-4">Upload files and documents related to this project.</p>
+                          <Button onClick={() => setIsFileDialogOpen(true)}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Upload First File
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               </TabsContent>
 
