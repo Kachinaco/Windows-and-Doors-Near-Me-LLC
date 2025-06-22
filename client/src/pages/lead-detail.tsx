@@ -76,6 +76,8 @@ export default function LeadDetail() {
     if (!lead) return;
     
     setEditedLead({
+      firstName: lead.firstName || "",
+      lastName: lead.lastName || "",
       email: lead.email || "",
       phone: lead.phone || "",
       address: lead.address || "",
@@ -273,9 +275,28 @@ export default function LeadDetail() {
                   <Label className="text-sm font-medium text-gray-600 block mb-2">
                     Customer Name
                   </Label>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <span className="text-gray-900 font-medium">{lead.firstName} {lead.lastName}</span>
-                  </div>
+                  {isEditing ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        type="text"
+                        value={editedLead.firstName || ""}
+                        onChange={(e) => setEditedLead(prev => ({ ...prev, firstName: e.target.value }))}
+                        className="w-full"
+                        placeholder="First name"
+                      />
+                      <Input
+                        type="text"
+                        value={editedLead.lastName || ""}
+                        onChange={(e) => setEditedLead(prev => ({ ...prev, lastName: e.target.value }))}
+                        className="w-full"
+                        placeholder="Last name"
+                      />
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <span className="text-gray-900 font-medium">{lead.firstName} {lead.lastName}</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div>
