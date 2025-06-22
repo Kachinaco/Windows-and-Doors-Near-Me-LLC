@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, varchar, integer, boolean, jsonb, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, varchar, integer, boolean, jsonb, decimal, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -246,13 +246,34 @@ export const companyPosts = pgTable("company_posts", {
   authorId: integer("author_id").references(() => users.id).notNull(),
   likesCount: integer("likes_count").default(0),
   commentsCount: integer("comments_count").default(0),
+  viewsCount: integer("views_count").default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const companyPostsRelations = relations(companyPosts, ({ one }) => ({
+// Track who viewed which posts
+export const postViews = pgTable("post_views", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => companyPosts.id, { onDelete: "cascade" }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  viewedAt: timestamp("viewed_at").defaultNow().notNull(),
+});
+
+export const companyPostsRelations = relations(companyPosts, ({ one, many }) => ({
   author: one(users, {
     fields: [companyPosts.authorId],
+    references: [users.id],
+  }),
+  views: many(postViews),
+}));
+
+export const postViewsRelations = relations(postViews, ({ one }) => ({
+  post: one(companyPosts, {
+    fields: [postViews.postId],
+    references: [companyPosts.id],
+  }),
+  user: one(users, {
+    fields: [postViews.userId],
     references: [users.id],
   }),
 }));
@@ -519,6 +540,11 @@ export const insertCompanyPostSchema = createInsertSchema(companyPosts).omit({
   updatedAt: true,
 });
 
+export const insertPostViewSchema = createInsertSchema(postViews).omit({
+  id: true,
+  viewedAt: true,
+});
+
 // Types
 export type Lead = typeof leads.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
@@ -532,3 +558,5 @@ export type UserAvailability = typeof userAvailability.$inferSelect;
 export type InsertUserAvailability = z.infer<typeof insertUserAvailabilitySchema>;
 export type CompanyPost = typeof companyPosts.$inferSelect;
 export type InsertCompanyPost = z.infer<typeof insertCompanyPostSchema>;
+export type PostView = typeof postViews.$inferSelect;
+export type InsertPostView = z.infer<typeof insertPostViewSchema>;

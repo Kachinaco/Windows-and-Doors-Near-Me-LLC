@@ -197,6 +197,7 @@ Changelog:
 - June 21, 2025. Created comprehensive activity feed system with dedicated updates page (/updates), database table for project activities, API endpoints for fetching/creating updates, and fixed non-functional "Share something..." button on dashboard to link to activity feed
 - June 21, 2025. Renamed "Activity Feed" to "Activity" and implemented Facebook-like company social feed on dashboard with post creation, sample team posts, interactive UI elements (like, comment, share buttons), and backend API endpoints for company posts functionality
 - June 21, 2025. Created dedicated company feed page (/company-feed) for viewing all status updates, modified "View all activity" link to show company status updates instead of project activity, implemented real-time post display with newest posts at top
+- June 21, 2025. Successfully implemented complete photo upload and emoji functionality for company social feed: added image upload with 5MB limit and preview, 12 emoji feelings selector with popover interface, enhanced database schema with image_url and feeling columns, configured multer middleware for file handling, added static file serving for uploaded images, and applied comprehensive authentication fixes for FormData requests
 
 ## User Preferences
 
