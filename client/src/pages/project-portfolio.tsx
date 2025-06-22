@@ -62,7 +62,7 @@ export default function ProjectPortfolioPage() {
       status: "new_lead",
       priority: "medium",
       serviceType: "windows",
-      assignedTo: undefined,
+      assignedTo: null as number | null,
       estimatedCost: 0,
     },
   });
@@ -437,7 +437,7 @@ export default function ProjectPortfolioPage() {
 
             <div className="space-y-2">
               <Label htmlFor="assignedTo">Assign To</Label>
-              <Select onValueChange={(value) => form.setValue("assignedTo", value ? parseInt(value) : undefined)}>
+              <Select onValueChange={(value) => form.setValue("assignedTo", parseInt(value) || null)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select employee" />
                 </SelectTrigger>
