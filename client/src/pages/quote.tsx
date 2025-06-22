@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -226,6 +226,31 @@ export default function QuotePage() {
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
   const [openGallery, setOpenGallery] = useState<string | null>(null);
   const [viewAsCustomer, setViewAsCustomer] = useState(false);
+  const [quoteName, setQuoteName] = useState<string>("Untitled Quote");
+
+  // Load saved quote data when component mounts
+  useEffect(() => {
+    const savedQuote = localStorage.getItem('savedQuote');
+    if (savedQuote) {
+      try {
+        const quote = JSON.parse(savedQuote);
+        if (quote.name) {
+          setQuoteName(quote.name);
+        }
+        if (quote.items) {
+          setQuoteItems(quote.items);
+        }
+        if (quote.currentItem) {
+          setCurrentItem(quote.currentItem);
+        }
+        if (quote.step) {
+          setStep(quote.step);
+        }
+      } catch (error) {
+        console.error('Error loading saved quote:', error);
+      }
+    }
+  }, []);
 
   // Filter product lines based on user role/subscription and view toggle
   const getAvailableProductLines = () => {
@@ -835,6 +860,7 @@ export default function QuotePage() {
   // Save quote functionality
   const saveQuote = () => {
     const quoteData = {
+      name: quoteName,
       items: quoteItems,
       currentItem: currentItem,
       step: step,
@@ -843,7 +869,7 @@ export default function QuotePage() {
     localStorage.setItem('savedQuote', JSON.stringify(quoteData));
     toast({
       title: "Quote Saved",
-      description: "Your window configuration has been saved locally.",
+      description: `"${quoteName}" has been saved successfully.`,
     });
   };
 
@@ -930,7 +956,16 @@ export default function QuotePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-blue-600">Quote Name *</Label>
+                    <Input
+                      className="h-8 text-sm"
+                      value={quoteName}
+                      onChange={(e) => setQuoteName(e.target.value)}
+                      placeholder="Enter quote name"
+                    />
+                  </div>
                   <div>
                     <Label className="text-sm font-medium">Item Description</Label>
                     <div className="h-8 px-3 py-1 bg-white dark:bg-gray-700 border rounded-md text-sm flex items-center">
