@@ -227,6 +227,7 @@ export default function QuotePage() {
   const [openGallery, setOpenGallery] = useState<string | null>(null);
   const [viewAsCustomer, setViewAsCustomer] = useState(false);
   const [quoteName, setQuoteName] = useState<string>("Untitled Quote");
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Load saved quote data when component mounts
   useEffect(() => {
@@ -319,6 +320,25 @@ export default function QuotePage() {
     notes: "",
     needsInstallation: false
   });
+
+  // Auto-save functionality - saves whenever quote data changes
+  useEffect(() => {
+    const autoSaveQuote = () => {
+      const quoteData = {
+        name: quoteName,
+        items: quoteItems,
+        currentItem: currentItem,
+        step: step,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem('savedQuote', JSON.stringify(quoteData));
+      setLastSaved(new Date());
+    };
+
+    // Debounce auto-save to avoid excessive saves
+    const timeoutId = setTimeout(autoSaveQuote, 500);
+    return () => clearTimeout(timeoutId);
+  }, [quoteName, quoteItems, currentItem, step]);
 
   const resetCurrentItem = () => {
     setCurrentItem({
@@ -949,20 +969,18 @@ export default function QuotePage() {
               </h1>
             </div>
             <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                onClick={saveQuote}
-                className="text-blue-600 border-blue-200 hover:bg-blue-50"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save Configuration
-              </Button>
+              {lastSaved && (
+                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                  <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
+                  Auto-saved {lastSaved.toLocaleTimeString()}
+                </div>
+              )}
               <Button
                 onClick={saveQuoteToCollection}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Save className="h-4 w-4 mr-2" />
-                Save Quote
+                Save to Collection
               </Button>
             </div>
           </div>
