@@ -115,17 +115,7 @@ export default function Dashboard() {
         formData.append('image', postData.image);
       }
 
-      const response = await fetch('/api/company-posts', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create post');
-      }
-
+      const response = await apiRequest('POST', '/api/company-posts', formData);
       return response.json();
     },
     onSuccess: () => {
