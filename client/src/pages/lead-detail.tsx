@@ -78,6 +78,7 @@ export default function LeadDetail() {
       address: lead?.address || "",
       notes: lead?.notes || "",
       status: lead?.status || "new",
+      source: lead?.source || "google",
     });
   };
 
@@ -90,6 +91,7 @@ export default function LeadDetail() {
         address: lead.address || "",
         notes: lead.notes || "",
         status: lead.status || "new",
+        source: lead.source || "google",
       });
     }
   }, [lead, isEditing]);
@@ -432,16 +434,40 @@ export default function LeadDetail() {
                   <Label className="text-sm font-medium text-gray-600 block mb-2">
                     Source
                   </Label>
-                  <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-3 rounded-lg">
-                    <div className={`w-2 h-2 rounded-full ${
-                      lead.source === 'website' ? 'bg-blue-500' :
-                      lead.source === 'yelp' ? 'bg-red-500' :
-                      lead.source === 'thumbtack' ? 'bg-green-500' :
-                      lead.source === 'phone' ? 'bg-purple-500' :
-                      'bg-gray-500'
-                    }`}></div>
-                    <span className="text-gray-900 capitalize font-medium">{lead.source}</span>
-                  </div>
+                  {isEditing ? (
+                    <Select
+                      value={editedLead.source || (lead?.source ?? "google")}
+                      onValueChange={(value) => setEditedLead(prev => ({ ...prev, source: value }))}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select source" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="google">Google</SelectItem>
+                        <SelectItem value="phone">Phone</SelectItem>
+                        <SelectItem value="customer_referral">Customer Referral</SelectItem>
+                        <SelectItem value="online">Online</SelectItem>
+                        <SelectItem value="yelp">Yelp</SelectItem>
+                        <SelectItem value="thumbtack">Thumbtack</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-3 rounded-lg">
+                      <div className={`w-2 h-2 rounded-full ${
+                        lead.source === 'google' ? 'bg-blue-500' :
+                        lead.source === 'yelp' ? 'bg-red-500' :
+                        lead.source === 'thumbtack' ? 'bg-green-500' :
+                        lead.source === 'phone' ? 'bg-purple-500' :
+                        lead.source === 'customer_referral' ? 'bg-orange-500' :
+                        lead.source === 'online' ? 'bg-teal-500' :
+                        'bg-gray-500'
+                      }`}></div>
+                      <span className="text-gray-900 capitalize font-medium">
+                        {lead.source === 'customer_referral' ? 'Customer Referral' : 
+                         lead.source?.replace('_', ' ') || lead.source}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
