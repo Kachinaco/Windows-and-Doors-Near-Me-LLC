@@ -283,6 +283,7 @@ export const companySettings = pgTable("company_settings", {
   id: serial("id").primaryKey(),
   openphoneApiKey: text("openphone_api_key"),
   openphoneWebhookUrl: text("openphone_webhook_url"),
+  businessPhoneNumber: text("business_phone_number"),
   gmailClientId: text("gmail_client_id"),
   gmailClientSecret: text("gmail_client_secret"),
   gmailRefreshToken: text("gmail_refresh_token"),

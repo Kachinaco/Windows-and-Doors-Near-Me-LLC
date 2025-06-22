@@ -28,6 +28,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import type { Lead, CommunicationLog } from "@shared/schema";
+import PhoneCommunicationPanel from "@/components/phone-communication-panel";
 
 export default function LeadDetail() {
   const [, params] = useRoute("/leads/:id");
@@ -598,35 +599,12 @@ export default function LeadDetail() {
           </TabsContent>
 
           <TabsContent value="communication" className="space-y-6">
-            {/* Communication Actions */}
-            <div className="grid grid-cols-3 gap-4">
-              <Button
-                className="flex flex-col items-center space-y-2 h-auto py-6 bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={() => window.open(`tel:${lead.phone}`, '_self')}
-              >
-                <Phone className="w-8 h-8" />
-                <span className="font-medium">Make Call</span>
-                <span className="text-xs opacity-90">Start & log call</span>
-              </Button>
-              
-              <Button
-                className="flex flex-col items-center space-y-2 h-auto py-6 bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => window.open(`mailto:${lead.email}`, '_self')}
-              >
-                <Mail className="w-8 h-8" />
-                <span className="font-medium">Send Email</span>
-                <span className="text-xs opacity-90">Open email client</span>
-              </Button>
-              
-              <Button
-                className="flex flex-col items-center space-y-2 h-auto py-6 bg-purple-600 hover:bg-purple-700 text-white"
-                onClick={() => window.open(`sms:${lead.phone}`, '_self')}
-              >
-                <Phone className="w-8 h-8" />
-                <span className="font-medium">Send Text</span>
-                <span className="text-xs opacity-90">Open messaging</span>
-              </Button>
-            </div>
+            {/* OpenPhone Communication Panel */}
+            <PhoneCommunicationPanel 
+              leadId={lead.id}
+              leadName={`${lead.firstName} ${lead.lastName}`}
+              leadPhone={lead.phone || ""}
+            />
 
             {/* Communication History */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
