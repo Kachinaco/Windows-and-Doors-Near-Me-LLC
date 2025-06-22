@@ -205,6 +205,8 @@ Changelog:
 - June 22, 2025. Resolved FormData authentication issue preventing status update posting: modified apiRequest function to properly handle FormData uploads while maintaining authentication headers for both JSON and FormData requests
 - June 22, 2025. Enhanced status updates display: limited dashboard to show only 3 most recent posts with "View all updates" button for accessing complete feed, improved mobile responsiveness across all status update elements
 - June 22, 2025. Updated "Manage Leads & Forms" button design: changed to orange color scheme for better visual prominence and distinction in business dashboard layout
+- June 22, 2025. Separated "Manage Leads & Forms" into distinct buttons: created separate "Manage Leads" (orange) and "Forms" (green) buttons, plus added new "Payroll" button (cyan) with comprehensive employee payment management interface
+- June 22, 2025. Restored full company settings for contractors: fixed settings page to show simple profile settings for customers while giving contractors access to complete company management including API integrations (OpenPhone, Gmail, Stripe, SendGrid, Twilio), business information, and connection testing tools
 
 ## User Preferences
 
