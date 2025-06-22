@@ -205,7 +205,7 @@ export default function LeadDetail() {
             variant="ghost"
             className="flex flex-col items-center space-y-2 h-auto py-4 text-blue-600 hover:bg-blue-50"
           >
-            <FileText className="w-6 h-6" />
+            <Phone className="w-6 h-6" />
             <span className="text-sm font-medium">Text</span>
           </Button>
           <Button
