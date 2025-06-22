@@ -489,15 +489,17 @@ export default function Dashboard() {
                             Feeling
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-80">
+                        <PopoverContent className="w-80" side="top">
                           <div className="grid grid-cols-4 gap-2 p-2">
                             {feelings.map((feeling) => (
                               <Button
                                 key={feeling.label}
                                 variant="ghost"
-                                className="h-12 flex flex-col items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800"
-                                onClick={() => {
+                                className="h-12 flex flex-col items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 border-0"
+                                onClick={(e) => {
+                                  e.preventDefault();
                                   setSelectedFeeling(`${feeling.emoji} ${feeling.label}`);
+                                  document.body.click();
                                 }}
                               >
                                 <span className="text-lg">{feeling.emoji}</span>
