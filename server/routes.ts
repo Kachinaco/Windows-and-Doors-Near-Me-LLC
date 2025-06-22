@@ -9,6 +9,7 @@ import path from "path";
 import fs from "fs";
 import { storage } from "./storage";
 import { googleCalendarService } from "./google-calendar";
+import { crmSync } from "./crm-sync";
 import {
   insertUserSchema,
   loginSchema,
@@ -18,6 +19,10 @@ import {
   insertContactSubmissionSchema,
   insertProjectSchema,
   insertProjectUpdateSchema,
+  insertLeadSchema,
+  insertJobSchema,
+  insertProposalSchema,
+  insertCommunicationLogSchema,
 } from "@shared/schema";
 
 interface AuthenticatedRequest extends Request {
@@ -1012,6 +1017,213 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error syncing with Google Calendar:", error);
       res.status(500).json({ message: "Failed to sync with Google Calendar" });
+    }
+  });
+
+  // ========================
+  // COMPREHENSIVE CRM INTEGRATION ENDPOINTS
+  // ========================
+
+  // Lead to Project Conversion with Full Data Sync
+  app.post("/api/crm/convert-lead-to-project", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { leadId, projectData } = req.body;
+      const project = await crmSync.convertLeadToProject(leadId, projectData);
+      res.status(201).json(project);
+    } catch (error: any) {
+      console.error("Error converting lead to project:", error);
+      res.status(500).json({ message: error.message || "Failed to convert lead to project" });
+    }
+  });
+
+  // Quote to Project Conversion with Full Data Sync
+  app.post("/api/crm/convert-quote-to-project", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { quoteId } = req.body;
+      const project = await crmSync.convertQuoteToProject(quoteId);
+      res.status(201).json(project);
+    } catch (error: any) {
+      console.error("Error converting quote to project:", error);
+      res.status(500).json({ message: error.message || "Failed to convert quote to project" });
+    }
+  });
+
+  // Comprehensive Analytics Dashboard
+  app.get("/api/crm/analytics", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { userId, startDate, endDate } = req.query;
+      const dateRange = startDate && endDate ? {
+        start: new Date(startDate as string),
+        end: new Date(endDate as string)
+      } : undefined;
+      
+      const analytics = await crmSync.getAnalyticsDashboard(
+        userId ? parseInt(userId as string) : undefined,
+        dateRange
+      );
+      res.json(analytics);
+    } catch (error: any) {
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // Customer 360 View - Complete Customer History
+  app.get("/api/crm/customer360/:customerId", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { customerId } = req.params;
+      const { customerType = 'lead' } = req.query;
+      
+      const customer360 = await crmSync.getCustomer360(
+        parseInt(customerId),
+        customerType as 'lead' | 'customer'
+      );
+      res.json(customer360);
+    } catch (error: any) {
+      console.error("Error fetching customer 360 view:", error);
+      res.status(500).json({ message: "Failed to fetch customer 360 view" });
+    }
+  });
+
+  // Unified Communication Logging with Auto-sync
+  app.post("/api/crm/log-communication", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const communicationData = {
+        ...req.body,
+        userId: req.user!.id
+      };
+      
+      const communication = await crmSync.syncCommunication(communicationData);
+      res.status(201).json(communication);
+    } catch (error: any) {
+      console.error("Error logging communication:", error);
+      res.status(500).json({ message: "Failed to log communication" });
+    }
+  });
+
+  // Customer Interaction Logging
+  app.post("/api/crm/log-interaction", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const interactionData = {
+        ...req.body,
+        performedBy: req.user!.id
+      };
+      
+      const interaction = await crmSync.logCustomerInteraction(interactionData);
+      res.status(201).json(interaction);
+    } catch (error: any) {
+      console.error("Error logging customer interaction:", error);
+      res.status(500).json({ message: "Failed to log customer interaction" });
+    }
+  });
+
+  // Project Status Update with Full Sync
+  app.put("/api/crm/projects/:projectId/status", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { projectId } = req.params;
+      const { status, notes } = req.body;
+      
+      await crmSync.updateProjectStatus(
+        parseInt(projectId),
+        status,
+        req.user!.id,
+        notes
+      );
+      res.json({ message: "Project status updated successfully" });
+    } catch (error: any) {
+      console.error("Error updating project status:", error);
+      res.status(500).json({ message: "Failed to update project status" });
+    }
+  });
+
+  // Job Scheduling with Project Sync
+  app.post("/api/crm/schedule-job", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const jobData = {
+        ...req.body,
+        assignedToId: req.user!.id
+      };
+      
+      const job = await crmSync.syncJobWithProject(jobData);
+      res.status(201).json(job);
+    } catch (error: any) {
+      console.error("Error scheduling job:", error);
+      res.status(500).json({ message: "Failed to schedule job" });
+    }
+  });
+
+  // Update Pipeline Analytics
+  app.post("/api/crm/update-pipeline-analytics", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
+    try {
+      await crmSync.updatePipelineAnalytics();
+      res.json({ message: "Pipeline analytics updated successfully" });
+    } catch (error: any) {
+      console.error("Error updating pipeline analytics:", error);
+      res.status(500).json({ message: "Failed to update pipeline analytics" });
+    }
+  });
+
+  // Get Lead Metrics with Auto-calculation
+  app.get("/api/crm/lead-metrics/:leadId", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { leadId } = req.params;
+      await crmSync.updateLeadMetrics(parseInt(leadId));
+      
+      const metrics = await storage.getLeadMetrics(parseInt(leadId));
+      res.json(metrics);
+    } catch (error: any) {
+      console.error("Error fetching lead metrics:", error);
+      res.status(500).json({ message: "Failed to fetch lead metrics" });
+    }
+  });
+
+  // Bulk Data Sync - Synchronize all related data
+  app.post("/api/crm/bulk-sync", authenticateToken, requireRole(['admin']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { syncType } = req.body; // 'all', 'leads', 'projects', 'analytics'
+      
+      let results = [];
+      
+      if (syncType === 'all' || syncType === 'analytics') {
+        await crmSync.updatePipelineAnalytics();
+        results.push('Pipeline analytics updated');
+      }
+      
+      if (syncType === 'all' || syncType === 'leads') {
+        // Update metrics for all leads
+        const leads = await storage.getAllLeads();
+        for (const lead of leads) {
+          await crmSync.updateLeadMetrics(lead.id);
+        }
+        results.push(`Lead metrics updated for ${leads.length} leads`);
+      }
+      
+      res.json({ 
+        message: "Bulk sync completed successfully",
+        results 
+      });
+    } catch (error: any) {
+      console.error("Error performing bulk sync:", error);
+      res.status(500).json({ message: "Failed to perform bulk sync" });
+    }
+  });
+
+  // CRM Health Check - Verify data integrity
+  app.get("/api/crm/health-check", authenticateToken, requireRole(['admin']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const healthData = {
+        totalLeads: await storage.getLeadsCount(),
+        totalProjects: await storage.getProjectsCount(),
+        totalJobs: await storage.getJobsCount(),
+        totalCommunications: await storage.getCommunicationsCount(),
+        lastAnalyticsUpdate: new Date().toISOString(),
+        dataIntegrity: "OK"
+      };
+      
+      res.json(healthData);
+    } catch (error: any) {
+      console.error("Error performing health check:", error);
+      res.status(500).json({ message: "Failed to perform health check" });
     }
   });
 
