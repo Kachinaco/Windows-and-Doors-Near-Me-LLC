@@ -161,7 +161,7 @@ export default function LeadDetail() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard(lead.email, "Email address")}
+                      onClick={() => copyToClipboard(lead.email || "", "Email address")}
                       className="text-gray-600 hover:text-gray-900"
                     >
                       <Copy className="w-4 h-4" />
@@ -178,7 +178,7 @@ export default function LeadDetail() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard(lead.phone, "Phone number")}
+                      onClick={() => copyToClipboard(lead.phone || "", "Phone number")}
                       className="text-gray-600 hover:text-gray-900"
                     >
                       <Copy className="w-4 h-4" />
