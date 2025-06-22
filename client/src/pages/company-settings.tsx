@@ -205,18 +205,48 @@ export default function CompanySettingsPage() {
 
                   <div>
                     <Label className="flex items-center space-x-2 mb-3">
-                      <Webhook className="w-4 h-4" />
-                      <span>Webhook URL</span>
+                      <Phone className="w-4 h-4" />
+                      <span>Business Phone Number</span>
                     </Label>
                     <Input
-                      value={isEditing ? (formData.openphoneWebhookUrl || '') : (settings?.openphoneWebhookUrl || "")}
-                      onChange={(e) => isEditing && setFormData(prev => ({ ...prev, openphoneWebhookUrl: e.target.value }))}
-                      placeholder="https://yourapp.com/api/openphone/webhook"
+                      value={isEditing ? (formData.businessPhoneNumber || '') : (settings?.businessPhoneNumber || "")}
+                      onChange={(e) => isEditing && setFormData(prev => ({ ...prev, businessPhoneNumber: e.target.value }))}
+                      placeholder="+1 (480) 555-0123"
                       disabled={!isEditing}
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Configure this URL in your OpenPhone webhook settings
+                      Your OpenPhone business number for outbound calls/texts
                     </p>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="flex items-center space-x-2 mb-3">
+                    <Webhook className="w-4 h-4" />
+                    <span>Webhook URL</span>
+                  </Label>
+                  <Input
+                    value={isEditing ? (formData.openphoneWebhookUrl || '') : (settings?.openphoneWebhookUrl || "")}
+                    onChange={(e) => isEditing && setFormData(prev => ({ ...prev, openphoneWebhookUrl: e.target.value }))}
+                    placeholder="https://yourapp.com/api/openphone/webhook"
+                    disabled={!isEditing}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Configure this URL in your OpenPhone webhook settings
+                  </p>
+                </div>
+
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-amber-900">Phone Number Identification</h4>
+                      <p className="text-sm text-amber-800 mt-1">
+                        All communications will display your OpenPhone business number above. When texting leads, 
+                        they'll see messages coming from this number, not your personal phone. The system will 
+                        automatically validate phone numbers before sending to prevent wrong number issues.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
