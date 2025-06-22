@@ -14,17 +14,25 @@ export async function apiRequest(
 ): Promise<Response> {
   // Get auth token from localStorage
   const token = localStorage.getItem("authToken");
-  const headers: Record<string, string> = data ? { "Content-Type": "application/json" } : {};
+  const headers: Record<string, string> = {};
   
   // Add authorization header if token exists
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
 
+  // Determine if data is FormData
+  const isFormData = data instanceof FormData;
+  
+  // Only set Content-Type for non-FormData requests
+  if (data && !isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const res = await fetch(url, {
     method,
     headers,
-    body: data ? JSON.stringify(data) : undefined,
+    body: isFormData ? data : (data ? JSON.stringify(data) : undefined),
     credentials: "include",
   });
 
