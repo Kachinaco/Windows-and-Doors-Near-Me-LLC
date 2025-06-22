@@ -203,6 +203,8 @@ Changelog:
 - June 22, 2025. Enhanced window configuration tool with auto-save functionality: implemented 500ms debounced auto-save for all quote changes, removed manual save button (kept "Save to Collection"), added auto-save status indicator with timestamp, fixed back button navigation to properly return to quotes manager
 - June 22, 2025. Fixed mobile responsiveness issues in status updates feed: optimized post creation area with smaller elements, made action buttons mobile-friendly with icon-only display, improved image preview sizing, enhanced feeling selector grid layout for mobile devices
 - June 22, 2025. Resolved FormData authentication issue preventing status update posting: modified apiRequest function to properly handle FormData uploads while maintaining authentication headers for both JSON and FormData requests
+- June 22, 2025. Enhanced status updates display: limited dashboard to show only 3 most recent posts with "View all updates" button for accessing complete feed, improved mobile responsiveness across all status update elements
+- June 22, 2025. Updated "Manage Leads & Forms" button design: changed to orange color scheme for better visual prominence and distinction in business dashboard layout
 
 ## User Preferences
 
