@@ -438,6 +438,7 @@ export default function Settings() {
                 )}
               </div>
 
+              {/* Company Information */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-3">
@@ -467,6 +468,240 @@ export default function Settings() {
                       />
                     </div>
                   </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Business Website</Label>
+                      <Input
+                        value={isEditingCompany ? (companyFormData.businessWebsite || '') : (companySettings?.businessWebsite || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, businessWebsite: e.target.value }))}
+                        placeholder="https://your-website.com"
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                    <div>
+                      <Label>License Number</Label>
+                      <Input
+                        value={isEditingCompany ? (companyFormData.licenseNumber || '') : (companySettings?.licenseNumber || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, licenseNumber: e.target.value }))}
+                        placeholder="ROC123456"
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* OpenPhone Integration */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-3">
+                    <Phone className="w-6 h-6 text-green-600" />
+                    <span>OpenPhone Integration</span>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={isEditingCompany ? (companyFormData.enableOpenphoneSync || false) : (companySettings?.enableOpenphoneSync || false)}
+                        onCheckedChange={(checked) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, enableOpenphoneSync: checked }))}
+                        disabled={!isEditingCompany}
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {(isEditingCompany ? companyFormData.enableOpenphoneSync : companySettings?.enableOpenphoneSync) ? 'Enabled' : 'Disabled'}
+                      </span>
+                    </div>
+                  </CardTitle>
+                  <CardDescription>Connect OpenPhone for call logging and SMS management.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <Label>Business Phone Number</Label>
+                      <Input
+                        value={isEditingCompany ? (companyFormData.businessPhoneNumber || '') : (companySettings?.businessPhoneNumber || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, businessPhoneNumber: e.target.value }))}
+                        placeholder="+1234567890"
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                    <div>
+                      <Label>OpenPhone API Key</Label>
+                      <Input
+                        type="password"
+                        value={isEditingCompany ? (companyFormData.openphoneApiKey || '') : (companySettings?.openphoneApiKey || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, openphoneApiKey: e.target.value }))}
+                        placeholder="Enter your OpenPhone API key"
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                    <div>
+                      <Label>Webhook URL</Label>
+                      <Input
+                        value={isEditingCompany ? (companyFormData.openphoneWebhookUrl || '') : (companySettings?.openphoneWebhookUrl || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, openphoneWebhookUrl: e.target.value }))}
+                        placeholder="https://your-app.com/webhook/openphone"
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                  </div>
+                  {isEditingCompany && (
+                    <div className="flex items-center space-x-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => handleTestConnection('openphone')}
+                        disabled={testConnectionMutation.isPending}
+                      >
+                        <TestTube className="w-4 h-4 mr-2" />
+                        Test Connection
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Gmail Integration */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-3">
+                    <Mail className="w-6 h-6 text-red-600" />
+                    <span>Gmail Integration</span>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={isEditingCompany ? (companyFormData.enableGmailSync || false) : (companySettings?.enableGmailSync || false)}
+                        onCheckedChange={(checked) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, enableGmailSync: checked }))}
+                        disabled={!isEditingCompany}
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {(isEditingCompany ? companyFormData.enableGmailSync : companySettings?.enableGmailSync) ? 'Enabled' : 'Disabled'}
+                      </span>
+                    </div>
+                  </CardTitle>
+                  <CardDescription>Connect Gmail for email communication tracking.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <Label>Gmail Client ID</Label>
+                      <Input
+                        value={isEditingCompany ? (companyFormData.gmailClientId || '') : (companySettings?.gmailClientId || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, gmailClientId: e.target.value }))}
+                        placeholder="Enter Gmail Client ID"
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                    <div>
+                      <Label>Gmail Client Secret</Label>
+                      <Input
+                        type="password"
+                        value={isEditingCompany ? (companyFormData.gmailClientSecret || '') : (companySettings?.gmailClientSecret || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, gmailClientSecret: e.target.value }))}
+                        placeholder="Enter Gmail Client Secret"
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                    <div>
+                      <Label>Gmail Refresh Token</Label>
+                      <Input
+                        type="password"
+                        value={isEditingCompany ? (companyFormData.gmailRefreshToken || '') : (companySettings?.gmailRefreshToken || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, gmailRefreshToken: e.target.value }))}
+                        placeholder="Enter Gmail Refresh Token"
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                  </div>
+                  {isEditingCompany && (
+                    <div className="flex items-center space-x-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => handleTestConnection('gmail')}
+                        disabled={testConnectionMutation.isPending}
+                      >
+                        <TestTube className="w-4 h-4 mr-2" />
+                        Test Connection
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Payment & Communication APIs */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-3">
+                    <Key className="w-6 h-6 text-purple-600" />
+                    <span>Payment & Communication APIs</span>
+                  </CardTitle>
+                  <CardDescription>Configure payment processing and communication services.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <Label>Stripe API Key</Label>
+                      <Input
+                        type="password"
+                        value={isEditingCompany ? (companyFormData.stripeApiKey || '') : (companySettings?.stripeApiKey || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, stripeApiKey: e.target.value }))}
+                        placeholder="sk_live_..."
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                    <div>
+                      <Label>SendGrid API Key</Label>
+                      <Input
+                        type="password"
+                        value={isEditingCompany ? (companyFormData.sendgridApiKey || '') : (companySettings?.sendgridApiKey || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, sendgridApiKey: e.target.value }))}
+                        placeholder="SG...."
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                    <div>
+                      <Label>Twilio Account SID</Label>
+                      <Input
+                        value={isEditingCompany ? (companyFormData.twilioAccountSid || '') : (companySettings?.twilioAccountSid || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, twilioAccountSid: e.target.value }))}
+                        placeholder="AC..."
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                    <div>
+                      <Label>Twilio Auth Token</Label>
+                      <Input
+                        type="password"
+                        value={isEditingCompany ? (companyFormData.twilioAuthToken || '') : (companySettings?.twilioAuthToken || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, twilioAuthToken: e.target.value }))}
+                        placeholder="Enter Twilio Auth Token"
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                  </div>
+                  {isEditingCompany && (
+                    <div className="flex items-center space-x-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => handleTestConnection('stripe')}
+                        disabled={testConnectionMutation.isPending}
+                      >
+                        <TestTube className="w-4 h-4 mr-2" />
+                        Test Stripe
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleTestConnection('sendgrid')}
+                        disabled={testConnectionMutation.isPending}
+                      >
+                        <TestTube className="w-4 h-4 mr-2" />
+                        Test SendGrid
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleTestConnection('twilio')}
+                        disabled={testConnectionMutation.isPending}
+                      >
+                        <TestTube className="w-4 h-4 mr-2" />
+                        Test Twilio
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
