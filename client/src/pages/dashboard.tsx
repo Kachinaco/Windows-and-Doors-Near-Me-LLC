@@ -784,10 +784,10 @@ export default function Dashboard() {
                           </div>
                         </div>
                         
-                        <p className="text-gray-900 dark:text-white mb-3">{post.content}</p>
+                        <p className="text-sm sm:text-base text-gray-900 dark:text-white mb-2 sm:mb-3">{post.content}</p>
                         
                         {post.imageUrl && (
-                          <div className="mb-3">
+                          <div className="mb-2 sm:mb-3">
                             <img 
                               src={post.imageUrl} 
                               alt="Post image" 
@@ -796,23 +796,23 @@ export default function Dashboard() {
                           </div>
                         )}
                         
-                        <div className="flex items-center justify-between pt-3 border-t">
-                          <div className="flex items-center space-x-4">
-                            <Button variant="ghost" size="sm" className="text-gray-500 hover:text-red-600">
-                              <Heart className="h-4 w-4 mr-1" />
-                              Like
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-0 sm:justify-between pt-2 sm:pt-3 border-t">
+                          <div className="flex items-center space-x-2 sm:space-x-4">
+                            <Button variant="ghost" size="sm" className="text-gray-500 hover:text-red-600 text-xs sm:text-sm p-1 sm:p-2">
+                              <Heart className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                              <span className="hidden sm:inline">Like</span>
                             </Button>
-                            <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600">
-                              <MessageSquare className="h-4 w-4 mr-1" />
-                              Comment
+                            <Button variant="ghost" size="sm" className="text-gray-500 hover:text-blue-600 text-xs sm:text-sm p-1 sm:p-2">
+                              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                              <span className="hidden sm:inline">Comment</span>
                             </Button>
-                            <Button variant="ghost" size="sm" className="text-gray-500 hover:text-green-600">
-                              <Share className="h-4 w-4 mr-1" />
-                              Share
+                            <Button variant="ghost" size="sm" className="text-gray-500 hover:text-green-600 text-xs sm:text-sm p-1 sm:p-2">
+                              <Share className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                              <span className="hidden sm:inline">Share</span>
                             </Button>
                           </div>
                           
-                          <div className="flex items-center space-x-2 text-sm text-gray-500">
+                          <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500 text-center sm:text-right">
                             {postViewers[post.id] && postViewers[post.id].length > 0 && (
                               <span>
                                 {postViewers[post.id].length} view{postViewers[post.id].length !== 1 ? 's' : ''}
