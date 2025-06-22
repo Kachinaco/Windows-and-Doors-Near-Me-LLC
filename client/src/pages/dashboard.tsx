@@ -18,11 +18,12 @@ import {
   Eye,
   CheckCircle,
   Clock,
+  FileText,
   Bell,
   MessageSquare,
   Calendar,
   ChevronRight,
-  FileText,
+  DollarSign,
   BarChart3,
   CalendarDays,
   Activity,
@@ -427,7 +428,7 @@ export default function Dashboard() {
               </Card>
             </Link>
 
-            {/* Manage Leads & Forms */}
+            {/* Manage Leads */}
             <Link href="/leads">
               <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
                 <CardContent className="p-3 sm:p-6">
@@ -436,9 +437,47 @@ export default function Dashboard() {
                       <Users className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                     </div>
                     <div>
-                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Manage Leads & Forms</p>
+                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Manage Leads</p>
                       <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        Customer inquiries and forms
+                        Customer lead tracking
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Forms */}
+            <Link href="/quotes">
+              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-800">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                    <div className="p-2 sm:p-4 bg-emerald-600 rounded-xl sm:rounded-2xl shadow-lg">
+                      <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Forms</p>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                        Quote requests and forms
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Payroll */}
+            <Link href="/payroll">
+              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 border-cyan-200 dark:border-cyan-800">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                    <div className="p-2 sm:p-4 bg-cyan-600 rounded-xl sm:rounded-2xl shadow-lg">
+                      <DollarSign className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Payroll</p>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                        Employee payments
                       </p>
                     </div>
                   </div>
