@@ -31,6 +31,7 @@ import CalendarView from "@/pages/calendar";
 import UpdatesPage from "@/pages/updates";
 import CompanyFeedPage from "@/pages/company-feed";
 import LeadDetailPage from "@/pages/lead-detail";
+import ProjectDashboardPage from "@/pages/project-dashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -68,7 +69,8 @@ function Router() {
           <Route path="/catalog" component={CatalogPage} />
           <Route path="/quote" component={QuotePage} />
           <Route path="/projects" component={ProjectPortfolioPage} />
-          <Route path="/projects/:id" component={ProjectDetailPage} />
+          <Route path="/projects/:id" component={ProjectDashboardPage} />
+          <Route path="/projects/:id/detail" component={ProjectDetailPage} />
           <Route path="/projects-list" component={ProjectsPage} />
           <Route path="/pipeline" component={PipelinePage} />
           <Route path="/leads" component={LeadsPage} />
