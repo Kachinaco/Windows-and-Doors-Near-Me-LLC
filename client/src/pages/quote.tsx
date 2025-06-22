@@ -873,6 +873,61 @@ export default function QuotePage() {
     });
   };
 
+  // Save quote to collection functionality
+  const saveQuoteToCollection = () => {
+    if (!quoteName.trim()) {
+      toast({
+        title: "Quote Name Required",
+        description: "Please enter a name for your quote before saving.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (quoteItems.length === 0) {
+      toast({
+        title: "No Items to Save",
+        description: "Please add at least one window configuration before saving.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const quoteId = `quote_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const quoteData = {
+      id: quoteId,
+      name: quoteName.trim(),
+      items: quoteItems,
+      currentItem: currentItem,
+      step: step,
+      timestamp: new Date().toISOString()
+    };
+
+    // Get existing saved quotes collection
+    const existingQuotes = localStorage.getItem('allSavedQuotes');
+    let quotesArray = [];
+    
+    if (existingQuotes) {
+      try {
+        quotesArray = JSON.parse(existingQuotes);
+      } catch (error) {
+        console.error('Error parsing existing quotes:', error);
+        quotesArray = [];
+      }
+    }
+
+    // Add new quote to collection
+    quotesArray.push(quoteData);
+    
+    // Save updated collection
+    localStorage.setItem('allSavedQuotes', JSON.stringify(quotesArray));
+    
+    toast({
+      title: "Quote Saved to Collection",
+      description: `"${quoteName}" has been added to your saved quotes.`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-7xl mx-auto">
@@ -901,6 +956,13 @@ export default function QuotePage() {
               >
                 <Save className="h-4 w-4 mr-2" />
                 Save Configuration
+              </Button>
+              <Button
+                onClick={saveQuoteToCollection}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Quote
               </Button>
             </div>
           </div>
