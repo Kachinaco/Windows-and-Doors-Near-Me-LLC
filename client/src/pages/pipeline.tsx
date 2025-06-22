@@ -4,9 +4,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -17,18 +15,14 @@ import {
   Filter, 
   Download, 
   Settings,
-  MoreHorizontal,
   Target,
   AlertTriangle,
   FileText,
   CheckCircle,
   Briefcase,
   Calendar,
-  Clock,
-  Activity,
   MessageSquare,
   Home,
-  ArrowRight,
   ChevronLeft,
   ChevronRight,
   GripVertical
@@ -220,11 +214,11 @@ export default function PipelinePage() {
     })
   );
 
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
-  const { data: employees = [] } = useQuery({
+  const { data: employees = [] } = useQuery<any[]>({
     queryKey: ["/api/employees"],
   });
 
@@ -318,28 +312,12 @@ export default function PipelinePage() {
     return stats;
   }, {} as Record<string, number>);
 
-  // Filter projects based on selected stage
-  const filteredProjects = selectedStage === "all" 
-    ? projects 
-    : projects.filter((p: Project) => {
-        const statusMap: Record<string, string[]> = {
-          inquiry: ["pending", "new_lead"],
-          follow_up: ["follow_up"],
-          proposal_sent: ["proposal_sent", "sent_estimate"],
-          proposal_signed: ["signed", "proposal_signed"],
-          retainer_paid: ["retainer_paid"],
-          need_to_be_ordered: ["need_ordered"],
-          ordered: ["ordered"],
-          need_to_schedule: ["need_scheduled"]
-        };
-        
-        const statuses = statusMap[selectedStage] || [];
-        return statuses.includes(p.status);
-      });
-
   const createProjectMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/projects", data);
+      return apiRequest("/api/projects", {
+        method: "POST",
+        body: data,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -376,22 +354,6 @@ export default function PipelinePage() {
     };
 
     createProjectMutation.mutate(projectData);
-  };
-
-  const toggleProjectSelection = (projectId: number) => {
-    setSelectedProjects(prev => 
-      prev.includes(projectId) 
-        ? prev.filter(id => id !== projectId)
-        : [...prev, projectId]
-    );
-  };
-
-  const selectAllProjects = () => {
-    if (selectedProjects.length === filteredProjects.length) {
-      setSelectedProjects([]);
-    } else {
-      setSelectedProjects(filteredProjects.map((p: Project) => p.id));
-    }
   };
 
   return (
@@ -572,113 +534,19 @@ export default function PipelinePage() {
         </DragOverlay>
       </DndContext>
 
-      {/* Project Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b">
-                <TableHead className="w-12">
-                  <Checkbox 
-                    checked={selectedProjects.length === filteredProjects.length && filteredProjects.length > 0}
-                    onCheckedChange={selectAllProjects}
-                  />
-                </TableHead>
-                <TableHead className="font-semibold">PROJECT NAME</TableHead>
-                <TableHead className="font-semibold">CONTACT</TableHead>
-                <TableHead className="font-semibold">TYPE</TableHead>
-                <TableHead className="font-semibold">DATE</TableHead>
-                <TableHead className="font-semibold">LOCATION</TableHead>
-                <TableHead className="font-semibold">DESCRIPTION</TableHead>
-                <TableHead className="font-semibold">TAGS</TableHead>
-                <TableHead className="w-12"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell colSpan={9}>
-                      <div className="h-12 bg-gray-100 animate-pulse rounded"></div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : filteredProjects.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center py-12">
-                    <div className="text-gray-500">
-                      No projects found in {PIPELINE_STAGES.find(s => s.key === selectedStage)?.label || "this stage"}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredProjects.map((project: Project) => (
-                  <TableRow key={project.id} className="hover:bg-gray-50">
-                    <TableCell>
-                      <Checkbox 
-                        checked={selectedProjects.includes(project.id)}
-                        onCheckedChange={() => toggleProjectSelection(project.id)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Link href={`/projects/${project.id}`}>
-                        <div className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
-                          {project.title}
-                        </div>
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {project.email && (
-                          <div className="font-medium">{project.email}</div>
-                        )}
-                        {project.phone && (
-                          <div className="text-gray-500">{project.phone}</div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">{project.serviceType}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {project.startDate ? new Date(project.startDate).toLocaleDateString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        }) : 'TBD'}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-gray-600">
-                        {project.address || ''}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-gray-600 max-w-[200px] truncate">
-                        {project.description || ''}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {project.priority && (
-                        <Badge variant="outline" className="text-xs">
-                          {project.priority}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      {/* Instructions for drag and drop */}
+      {!isLoading && projects.length > 0 && (
+        <Card className="mb-6 bg-blue-50 border-blue-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-blue-800">
+              <GripVertical className="h-4 w-4" />
+              <span className="text-sm font-medium">
+                Drag and drop projects between pipeline stages to update their status
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
