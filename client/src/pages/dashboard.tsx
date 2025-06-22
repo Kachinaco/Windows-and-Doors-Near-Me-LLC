@@ -68,6 +68,11 @@ export default function Dashboard() {
     queryKey: ["/api/company-posts"],
   });
 
+  // Fetch company settings for company name
+  const { data: companySettings } = useQuery<any>({
+    queryKey: ["/api/company-settings"],
+  });
+
   // Record post views when component mounts or posts change
   useEffect(() => {
     if (companyPosts.length > 0 && user?.id) {
@@ -219,7 +224,7 @@ export default function Dashboard() {
             <div className="flex items-center min-w-0">
               <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
               <span className="ml-2 text-lg sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
-                Windows & Doors Near Me
+                {companySettings?.companyName || "Windows & Doors Near Me"}
               </span>
             </div>
             
@@ -285,7 +290,7 @@ export default function Dashboard() {
       <main className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            {user?.companyName || 'Business Dashboard'}
+            {companySettings?.companyName || 'Business Dashboard'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
             Welcome back, {user?.firstName}! 
