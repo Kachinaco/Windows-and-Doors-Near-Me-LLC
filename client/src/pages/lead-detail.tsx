@@ -38,7 +38,7 @@ export default function LeadDetail() {
   const leadId = params?.id ? parseInt(params.id) : null;
 
   const { data: lead, isLoading, refetch } = useQuery<Lead>({
-    queryKey: ["/api/leads", leadId],
+    queryKey: [`/api/leads/${leadId}`],
     enabled: !!leadId,
   });
 
@@ -50,6 +50,9 @@ export default function LeadDetail() {
     onSuccess: async (updatedLead) => {
       // Force immediate refetch of the current lead data
       await refetch();
+      
+      // Also invalidate the leads list cache
+      queryClient.invalidateQueries({ queryKey: ["/api/leads"] });
       
       // Exit edit mode
       setIsEditing(false);
