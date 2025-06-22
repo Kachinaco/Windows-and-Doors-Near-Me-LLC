@@ -30,6 +30,7 @@ import SettingsPage from "@/pages/settings";
 import CalendarView from "@/pages/calendar";
 import UpdatesPage from "@/pages/updates";
 import CompanyFeedPage from "@/pages/company-feed";
+import LeadDetailPage from "@/pages/lead-detail";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -71,6 +72,7 @@ function Router() {
           <Route path="/projects-list" component={ProjectsPage} />
           <Route path="/pipeline" component={PipelinePage} />
           <Route path="/leads" component={LeadsPage} />
+          <Route path="/leads/:id" component={LeadDetailPage} />
           <Route path="/scheduling" component={SchedulingPage} />
           <Route path="/proposals" component={ProposalsPage} />
           <Route path="/quotes" component={QuotesDashboard} />
