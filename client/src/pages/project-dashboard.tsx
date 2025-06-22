@@ -125,25 +125,25 @@ export default function ProjectDashboard() {
           <TabsList className="bg-transparent border-none p-0 h-auto">
             <TabsTrigger 
               value="activity" 
-              className="bg-transparent text-gray-300 border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
+              className="text-[#d1d5db] bg-[#1f2936] border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
             >
               Activity
             </TabsTrigger>
             <TabsTrigger 
               value="files" 
-              className="bg-transparent text-gray-300 border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
+              className="text-[#d1d5db] bg-[#1f2936] border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
             >
               Files
             </TabsTrigger>
             <TabsTrigger 
               value="notes" 
-              className="bg-transparent text-gray-300 border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
+              className="text-[#d1d5db] bg-[#1f2936] border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
             >
               Notes
             </TabsTrigger>
             <TabsTrigger 
               value="details" 
-              className="bg-transparent text-gray-300 border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
+              className="text-[#d1d5db] bg-[#1f2936] border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
             >
               Details
             </TabsTrigger>
