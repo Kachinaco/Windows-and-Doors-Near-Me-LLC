@@ -292,7 +292,7 @@ export default function CompanySettingsPage() {
                       <span>Gmail Client ID</span>
                     </Label>
                     <Input
-                      value={isEditing ? formData.gmailClientId : settings?.gmailClientId || ""}
+                      value={isEditing ? (formData.gmailClientId || '') : (settings?.gmailClientId || "")}
                       onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gmailClientId: e.target.value }))}
                       placeholder="123456789-abc.apps.googleusercontent.com"
                       disabled={!isEditing}
@@ -306,7 +306,7 @@ export default function CompanySettingsPage() {
                     </Label>
                     <Input
                       type="password"
-                      value={isEditing ? formData.gmailClientSecret : "••••••••••••••••"}
+                      value={isEditing ? (formData.gmailClientSecret || '') : "••••••••••••••••"}
                       onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gmailClientSecret: e.target.value }))}
                       placeholder="Enter Gmail client secret"
                       disabled={!isEditing}
@@ -321,7 +321,7 @@ export default function CompanySettingsPage() {
                   </Label>
                   <Input
                     type="password"
-                    value={isEditing ? formData.gmailRefreshToken : "••••••••••••••••"}
+                    value={isEditing ? (formData.gmailRefreshToken || '') : "••••••••••••••••"}
                     onChange={(e) => isEditing && setFormData(prev => ({ ...prev, gmailRefreshToken: e.target.value }))}
                     placeholder="OAuth refresh token for Gmail access"
                     disabled={!isEditing}
