@@ -30,9 +30,29 @@ import {
   Home,
   ArrowRight,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  GripVertical
 } from "lucide-react";
 import { Link } from "wouter";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  UniqueIdentifier,
+  useDroppable,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  CSS,
+} from '@dnd-kit/utilities';
 import type { Project } from "@shared/schema";
 
 const PIPELINE_STAGES = [
@@ -47,12 +67,158 @@ const PIPELINE_STAGES = [
   { key: "need_to_schedule", label: "need to schedule", icon: Calendar, color: "bg-pink-100 text-pink-800" }
 ];
 
+// Droppable Stage Component
+function DroppableStage({ 
+  stage, 
+  projects, 
+  count 
+}: { 
+  stage: any; 
+  projects: Project[]; 
+  count: number; 
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: stage.key,
+  });
+
+  return (
+    <div 
+      ref={setNodeRef}
+      className={`min-h-[500px] p-4 rounded-lg border-2 border-dashed transition-colors ${
+        isOver ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-50'
+      }`}
+    >
+      {/* Stage Header */}
+      <div className="mb-4">
+        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${stage.color}`}>
+          <stage.icon className="h-4 w-4" />
+          {stage.label}
+        </div>
+        <div className="text-2xl font-bold text-gray-900 mt-2">{count}</div>
+      </div>
+
+      {/* Projects in this stage */}
+      <SortableContext 
+        items={projects.map(p => p.id)} 
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="space-y-3">
+          {projects.map((project) => (
+            <DraggableProjectCard key={project.id} project={project} />
+          ))}
+        </div>
+      </SortableContext>
+
+      {/* Drop zone indicator */}
+      {isOver && (
+        <div className="mt-4 p-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-100 text-center text-blue-600">
+          Drop project here to move to {stage.label}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Draggable Project Card Component
+function DraggableProjectCard({ project }: { project: Project }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: project.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const getStatusBadgeColor = (status: string) => {
+    const statusColors: Record<string, string> = {
+      pending: "bg-blue-100 text-blue-800",
+      new_lead: "bg-blue-100 text-blue-800",
+      follow_up: "bg-yellow-100 text-yellow-800",
+      proposal_sent: "bg-orange-100 text-orange-800",
+      sent_estimate: "bg-orange-100 text-orange-800",
+      signed: "bg-black text-white",
+      proposal_signed: "bg-black text-white",
+      retainer_paid: "bg-green-100 text-green-800",
+      need_ordered: "bg-red-100 text-red-800",
+      ordered: "bg-purple-100 text-purple-800",
+      need_scheduled: "bg-pink-100 text-pink-800"
+    };
+    return statusColors[status] || "bg-gray-100 text-gray-800";
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className={`bg-white rounded-lg border p-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow ${
+        isDragging ? 'shadow-lg ring-2 ring-blue-500' : ''
+      }`}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div {...listeners} className="cursor-grab">
+            <GripVertical className="h-4 w-4 text-gray-400" />
+          </div>
+          <h3 className="font-semibold text-gray-900 truncate">{project.title}</h3>
+        </div>
+        <Badge className={getStatusBadgeColor(project.status)}>
+          {project.status.replace('_', ' ')}
+        </Badge>
+      </div>
+      
+      <div className="space-y-2 text-sm text-gray-600">
+        {project.description && (
+          <p className="line-clamp-2">{project.description}</p>
+        )}
+        <div className="flex items-center justify-between">
+          <span>{project.serviceType || 'General'}</span>
+          {project.estimatedCost && (
+            <span className="font-medium text-green-600">
+              ${project.estimatedCost}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-4 text-xs">
+          {project.email && (
+            <span className="flex items-center gap-1">
+              📧 {project.email}
+            </span>
+          )}
+          {project.phone && (
+            <span className="flex items-center gap-1">
+              📞 {project.phone}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PipelinePage() {
   const [selectedStage, setSelectedStage] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedProjects, setSelectedProjects] = useState<number[]>([]);
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ["/api/projects"],
@@ -61,6 +227,71 @@ export default function PipelinePage() {
   const { data: employees = [] } = useQuery({
     queryKey: ["/api/employees"],
   });
+
+  // Mutation to update project status
+  const updateProjectMutation = useMutation({
+    mutationFn: async ({ projectId, status }: { projectId: number; status: string }) => {
+      return await fetch(`/api/projects/${projectId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status }),
+      }).then(res => res.json());
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      toast({
+        title: "Success",
+        description: "Project status updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update project status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Drag and drop handlers
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over) return;
+
+    const projectId = Number(active.id);
+    const newStageKey = String(over.id);
+
+    // Map stage keys to actual status values
+    const stageToStatusMap: Record<string, string> = {
+      inquiry: "new_lead",
+      follow_up: "follow_up", 
+      proposal_sent: "proposal_sent",
+      proposal_signed: "signed",
+      retainer_paid: "retainer_paid",
+      need_to_be_ordered: "need_ordered",
+      ordered: "ordered",
+      need_to_schedule: "need_scheduled"
+    };
+
+    const newStatus = stageToStatusMap[newStageKey];
+    if (!newStatus) return;
+
+    // Find the project and check if status actually changed
+    const project = projects.find((p: Project) => p.id === projectId);
+    if (!project || project.status === newStatus) return;
+
+    // Update the project status
+    updateProjectMutation.mutate({ projectId, status: newStatus });
+  };
 
   // Calculate pipeline stats
   const pipelineStats = PIPELINE_STAGES.reduce((stats, stage) => {
@@ -302,37 +533,44 @@ export default function PipelinePage() {
         </div>
       </div>
 
-      {/* Pipeline Stages */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 overflow-x-auto pb-4">
-          <ChevronLeft className="h-5 w-5 text-gray-400 flex-shrink-0" />
-          
-          {PIPELINE_STAGES.map((stage) => (
-            <Card 
+      {/* Drag and Drop Pipeline */}
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-6">
+          {PIPELINE_STAGES.filter(stage => stage.key !== "all").map((stage) => (
+            <DroppableStage
               key={stage.key}
-              className={`min-w-[140px] cursor-pointer transition-all ${
-                selectedStage === stage.key 
-                  ? stage.key === "proposal_signed" 
-                    ? "bg-black text-white border-black" 
-                    : "bg-blue-50 border-blue-200"
-                  : "hover:bg-gray-50"
-              }`}
-              onClick={() => setSelectedStage(stage.key)}
-            >
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold mb-1">
-                  {pipelineStats[stage.key] || 0}
-                </div>
-                <div className="text-xs text-gray-600">
-                  {stage.label}
-                </div>
-              </CardContent>
-            </Card>
+              stage={stage}
+              projects={projects.filter((p: Project) => {
+                const statusMap: Record<string, string[]> = {
+                  inquiry: ["pending", "new_lead"],
+                  follow_up: ["follow_up"],
+                  proposal_sent: ["proposal_sent", "sent_estimate"],
+                  proposal_signed: ["signed", "proposal_signed"],
+                  retainer_paid: ["retainer_paid"],
+                  need_to_be_ordered: ["need_ordered"],
+                  ordered: ["ordered"],
+                  need_to_schedule: ["need_scheduled"]
+                };
+                const statuses = statusMap[stage.key] || [];
+                return statuses.includes(p.status);
+              })}
+              count={pipelineStats[stage.key] || 0}
+            />
           ))}
-          
-          <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0" />
         </div>
-      </div>
+        
+        <DragOverlay>
+          {activeId ? (
+            <DraggableProjectCard 
+              project={projects.find((p: Project) => p.id === activeId)!} 
+            />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       {/* Project Table */}
       <Card>
