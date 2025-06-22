@@ -44,36 +44,19 @@ export default function LeadDetail() {
 
   const updateLeadMutation = useMutation({
     mutationFn: async (updates: Partial<Lead>) => {
-      console.log("Updating lead with data:", updates);
-      console.log("Lead ID:", leadId);
       const response = await apiRequest("PUT", `/api/leads/${leadId}`, updates);
-      console.log("API response status:", response.status);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const updatedLead = await response.json();
-      console.log("Parsed response data:", updatedLead);
-      return updatedLead;
+      return await response.json();
     },
-    onSuccess: async (updatedLead) => {
-      console.log("Mutation onSuccess called with:", updatedLead);
-      console.log("Setting cache data for key:", ["/api/leads", leadId]);
-      
-      // Update the cache directly with the new data
-      queryClient.setQueryData(["/api/leads", leadId], updatedLead);
-      
-      // Verify cache was updated
-      const cachedData = queryClient.getQueryData(["/api/leads", leadId]);
-      console.log("Cache data after update:", cachedData);
-      
-      // Also invalidate the leads list
+    onSuccess: (updatedLead) => {
+      // Force a complete refetch instead of trying to update cache
+      queryClient.invalidateQueries({ queryKey: ["/api/leads", leadId] });
       queryClient.invalidateQueries({ queryKey: ["/api/leads"] });
       
-      setIsEditing(false);
-      setEditedLead({});
-      console.log("Edit mode disabled, showing updated data");
+      // Small delay to ensure the invalidation takes effect
+      setTimeout(() => {
+        setIsEditing(false);
+        setEditedLead({});
+      }, 100);
       
       toast({
         title: "Success",
@@ -81,7 +64,6 @@ export default function LeadDetail() {
       });
     },
     onError: (error: Error) => {
-      console.error("Update error:", error);
       toast({
         title: "Error",
         description: error.message,
