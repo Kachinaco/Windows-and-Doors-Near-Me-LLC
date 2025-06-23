@@ -690,14 +690,22 @@ export default function ProjectDetailPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium">Project Files</h3>
-                    <Dialog open={isFileDialogOpen} onOpenChange={setIsFileDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Upload File
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-md">
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={() => setIsProposalDialogOpen(true)}
+                        className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-sm"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Create Proposal
+                      </Button>
+                      <Dialog open={isFileDialogOpen} onOpenChange={setIsFileDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Upload File
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
                         <DialogHeader>
                           <DialogTitle>Upload New File</DialogTitle>
                         </DialogHeader>
@@ -825,6 +833,7 @@ export default function ProjectDetailPage() {
                       </CardContent>
                     </Card>
                   )}
+                </div>
                 </div>
               </TabsContent>
 
