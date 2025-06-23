@@ -126,6 +126,9 @@ export const projects = pgTable("projects", {
   clientEmail: text("client_email"),
   clientPhone: text("client_phone"),
   projectAddress: text("project_address"),
+  projectStatus: text("project_status").notNull().default("active"), // active, archived, trashed
+  trashedAt: timestamp("trashed_at"),
+  archivedAt: timestamp("archived_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

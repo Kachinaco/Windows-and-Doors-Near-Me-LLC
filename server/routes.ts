@@ -556,6 +556,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Archive project
+  app.put("/api/projects/:id/archive", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const project = await storage.updateProject(id, { 
+        projectStatus: 'archived',
+        archivedAt: new Date()
+      });
+      res.json(project);
+    } catch (error: any) {
+      console.error("Error archiving project:", error);
+      res.status(500).json({ message: "Failed to archive project" });
+    }
+  });
+
+  // Move project to trash
+  app.put("/api/projects/:id/trash", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const project = await storage.updateProject(id, { 
+        projectStatus: 'trashed',
+        trashedAt: new Date()
+      });
+      res.json(project);
+    } catch (error: any) {
+      console.error("Error moving project to trash:", error);
+      res.status(500).json({ message: "Failed to move project to trash" });
+    }
+  });
+
+  // Restore project from trash/archive
+  app.put("/api/projects/:id/restore", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const project = await storage.updateProject(id, { 
+        projectStatus: 'active',
+        trashedAt: null,
+        archivedAt: null
+      });
+      res.json(project);
+    } catch (error: any) {
+      console.error("Error restoring project:", error);
+      res.status(500).json({ message: "Failed to restore project" });
+    }
+  });
+
+  // Get archived projects
+  app.get("/api/projects/archived", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projects = await storage.getProjectsByStatus('archived');
+      res.json(projects);
+    } catch (error: any) {
+      console.error("Error fetching archived projects:", error);
+      res.status(500).json({ message: "Failed to fetch archived projects" });
+    }
+  });
+
+  // Get trashed projects
+  app.get("/api/projects/trash", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projects = await storage.getProjectsByStatus('trashed');
+      res.json(projects);
+    } catch (error: any) {
+      console.error("Error fetching trashed projects:", error);
+      res.status(500).json({ message: "Failed to fetch trashed projects" });
+    }
+  });
+
+  // Permanently delete projects (for admin cleanup of 30+ day old trash)
+  app.delete("/api/projects/trash/cleanup", authenticateToken, requireRole(['admin']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const deletedCount = await storage.deleteOldTrashedProjects(thirtyDaysAgo);
+      res.json({ message: `Permanently deleted ${deletedCount} projects older than 30 days` });
+    } catch (error: any) {
+      console.error("Error cleaning up trash:", error);
+      res.status(500).json({ message: "Failed to cleanup trash" });
+    }
+  });
+
   app.get("/api/employees", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
     try {
       const employees = await storage.getAllEmployees();

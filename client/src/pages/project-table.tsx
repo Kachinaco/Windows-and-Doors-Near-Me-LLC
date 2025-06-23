@@ -28,7 +28,9 @@ import {
   RefreshCw,
   ArrowUpDown,
   ChevronDown,
-  Trash2
+  Trash2,
+  Archive,
+  RotateCcw
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -432,8 +434,13 @@ export default function ProjectTable() {
                       <DropdownMenuItem>
                         Set Dates
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
-                        Delete Selected
+                      <DropdownMenuItem className="flex items-center gap-2">
+                        <Archive className="h-4 w-4" />
+                        Archive Selected
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600 flex items-center gap-2">
+                        <Trash2 className="h-4 w-4" />
+                        Move to Trash
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
