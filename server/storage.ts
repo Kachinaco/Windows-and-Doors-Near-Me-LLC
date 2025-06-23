@@ -77,8 +77,8 @@ import {
   type ProjectUpdate,
   type InsertProjectUpdate,
 } from "@shared/schema";
-import { db } from "./db";
-import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
+import { db, pool } from "./db";
+import { eq, desc, and, gte, lte, inArray, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 // Interface for storage operations - simplified for e-commerce
@@ -981,18 +981,26 @@ export class DatabaseStorage implements IStorage {
 
   async createProposal(proposal: InsertProposal): Promise<Proposal> {
     // Use raw SQL to avoid column mapping issues
-    const result = await db.execute(sql`
+    const result = await pool.query(`
       INSERT INTO proposals (
         title, description, total_amount, project_id, created_by_id, 
         client_name, client_email, client_phone, project_address, status,
         created_at, updated_at
       ) VALUES (
-        ${proposal.title}, ${proposal.description}, ${proposal.totalAmount}, 
-        ${proposal.projectId}, ${proposal.createdBy}, ${proposal.clientName}, 
-        ${proposal.clientEmail}, ${proposal.clientPhone}, ${proposal.projectAddress}, 
-        ${proposal.status || 'draft'}, NOW(), NOW()
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()
       ) RETURNING *
-    `);
+    `, [
+      proposal.title, 
+      proposal.description, 
+      proposal.totalAmount, 
+      proposal.projectId, 
+      proposal.createdBy, 
+      proposal.clientName, 
+      proposal.clientEmail, 
+      proposal.clientPhone, 
+      proposal.projectAddress, 
+      proposal.status || 'draft'
+    ]);
     
     return result.rows[0] as Proposal;
   }
