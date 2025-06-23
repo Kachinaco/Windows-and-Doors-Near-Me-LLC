@@ -485,8 +485,11 @@ export default function ProjectTable() {
                   </th>
                 );
               })}
-              <th className="p-4 text-left font-semibold tracking-wide min-w-[100px]">
+              <th className="p-4 text-left font-semibold tracking-wide min-w-[80px]">
                 Actions
+              </th>
+              <th className="p-4 text-center font-semibold tracking-wide w-[60px]">
+                <Trash2 className="w-4 h-4 mx-auto text-red-400" />
               </th>
             </tr>
           </thead>
@@ -680,16 +683,20 @@ export default function ProjectTable() {
                           <Edit className="w-4 h-4" />
                         </Button>
                       </Link>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleDeleteProject(project.id)}
-                        className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all"
-                        title="Delete Project"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
                     </div>
+                  </td>
+                  
+                  {/* Delete Button - Separate Column */}
+                  <td className="p-4 text-center">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleDeleteProject(project.id)}
+                      className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600 text-red-500 opacity-60 hover:opacity-100 transition-all"
+                      title="Delete Project"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </td>
                 </tr>
               );
