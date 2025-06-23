@@ -6,6 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -296,181 +302,398 @@ export default function Dashboard() {
         {effectiveUser?.role === 'customer' ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
             {/* Window Configuration Tool */}
-            <Link href="/quotes-manager">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                    <div className="p-2 sm:p-4 bg-blue-600 rounded-xl sm:rounded-2xl shadow-lg">
-                      <Building2 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+            <div className="relative group">
+              <Link href="/quotes-manager">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-blue-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <Building2 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Window Configuration</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Design and price your windows
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Window Configuration</p>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        Design and price your windows
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Three-dot menu */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
+                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
+                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
             {/* My Orders */}
-            <Link href="/customer-orders">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                    <div className="p-2 sm:p-4 bg-green-600 rounded-xl sm:rounded-2xl shadow-lg">
-                      <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+            <div className="relative group">
+              <Link href="/customer-orders">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-green-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">My Orders</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Track your window orders
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">My Orders</p>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        Track your window orders
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Three-dot menu */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
+                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
+                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
             {/* Delivery Tracking */}
-            <Link href="/customer-delivery">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                    <div className="p-2 sm:p-4 bg-purple-600 rounded-xl sm:rounded-2xl shadow-lg">
-                      <CalendarDays className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+            <div className="relative group">
+              <Link href="/customer-delivery">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-purple-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <CalendarDays className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Delivery Info</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Track delivery status
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Delivery Info</p>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        Track delivery status
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Three-dot menu */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
+                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
+                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
             {/* Profile Settings */}
-            <Link href="/customer-settings">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20 border-gray-200 dark:border-gray-800">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                    <div className="p-2 sm:p-4 bg-gray-600 rounded-xl sm:rounded-2xl shadow-lg">
-                      <Settings className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+            <div className="relative group">
+              <Link href="/customer-settings">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20 border-gray-200 dark:border-gray-800">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-gray-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <Settings className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Profile Settings</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Update your information
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Profile Settings</p>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        Update your information
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Three-dot menu */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
+                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
+                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
             {/* Window Configuration Tool */}
-            <Link href="/quotes-manager">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                    <div className="p-2 sm:p-4 bg-blue-600 rounded-xl sm:rounded-2xl shadow-lg">
-                      <Building2 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+            <div className="relative group">
+              <Link href="/quotes-manager">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-blue-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <Building2 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Window Configuration</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Design and price windows
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Window Configuration</p>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        Design and price windows
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Three-dot menu */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
+                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
+                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
             {/* Project Management */}
-            <Link href="/projects">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-800">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                    <div className="p-2 sm:p-4 bg-indigo-600 rounded-xl sm:rounded-2xl shadow-lg">
-                      <BarChart3 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+            <div className="relative group">
+              <Link href="/projects">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-800">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-indigo-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <BarChart3 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Project Management</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Manage installation projects
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Project Management</p>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        Manage installation projects
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Three-dot menu */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
+                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
+                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
             {/* Calendar */}
-            <Link href="/calendar">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                    <div className="p-2 sm:p-4 bg-purple-600 rounded-xl sm:rounded-2xl shadow-lg">
-                      <CalendarDays className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+            <div className="relative group">
+              <Link href="/calendar">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-purple-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <CalendarDays className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Calendar & Scheduling</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Schedule and track jobs
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Calendar & Scheduling</p>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        Schedule and track jobs
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Three-dot menu */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
+                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
+                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
             {/* Manage Leads */}
-            <Link href="/leads">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                    <div className="p-2 sm:p-4 bg-orange-600 rounded-xl sm:rounded-2xl shadow-lg">
-                      <Users className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+            <div className="relative group">
+              <Link href="/leads">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-orange-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <Users className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Manage Leads</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Customer lead tracking
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Manage Leads</p>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        Customer lead tracking
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Three-dot menu */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
+                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
+                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
             {/* Forms */}
-            <Link href="/quotes">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-800">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                    <div className="p-2 sm:p-4 bg-emerald-600 rounded-xl sm:rounded-2xl shadow-lg">
-                      <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+            <div className="relative group">
+              <Link href="/quotes">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-800">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-emerald-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Forms</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Quote requests and forms
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Forms</p>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        Quote requests and forms
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Three-dot menu */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
+                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
+                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
             {/* Payroll */}
-            <Link href="/payroll">
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 border-cyan-200 dark:border-cyan-800">
+            <div className="relative group">
+              <Link href="/payroll">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 border-cyan-200 dark:border-cyan-800">
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                     <div className="p-2 sm:p-4 bg-cyan-600 rounded-xl sm:rounded-2xl shadow-lg">
