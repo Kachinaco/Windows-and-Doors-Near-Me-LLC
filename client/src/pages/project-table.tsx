@@ -569,16 +569,160 @@ export default function ProjectTable() {
                 const IconComponent = columnConfig?.icon;
                 
                 return (
-                  <th key={column} className={`p-4 text-left font-semibold tracking-wide border-r border-gray-700 ${columnConfig?.width}`}>
-                    <div className="flex items-center gap-2">
-                      {IconComponent && <IconComponent className="w-4 h-4" />}
-                      {columnConfig?.label}
+                  <th key={column} className={`p-4 text-left font-semibold tracking-wide border-r border-gray-700 ${columnConfig?.width} group relative`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        {IconComponent && <IconComponent className="w-4 h-4" />}
+                        {columnConfig?.label}
+                      </div>
+                      
+                      {/* Three-dot menu */}
+                      <div className="opacity-0 group-hover:opacity-100 transition-all duration-200">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 w-6 p-0 hover:bg-white/90 rounded-full"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                            >
+                              <MoreHorizontal className="h-3 w-3 text-gray-600" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuItem>
+                              <Filter className="mr-2 h-4 w-4" />
+                              Settings
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Filter className="mr-2 h-4 w-4" />
+                              Filter
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <ArrowUpDown className="mr-2 h-4 w-4" />
+                              Sort
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Collapse
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Users className="mr-2 h-4 w-4" />
+                              Group by
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Duplicate column
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Add AI column
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Add column to the right
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Change column type
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Column extensions
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Rename
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </th>
                 );
               })}
-              <th className="p-4 text-left font-semibold tracking-wide min-w-[80px]">
-                Actions
+              <th className="p-4 text-left font-semibold tracking-wide min-w-[80px] group relative">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    Actions
+                  </div>
+                  
+                  {/* Three-dot menu */}
+                  <div className="opacity-0 group-hover:opacity-100 transition-all duration-200">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 w-6 p-0 hover:bg-white/90 rounded-full"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <MoreHorizontal className="h-3 w-3 text-gray-600" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuItem>
+                          <Filter className="mr-2 h-4 w-4" />
+                          Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Filter className="mr-2 h-4 w-4" />
+                          Filter
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <ArrowUpDown className="mr-2 h-4 w-4" />
+                          Sort
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Collapse
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Users className="mr-2 h-4 w-4" />
+                          Group by
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Duplicate column
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Add AI column
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add column to the right
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Change column type
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Column extensions
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
               </th>
               <th className="p-4 text-center font-semibold tracking-wide w-[60px]">
                 <Trash2 className="w-4 h-4 mx-auto text-red-400" />
