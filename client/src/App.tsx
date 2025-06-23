@@ -18,7 +18,7 @@ import Dashboard from "@/pages/dashboard";
 import CatalogPage from "@/pages/catalog";
 import QuotePage from "@/pages/quote";
 import ProjectsPage from "@/pages/projects";
-import ProjectPortfolioPage from "@/pages/project-portfolio";
+import ProjectTablePage from "@/pages/project-table";
 import PipelinePage from "@/pages/pipeline";
 import LeadsPage from "@/pages/leads";
 import SchedulingPage from "@/pages/scheduling";
@@ -86,7 +86,7 @@ function Router() {
           <Route path="/catalog" component={CatalogPage} />
           <Route path="/quotes-manager" component={QuoteDashboard} />
           <Route path="/quote" component={QuotePage} />
-          <Route path="/projects" component={ProjectPortfolioPage} />
+          <Route path="/projects" component={ProjectTablePage} />
           <Route path="/projects/:id" component={ProjectDashboardPage} />
           <Route path="/projects/:id/detail" component={ProjectDetailPage} />
           <Route path="/projects-list" component={ProjectsPage} />
