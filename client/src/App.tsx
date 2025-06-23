@@ -39,6 +39,7 @@ import CustomerOrdersPage from "@/pages/customer-orders";
 import CustomerDeliveryPage from "@/pages/customer-delivery";
 import CustomerSettingsPage from "@/pages/customer-settings";
 import ContractsPage from "@/pages/contracts";
+import ProposalClientPage from "@/pages/proposal-client";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -68,6 +69,15 @@ function Router() {
       {/* Authentication routes */}
       <Route path="/login" component={AuthPage} />
       <Route path="/auth" component={AuthPage} />
+      
+      {/* Public proposal routes */}
+      <Route path="/proposal/:id" component={ProposalClientPage} />
+      <Route path="/proposal/:id/client-view" component={ProposalClientPage} />
+      
+      {/* Public catalog and quote routes */}
+      <Route path="/catalog" component={CatalogPage} />
+      <Route path="/quote" component={QuotePage} />
+      <Route path="/quote/:id" component={QuoteDashboard} />
       
       {/* Protected user routes */}
       {isAuthenticated ? (

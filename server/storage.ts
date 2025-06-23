@@ -163,9 +163,34 @@ export interface IStorage {
   getAllContractTemplates(): Promise<ContractTemplate[]>;
   createContractTemplate(template: InsertContractTemplate): Promise<ContractTemplate>;
   
+  // Proposal operations
+  getAllProposals(): Promise<Proposal[]>;
+  getProposal(id: number): Promise<Proposal | undefined>;
+  getProposalsByStatus(status: string): Promise<Proposal[]>;
+  getProposalsByProject(projectId: number): Promise<Proposal[]>;
+  createProposal(proposal: InsertProposal): Promise<Proposal>;
+  updateProposal(id: number, updates: Partial<InsertProposal>): Promise<Proposal>;
+
+  // Proposal invoice operations
+  getProposalInvoice(id: number): Promise<ProposalInvoice | undefined>;
+  createProposalInvoice(invoice: InsertProposalInvoice): Promise<ProposalInvoice>;
+  updateProposalInvoice(id: number, updates: Partial<InsertProposalInvoice>): Promise<ProposalInvoice>;
+
+  // Proposal contract operations
+  getProposalContract(id: number): Promise<ProposalContract | undefined>;
+  createProposalContract(contract: InsertProposalContract): Promise<ProposalContract>;
+  updateProposalContract(id: number, updates: Partial<InsertProposalContract>): Promise<ProposalContract>;
+
+  // Proposal payment operations
+  getProposalPayment(id: number): Promise<ProposalPayment | undefined>;
+  createProposalPayment(payment: InsertProposalPayment): Promise<ProposalPayment>;
+  updateProposalPayment(id: number, updates: Partial<InsertProposalPayment>): Promise<ProposalPayment>;
+
   // Proposal template operations
   getAllProposalTemplates(): Promise<ProposalTemplate[]>;
+  getProposalTemplatesByType(templateType: string): Promise<ProposalTemplate[]>;
   createProposalTemplate(template: InsertProposalTemplate): Promise<ProposalTemplate>;
+  updateProposalTemplate(id: number, updates: Partial<InsertProposalTemplate>): Promise<ProposalTemplate>;
   
   // Invoice operations
   getAllInvoices(): Promise<Invoice[]>;
@@ -934,6 +959,130 @@ export class DatabaseStorage implements IStorage {
       .values(message)
       .returning();
     return newMessage;
+  }
+
+  // Proposal operations
+  async getAllProposals(): Promise<Proposal[]> {
+    return await db.select().from(proposals).orderBy(desc(proposals.createdAt));
+  }
+
+  async getProposal(id: number): Promise<Proposal | undefined> {
+    const [proposal] = await db.select().from(proposals).where(eq(proposals.id, id));
+    return proposal || undefined;
+  }
+
+  async getProposalsByStatus(status: string): Promise<Proposal[]> {
+    return await db.select().from(proposals)
+      .where(eq(proposals.status, status))
+      .orderBy(desc(proposals.createdAt));
+  }
+
+  async getProposalsByProject(projectId: number): Promise<Proposal[]> {
+    return await db.select().from(proposals)
+      .where(eq(proposals.projectId, projectId))
+      .orderBy(desc(proposals.createdAt));
+  }
+
+  async createProposal(proposal: InsertProposal): Promise<Proposal> {
+    const [newProposal] = await db
+      .insert(proposals)
+      .values(proposal)
+      .returning();
+    return newProposal;
+  }
+
+  async updateProposal(id: number, updates: Partial<InsertProposal>): Promise<Proposal> {
+    const [proposal] = await db
+      .update(proposals)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(proposals.id, id))
+      .returning();
+    return proposal;
+  }
+
+  // Proposal invoice operations
+  async getProposalInvoice(id: number): Promise<ProposalInvoice | undefined> {
+    const [invoice] = await db.select().from(proposalInvoices).where(eq(proposalInvoices.id, id));
+    return invoice || undefined;
+  }
+
+  async createProposalInvoice(invoice: InsertProposalInvoice): Promise<ProposalInvoice> {
+    const [newInvoice] = await db
+      .insert(proposalInvoices)
+      .values(invoice)
+      .returning();
+    return newInvoice;
+  }
+
+  async updateProposalInvoice(id: number, updates: Partial<InsertProposalInvoice>): Promise<ProposalInvoice> {
+    const [invoice] = await db
+      .update(proposalInvoices)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(proposalInvoices.id, id))
+      .returning();
+    return invoice;
+  }
+
+  // Proposal contract operations
+  async getProposalContract(id: number): Promise<ProposalContract | undefined> {
+    const [contract] = await db.select().from(proposalContracts).where(eq(proposalContracts.id, id));
+    return contract || undefined;
+  }
+
+  async createProposalContract(contract: InsertProposalContract): Promise<ProposalContract> {
+    const [newContract] = await db
+      .insert(proposalContracts)
+      .values(contract)
+      .returning();
+    return newContract;
+  }
+
+  async updateProposalContract(id: number, updates: Partial<InsertProposalContract>): Promise<ProposalContract> {
+    const [contract] = await db
+      .update(proposalContracts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(proposalContracts.id, id))
+      .returning();
+    return contract;
+  }
+
+  // Proposal payment operations
+  async getProposalPayment(id: number): Promise<ProposalPayment | undefined> {
+    const [payment] = await db.select().from(proposalPayments).where(eq(proposalPayments.id, id));
+    return payment || undefined;
+  }
+
+  async createProposalPayment(payment: InsertProposalPayment): Promise<ProposalPayment> {
+    const [newPayment] = await db
+      .insert(proposalPayments)
+      .values(payment)
+      .returning();
+    return newPayment;
+  }
+
+  async updateProposalPayment(id: number, updates: Partial<InsertProposalPayment>): Promise<ProposalPayment> {
+    const [payment] = await db
+      .update(proposalPayments)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(proposalPayments.id, id))
+      .returning();
+    return payment;
+  }
+
+  // Proposal template operations
+  async getProposalTemplatesByType(templateType: string): Promise<ProposalTemplate[]> {
+    return await db.select().from(proposalTemplates)
+      .where(eq(proposalTemplates.templateType, templateType))
+      .orderBy(desc(proposalTemplates.createdAt));
+  }
+
+  async updateProposalTemplate(id: number, updates: Partial<InsertProposalTemplate>): Promise<ProposalTemplate> {
+    const [template] = await db
+      .update(proposalTemplates)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(proposalTemplates.id, id))
+      .returning();
+    return template;
   }
 }
 
