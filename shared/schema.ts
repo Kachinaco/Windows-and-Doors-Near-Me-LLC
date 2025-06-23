@@ -381,24 +381,28 @@ export const userAvailability = pgTable("user_availability", {
 // Main proposals table - HoneyBook style
 export const proposals = pgTable("proposals", {
   id: serial("id").primaryKey(),
-  projectId: integer("project_id").references(() => projects.id).notNull(),
-  title: text("title").notNull(),
-  status: text("status").notNull().default("draft"), // draft, sent, viewed, signed, paid, completed
+  leadId: integer("lead_id"),
+  projectId: integer("project_id").references(() => projects.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }),
+  status: varchar("status", { length: 50 }).notNull().default("draft"),
+  fileUrl: varchar("file_url", { length: 500 }),
+  linkUrl: varchar("link_url", { length: 500 }),
+  validUntil: timestamp("valid_until"),
+  sentAt: timestamp("sent_at"),
+  respondedAt: timestamp("responded_at"),
+  createdById: integer("created_by_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
   invoiceId: integer("invoice_id"),
+  clientName: text("client_name"),
+  clientEmail: text("client_email"),
+  clientPhone: text("client_phone"),
+  projectAddress: text("project_address"),
   contractId: integer("contract_id"),
   paymentId: integer("payment_id"),
   headerImages: jsonb("header_images").$type<string[]>().default([]),
-  clientName: text("client_name").notNull(),
-  clientEmail: text("client_email").notNull(),
-  clientPhone: text("client_phone"),
-  projectAddress: text("project_address"),
-  sentAt: timestamp("sent_at"),
-  viewedAt: timestamp("viewed_at"),
-  signedAt: timestamp("signed_at"),
-  paidAt: timestamp("paid_at"),
-  createdBy: integer("created_by").references(() => users.id).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Proposal invoices with detailed line items
@@ -693,20 +697,8 @@ export const proposalsRelations = relations(proposals, ({ one }) => ({
     references: [projects.id],
   }),
   creator: one(users, {
-    fields: [proposals.createdBy],
+    fields: [proposals.createdById],
     references: [users.id],
-  }),
-  invoice: one(proposalInvoices, {
-    fields: [proposals.invoiceId],
-    references: [proposalInvoices.id],
-  }),
-  contract: one(proposalContracts, {
-    fields: [proposals.contractId],
-    references: [proposalContracts.id],
-  }),
-  payment: one(proposalPayments, {
-    fields: [proposals.paymentId],
-    references: [proposalPayments.id],
   }),
 }));
 
