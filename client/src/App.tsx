@@ -32,6 +32,7 @@ import UpdatesPage from "@/pages/updates";
 import CompanyFeedPage from "@/pages/company-feed";
 import LeadDetailPage from "@/pages/lead-detail";
 import ProjectDashboardPage from "@/pages/project-dashboard";
+import ProjectPortfolioPage from "@/pages/project-portfolio";
 import CompanySettingsPage from "@/pages/company-settings";
 import QuoteDashboard from "@/pages/quote-dashboard";
 import PayrollPage from "@/pages/payroll";
@@ -90,6 +91,7 @@ function Router() {
           <Route path="/projects/:id" component={ProjectDashboardPage} />
           <Route path="/projects/:id/detail" component={ProjectDetailPage} />
           <Route path="/projects-list" component={ProjectsPage} />
+          <Route path="/project-portfolio" component={ProjectPortfolioPage} />
           <Route path="/pipeline" component={PipelinePage} />
           <Route path="/leads" component={LeadsPage} />
           <Route path="/leads/:id" component={LeadDetailPage} />
