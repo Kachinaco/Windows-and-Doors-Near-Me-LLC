@@ -89,6 +89,78 @@ export default function ProjectTable() {
     enabled: !!user,
   });
 
+  const archiveProject = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/projects/${id}/archive`, {
+        method: 'PUT',
+      });
+      if (!response.ok) throw new Error('Failed to archive project');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({
+        title: "Project archived",
+        description: "The project has been moved to archive.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to archive project.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const trashProject = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/projects/${id}/trash`, {
+        method: 'PUT',
+      });
+      if (!response.ok) throw new Error('Failed to move project to trash');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({
+        title: "Project moved to trash",
+        description: "The project will be permanently deleted in 30 days.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to move project to trash.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const restoreProject = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/projects/${id}/restore`, {
+        method: 'PUT',
+      });
+      if (!response.ok) throw new Error('Failed to restore project');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({
+        title: "Project restored",
+        description: "The project has been restored to active status.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to restore project.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Filter and sort projects
   const filteredProjects = useMemo(() => {
     let filtered = projects;
