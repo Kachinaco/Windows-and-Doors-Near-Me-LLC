@@ -118,8 +118,10 @@ export interface IStorage {
   // Project management operations
   getAllProjects(): Promise<Project[]>;
   getProject(id: number): Promise<Project | undefined>;
+  getProjectsByStatus(status: string): Promise<Project[]>;
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: number, updates: Partial<InsertProject>): Promise<Project>;
+  deleteOldTrashedProjects(cutoffDate: Date): Promise<number>;
   getAllEmployees(): Promise<User[]>;
   
   // Quote request operations
@@ -411,6 +413,24 @@ export class DatabaseStorage implements IStorage {
       .where(eq(projects.id, id))
       .returning();
     return project;
+  }
+
+  async getProjectsByStatus(status: string): Promise<Project[]> {
+    return await db
+      .select()
+      .from(projects)
+      .where(eq(projects.projectStatus, status))
+      .orderBy(desc(projects.updatedAt));
+  }
+
+  async deleteOldTrashedProjects(cutoffDate: Date): Promise<number> {
+    const result = await db
+      .delete(projects)
+      .where(and(
+        eq(projects.projectStatus, 'trashed'),
+        lte(projects.trashedAt, cutoffDate)
+      ));
+    return result.rowCount || 0;
   }
 
   async getAllEmployees(): Promise<User[]> {
