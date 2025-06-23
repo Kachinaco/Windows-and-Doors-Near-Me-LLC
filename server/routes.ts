@@ -22,6 +22,10 @@ import {
   insertLeadSchema,
   insertJobSchema,
   insertProposalSchema,
+  insertProposalInvoiceSchema,
+  insertProposalContractSchema,
+  insertProposalPaymentSchema,
+  insertProposalTemplateSchema,
   insertCommunicationLogSchema,
 } from "@shared/schema";
 
@@ -1294,6 +1298,396 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error updating pipeline analytics:", error);
       res.status(500).json({ message: "Failed to update pipeline analytics" });
+    }
+  });
+
+  // ===== COMPREHENSIVE PROPOSAL SYSTEM =====
+  
+  // Create new proposal from project
+  app.post("/api/proposals", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const proposalData = insertProposalSchema.parse(req.body);
+      
+      const proposal = await storage.createProposal({
+        ...proposalData,
+        createdBy: req.user!.id,
+        status: "draft"
+      });
+
+      res.status(201).json(proposal);
+    } catch (error: any) {
+      console.error("Error creating proposal:", error);
+      res.status(500).json({ message: "Failed to create proposal" });
+    }
+  });
+
+  // Get all proposals
+  app.get("/api/proposals", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { status, projectId } = req.query;
+      let proposals;
+
+      if (status) {
+        proposals = await storage.getProposalsByStatus(status as string);
+      } else if (projectId) {
+        proposals = await storage.getProposalsByProject(parseInt(projectId as string));
+      } else {
+        proposals = await storage.getAllProposals();
+      }
+
+      res.json(proposals);
+    } catch (error: any) {
+      console.error("Error fetching proposals:", error);
+      res.status(500).json({ message: "Failed to fetch proposals" });
+    }
+  });
+
+  // Get specific proposal with full details
+  app.get("/api/proposals/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const proposal = await storage.getProposal(parseInt(req.params.id));
+      if (!proposal) {
+        return res.status(404).json({ message: "Proposal not found" });
+      }
+
+      // Get related invoice, contract, and payment data
+      const invoice = proposal.invoiceId ? await storage.getProposalInvoice(proposal.invoiceId) : null;
+      const contract = proposal.contractId ? await storage.getProposalContract(proposal.contractId) : null;
+      const payment = proposal.paymentId ? await storage.getProposalPayment(proposal.paymentId) : null;
+
+      res.json({
+        ...proposal,
+        invoice,
+        contract,
+        payment
+      });
+    } catch (error: any) {
+      console.error("Error fetching proposal:", error);
+      res.status(500).json({ message: "Failed to fetch proposal" });
+    }
+  });
+
+  // Update proposal
+  app.put("/api/proposals/:id", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const updates = req.body;
+      const proposal = await storage.updateProposal(parseInt(req.params.id), updates);
+      res.json(proposal);
+    } catch (error: any) {
+      console.error("Error updating proposal:", error);
+      res.status(500).json({ message: "Failed to update proposal" });
+    }
+  });
+
+  // PROPOSAL INVOICE ENDPOINTS
+  
+  // Create proposal invoice
+  app.post("/api/proposals/:id/invoice", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const proposalId = parseInt(req.params.id);
+      const invoiceData = insertProposalInvoiceSchema.parse({
+        ...req.body,
+        proposalId,
+        invoiceNumber: `INV-${Date.now()}`
+      });
+
+      const invoice = await storage.createProposalInvoice(invoiceData);
+      
+      // Update proposal with invoice ID
+      await storage.updateProposal(proposalId, { invoiceId: invoice.id });
+
+      res.status(201).json(invoice);
+    } catch (error: any) {
+      console.error("Error creating proposal invoice:", error);
+      res.status(500).json({ message: "Failed to create proposal invoice" });
+    }
+  });
+
+  // Update proposal invoice
+  app.put("/api/proposals/:proposalId/invoice/:invoiceId", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const invoiceId = parseInt(req.params.invoiceId);
+      const updates = req.body;
+      
+      const invoice = await storage.updateProposalInvoice(invoiceId, updates);
+      res.json(invoice);
+    } catch (error: any) {
+      console.error("Error updating proposal invoice:", error);
+      res.status(500).json({ message: "Failed to update proposal invoice" });
+    }
+  });
+
+  // PROPOSAL CONTRACT ENDPOINTS
+  
+  // Create proposal contract
+  app.post("/api/proposals/:id/contract", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const proposalId = parseInt(req.params.id);
+      const contractData = insertProposalContractSchema.parse({
+        ...req.body,
+        proposalId
+      });
+
+      const contract = await storage.createProposalContract(contractData);
+      
+      // Update proposal with contract ID
+      await storage.updateProposal(proposalId, { contractId: contract.id });
+
+      res.status(201).json(contract);
+    } catch (error: any) {
+      console.error("Error creating proposal contract:", error);
+      res.status(500).json({ message: "Failed to create proposal contract" });
+    }
+  });
+
+  // Update proposal contract
+  app.put("/api/proposals/:proposalId/contract/:contractId", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const contractId = parseInt(req.params.contractId);
+      const updates = req.body;
+      
+      const contract = await storage.updateProposalContract(contractId, updates);
+      res.json(contract);
+    } catch (error: any) {
+      console.error("Error updating proposal contract:", error);
+      res.status(500).json({ message: "Failed to update proposal contract" });
+    }
+  });
+
+  // Sign contract (client or contractor)
+  app.post("/api/proposals/:proposalId/contract/:contractId/sign", async (req: AuthenticatedRequest, res) => {
+    try {
+      const contractId = parseInt(req.params.contractId);
+      const proposalId = parseInt(req.params.proposalId);
+      const { signatureType, signatureName, signatureData, ipAddress } = req.body;
+
+      const signatureInfo = {
+        name: signatureName,
+        signature: signatureData,
+        timestamp: new Date().toISOString(),
+        ipAddress: ipAddress || req.ip
+      };
+
+      const updates: any = {};
+      if (signatureType === 'contractor') {
+        updates.contractorSignature = signatureInfo;
+        updates.signedByContractor = true;
+      } else if (signatureType === 'client') {
+        updates.clientSignature = signatureInfo;
+        updates.signedByClient = true;
+      }
+
+      const contract = await storage.updateProposalContract(contractId, updates);
+      
+      // Update proposal status if both parties have signed
+      if (contract.signedByContractor && contract.signedByClient) {
+        await storage.updateProposal(proposalId, { 
+          status: "signed",
+          signedAt: new Date()
+        });
+      }
+
+      res.json(contract);
+    } catch (error: any) {
+      console.error("Error signing contract:", error);
+      res.status(500).json({ message: "Failed to sign contract" });
+    }
+  });
+
+  // PROPOSAL PAYMENT ENDPOINTS
+  
+  // Create proposal payment structure
+  app.post("/api/proposals/:id/payment", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const proposalId = parseInt(req.params.id);
+      const paymentData = insertProposalPaymentSchema.parse({
+        ...req.body,
+        proposalId
+      });
+
+      const payment = await storage.createProposalPayment(paymentData);
+      
+      // Update proposal with payment ID
+      await storage.updateProposal(proposalId, { paymentId: payment.id });
+
+      res.status(201).json(payment);
+    } catch (error: any) {
+      console.error("Error creating proposal payment:", error);
+      res.status(500).json({ message: "Failed to create proposal payment" });
+    }
+  });
+
+  // Update proposal payment
+  app.put("/api/proposals/:proposalId/payment/:paymentId", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const paymentId = parseInt(req.params.paymentId);
+      const updates = req.body;
+      
+      const payment = await storage.updateProposalPayment(paymentId, updates);
+      res.json(payment);
+    } catch (error: any) {
+      console.error("Error updating proposal payment:", error);
+      res.status(500).json({ message: "Failed to update proposal payment" });
+    }
+  });
+
+  // Process milestone payment
+  app.post("/api/proposals/:proposalId/payment/:paymentId/pay-milestone", async (req: AuthenticatedRequest, res) => {
+    try {
+      const paymentId = parseInt(req.params.paymentId);
+      const proposalId = parseInt(req.params.proposalId);
+      const { milestoneId, paymentMethodId, tipAmount } = req.body;
+
+      const payment = await storage.getProposalPayment(paymentId);
+      if (!payment) {
+        return res.status(404).json({ message: "Payment not found" });
+      }
+
+      // Find the milestone
+      const milestones = payment.milestones as any[];
+      const milestoneIndex = milestones.findIndex(m => m.id === milestoneId);
+      
+      if (milestoneIndex === -1) {
+        return res.status(404).json({ message: "Milestone not found" });
+      }
+
+      const milestone = milestones[milestoneIndex];
+      
+      // TODO: Process payment with Stripe
+      // For now, mark as paid
+      milestone.status = "paid";
+      milestone.paymentMethod = "card";
+      milestone.paidAt = new Date().toISOString();
+      milestone.transactionId = `txn_${Date.now()}`;
+
+      const totalPaid = parseFloat(payment.totalPaid) + milestone.amount + (tipAmount || 0);
+      const remainingBalance = parseFloat(payment.remainingBalance) - milestone.amount;
+
+      const updates = {
+        milestones,
+        totalPaid: totalPaid.toString(),
+        remainingBalance: remainingBalance.toString(),
+        tipAmount: ((parseFloat(payment.tipAmount) || 0) + (tipAmount || 0)).toString()
+      };
+
+      const updatedPayment = await storage.updateProposalPayment(paymentId, updates);
+      
+      // Update proposal status if fully paid
+      if (remainingBalance <= 0) {
+        await storage.updateProposal(proposalId, { 
+          status: "paid",
+          paidAt: new Date()
+        });
+      }
+
+      res.json(updatedPayment);
+    } catch (error: any) {
+      console.error("Error processing milestone payment:", error);
+      res.status(500).json({ message: "Failed to process payment" });
+    }
+  });
+
+  // PROPOSAL TEMPLATE ENDPOINTS
+  
+  // Get proposal templates
+  app.get("/api/proposal-templates", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { templateType } = req.query;
+      let templates;
+
+      if (templateType) {
+        templates = await storage.getProposalTemplatesByType(templateType as string);
+      } else {
+        templates = await storage.getAllProposalTemplates();
+      }
+
+      res.json(templates);
+    } catch (error: any) {
+      console.error("Error fetching proposal templates:", error);
+      res.status(500).json({ message: "Failed to fetch proposal templates" });
+    }
+  });
+
+  // Create proposal template
+  app.post("/api/proposal-templates", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const templateData = insertProposalTemplateSchema.parse({
+        ...req.body,
+        createdBy: req.user!.id
+      });
+
+      const template = await storage.createProposalTemplate(templateData);
+      res.status(201).json(template);
+    } catch (error: any) {
+      console.error("Error creating proposal template:", error);
+      res.status(500).json({ message: "Failed to create proposal template" });
+    }
+  });
+
+  // Update proposal template
+  app.put("/api/proposal-templates/:id", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const template = await storage.updateProposalTemplate(templateId, updates);
+      res.json(template);
+    } catch (error: any) {
+      console.error("Error updating proposal template:", error);
+      res.status(500).json({ message: "Failed to update proposal template" });
+    }
+  });
+
+  // Send proposal to client
+  app.post("/api/proposals/:id/send", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const proposalId = parseInt(req.params.id);
+      
+      const proposal = await storage.updateProposal(proposalId, {
+        status: "sent",
+        sentAt: new Date()
+      });
+
+      // TODO: Send email notification to client
+      // This would integrate with SendGrid or similar email service
+
+      res.json({ message: "Proposal sent successfully", proposal });
+    } catch (error: any) {
+      console.error("Error sending proposal:", error);
+      res.status(500).json({ message: "Failed to send proposal" });
+    }
+  });
+
+  // Client view proposal (public endpoint)
+  app.get("/api/proposals/:id/client-view", async (req: AuthenticatedRequest, res) => {
+    try {
+      const proposal = await storage.getProposal(parseInt(req.params.id));
+      if (!proposal) {
+        return res.status(404).json({ message: "Proposal not found" });
+      }
+
+      // Mark as viewed if not already
+      if (!proposal.viewedAt) {
+        await storage.updateProposal(proposal.id, { 
+          status: "viewed",
+          viewedAt: new Date()
+        });
+      }
+
+      // Get related data for client view
+      const invoice = proposal.invoiceId ? await storage.getProposalInvoice(proposal.invoiceId) : null;
+      const contract = proposal.contractId ? await storage.getProposalContract(proposal.contractId) : null;
+      const payment = proposal.paymentId ? await storage.getProposalPayment(proposal.paymentId) : null;
+
+      res.json({
+        ...proposal,
+        invoice,
+        contract,
+        payment
+      });
+    } catch (error: any) {
+      console.error("Error fetching proposal for client:", error);
+      res.status(500).json({ message: "Failed to fetch proposal" });
     }
   });
 
