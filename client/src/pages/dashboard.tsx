@@ -483,7 +483,7 @@ export default function Dashboard() {
         ) : (
           <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
             {/* Window Configuration Tool */}
-            <div className="relative group">
+            <div>
               <Link href="/quotes-manager">
                 <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
                   <CardContent className="p-3 sm:p-6">
@@ -501,79 +501,10 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </Link>
-              
-              {/* Three-dot menu */}
-              <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 z-20">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0 bg-white/90 hover:bg-white shadow-lg border border-gray-200 rounded-full hover:scale-110 transition-all"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <MoreHorizontal className="h-3.5 w-3.5 text-gray-700" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Filter className="mr-2 h-4 w-4" />
-                      Filter
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ArrowUpDown className="mr-2 h-4 w-4" />
-                      Sort
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Collapse
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Users className="mr-2 h-4 w-4" />
-                      Group by
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Duplicate column
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Add AI column
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ChevronRight className="mr-2 h-4 w-4" />
-                      Add column to the right
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Change column type
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Column extensions
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
             </div>
 
             {/* Project Management */}
-            <div className="relative group">
+            <div>
               <Link href="/projects">
                 <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-800">
                   <CardContent className="p-3 sm:p-6">
@@ -591,79 +522,10 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </Link>
-              
-              {/* Three-dot menu */}
-              <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 z-20">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0 bg-white/90 hover:bg-white shadow-lg border border-gray-200 rounded-full hover:scale-110 transition-all"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <MoreHorizontal className="h-3.5 w-3.5 text-gray-700" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Filter className="mr-2 h-4 w-4" />
-                      Filter
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ArrowUpDown className="mr-2 h-4 w-4" />
-                      Sort
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Collapse
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Users className="mr-2 h-4 w-4" />
-                      Group by
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Duplicate column
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Add AI column
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ChevronRight className="mr-2 h-4 w-4" />
-                      Add column to the right
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Change column type
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Column extensions
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
             </div>
 
             {/* Calendar */}
-            <div className="relative group">
+            <div>
               <Link href="/calendar">
                 <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
                   <CardContent className="p-3 sm:p-6">
@@ -681,79 +543,10 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </Link>
-              
-              {/* Three-dot menu */}
-              <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 z-20">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0 bg-white/90 hover:bg-white shadow-lg border border-gray-200 rounded-full hover:scale-110 transition-all"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <MoreHorizontal className="h-3.5 w-3.5 text-gray-700" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Filter className="mr-2 h-4 w-4" />
-                      Filter
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ArrowUpDown className="mr-2 h-4 w-4" />
-                      Sort
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Collapse
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Users className="mr-2 h-4 w-4" />
-                      Group by
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Duplicate column
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Add AI column
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ChevronRight className="mr-2 h-4 w-4" />
-                      Add column to the right
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Change column type
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Column extensions
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
             </div>
 
             {/* Manage Leads */}
-            <div className="relative group">
+            <div>
               <Link href="/leads">
                 <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
                   <CardContent className="p-3 sm:p-6">
@@ -771,79 +564,10 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </Link>
-              
-              {/* Three-dot menu */}
-              <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 z-20">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0 bg-white/90 hover:bg-white shadow-lg border border-gray-200 rounded-full hover:scale-110 transition-all"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <MoreHorizontal className="h-3.5 w-3.5 text-gray-700" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Filter className="mr-2 h-4 w-4" />
-                      Filter
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ArrowUpDown className="mr-2 h-4 w-4" />
-                      Sort
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Collapse
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Users className="mr-2 h-4 w-4" />
-                      Group by
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Duplicate column
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Add AI column
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ChevronRight className="mr-2 h-4 w-4" />
-                      Add column to the right
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Change column type
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Column extensions
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
             </div>
 
             {/* Forms */}
-            <div className="relative group">
+            <div>
               <Link href="/quotes">
                 <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-800">
                   <CardContent className="p-3 sm:p-6">
@@ -861,79 +585,10 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </Link>
-              
-              {/* Three-dot menu */}
-              <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 z-20">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 w-7 p-0 bg-white/90 hover:bg-white shadow-lg border border-gray-200 rounded-full hover:scale-110 transition-all"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <MoreHorizontal className="h-3.5 w-3.5 text-gray-700" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Filter className="mr-2 h-4 w-4" />
-                      Filter
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ArrowUpDown className="mr-2 h-4 w-4" />
-                      Sort
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Collapse
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Users className="mr-2 h-4 w-4" />
-                      Group by
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Duplicate column
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Add AI column
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ChevronRight className="mr-2 h-4 w-4" />
-                      Add column to the right
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Change column type
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Column extensions
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
             </div>
 
             {/* Payroll */}
-            <div className="relative group">
+            <div>
               <Link href="/payroll">
                 <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 border-cyan-200 dark:border-cyan-800">
                   <CardContent className="p-3 sm:p-6">
@@ -951,142 +606,6 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </Link>
-              
-              {/* Three-dot menu */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
-                      onClick={(e) => e.preventDefault()}
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-64">
-                    <DropdownMenuItem className="flex items-center gap-2">
-                      <Settings className="h-4 w-4" />
-                      Settings
-                      <ChevronRight className="h-4 w-4 ml-auto" />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center gap-2">
-                      <Filter className="h-4 w-4" />
-                      Filter
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center gap-2">
-                      <ArrowUpDown className="h-4 w-4" />
-                      Sort
-                      <ChevronRight className="h-4 w-4 ml-auto" />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center gap-2">
-                      <ChevronDown className="h-4 w-4" />
-                      Collapse
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Group by
-                    </DropdownMenuItem>
-                    <div className="border-t my-1"></div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <Plus className="h-4 w-4" />
-                          Duplicate column
-                          <ChevronRight className="h-4 w-4 ml-auto" />
-                        </DropdownMenuItem>
-                      </DropdownMenuTrigger>
-                    </DropdownMenu>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <Plus className="h-4 w-4" />
-                          Add AI column to the right
-                          <ChevronRight className="h-4 w-4 ml-auto" />
-                        </DropdownMenuItem>
-                      </DropdownMenuTrigger>
-                    </DropdownMenu>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <Plus className="h-4 w-4" />
-                          Add column to the right
-                          <ChevronRight className="h-4 w-4 ml-auto" />
-                        </DropdownMenuItem>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent side="right" align="start" className="w-48">
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-green-500 rounded flex items-center justify-center">
-                            <CheckCircle className="h-3 w-3 text-white" />
-                          </div>
-                          Status
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-orange-500 rounded flex items-center justify-center">
-                            <FileText className="h-3 w-3 text-white" />
-                          </div>
-                          Text
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
-                            <Users className="h-3 w-3 text-white" />
-                          </div>
-                          People
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-purple-500 rounded flex items-center justify-center">
-                            <Calendar className="h-3 w-3 text-white" />
-                          </div>
-                          Timeline
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-pink-500 rounded flex items-center justify-center">
-                            <Calendar className="h-3 w-3 text-white" />
-                          </div>
-                          Date
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-indigo-500 rounded flex items-center justify-center">
-                            <div className="w-2 h-2 bg-white rounded-full"></div>
-                          </div>
-                          Tags
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-yellow-500 rounded flex items-center justify-center">
-                            <span className="text-xs font-bold text-white">#</span>
-                          </div>
-                          Numbers
-                        </DropdownMenuItem>
-                        <div className="border-t my-1"></div>
-                        <DropdownMenuItem className="text-sm text-gray-600">
-                          More columns
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <DropdownMenuItem className="flex items-center gap-2">
-                      <RefreshCw className="h-4 w-4" />
-                      Change column type
-                      <ChevronRight className="h-4 w-4 ml-auto" />
-                    </DropdownMenuItem>
-                    <div className="border-t my-1"></div>
-                    <DropdownMenuItem className="flex items-center gap-2">
-                      <Plus className="h-4 w-4" />
-                      Column extensions
-                      <ChevronRight className="h-4 w-4 ml-auto" />
-                    </DropdownMenuItem>
-                    <div className="border-t my-1"></div>
-                    <DropdownMenuItem className="flex items-center gap-2">
-                      <Edit className="h-4 w-4" />
-                      Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center gap-2 text-red-600">
-                      <Trash2 className="h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
             </div>
 
             {/* Reports */}
