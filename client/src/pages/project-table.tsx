@@ -30,7 +30,8 @@ import {
   ChevronDown,
   Trash2,
   Archive,
-  RotateCcw
+  RotateCcw,
+  MoreHorizontal
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -506,11 +507,23 @@ export default function ProjectTable() {
                       <DropdownMenuItem>
                         Set Dates
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2">
+                      <DropdownMenuItem 
+                        className="flex items-center gap-2"
+                        onClick={() => {
+                          selectedProjects.forEach(id => archiveProject.mutate(id));
+                          setSelectedProjects([]);
+                        }}
+                      >
                         <Archive className="h-4 w-4" />
                         Archive Selected
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600 flex items-center gap-2">
+                      <DropdownMenuItem 
+                        className="text-red-600 flex items-center gap-2"
+                        onClick={() => {
+                          selectedProjects.forEach(id => trashProject.mutate(id));
+                          setSelectedProjects([]);
+                        }}
+                      >
                         <Trash2 className="h-4 w-4" />
                         Move to Trash
                       </DropdownMenuItem>
@@ -765,17 +778,53 @@ export default function ProjectTable() {
                     </div>
                   </td>
                   
-                  {/* Delete Button - Separate Column */}
+                  {/* Archive/Trash Actions - Separate Column */}
                   <td className="p-4 text-center">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleDeleteProject(project.id)}
-                      className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600 text-red-500 opacity-60 hover:opacity-100 transition-all"
-                      title="Delete Project"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 hover:bg-gray-100 opacity-60 hover:opacity-100 transition-all"
+                          title="More Actions"
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem 
+                          className="flex items-center gap-2"
+                          onClick={() => archiveProject.mutate(project.id)}
+                        >
+                          <Archive className="h-4 w-4" />
+                          Archive Project
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-orange-600 flex items-center gap-2"
+                          onClick={() => trashProject.mutate(project.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Move to Trash
+                        </DropdownMenuItem>
+                        {(project.projectStatus === 'archived' || project.projectStatus === 'trashed') && (
+                          <DropdownMenuItem 
+                            className="text-green-600 flex items-center gap-2"
+                            onClick={() => restoreProject.mutate(project.id)}
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                            Restore Project
+                          </DropdownMenuItem>
+                        )}
+                        <div className="border-t my-1"></div>
+                        <DropdownMenuItem 
+                          className="text-red-600 flex items-center gap-2"
+                          onClick={() => handleDeleteProject(project.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete Permanently
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               );
