@@ -1,0 +1,330 @@
+Perfect. Here’s a hyper-detailed breakdown for your Replit dev on how to build a full-featured, professional-grade Proposal System like what you're modeling from HoneyBook—broken down into exact UI structure, logic, syncing behavior, interactions, and backend relationships.
+
+🔧 OVERVIEW: What This Proposal System Needs to Do
+This tool will be used by Kachina Contracting and other teams to generate proposals that include:
+
+Visual intro (photos, branding, personal pitch)
+
+Invoice with pricing and scope of work
+
+Auto-filled legal contract
+
+Smart fields that sync data between pages
+
+Payment interface (milestone-based, autopay, tipping, secure checkout)
+
+Signature + submission by client
+
+The interface must be editable, visual, client-facing, and synced to the backend project record.
+
+🔹 STRUCTURE: 3 Pages Per Proposal
+Page	Function	Editable?	Auto-filled?	Client-facing?
+Invoice	Visual pitch + pricing	✅	✅ (from project)	✅
+Contract	Legal terms + job summary	✅	✅	✅
+Payment	Accepts payment + tips	❌	✅	✅
+
+🔹 PAGE 1: INVOICE PAGE (Visual + Financial Breakdown)
+🔷 1A. Header Section (Visual Pitch)
+Image carousel/grid that allows user to upload multiple images.
+
+Supports:
+
+JPG, PNG, HEIC
+
+Drag & drop or file browser
+
+Reorderable
+
+Backend:
+
+Images stored as array tied to proposal ID
+
+Should use CDN or compressed storage to avoid slowing UI
+
+UI Controls:
+
+Upload/Replace/Delete
+
+Add description/caption per image (optional)
+
+Toggle to enable full-width image view
+
+🔷 1B. Invoice Metadata (Header Row)
+Fields (auto-filled from backend project):
+
+Invoice Number (auto-generate, editable)
+
+Client Name
+
+Client Email
+
+Client Phone
+
+Project Address
+
+Date Created (default = today)
+
+Next Milestone Due (syncs with Payment tab)
+
+Should support manual overrides
+
+Option to "Resend Invoice" via email or download PDF
+
+🔷 1C. Invoice Line Items Table
+Column	Field Type	Editable?	Notes
+Service Name	Text field	✅	Required
+Description	Textarea	✅	Optional
+Qty	Number	✅	Default = 1
+Unit Price	Currency	✅	Supports decimals
+Total Line	Auto-calc	❌	qty * unit
+
+Subtotal auto-calculated at bottom.
+
+🔷 1D. Extra Charges Section
+Fields:
+
+Tax (percentage dropdown – editable)
+
+Credit Card Processing Fee (default: 3.5%)
+
+Optional Discounts (percentage or flat)
+
+Each field can be toggled ON/OFF individually
+
+🔷 1E. TOTAL & CTA
+Final total displayed (subtotal + tax + CC fee - discount)
+
+“Next” button to go to contract
+
+Save as Draft / Preview / Send to Client buttons
+
+🔹 PAGE 2: CONTRACT PAGE (Agreement + Smart Fields + Signature)
+🔷 2A. Client & Contractor Info
+Populates automatically:
+
+Client name/email/phone/address
+
+Contractor name/email/phone/company/address
+
+Can be edited inline (overrides synced value for that proposal only)
+
+🔷 2B. Smart Fields System
+Dynamic variables in contract:
+
+[CLIENT_NAME], [PROJECT_ADDRESS], [INSTALL_SCOPE], [PAYMENT_TOTAL], [START_DATE], etc.
+
+These are tokens linked to project/invoice objects in the database
+
+Editable via dropdown insert menu for ease of use
+
+🔷 2C. Contract Body
+Editable WYSIWYG legal text editor (rich text, not plain textarea)
+
+Default legal clauses:
+
+Scope of Work (linked to invoice items)
+
+Lifetime Warranty Terms (optional section toggle)
+
+Change Orders (define that any add-on must be approved and invoiced separately)
+
+Client Responsibilities
+
+Payment Terms
+
+Cancellation + Rescheduling
+
+Require X hours notice
+
+Can be set to 48/72/168 hrs dynamically
+
+Force Majeure
+
+No-Show Policy
+
+Dispute Resolution
+
+Jurisdiction = Arizona
+
+All paragraphs should have visibility toggles (if I want to hide something for a certain client).
+
+🔷 2D. Signature Section
+Electronic signature field for:
+
+Contractor Rep
+
+Client
+
+Includes:
+
+Typed name
+
+Hand-signed (via finger/mouse)
+
+Timestamp
+
+Backend:
+
+Save signature image
+
+Store IP + datetime stamp
+
+Lock fields post-signature
+
+🔹 PAGE 3: PAYMENT PAGE (Milestones, Autopay, Tip)
+🔷 3A. Milestone Payment Schedule
+Displayed as list:
+
+Name (Milestone 1 / 2 / etc.)
+
+Due date
+
+Amount
+
+Status: Upcoming, Paid, Late
+
+Can add multiple milestones (supports % or flat dollar)
+
+Amount from invoice is split here — must reconcile with total
+
+Backend: Each milestone is its own payment object with:
+
+json
+Copy
+Edit
+{
+  "milestoneName": "Milestone 1",
+  "dueDate": "2025-07-01",
+  "amount": 1000,
+  "status": "Upcoming",
+  "paymentMethod": null,
+  "isPaid": false
+}
+🔷 3B. Tipping Interface
+Default tip options:
+
+No thanks
+
+10%, 15%, 20%
+
+Custom %
+
+Must recalculate total when tip added
+
+Tip applied only once to final milestone, or split across all if toggled
+
+🔷 3C. Autopay Option
+Checkbox: "Use Autopay – never miss a payment"
+
+If enabled:
+
+Card is stored securely
+
+Milestone payments run automatically on due date
+
+Requires Stripe tokenization (PCI compliant)
+
+🔷 3D. Payment Methods
+Choose between:
+
+Credit/Debit Card (Stripe)
+
+Bank Account (Plaid + ACH)
+
+Save method securely if autopay is on
+
+🔷 3E. Final CTA
+Large button: Pay $X.XX
+
+Displays:
+
+What milestone this pays for
+
+Whether it includes tax, tip, fees
+
+🧠 DATABASE RELATIONSHIPS (Suggested Schema)
+🔹 Project
+client_id
+
+start_date
+
+project_type
+
+site_address
+
+created_by
+
+🔹 Proposal
+project_id
+
+invoice_id
+
+contract_id
+
+payment_id
+
+status: draft, sent, signed, paid
+
+🔹 Invoice
+line_items[]
+
+subtotal, tax, discount, total
+
+milestones[]
+
+issued_date
+
+🔹 Contract
+legal_text
+
+smart_fields_used[]
+
+signed_by_client: true/false
+
+signed_by_contractor: true/false
+
+🔹 Payment
+milestone_id[]
+
+payment_method
+
+tip_amount
+
+autopay_enabled
+
+🔁 USER FLOW (Start to Finish)
+Sales rep opens proposal builder (project already exists)
+
+Upload photos to header, edit invoice line items
+
+System syncs smart fields in contract
+
+Rep edits or customizes legal terms
+
+Proposal is sent to client
+
+Client views:
+
+Images
+
+Invoice
+
+Contract
+
+Client signs contract, selects payment method
+
+Client makes first payment
+
+System marks milestone as paid, sets next reminder
+
+Would you like:
+
+Sample JSON for each component?
+
+React structure?
+
+Stripe setup suggestions?
+
+Full admin dashboard spec for tracking proposal statuses?
+
+Let me know and I can break those out next.
