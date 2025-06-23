@@ -215,15 +215,22 @@ export default function ProjectDetailPage() {
       const response = await apiRequest("POST", "/api/proposals", proposalData);
       const newProposal = await response.json();
       
-      toast({
-        title: "Success",
-        description: "Proposal created and opened in new tab",
-      });
+      // Try to open in new tab, with fallback to same tab
+      const proposalUrl = `/proposal/${newProposal.id}`;
+      const newWindow = window.open(proposalUrl, '_blank');
       
-      // Open proposal in new tab
-      window.open(`/proposal/${newProposal.id}`, '_blank');
+      if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+        // Popup blocked, navigate in same tab
+        window.location.href = proposalUrl;
+      } else {
+        toast({
+          title: "Success",
+          description: "Proposal created and opened in new tab",
+        });
+      }
       
     } catch (error) {
+      console.error('Error creating proposal:', error);
       toast({
         title: "Error",
         description: "Failed to create proposal",
