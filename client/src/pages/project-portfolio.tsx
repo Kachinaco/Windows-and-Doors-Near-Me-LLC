@@ -11,13 +11,8 @@ import {
   ArrowLeft,
   Plus,
   Search,
-  CheckCircle,
   Clock,
-  AlertCircle,
-  DollarSign,
   FolderOpen,
-  ChevronRight,
-  Users,
   Calendar,
   BarChart3,
   GripVertical
@@ -33,15 +28,8 @@ import {
   useSensors,
   UniqueIdentifier,
   useDroppable,
+  useDraggable,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import {
-  CSS,
-} from '@dnd-kit/utilities';
 
 // Draggable Project Card Component
 function DraggableProjectCard({ project }: { project: Project }) {
@@ -50,65 +38,64 @@ function DraggableProjectCard({ project }: { project: Project }) {
     listeners,
     setNodeRef,
     transform,
-    transition,
     isDragging,
-  } = useSortable({ id: project.id });
+  } = useDraggable({ 
+    id: `project-${project.id}`,
+    data: { project }
+  });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+  } : undefined;
 
   return (
-    <Card 
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow ${
-        isDragging ? 'shadow-lg ring-2 ring-blue-500' : ''
-      }`}
-    >
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3 flex-1">
-            <div {...listeners} className="cursor-grab">
-              <GripVertical className="h-4 w-4 text-gray-400" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 mb-1">{project.title}</h3>
-              <p className="text-sm text-gray-500 mb-2">Project #{project.id}</p>
-              {project.description && (
-                <p className="text-sm text-gray-600 mb-2">{project.description}</p>
-              )}
-              
-              <div className="flex items-center gap-4 text-sm text-gray-600">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Medium
-                </span>
-                <Badge variant="outline" className="text-xs">
-                  {project.status === 'new_lead' ? 'New Lead' : project.status.replace('_', ' ')}
-                </Badge>
-                {project.estimatedCost && (
-                  <span className="font-medium text-green-600">
-                    ${project.estimatedCost}
-                  </span>
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <Card 
+        className={`cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow ${
+          isDragging ? 'shadow-lg ring-2 ring-blue-500 opacity-50' : ''
+        }`}
+      >
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3 flex-1">
+              <div {...listeners} className="cursor-grab p-1">
+                <GripVertical className="h-4 w-4 text-gray-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 mb-1">{project.title}</h3>
+                <p className="text-sm text-gray-500 mb-2">Project #{project.id}</p>
+                {project.description && (
+                  <p className="text-sm text-gray-600 mb-2">{project.description}</p>
                 )}
+                
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Medium
+                  </span>
+                  <Badge variant="outline" className="text-xs">
+                    {project.status === 'new_lead' ? 'New Lead' : project.status.replace('_', ' ')}
+                  </Badge>
+                  {project.estimatedCost && (
+                    <span className="font-medium text-green-600">
+                      ${project.estimatedCost}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
+            
+            <div className="flex items-center gap-2">
+              <Link href={`/project-detail/${project.id}`}>
+                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800" onClick={(e) => e.stopPropagation()}>
+                  View Details →
+                </Button>
+              </Link>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <Link href={`/project-detail/${project.id}`}>
-              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
-                View Details →
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -121,11 +108,12 @@ function DroppableFolder({
   onPipelineClick?: () => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
-    id: folder.name.toLowerCase().replace(' ', '_'),
+    id: `folder-${folder.name.toLowerCase().replace(/\s+/g, '_')}`,
+    data: { folder }
   });
 
   return (
-    <div>
+    <div className="mb-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
           <div className={`w-4 h-4 rounded ${folder.color}`}></div>
@@ -164,42 +152,37 @@ function DroppableFolder({
 
       <div 
         ref={setNodeRef}
-        className={`transition-colors ${
-          isOver ? 'bg-blue-50 border-blue-200' : ''
+        className={`min-h-[200px] p-4 rounded-lg border-2 transition-all duration-200 ${
+          isOver 
+            ? 'bg-blue-50 border-blue-300 border-dashed shadow-lg' 
+            : 'bg-white border-gray-200'
         }`}
       >
         {folder.projects.length > 0 ? (
-          <SortableContext 
-            items={folder.projects.map((p: Project) => p.id)} 
-            strategy={verticalListSortingStrategy}
-          >
-            <div className="grid gap-4">
-              {folder.projects.map((project: Project) => (
-                <DraggableProjectCard key={project.id} project={project} />
-              ))}
-            </div>
-          </SortableContext>
+          <div className="space-y-4">
+            {folder.projects.map((project: Project) => (
+              <DraggableProjectCard key={project.id} project={project} />
+            ))}
+          </div>
         ) : (
-          <Card className="border-2 border-dashed border-gray-200">
-            <CardContent className="text-center py-12">
-              <FolderOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500 mb-4">No projects in {folder.name.toLowerCase()}</p>
-              {folder.name === 'New Leads' && (
-                <Link href="/leads">
-                  <Button variant="outline" size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Lead
-                  </Button>
-                </Link>
-              )}
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <FolderOpen className="h-12 w-12 mb-4 text-gray-300" />
+            <p className="text-gray-500 mb-4">No projects in {folder.name.toLowerCase()}</p>
+            {folder.name === 'New Leads' && (
+              <Link href="/leads">
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Lead
+                </Button>
+              </Link>
+            )}
+          </div>
         )}
 
         {/* Drop zone indicator */}
         {isOver && (
-          <div className="mt-4 p-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-100 text-center text-blue-600">
-            Drop project here to move to {folder.name}
+          <div className="mt-4 p-6 border-2 border-dashed border-blue-400 rounded-lg bg-blue-100 text-center text-blue-700 font-medium">
+            <div className="text-lg">📁 Drop project here to move to {folder.name}</div>
           </div>
         )}
       </div>
@@ -208,11 +191,12 @@ function DroppableFolder({
 }
 
 export default function ProjectPortfolioPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -230,26 +214,33 @@ export default function ProjectPortfolioPage() {
   // Mutation to update project status
   const updateProjectMutation = useMutation({
     mutationFn: async ({ projectId, status }: { projectId: number; status: string }) => {
-      return await fetch(`/api/projects/${projectId}`, {
+      const response = await fetch(`/api/projects/${projectId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ status }),
-      }).then(res => res.json());
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update project');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       toast({
         title: "Success",
-        description: "Project status updated successfully",
+        description: "Project moved successfully!",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Update error:', error);
       toast({
         title: "Error",
-        description: "Failed to update project status",
+        description: "Failed to move project. Please try again.",
         variant: "destructive",
       });
     },
@@ -257,48 +248,64 @@ export default function ProjectPortfolioPage() {
 
   // Drag and drop handlers
   const handleDragStart = (event: DragStartEvent) => {
+    console.log('🚀 Drag started:', event.active.id);
     setActiveId(event.active.id);
+    
+    // Extract project ID from the dragged item
+    const projectId = String(event.active.id).replace('project-', '');
+    const project = projects.find(p => p.id === Number(projectId));
+    setActiveProject(project || null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    console.log('🎯 Drag ended:', { activeId: active.id, overId: over?.id });
+    
     setActiveId(null);
+    setActiveProject(null);
 
-    if (!over) return;
+    if (!over) {
+      console.log('❌ No drop target');
+      return;
+    }
 
-    const projectId = Number(active.id);
-    const newFolderId = String(over.id);
+    // Extract IDs
+    const projectId = Number(String(active.id).replace('project-', ''));
+    const folderId = String(over.id).replace('folder-', '');
+    
+    console.log('📊 Processing:', { projectId, folderId });
 
     // Map folder IDs to actual status values
-    const folderToStatusMap: Record<string, string[]> = {
-      new_leads: ["new_lead", "need_attention"],
-      active_projects: ["sent_estimate", "signed", "need_ordered", "ordered"],
-      scheduled_work: ["need_scheduled", "scheduled", "in_progress"],
-      completed: ["completed", "follow_up"]
+    const folderToStatusMap: Record<string, string> = {
+      'new_leads': "new_lead",
+      'active_projects': "sent_estimate", 
+      'scheduled_work': "scheduled",
+      'completed': "completed"
     };
 
-    // Get the first status for the target folder
-    const targetStatuses = folderToStatusMap[newFolderId];
-    if (!targetStatuses || targetStatuses.length === 0) return;
+    const newStatus = folderToStatusMap[folderId];
+    if (!newStatus) {
+      console.log('❌ Invalid folder ID:', folderId);
+      return;
+    }
 
-    const newStatus = targetStatuses[0]; // Use the first status as default
-
-    // Find the project and check if status actually changed
+    // Find the project
     const project = projects.find((p: Project) => p.id === projectId);
-    if (!project) return;
+    if (!project) {
+      console.log('❌ Project not found:', projectId);
+      return;
+    }
 
-    // Check if project is already in the target folder
-    const currentFolderStatuses = Object.entries(folderToStatusMap).find(([_, statuses]) => 
-      statuses.includes(project.status)
-    );
-    
-    if (currentFolderStatuses && currentFolderStatuses[0] === newFolderId) return;
+    if (project.status === newStatus) {
+      console.log('⚠️ Project already has this status');
+      return;
+    }
 
-    // Update the project status
+    console.log('✅ Updating project status from', project.status, 'to', newStatus);
     updateProjectMutation.mutate({ projectId, status: newStatus });
   };
 
-  // Group projects by status for folder view - aligned with pipeline stages
+  // Group projects by status for folder view
   const projectFolders = useMemo(() => {
     if (!projects || projects.length === 0) return [];
     
@@ -340,10 +347,6 @@ export default function ProjectPortfolioPage() {
   const activeProjectsCount = projects.filter(p => ['sent_estimate', 'signed', 'need_ordered', 'ordered'].includes(p.status)).length;
   const completedProjectsCount = projects.filter(p => ['completed', 'follow_up'].includes(p.status)).length;
 
-  const handleOpenProject = useCallback((project: Project) => {
-    window.location.href = `/project-detail/${project.id}`;
-  }, []);
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -359,7 +362,7 @@ export default function ProjectPortfolioPage() {
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Project Management</h1>
-                <p className="text-sm text-gray-600">Organize and track your projects by status</p>
+                <p className="text-sm text-gray-600">Drag and drop projects between folders to update their status</p>
               </div>
             </div>
             
@@ -405,7 +408,7 @@ export default function ProjectPortfolioPage() {
 
         {/* Loading State */}
         {projectsLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[1, 2, 3, 4].map((i) => (
               <Card key={i} className="h-48">
                 <CardContent className="p-6">
@@ -440,24 +443,27 @@ export default function ProjectPortfolioPage() {
             </div>
             
             <DragOverlay>
-              {activeId ? (
-                <DraggableProjectCard 
-                  project={projects.find((p: Project) => p.id === activeId)!} 
-                />
+              {activeProject ? (
+                <div className="transform rotate-3 shadow-2xl">
+                  <DraggableProjectCard project={activeProject} />
+                </div>
               ) : null}
             </DragOverlay>
           </DndContext>
         )}
 
-        {/* Instructions for drag and drop */}
+        {/* Instructions */}
         {!projectsLoading && projects.length > 0 && (
-          <Card className="mt-6 bg-blue-50 border-blue-200">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-blue-800">
-                <GripVertical className="h-4 w-4" />
-                <span className="text-sm font-medium">
-                  Drag and drop projects between folders to update their status
-                </span>
+          <Card className="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 text-blue-800">
+                <GripVertical className="h-5 w-5" />
+                <div>
+                  <p className="font-medium mb-1">How to use drag and drop:</p>
+                  <p className="text-sm text-blue-700">
+                    Click and hold the grip handle (⋮⋮) on any project card, then drag it to a different folder to automatically update its status.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
