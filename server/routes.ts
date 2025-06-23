@@ -969,6 +969,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public client view for proposals (no authentication required)
+  app.get("/api/proposals/:id/client-view", async (req: Request, res: Response) => {
+    try {
+      const proposalId = parseInt(req.params.id);
+      const proposal = await storage.getProposal(proposalId);
+      
+      if (!proposal) {
+        return res.status(404).json({ message: "Proposal not found" });
+      }
+
+      // Return proposal data for client view (without sensitive info)
+      res.json({
+        id: proposal.id,
+        title: proposal.title,
+        status: proposal.status,
+        clientName: proposal.clientName,
+        clientEmail: proposal.clientEmail,
+        clientPhone: proposal.clientPhone,
+        projectAddress: proposal.projectAddress,
+        description: proposal.description,
+        totalAmount: proposal.totalAmount,
+        sentAt: proposal.sentAt,
+        viewedAt: proposal.viewedAt,
+        signedAt: proposal.signedAt,
+        paidAt: proposal.paidAt,
+        createdAt: proposal.createdAt
+      });
+    } catch (error: any) {
+      console.error("Error fetching proposal client view:", error);
+      res.status(500).json({ message: "Failed to fetch proposal" });
+    }
+  });
+
   app.post("/api/proposals", authenticateToken, requireRole(['admin', 'employee', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
     try {
       const proposalData = {
