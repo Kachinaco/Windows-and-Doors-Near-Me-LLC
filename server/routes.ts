@@ -771,11 +771,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/leads", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
     try {
-      const lead = await storage.createLead(req.body);
+      console.log("Creating lead with data:", req.body);
+      
+      const { customerName, customerEmail, customerPhone, ...rest } = req.body;
+      
+      // Transform customerName to firstName/lastName if provided
+      let firstName = rest.firstName || '';
+      let lastName = rest.lastName || '';
+      
+      if (customerName && (!firstName || !lastName)) {
+        const nameParts = customerName.split(' ');
+        firstName = nameParts[0] || 'Unknown';
+        lastName = nameParts.slice(1).join(' ') || 'Lead';
+      }
+      
+      // Ensure required fields are not empty
+      const leadData = {
+        firstName: firstName || 'Unknown',
+        lastName: lastName || 'Lead', 
+        email: customerEmail || rest.email || '',
+        phone: customerPhone || rest.phone || '',
+        source: rest.source || 'website',
+        status: rest.status || 'new',
+        priority: rest.priority || 'normal',
+        serviceNeeded: rest.serviceNeeded || 'general',
+        projectDescription: rest.projectDescription || '',
+        estimatedValue: rest.estimatedValue,
+        followUpDate: rest.followUpDate,
+        assignedTo: rest.assignedTo,
+        notes: rest.notes || ''
+      };
+      
+      console.log("Transformed lead data:", leadData);
+      
+      const lead = await storage.createLead(leadData);
       res.status(201).json(lead);
     } catch (error: any) {
       console.error("Error creating lead:", error);
-      res.status(500).json({ message: "Failed to create lead" });
+      res.status(500).json({ message: "Failed to create lead", details: error.message });
     }
   });
 
