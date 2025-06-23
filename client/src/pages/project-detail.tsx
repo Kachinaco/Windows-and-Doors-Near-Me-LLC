@@ -98,6 +98,16 @@ export default function ProjectDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Project>>({});
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
+  const [isProposalDialogOpen, setIsProposalDialogOpen] = useState(false);
+  const [proposalForm, setProposalForm] = useState({
+    title: '',
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
+    projectAddress: '',
+    totalAmount: '',
+    description: ''
+  });
   const [fileForm, setFileForm] = useState({
     name: '',
     description: '',
@@ -194,6 +204,55 @@ export default function ProjectDetailPage() {
     const file = event.target.files?.[0];
     if (file) {
       setFileForm(prev => ({ ...prev, file, name: file.name }));
+    }
+  };
+
+  const handleCreateProposal = async () => {
+    if (!proposalForm.title.trim() || !proposalForm.clientEmail.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in required fields (title and client email)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const proposalData = {
+        ...proposalForm,
+        projectId: parseInt(id as string),
+        createdBy: user?.id || 1,
+        clientName: proposalForm.clientName || project?.clientName || 'Client',
+        clientEmail: proposalForm.clientEmail || project?.email || '',
+        clientPhone: proposalForm.clientPhone || project?.phone || '',
+        projectAddress: proposalForm.projectAddress || project?.address || '',
+      };
+
+      await apiRequest("POST", "/api/proposals", proposalData);
+      
+      toast({
+        title: "Success",
+        description: "Proposal created successfully",
+      });
+      
+      setIsProposalDialogOpen(false);
+      setProposalForm({
+        title: '',
+        clientName: '',
+        clientEmail: '',
+        clientPhone: '',
+        projectAddress: '',
+        totalAmount: '',
+        description: ''
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', id] });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create proposal",
+        variant: "destructive",
+      });
     }
   };
 
@@ -762,6 +821,130 @@ export default function ProjectDetailPage() {
                               Upload File
                             </Button>
                             <Button variant="outline" onClick={() => setIsFileDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    
+                    {/* Proposal Creation Dialog */}
+                    <Dialog open={isProposalDialogOpen} onOpenChange={setIsProposalDialogOpen}>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle className="text-xl font-semibold text-purple-800">Create HoneyBook-Style Proposal</DialogTitle>
+                          <p className="text-sm text-gray-600">Create a professional proposal with invoice, contract, and payment sections</p>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="proposal-title">Proposal Title *</Label>
+                              <Input
+                                id="proposal-title"
+                                value={proposalForm.title}
+                                onChange={(e) => setProposalForm(prev => ({ ...prev, title: e.target.value }))}
+                                placeholder="Enter proposal title"
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="proposal-amount">Total Amount</Label>
+                              <Input
+                                id="proposal-amount"
+                                type="number"
+                                value={proposalForm.totalAmount}
+                                onChange={(e) => setProposalForm(prev => ({ ...prev, totalAmount: e.target.value }))}
+                                placeholder="0.00"
+                                className="mt-1"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="proposal-client-name">Client Name</Label>
+                              <Input
+                                id="proposal-client-name"
+                                value={proposalForm.clientName}
+                                onChange={(e) => setProposalForm(prev => ({ ...prev, clientName: e.target.value }))}
+                                placeholder={project?.clientName || "Client name"}
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="proposal-client-email">Client Email *</Label>
+                              <Input
+                                id="proposal-client-email"
+                                type="email"
+                                value={proposalForm.clientEmail}
+                                onChange={(e) => setProposalForm(prev => ({ ...prev, clientEmail: e.target.value }))}
+                                placeholder={project?.email || "client@email.com"}
+                                className="mt-1"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="proposal-client-phone">Client Phone</Label>
+                              <Input
+                                id="proposal-client-phone"
+                                value={proposalForm.clientPhone}
+                                onChange={(e) => setProposalForm(prev => ({ ...prev, clientPhone: e.target.value }))}
+                                placeholder={project?.phone || "(555) 123-4567"}
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="proposal-address">Project Address</Label>
+                              <Input
+                                id="proposal-address"
+                                value={proposalForm.projectAddress}
+                                onChange={(e) => setProposalForm(prev => ({ ...prev, projectAddress: e.target.value }))}
+                                placeholder={project?.address || "Project address"}
+                                className="mt-1"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="proposal-description">Project Description</Label>
+                            <Textarea
+                              id="proposal-description"
+                              value={proposalForm.description}
+                              onChange={(e) => setProposalForm(prev => ({ ...prev, description: e.target.value }))}
+                              placeholder="Describe the work to be performed..."
+                              className="mt-1"
+                              rows={3}
+                            />
+                          </div>
+                          
+                          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <h4 className="font-medium text-purple-800 mb-2">Proposal Workflow</h4>
+                            <div className="flex items-center gap-2 text-sm text-purple-700">
+                              <div className="flex items-center gap-1">
+                                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+                                <span>Invoice</span>
+                              </div>
+                              <div className="text-purple-400">→</div>
+                              <div className="flex items-center gap-1">
+                                <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
+                                <span>Contract</span>
+                              </div>
+                              <div className="text-purple-400">→</div>
+                              <div className="flex items-center gap-1">
+                                <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
+                                <span>Payment</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-3 pt-4">
+                            <Button onClick={handleCreateProposal} className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800">
+                              <FileText className="h-4 w-4 mr-2" />
+                              Create Proposal
+                            </Button>
+                            <Button variant="outline" onClick={() => setIsProposalDialogOpen(false)}>
                               Cancel
                             </Button>
                           </div>
