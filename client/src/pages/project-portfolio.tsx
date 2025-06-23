@@ -86,7 +86,7 @@ function DraggableProjectCard({ project }: { project: Project }) {
             </div>
             
             <div className="flex items-center gap-2">
-              <Link href={`/project-detail/${project.id}`}>
+              <Link href={`/projects/${project.id}/detail`}>
                 <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800" onClick={(e) => e.stopPropagation()}>
                   View Details →
                 </Button>
