@@ -406,12 +406,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Contact form route (public)
   app.post("/api/contact", async (req, res) => {
     try {
-      const submissionData = insertContactSubmissionSchema.parse(req.body);
-      const submission = await storage.createContactSubmission(submissionData);
-      res.json(submission);
+      console.log("Full request details:", {
+        body: req.body,
+        headers: req.headers,
+        method: req.method
+      });
+      
+      // Handle both direct schema format and transformed format
+      let submissionData;
+      
+      if (req.body.firstName && req.body.lastName) {
+        // Direct schema format
+        submissionData = {
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+          email: req.body.email,
+          phone: req.body.phone,
+          serviceNeeded: req.body.serviceNeeded || 'General inquiry',
+          projectDetails: req.body.projectDetails || ''
+        };
+      } else {
+        // Transform legacy format
+        const { name, email, phone, message, serviceNeeded } = req.body || {};
+        
+        if (!name || !email || !phone) {
+          return res.status(400).json({ 
+            message: "Name, email, and phone are required",
+            received: { name, email, phone, message }
+          });
+        }
+        
+        const nameParts = name.split(' ');
+        submissionData = {
+          firstName: nameParts[0] || '',
+          lastName: nameParts.slice(1).join(' ') || '',
+          email: email,
+          phone: phone,
+          serviceNeeded: serviceNeeded || message || 'General inquiry',
+          projectDetails: message || ''
+        };
+      }
+      
+      console.log("Final submission data:", submissionData);
+      
+      const validatedData = insertContactSubmissionSchema.parse(submissionData);
+      const submission = await storage.createContactSubmission(validatedData);
+      
+      res.json({ 
+        success: true, 
+        message: "Contact form submitted successfully",
+        submission: submission 
+      });
     } catch (error) {
       console.error("Contact form error:", error);
-      res.status(400).json({ message: "Failed to submit contact form" });
+      if (error.issues) {
+        console.error("Validation issues:", error.issues);
+      }
+      res.status(400).json({ 
+        message: "Failed to submit contact form", 
+        error: error.message,
+        details: error.issues || error
+      });
     }
   });
 
