@@ -570,9 +570,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createLead(insertLead: InsertLead): Promise<Lead> {
+    console.log("Storage createLead received:", insertLead);
+    
+    // Ensure required fields are present
+    const leadData = {
+      ...insertLead,
+      firstName: insertLead.firstName || 'Unknown',
+      lastName: insertLead.lastName || 'Lead',
+      source: insertLead.source || 'website'
+    };
+    
+    console.log("Storage createLead using:", leadData);
+    
     const [lead] = await db
       .insert(leads)
-      .values(insertLead)
+      .values(leadData)
       .returning();
     return lead;
   }

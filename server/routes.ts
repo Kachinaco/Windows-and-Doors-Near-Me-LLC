@@ -493,12 +493,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects", authenticateToken, requireRole(['admin', 'employee', 'contractor_trial', 'contractor_paid']), async (req: AuthenticatedRequest, res) => {
     try {
-      const validatedData = insertProjectSchema.parse(req.body);
+      console.log("Creating project with data:", req.body);
+      
+      const { name, ...rest } = req.body;
+      
+      // Transform name to title and ensure required fields
+      const projectData = {
+        title: name || rest.title || 'Untitled Project',
+        serviceType: rest.serviceType || 'windows',
+        status: rest.status || 'planning',
+        description: rest.description || '',
+        clientId: rest.customerId || rest.clientId,
+        estimatedCost: rest.estimatedCost,
+        startDate: rest.startDate,
+        endDate: rest.endDate,
+        assignedToId: rest.assignedToId,
+        priority: rest.priority || 'medium',
+        completionPercentage: rest.completionPercentage || 0
+      };
+      
+      console.log("Transformed project data:", projectData);
+      
+      const validatedData = insertProjectSchema.parse(projectData);
       const project = await storage.createProject(validatedData);
       res.status(201).json(project);
     } catch (error: any) {
       console.error("Error creating project:", error);
-      res.status(500).json({ message: "Failed to create project" });
+      if (error.issues) {
+        console.error("Validation issues:", error.issues);
+      }
+      res.status(500).json({ message: "Failed to create project", details: error.message });
     }
   });
 
