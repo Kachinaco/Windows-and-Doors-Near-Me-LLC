@@ -39,7 +39,14 @@ import {
   Send,
   Camera,
   Smile,
-  X
+  X,
+  Filter,
+  ArrowUpDown,
+  ChevronDown,
+  Plus,
+  RefreshCw,
+  Edit,
+  Trash2
 } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useRef, useEffect } from "react";
@@ -694,21 +701,158 @@ export default function Dashboard() {
             <div className="relative group">
               <Link href="/payroll">
                 <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 border-cyan-200 dark:border-cyan-800">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                    <div className="p-2 sm:p-4 bg-cyan-600 rounded-xl sm:rounded-2xl shadow-lg">
-                      <DollarSign className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-cyan-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <DollarSign className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Payroll</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Employee payments
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Payroll</p>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                        Employee payments
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Three-dot menu */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-64">
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Settings
+                      <ChevronRight className="h-4 w-4 ml-auto" />
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <Filter className="h-4 w-4" />
+                      Filter
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <ArrowUpDown className="h-4 w-4" />
+                      Sort
+                      <ChevronRight className="h-4 w-4 ml-auto" />
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <ChevronDown className="h-4 w-4" />
+                      Collapse
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Group by
+                    </DropdownMenuItem>
+                    <div className="border-t my-1"></div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <DropdownMenuItem className="flex items-center gap-2">
+                          <Plus className="h-4 w-4" />
+                          Duplicate column
+                          <ChevronRight className="h-4 w-4 ml-auto" />
+                        </DropdownMenuItem>
+                      </DropdownMenuTrigger>
+                    </DropdownMenu>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <DropdownMenuItem className="flex items-center gap-2">
+                          <Plus className="h-4 w-4" />
+                          Add AI column to the right
+                          <ChevronRight className="h-4 w-4 ml-auto" />
+                        </DropdownMenuItem>
+                      </DropdownMenuTrigger>
+                    </DropdownMenu>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <DropdownMenuItem className="flex items-center gap-2">
+                          <Plus className="h-4 w-4" />
+                          Add column to the right
+                          <ChevronRight className="h-4 w-4 ml-auto" />
+                        </DropdownMenuItem>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent side="right" align="start" className="w-48">
+                        <DropdownMenuItem className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-green-500 rounded flex items-center justify-center">
+                            <CheckCircle className="h-3 w-3 text-white" />
+                          </div>
+                          Status
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-orange-500 rounded flex items-center justify-center">
+                            <FileText className="h-3 w-3 text-white" />
+                          </div>
+                          Text
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
+                            <Users className="h-3 w-3 text-white" />
+                          </div>
+                          People
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-purple-500 rounded flex items-center justify-center">
+                            <Calendar className="h-3 w-3 text-white" />
+                          </div>
+                          Timeline
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-pink-500 rounded flex items-center justify-center">
+                            <Calendar className="h-3 w-3 text-white" />
+                          </div>
+                          Date
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-indigo-500 rounded flex items-center justify-center">
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                          </div>
+                          Tags
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-yellow-500 rounded flex items-center justify-center">
+                            <span className="text-xs font-bold text-white">#</span>
+                          </div>
+                          Numbers
+                        </DropdownMenuItem>
+                        <div className="border-t my-1"></div>
+                        <DropdownMenuItem className="text-sm text-gray-600">
+                          More columns
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4" />
+                      Change column type
+                      <ChevronRight className="h-4 w-4 ml-auto" />
+                    </DropdownMenuItem>
+                    <div className="border-t my-1"></div>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Column extensions
+                      <ChevronRight className="h-4 w-4 ml-auto" />
+                    </DropdownMenuItem>
+                    <div className="border-t my-1"></div>
+                    <DropdownMenuItem className="flex items-center gap-2">
+                      <Edit className="h-4 w-4" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2 text-red-600">
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
             {/* Reports */}
             <Link href="/quotes">
