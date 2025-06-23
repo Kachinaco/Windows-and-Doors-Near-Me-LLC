@@ -70,6 +70,11 @@ export default function ProjectTable() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [editingCell, setEditingCell] = useState<{row: number, column: string} | null>(null);
+  const [editValue, setEditValue] = useState<string>("");
+  const [visibleColumns, setVisibleColumns] = useState([
+    'name', 'people', 'location', 'phone', 'status', 'measureDate', 'deliveryDate', 'installDate'
+  ]);
 
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ['/api/projects'],
@@ -158,6 +163,60 @@ export default function ProjectTable() {
     } else {
       setSelectedProjects([]);
     }
+  };
+
+  // Inline editing functions
+  const handleCellClick = (projectId: number, column: string, currentValue: string) => {
+    setEditingCell({ row: projectId, column });
+    setEditValue(currentValue || '');
+  };
+
+  const handleCellSave = async () => {
+    if (!editingCell) return;
+    
+    try {
+      const response = await fetch(`/api/projects/${editingCell.row}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify({
+          [editingCell.column]: editValue
+        })
+      });
+
+      if (response.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+        toast({
+          title: "Updated",
+          description: "Project updated successfully"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update project",
+        variant: "destructive"
+      });
+    }
+    
+    setEditingCell(null);
+    setEditValue('');
+  };
+
+  const handleCellCancel = () => {
+    setEditingCell(null);
+    setEditValue('');
+  };
+
+  // Column visibility toggle
+  const toggleColumn = (column: string) => {
+    setVisibleColumns(prev => 
+      prev.includes(column) 
+        ? prev.filter(col => col !== column)
+        : [...prev, column]
+    );
   };
 
   // Get assigned employee
@@ -279,13 +338,70 @@ export default function ProjectTable() {
               </DropdownMenuContent>
             </DropdownMenu>
             
-            {/* Results summary */}
+            {/* Column Customization */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Users className="w-4 h-4" />
+                  Columns
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {[
+                  { key: 'name', label: 'Item' },
+                  { key: 'people', label: 'People' },
+                  { key: 'location', label: 'Location' },
+                  { key: 'phone', label: 'Phone' },
+                  { key: 'status', label: 'Status' },
+                  { key: 'measureDate', label: 'Measure Date' },
+                  { key: 'deliveryDate', label: 'Delivery Date' },
+                  { key: 'installDate', label: 'Install Date' }
+                ].map((column) => (
+                  <DropdownMenuItem 
+                    key={column.key}
+                    onClick={() => toggleColumn(column.key)}
+                    className="flex items-center justify-between"
+                  >
+                    {column.label}
+                    <Checkbox 
+                      checked={visibleColumns.includes(column.key)}
+                      className="ml-2"
+                    />
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {/* Results summary and bulk actions */}
             <div className="flex items-center gap-4 text-sm text-gray-500 ml-auto">
               {selectedProjects.length > 0 && (
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                     {selectedProjects.length} selected
                   </Badge>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        Bulk Actions
+                        <ChevronDown className="w-3 h-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem>
+                        Update Status
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        Assign Team Member
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        Set Dates
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600">
+                        Delete Selected
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button variant="ghost" size="sm" onClick={() => setSelectedProjects([])}>
                     Clear
                   </Button>
@@ -311,51 +427,29 @@ export default function ProjectTable() {
                   className="border-gray-300 data-[state=checked]:bg-white data-[state=checked]:text-gray-900"
                 />
               </th>
-              <th className="p-4 text-left font-semibold tracking-wide border-r border-gray-700 min-w-[200px]">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  Item
-                </div>
-              </th>
-              <th className="p-4 text-left font-semibold tracking-wide border-r border-gray-700 min-w-[150px]">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  People
-                </div>
-              </th>
-              <th className="p-4 text-left font-semibold tracking-wide border-r border-gray-700 min-w-[200px]">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  Location
-                </div>
-              </th>
-              <th className="p-4 text-left font-semibold tracking-wide border-r border-gray-700 min-w-[140px]">
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  Phone
-                </div>
-              </th>
-              <th className="p-4 text-left font-semibold tracking-wide border-r border-gray-700 min-w-[120px]">
-                Status
-              </th>
-              <th className="p-4 text-left font-semibold tracking-wide border-r border-gray-700 min-w-[120px]">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Measure Date
-                </div>
-              </th>
-              <th className="p-4 text-left font-semibold tracking-wide border-r border-gray-700 min-w-[120px]">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Delivery Date
-                </div>
-              </th>
-              <th className="p-4 text-left font-semibold tracking-wide border-r border-gray-700 min-w-[120px]">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Install Date
-                </div>
-              </th>
+              {visibleColumns.map((column) => {
+                const columnConfig = {
+                  name: { label: 'Item', icon: FileText, width: 'min-w-[200px]' },
+                  people: { label: 'People', icon: Users, width: 'min-w-[150px]' },
+                  location: { label: 'Location', icon: MapPin, width: 'min-w-[200px]' },
+                  phone: { label: 'Phone', icon: Phone, width: 'min-w-[140px]' },
+                  status: { label: 'Status', icon: null, width: 'min-w-[120px]' },
+                  measureDate: { label: 'Measure Date', icon: Calendar, width: 'min-w-[120px]' },
+                  deliveryDate: { label: 'Delivery Date', icon: Calendar, width: 'min-w-[120px]' },
+                  installDate: { label: 'Install Date', icon: Calendar, width: 'min-w-[120px]' }
+                }[column];
+                
+                const IconComponent = columnConfig?.icon;
+                
+                return (
+                  <th key={column} className={`p-4 text-left font-semibold tracking-wide border-r border-gray-700 ${columnConfig?.width}`}>
+                    <div className="flex items-center gap-2">
+                      {IconComponent && <IconComponent className="w-4 h-4" />}
+                      {columnConfig?.label}
+                    </div>
+                  </th>
+                );
+              })}
               <th className="p-4 text-left font-semibold tracking-wide min-w-[100px]">
                 Actions
               </th>
@@ -365,6 +459,43 @@ export default function ProjectTable() {
             {filteredProjects.map((project, index: number) => {
               const assignedEmployee = getAssignedEmployee(project.assignedTo || 0);
               const isSelected = selectedProjects.includes(project.id);
+              
+              const EditableCell = ({ field, value, displayValue, className = "" }: {
+                field: string;
+                value: any;
+                displayValue?: React.ReactNode;
+                className?: string;
+              }) => {
+                const isEditing = editingCell?.row === project.id && editingCell?.column === field;
+                
+                if (isEditing) {
+                  return (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleCellSave();
+                          if (e.key === 'Escape') handleCellCancel();
+                        }}
+                        onBlur={handleCellSave}
+                        autoFocus
+                        className="h-8 text-sm border-blue-500 focus:border-blue-600"
+                      />
+                    </div>
+                  );
+                }
+                
+                return (
+                  <div 
+                    className={`cursor-pointer hover:bg-blue-50 p-2 rounded transition-colors ${className}`}
+                    onClick={() => handleCellClick(project.id, field, value?.toString() || '')}
+                    title="Click to edit"
+                  >
+                    {displayValue || value || '—'}
+                  </div>
+                );
+              };
               
               return (
                 <tr 
@@ -386,115 +517,110 @@ export default function ProjectTable() {
                     />
                   </td>
                   
-                  {/* Item */}
-                  <td className="p-4 border-r border-gray-100">
-                    <Link href={`/projects/${project.id}`}>
-                      <div className="group cursor-pointer">
-                        <div className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 text-sm">
-                          {project.name}
-                        </div>
-                        {project.description && (
-                          <div className="text-xs text-gray-500 mt-1 line-clamp-2 max-w-xs">
-                            {project.description}
-                          </div>
-                        )}
-                      </div>
-                    </Link>
-                  </td>
-                  
-                  {/* People */}
-                  <td className="p-4 border-r border-gray-100">
-                    <div className="flex items-center gap-3">
-                      {assignedEmployee ? (
-                        <>
-                          <Avatar className="w-9 h-9 ring-2 ring-white shadow-sm">
-                            <AvatarFallback className="bg-gradient-to-br from-pink-500 to-purple-600 text-white text-xs font-semibold">
-                              {assignedEmployee.firstName?.[0]}{assignedEmployee.lastName?.[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {assignedEmployee.firstName} {assignedEmployee.lastName}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {assignedEmployee.role || 'Team Member'}
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-sm">
-                            <Users className="w-4 h-4 text-gray-500" />
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-500">Unassigned</div>
-                            <div className="text-xs text-gray-400">No team member</div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  
-                  {/* Location */}
-                  <td className="p-4 border-r border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <MapPin className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-900 font-medium">
-                          {project.projectAddress || 'Location TBD'}
-                        </div>
-                        <div className="text-xs text-gray-500">Project site</div>
-                      </div>
-                    </div>
-                  </td>
-                  
-                  {/* Phone */}
-                  <td className="p-4 border-r border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
-                        <Phone className="w-4 h-4 text-green-600" />
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-900 font-medium">
-                          {project.clientPhone || 'No phone'}
-                        </div>
-                        <div className="text-xs text-gray-500">Contact</div>
-                      </div>
-                    </div>
-                  </td>
-                  
-                  {/* Status */}
-                  <td className="p-4 border-r border-gray-100">
-                    <Badge className={`${getStatusColor(project.status)} px-3 py-2 rounded-lg text-xs font-semibold shadow-sm`}>
-                      {project.status}
-                    </Badge>
-                  </td>
-                  
-                  {/* Measure Date */}
-                  <td className="p-4 border-r border-gray-100">
-                    <div className="text-sm text-gray-900 font-medium">
-                      {formatDate(project.startDate) || '—'}
-                    </div>
-                    <div className="text-xs text-gray-500">Start date</div>
-                  </td>
-                  
-                  {/* Delivery Date */}
-                  <td className="p-4 border-r border-gray-100">
-                    <div className="text-sm text-gray-900 font-medium">
-                      {formatDate(project.endDate) || '—'}
-                    </div>
-                    <div className="text-xs text-gray-500">Target end</div>
-                  </td>
-                  
-                  {/* Install Date */}
-                  <td className="p-4 border-r border-gray-100">
-                    <div className="text-sm text-gray-900 font-medium">
-                      {formatDate(project.createdAt) || '—'}
-                    </div>
-                    <div className="text-xs text-gray-500">Created</div>
-                  </td>
+                  {visibleColumns.map((column) => (
+                    <td key={column} className="p-2 border-r border-gray-100">
+                      {(() => {
+                        switch (column) {
+                          case 'name':
+                            return (
+                              <div className="space-y-1">
+                                <EditableCell 
+                                  field="name" 
+                                  value={project.name}
+                                  className="font-semibold text-gray-900 text-sm"
+                                />
+                                {project.description && (
+                                  <EditableCell 
+                                    field="description" 
+                                    value={project.description}
+                                    className="text-xs text-gray-500"
+                                  />
+                                )}
+                              </div>
+                            );
+                          case 'people':
+                            return (
+                              <div className="flex items-center gap-2">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarFallback className="bg-gradient-to-br from-pink-500 to-purple-600 text-white text-xs">
+                                    {assignedEmployee ? `${assignedEmployee.firstName?.[0]}${assignedEmployee.lastName?.[0]}` : 'U'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <EditableCell 
+                                  field="assignedTo" 
+                                  value={project.assignedTo}
+                                  displayValue={assignedEmployee ? `${assignedEmployee.firstName} ${assignedEmployee.lastName}` : 'Unassigned'}
+                                  className="text-sm font-medium text-gray-900"
+                                />
+                              </div>
+                            );
+                          case 'location':
+                            return (
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                                <EditableCell 
+                                  field="projectAddress" 
+                                  value={project.projectAddress}
+                                  displayValue={project.projectAddress || 'Click to add location'}
+                                  className="text-sm text-gray-900"
+                                />
+                              </div>
+                            );
+                          case 'phone':
+                            return (
+                              <div className="flex items-center gap-2">
+                                <Phone className="w-4 h-4 text-green-600 flex-shrink-0" />
+                                <EditableCell 
+                                  field="clientPhone" 
+                                  value={project.clientPhone}
+                                  displayValue={project.clientPhone || 'Click to add phone'}
+                                  className="text-sm text-gray-900"
+                                />
+                              </div>
+                            );
+                          case 'status':
+                            return (
+                              <div className="cursor-pointer hover:bg-blue-50 p-2 rounded transition-colors"
+                                   onClick={() => handleCellClick(project.id, 'status', project.status)}
+                                   title="Click to edit">
+                                <Badge className={`${getStatusColor(project.status)} px-2 py-1 text-xs font-semibold`}>
+                                  {project.status}
+                                </Badge>
+                              </div>
+                            );
+                          case 'measureDate':
+                            return (
+                              <EditableCell 
+                                field="startDate" 
+                                value={project.startDate}
+                                displayValue={formatDate(project.startDate) || 'Click to set date'}
+                                className="text-sm text-gray-900"
+                              />
+                            );
+                          case 'deliveryDate':
+                            return (
+                              <EditableCell 
+                                field="endDate" 
+                                value={project.endDate}
+                                displayValue={formatDate(project.endDate) || 'Click to set date'}
+                                className="text-sm text-gray-900"
+                              />
+                            );
+                          case 'installDate':
+                            return (
+                              <EditableCell 
+                                field="createdAt" 
+                                value={project.createdAt}
+                                displayValue={formatDate(project.createdAt) || 'Click to set date'}
+                                className="text-sm text-gray-900"
+                              />
+                            );
+                          default:
+                            return <span>—</span>;
+                        }
+                      })()}
+                    </td>
+                  ))}
                   
                   {/* Actions */}
                   <td className="p-4">
