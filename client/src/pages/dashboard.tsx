@@ -503,23 +503,70 @@ export default function Dashboard() {
               </Link>
               
               {/* Three-dot menu */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 z-20">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
-                      onClick={(e) => e.preventDefault()}
+                      className="h-7 w-7 p-0 bg-white/90 hover:bg-white shadow-lg border border-gray-200 rounded-full hover:scale-110 transition-all"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
                     >
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="h-3.5 w-3.5 text-gray-700" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
-                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
-                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Filter className="mr-2 h-4 w-4" />
+                      Filter
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ArrowUpDown className="mr-2 h-4 w-4" />
+                      Sort
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Eye className="mr-2 h-4 w-4" />
+                      Collapse
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Users className="mr-2 h-4 w-4" />
+                      Group by
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Duplicate column
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Add AI column
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ChevronRight className="mr-2 h-4 w-4" />
+                      Add column to the right
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Change column type
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Column extensions
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -546,23 +593,70 @@ export default function Dashboard() {
               </Link>
               
               {/* Three-dot menu */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 z-20">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
-                      onClick={(e) => e.preventDefault()}
+                      className="h-7 w-7 p-0 bg-white/90 hover:bg-white shadow-lg border border-gray-200 rounded-full hover:scale-110 transition-all"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
                     >
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="h-3.5 w-3.5 text-gray-700" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
-                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
-                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Filter className="mr-2 h-4 w-4" />
+                      Filter
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ArrowUpDown className="mr-2 h-4 w-4" />
+                      Sort
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Eye className="mr-2 h-4 w-4" />
+                      Collapse
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Users className="mr-2 h-4 w-4" />
+                      Group by
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Duplicate column
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Add AI column
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ChevronRight className="mr-2 h-4 w-4" />
+                      Add column to the right
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Change column type
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Column extensions
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -589,23 +683,70 @@ export default function Dashboard() {
               </Link>
               
               {/* Three-dot menu */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 z-20">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
-                      onClick={(e) => e.preventDefault()}
+                      className="h-7 w-7 p-0 bg-white/90 hover:bg-white shadow-lg border border-gray-200 rounded-full hover:scale-110 transition-all"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
                     >
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="h-3.5 w-3.5 text-gray-700" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
-                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
-                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Filter className="mr-2 h-4 w-4" />
+                      Filter
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ArrowUpDown className="mr-2 h-4 w-4" />
+                      Sort
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Eye className="mr-2 h-4 w-4" />
+                      Collapse
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Users className="mr-2 h-4 w-4" />
+                      Group by
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Duplicate column
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Add AI column
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ChevronRight className="mr-2 h-4 w-4" />
+                      Add column to the right
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Change column type
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Column extensions
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -632,23 +773,70 @@ export default function Dashboard() {
               </Link>
               
               {/* Three-dot menu */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 z-20">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
-                      onClick={(e) => e.preventDefault()}
+                      className="h-7 w-7 p-0 bg-white/90 hover:bg-white shadow-lg border border-gray-200 rounded-full hover:scale-110 transition-all"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
                     >
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="h-3.5 w-3.5 text-gray-700" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
-                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
-                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Filter className="mr-2 h-4 w-4" />
+                      Filter
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ArrowUpDown className="mr-2 h-4 w-4" />
+                      Sort
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Eye className="mr-2 h-4 w-4" />
+                      Collapse
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Users className="mr-2 h-4 w-4" />
+                      Group by
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Duplicate column
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Add AI column
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ChevronRight className="mr-2 h-4 w-4" />
+                      Add column to the right
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Change column type
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Column extensions
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -675,23 +863,70 @@ export default function Dashboard() {
               </Link>
               
               {/* Three-dot menu */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 z-20">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
-                      onClick={(e) => e.preventDefault()}
+                      className="h-7 w-7 p-0 bg-white/90 hover:bg-white shadow-lg border border-gray-200 rounded-full hover:scale-110 transition-all"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
                     >
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="h-3.5 w-3.5 text-gray-700" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
-                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
-                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Filter className="mr-2 h-4 w-4" />
+                      Filter
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ArrowUpDown className="mr-2 h-4 w-4" />
+                      Sort
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Eye className="mr-2 h-4 w-4" />
+                      Collapse
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Users className="mr-2 h-4 w-4" />
+                      Group by
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Duplicate column
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Add AI column
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ChevronRight className="mr-2 h-4 w-4" />
+                      Add column to the right
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Change column type
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Column extensions
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
