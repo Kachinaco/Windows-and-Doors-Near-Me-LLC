@@ -214,11 +214,31 @@ export default function ProjectPortfolioPage() {
   // Mutation to update project status
   const updateProjectMutation = useMutation({
     mutationFn: async ({ projectId, status }: { projectId: number; status: string }) => {
-      const { apiRequest } = await import("@/lib/queryClient");
-      return apiRequest(`/api/projects/${projectId}`, {
+      console.log('Making API request to update project:', { projectId, status });
+      
+      // Get the token from localStorage (where it's stored as 'authToken')
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
+      const response = await fetch(`/api/projects/${projectId}`, {
         method: "PUT",
-        body: { status },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update project: ${response.status} ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('API request successful:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
