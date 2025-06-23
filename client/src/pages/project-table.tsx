@@ -27,7 +27,8 @@ import {
   Filter,
   RefreshCw,
   ArrowUpDown,
-  ChevronDown
+  ChevronDown,
+  Trash2
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -217,6 +218,40 @@ export default function ProjectTable() {
         ? prev.filter(col => col !== column)
         : [...prev, column]
     );
+  };
+
+  // Delete project function
+  const handleDeleteProject = async (projectId: number) => {
+    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
+
+      if (response.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+        toast({
+          title: "Deleted",
+          description: "Project deleted successfully"
+        });
+        // Remove from selected projects if it was selected
+        setSelectedProjects(prev => prev.filter(id => id !== projectId));
+      } else {
+        throw new Error('Failed to delete project');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete project",
+        variant: "destructive"
+      });
+    }
   };
 
   // Get assigned employee
@@ -630,6 +665,7 @@ export default function ProjectTable() {
                           variant="ghost" 
                           size="sm" 
                           className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600 transition-colors"
+                          title="View Project"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -644,6 +680,15 @@ export default function ProjectTable() {
                           <Edit className="w-4 h-4" />
                         </Button>
                       </Link>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleDeleteProject(project.id)}
+                        className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all"
+                        title="Delete Project"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </td>
                 </tr>
