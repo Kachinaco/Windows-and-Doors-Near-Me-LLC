@@ -980,11 +980,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProposal(proposal: InsertProposal): Promise<Proposal> {
-    const [newProposal] = await db
-      .insert(proposals)
-      .values(proposal)
-      .returning();
-    return newProposal;
+    // Use raw SQL to avoid column mapping issues
+    const result = await db.execute(sql`
+      INSERT INTO proposals (
+        title, description, total_amount, project_id, created_by_id, 
+        client_name, client_email, client_phone, project_address, status,
+        created_at, updated_at
+      ) VALUES (
+        ${proposal.title}, ${proposal.description}, ${proposal.totalAmount}, 
+        ${proposal.projectId}, ${proposal.createdBy}, ${proposal.clientName}, 
+        ${proposal.clientEmail}, ${proposal.clientPhone}, ${proposal.projectAddress}, 
+        ${proposal.status || 'draft'}, NOW(), NOW()
+      ) RETURNING *
+    `);
+    
+    return result.rows[0] as Proposal;
   }
 
   async updateProposal(id: number, updates: Partial<InsertProposal>): Promise<Proposal> {
