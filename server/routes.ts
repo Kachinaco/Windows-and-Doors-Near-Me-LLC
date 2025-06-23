@@ -541,20 +541,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Quote request routes
   app.post("/api/quote-requests", async (req, res) => {
     try {
-      const { customerName, customerEmail, customerPhone, projectAddress, items, totalEstimate, notes, needsInstallation } = req.body;
+      console.log("Quote request body:", req.body);
       
-      if (!customerName || !customerEmail || !customerPhone || !items || !totalEstimate) {
-        return res.status(400).json({ message: "Missing required fields" });
+      // Handle flexible input format
+      const { 
+        customerName, 
+        customerEmail, 
+        customerPhone, 
+        projectAddress,
+        projectDescription,
+        serviceType,
+        windowConfigurations,
+        items, 
+        totalEstimate, 
+        notes, 
+        needsInstallation 
+      } = req.body;
+      
+      if (!customerName || !customerEmail || !customerPhone) {
+        return res.status(400).json({ 
+          message: "Customer name, email, and phone are required",
+          received: { customerName, customerEmail, customerPhone }
+        });
       }
 
       const quoteRequest = await storage.createQuoteRequest({
         customerName,
         customerEmail,
         customerPhone,
-        projectAddress,
-        items,
-        totalEstimate,
-        notes,
+        projectAddress: projectAddress || '',
+        items: items || windowConfigurations || [],
+        totalEstimate: totalEstimate || '0',
+        notes: notes || projectDescription || '',
         needsInstallation: needsInstallation || false,
         status: "pending",
         priority: "normal"
@@ -565,7 +583,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         quoteRequestId: quoteRequest.id,
         activityType: "created",
         description: `Quote request submitted by ${customerName}`,
-        metadata: { items: items.length, totalEstimate }
+        metadata: { 
+          items: (items || windowConfigurations || []).length, 
+          totalEstimate: totalEstimate || '0',
+          serviceType: serviceType || 'general'
+        }
       });
 
       res.status(201).json({ message: "Quote request submitted successfully", quoteNumber: quoteRequest.quoteNumber });
