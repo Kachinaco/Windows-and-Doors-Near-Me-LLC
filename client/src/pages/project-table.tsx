@@ -22,12 +22,9 @@ import {
   Calendar,
   MapPin,
   Users,
-  MoreHorizontal,
   Edit,
-  Trash2,
   Eye,
   Filter,
-  Download,
   RefreshCw,
   ArrowUpDown,
   ChevronDown
@@ -192,18 +189,21 @@ export default function ProjectTable() {
               <p className="text-gray-600 mt-1">Manage and track all your projects in one place</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" className="text-gray-600">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
-              <Button variant="outline" size="sm" className="text-gray-600">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => window.location.reload()}
+                className="text-gray-600"
+              >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
               </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700 shadow-md">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Project
-              </Button>
+              <Link href="/projects-list">
+                <Button className="bg-blue-600 hover:bg-blue-700 shadow-md">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Project
+                </Button>
+              </Link>
             </div>
           </div>
           
@@ -508,35 +508,16 @@ export default function ProjectTable() {
                           <Eye className="w-4 h-4" />
                         </Button>
                       </Link>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem>
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit Project
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <FileText className="w-4 h-4 mr-2" />
-                            View Files
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <Link href={`/projects/${project.id}/detail`}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Edit Project"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </Link>
                     </div>
                   </td>
                 </tr>
@@ -546,13 +527,15 @@ export default function ProjectTable() {
             {/* Add new row */}
             <tr className="bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all duration-200">
               <td colSpan={10} className="p-6">
-                <Button 
-                  variant="ghost" 
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 w-full justify-center py-3 border-2 border-dashed border-blue-200 hover:border-blue-300 rounded-lg transition-all duration-200"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Add New Project
-                </Button>
+                <Link href="/projects-list">
+                  <Button 
+                    variant="ghost" 
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 w-full justify-center py-3 border-2 border-dashed border-blue-200 hover:border-blue-300 rounded-lg transition-all duration-200"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Add New Project
+                  </Button>
+                </Link>
               </td>
             </tr>
           </tbody>
@@ -583,10 +566,12 @@ export default function ProjectTable() {
                     Clear filters
                   </Button>
                 )}
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Project
-                </Button>
+                <Link href="/projects-list">
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Project
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
