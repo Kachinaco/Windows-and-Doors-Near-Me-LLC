@@ -721,7 +721,18 @@ export class DatabaseStorage implements IStorage {
   async createProposal(insertProposal: InsertProposal): Promise<Proposal> {
     const [proposal] = await db
       .insert(proposals)
-      .values(insertProposal)
+      .values({
+        title: insertProposal.title,
+        projectId: insertProposal.projectId,
+        createdById: insertProposal.createdBy,
+        clientName: insertProposal.clientName,
+        clientEmail: insertProposal.clientEmail,
+        clientPhone: insertProposal.clientPhone,
+        projectAddress: insertProposal.projectAddress,
+        description: insertProposal.description,
+        totalAmount: insertProposal.totalAmount,
+        status: insertProposal.status || "draft",
+      })
       .returning();
     return proposal;
   }
@@ -963,25 +974,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProposal(id: number): Promise<Proposal | undefined> {
-    const [proposal] = await db.select({
-      id: proposals.id,
-      projectId: proposals.projectId,
-      title: proposals.title,
-      status: proposals.status,
-      clientName: proposals.clientName,
-      clientEmail: proposals.clientEmail,
-      clientPhone: proposals.clientPhone,
-      projectAddress: proposals.projectAddress,
-      description: proposals.description,
-      totalAmount: proposals.totalAmount,
-      sentAt: proposals.sentAt,
-      viewedAt: proposals.viewedAt,
-      signedAt: proposals.signedAt,
-      paidAt: proposals.paidAt,
-      createdBy: proposals.createdBy,
-      createdAt: proposals.createdAt,
-      updatedAt: proposals.updatedAt
-    }).from(proposals).where(eq(proposals.id, id));
+    const [proposal] = await db.select().from(proposals).where(eq(proposals.id, id));
     return proposal || undefined;
   }
 
