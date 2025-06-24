@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,10 @@ import {
   SortDesc,
   Calculator,
   Edit,
-  Trash2
+  Trash2,
+  Users,
+  Eye,
+  Wifi
 } from "lucide-react";
 
 const getStatusColor = (status: string) => {
@@ -67,6 +70,23 @@ const formatDate = (date: Date | string | null) => {
   });
 };
 
+// Real-time collaboration types
+interface CollaborationUser {
+  id: number;
+  username: string;
+  sessionId: string;
+}
+
+interface ActiveEditor {
+  cellKey: string;
+  user: CollaborationUser;
+}
+
+interface WSMessage {
+  type: string;
+  payload: any;
+}
+
 export default function SimpleExcelManager() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -95,7 +115,15 @@ export default function SimpleExcelManager() {
   const [startX, setStartX] = useState(0);
   const [startWidth, setStartWidth] = useState(0);
   
+  // Real-time collaboration state
+  const [ws, setWs] = useState<WebSocket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState<CollaborationUser[]>([]);
+  const [activeEditors, setActiveEditors] = useState<Map<string, CollaborationUser>>(new Map());
+  const [sessionId, setSessionId] = useState<string>("");
+  
   const inputRef = useRef<HTMLInputElement>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ['/api/projects'],
@@ -106,6 +134,111 @@ export default function SimpleExcelManager() {
     queryKey: ['/api/employees'],
     enabled: !!user,
   });
+
+  // WebSocket connection for real-time collaboration
+  useEffect(() => {
+    if (!user) return;
+
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const websocket = new WebSocket(wsUrl);
+    
+    websocket.onopen = () => {
+      setIsConnected(true);
+      setWs(websocket);
+      wsRef.current = websocket;
+      
+      // Join collaboration session
+      websocket.send(JSON.stringify({
+        type: 'user-join',
+        token: localStorage.getItem('authToken')
+      }));
+    };
+
+    websocket.onmessage = (event) => {
+      try {
+        const message: WSMessage = JSON.parse(event.data);
+        handleWebSocketMessage(message);
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+      }
+    };
+
+    websocket.onclose = () => {
+      setIsConnected(false);
+      setWs(null);
+      wsRef.current = null;
+    };
+
+    websocket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setIsConnected(false);
+    };
+
+    return () => {
+      websocket.close();
+    };
+  }, [user]);
+
+  // Handle WebSocket messages
+  const handleWebSocketMessage = useCallback((message: WSMessage) => {
+    switch (message.type) {
+      case 'collaboration-state':
+        setSessionId(message.payload.sessionId);
+        setOnlineUsers(message.payload.onlineUsers);
+        const editorsMap = new Map();
+        message.payload.activeEditors.forEach((editor: ActiveEditor) => {
+          editorsMap.set(editor.cellKey, editor.user);
+        });
+        setActiveEditors(editorsMap);
+        break;
+
+      case 'user-join':
+        setOnlineUsers(prev => [...prev, message.payload.user]);
+        toast({
+          title: "User Joined",
+          description: `${message.payload.user.username} joined the collaboration`
+        });
+        break;
+
+      case 'user-leave':
+        setOnlineUsers(prev => prev.filter(u => u.sessionId !== message.payload.user.sessionId));
+        setActiveEditors(prev => {
+          const newMap = new Map(prev);
+          for (const [cellKey, user] of newMap.entries()) {
+            if (user.sessionId === message.payload.user.sessionId) {
+              newMap.delete(cellKey);
+            }
+          }
+          return newMap;
+        });
+        break;
+
+      case 'cell-start-edit':
+        setActiveEditors(prev => new Map(prev).set(message.payload.cellKey, message.payload.user));
+        break;
+
+      case 'cell-end-edit':
+        setActiveEditors(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(message.payload.cellKey);
+          return newMap;
+        });
+        break;
+
+      case 'cell-update':
+        // Real-time cell updates from other users
+        queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+        break;
+    }
+  }, [toast, queryClient]);
+
+  // Send WebSocket message
+  const sendWSMessage = useCallback((message: WSMessage) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify(message));
+    }
+  }, []);
 
   // Column definitions
   const columns = [
@@ -119,10 +252,32 @@ export default function SimpleExcelManager() {
     { key: 'endDate', label: 'End Date', type: 'date' },
   ].filter(col => visibleColumns.includes(col.key));
 
-  // Cell editing
+  // Cell editing with collaboration
   const handleCellClick = (rowId: number, columnKey: string, currentValue: any) => {
+    const cellKey = `${rowId}-${columnKey}`;
+    
+    // Check if someone else is editing this cell
+    if (activeEditors.has(cellKey)) {
+      const editor = activeEditors.get(cellKey);
+      toast({
+        title: "Cell Being Edited",
+        description: `${editor?.username} is currently editing this cell`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     setEditingCell({ row: rowId, column: columnKey });
     setEditValue(currentValue?.toString() || '');
+    
+    // Notify others that we're editing this cell
+    sendWSMessage({
+      type: 'cell-start-edit',
+      payload: {
+        projectId: rowId,
+        column: columnKey
+      }
+    });
   };
 
   const handleCellSave = async () => {
@@ -142,6 +297,17 @@ export default function SimpleExcelManager() {
 
       if (response.ok) {
         queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+        
+        // Notify others of the cell update
+        sendWSMessage({
+          type: 'cell-update',
+          payload: {
+            projectId: editingCell.row,
+            column: editingCell.column,
+            value: editValue
+          }
+        });
+        
         toast({
           title: "Updated",
           description: "Cell updated successfully"
@@ -155,6 +321,15 @@ export default function SimpleExcelManager() {
       });
     }
     
+    // End editing session
+    sendWSMessage({
+      type: 'cell-end-edit',
+      payload: {
+        projectId: editingCell.row,
+        column: editingCell.column
+      }
+    });
+    
     setEditingCell(null);
     setEditValue('');
   };
@@ -163,6 +338,16 @@ export default function SimpleExcelManager() {
     if (e.key === 'Enter') {
       handleCellSave();
     } else if (e.key === 'Escape') {
+      // End editing session on escape
+      if (editingCell) {
+        sendWSMessage({
+          type: 'cell-end-edit',
+          payload: {
+            projectId: editingCell.row,
+            column: editingCell.column
+          }
+        });
+      }
       setEditingCell(null);
       setEditValue('');
     }
@@ -206,30 +391,43 @@ export default function SimpleExcelManager() {
     }
   };
 
-  // Render cell
+  // Render cell with collaboration indicators
   const renderCell = (project: Project, column: any) => {
     const isEditing = editingCell?.row === project.id && editingCell?.column === column.key;
     const cellValue = getCellValue(project, column.key);
+    const cellKey = `${project.id}-${column.key}`;
+    const editor = activeEditors.get(cellKey);
+    const isBeingEdited = !!editor && editor.sessionId !== sessionId;
 
     if (isEditing) {
       return (
-        <Input
-          ref={inputRef}
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleCellSave}
-          className="h-8 text-sm border-blue-500 focus:border-blue-600"
-          autoFocus
-        />
+        <div className="relative">
+          <Input
+            ref={inputRef}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleCellSave}
+            className="h-8 text-sm border-2 border-blue-500 focus:border-blue-600"
+            autoFocus
+          />
+          <div className="absolute -top-6 left-0 bg-blue-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-20">
+            You are editing
+          </div>
+        </div>
       );
     }
 
     return (
       <div
-        className="h-8 px-2 text-sm cursor-cell hover:bg-blue-50 flex items-center truncate border-r border-gray-200"
+        className={`h-8 px-2 text-sm cursor-cell hover:bg-blue-50 flex items-center truncate border-r border-gray-200 relative ${
+          isBeingEdited ? 'bg-red-50 border-red-200' : ''
+        }`}
         onClick={() => handleCellClick(project.id, column.key, cellValue)}
-        title={`Click to edit: ${cellValue}`}
+        title={isBeingEdited ? 
+          `${editor?.username} is editing this cell` : 
+          `Click to edit: ${cellValue}`
+        }
       >
         {column.key === 'status' ? (
           <Badge className={`${getStatusColor(cellValue.toString())} text-xs px-2 py-0 border`}>
@@ -237,6 +435,16 @@ export default function SimpleExcelManager() {
           </Badge>
         ) : (
           <span className="truncate">{cellValue}</span>
+        )}
+        
+        {/* Live editing indicator */}
+        {isBeingEdited && (
+          <>
+            <div className="absolute -top-6 left-0 bg-red-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-20">
+              {editor?.username} is editing
+            </div>
+            <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+          </>
         )}
       </div>
     );
