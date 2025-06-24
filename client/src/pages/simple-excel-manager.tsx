@@ -312,12 +312,12 @@ export default function SimpleExcelManager() {
             <Filter className="h-4 w-4 text-gray-500" />
             <span className="text-sm text-gray-600">Filters:</span>
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}>
             <SelectTrigger className="w-40 h-8">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Status</SelectItem>
+              <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="new lead">New Lead</SelectItem>
               <SelectItem value="in progress">In Progress</SelectItem>
               <SelectItem value="on order">On Order</SelectItem>
