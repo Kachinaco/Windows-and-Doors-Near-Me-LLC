@@ -146,10 +146,10 @@ export default function ExcelProjectManager() {
   });
 
   // Excel-style column definitions
-  const columns = [
+  const columns = useMemo(() => [
     { key: 'id', label: 'ID', type: 'number', width: columnWidths.id, frozen: frozenColumns.includes('id') },
     { key: 'name', label: 'Project Name', type: 'text', width: columnWidths.name, frozen: frozenColumns.includes('name') },
-    { key: 'assignedTo', label: 'Assigned To', type: 'select', width: columnWidths.assignedTo, options: employees.map(e => ({ value: e.id, label: `${e.firstName} ${e.lastName}` })) },
+    { key: 'assignedTo', label: 'Assigned To', type: 'select', width: columnWidths.assignedTo, options: employees?.map(e => ({ value: e.id, label: `${e.firstName || ''} ${e.lastName || ''}` })) || [] },
     { key: 'location', label: 'Location', type: 'text', width: columnWidths.location },
     { key: 'phone', label: 'Phone', type: 'text', width: columnWidths.phone },
     { key: 'status', label: 'Status', type: 'select', width: columnWidths.status, options: [
@@ -162,7 +162,7 @@ export default function ExcelProjectManager() {
     { key: 'startDate', label: 'Start Date', type: 'date', width: columnWidths.startDate },
     { key: 'endDate', label: 'End Date', type: 'date', width: columnWidths.endDate },
     { key: 'createdAt', label: 'Created', type: 'date', width: columnWidths.createdAt },
-  ].filter(col => visibleColumns.includes(col.key));
+  ].filter(col => visibleColumns.includes(col.key)), [employees, columnWidths, frozenColumns, visibleColumns]);
 
   // Column resizing functionality
   const handleMouseDown = (e: React.MouseEvent, columnKey: string) => {

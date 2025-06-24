@@ -19,7 +19,7 @@ import CatalogPage from "@/pages/catalog";
 import QuotePage from "@/pages/quote";
 import ProjectsPage from "@/pages/projects";
 import ProjectTablePage from "@/pages/project-table";
-import ExcelProjectManager from "@/pages/excel-project-manager";
+import SimpleExcelManager from "@/pages/simple-excel-manager";
 import PipelinePage from "@/pages/pipeline";
 import LeadsPage from "@/pages/leads";
 import SchedulingPage from "@/pages/scheduling";
@@ -88,7 +88,7 @@ function Router() {
           <Route path="/catalog" component={CatalogPage} />
           <Route path="/quotes-manager" component={QuoteDashboard} />
           <Route path="/quote" component={QuotePage} />
-          <Route path="/projects" component={ExcelProjectManager} />
+          <Route path="/projects" component={SimpleExcelManager} />
           <Route path="/projects/:id" component={ProjectDashboardPage} />
           <Route path="/projects/:id/detail" component={ProjectDetailPage} />
           <Route path="/projects-list" component={ProjectsPage} />
