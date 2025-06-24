@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { type Project } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -31,7 +40,22 @@ import {
   Trash2,
   Archive,
   RotateCcw,
-  MoreHorizontal
+  MoreHorizontal,
+  Settings,
+  Copy,
+  Download,
+  Upload,
+  Save,
+  X,
+  Check,
+  Columns,
+  SortAsc,
+  SortDesc,
+  Grid3X3,
+  Calculator,
+  PaintBucket,
+  Lock,
+  Unlock
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -79,6 +103,25 @@ export default function ProjectTable() {
   const [visibleColumns, setVisibleColumns] = useState([
     'name', 'people', 'location', 'phone', 'status', 'measureDate', 'deliveryDate', 'installDate'
   ]);
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({
+    name: 200,
+    people: 150,
+    location: 180,
+    phone: 130,
+    status: 120,
+    measureDate: 130,
+    deliveryDate: 130,
+    installDate: 130
+  });
+  const [resizing, setResizing] = useState<string | null>(null);
+  const [startX, setStartX] = useState(0);
+  const [startWidth, setStartWidth] = useState(0);
+  const [selectedRange, setSelectedRange] = useState<{start: number, end: number} | null>(null);
+  const [frozenColumns, setFrozenColumns] = useState<string[]>(['name']);
+  const [showFormulas, setShowFormulas] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
+  const [groupBy, setGroupBy] = useState<string>('');
+  const tableRef = useRef<HTMLDivElement>(null);
 
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ['/api/projects'],
@@ -89,6 +132,50 @@ export default function ProjectTable() {
     queryKey: ['/api/employees'],
     enabled: !!user,
   });
+
+  // Excel-like column definitions
+  const columns = [
+    { key: 'name', label: 'Project Name', type: 'text', width: columnWidths.name, frozen: frozenColumns.includes('name') },
+    { key: 'people', label: 'Assigned People', type: 'people', width: columnWidths.people },
+    { key: 'location', label: 'Location', type: 'text', width: columnWidths.location },
+    { key: 'phone', label: 'Phone', type: 'phone', width: columnWidths.phone },
+    { key: 'status', label: 'Status', type: 'select', width: columnWidths.status, options: ['New Lead', 'In Progress', 'On Order', 'Scheduled', 'Complete'] },
+    { key: 'measureDate', label: 'Measure Date', type: 'date', width: columnWidths.measureDate },
+    { key: 'deliveryDate', label: 'Delivery Date', type: 'date', width: columnWidths.deliveryDate },
+    { key: 'installDate', label: 'Install Date', type: 'date', width: columnWidths.installDate },
+  ].filter(col => visibleColumns.includes(col.key));
+
+  // Column resizing functionality
+  const handleMouseDown = (e: React.MouseEvent, columnKey: string) => {
+    setResizing(columnKey);
+    setStartX(e.clientX);
+    setStartWidth(columnWidths[columnKey]);
+    e.preventDefault();
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (resizing) {
+        const diff = e.clientX - startX;
+        const newWidth = Math.max(80, startWidth + diff);
+        setColumnWidths(prev => ({ ...prev, [resizing]: newWidth }));
+      }
+    };
+
+    const handleMouseUp = () => {
+      setResizing(null);
+    };
+
+    if (resizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [resizing, startX, startWidth]);
 
   const archiveProject = useMutation({
     mutationFn: async (id: number) => {
