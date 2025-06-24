@@ -1,12 +1,14 @@
 import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import session from "express-session";
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
 import { storage } from "./storage";
 import { googleCalendarService } from "./google-calendar";
 import { crmSync } from "./crm-sync";
@@ -38,6 +40,41 @@ interface AuthenticatedRequest extends Request {
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+// Real-time collaboration state
+interface CollaborationSession {
+  userId: number;
+  username: string;
+  sessionId: string;
+  ws: WebSocket;
+  currentCell?: {
+    projectId: number;
+    column: string;
+    timestamp: number;
+  };
+}
+
+const activeSessions = new Map<string, CollaborationSession>();
+const cellEditors = new Map<string, CollaborationSession>(); // cellKey -> session
+
+// WebSocket message types
+interface WSMessage {
+  type: 'cell-start-edit' | 'cell-end-edit' | 'cell-update' | 'cursor-move' | 'user-join' | 'user-leave';
+  payload: any;
+}
+
+function broadcastToAll(message: WSMessage, excludeSessionId?: string) {
+  const messageStr = JSON.stringify(message);
+  activeSessions.forEach((session, sessionId) => {
+    if (sessionId !== excludeSessionId && session.ws.readyState === WebSocket.OPEN) {
+      session.ws.send(messageStr);
+    }
+  });
+}
+
+function getCellKey(projectId: number, column: string): string {
+  return `${projectId}-${column}`;
+}
 
 // Configure multer for file uploads
 const uploadStorage = multer.diskStorage({
@@ -2221,5 +2258,193 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Set up WebSocket server for real-time collaboration
+  const wss = new WebSocketServer({ 
+    server: httpServer, 
+    path: '/ws'
+  });
+
+  wss.on('connection', (ws, req) => {
+    let session: CollaborationSession | null = null;
+
+    ws.on('message', async (data) => {
+      try {
+        const message: WSMessage & { token?: string } = JSON.parse(data.toString());
+
+        // Handle initial connection with authentication
+        if (message.type === 'user-join' && message.token) {
+          try {
+            const decoded = jwt.verify(message.token, JWT_SECRET) as any;
+            const user = await storage.getUserById(decoded.userId);
+            
+            if (user) {
+              const sessionId = uuidv4();
+              session = {
+                userId: user.id,
+                username: user.username,
+                sessionId,
+                ws
+              };
+              
+              activeSessions.set(sessionId, session);
+              
+              // Send current state to new user
+              const currentEditors = Array.from(cellEditors.entries()).map(([cellKey, editor]) => ({
+                cellKey,
+                user: {
+                  id: editor.userId,
+                  username: editor.username,
+                  sessionId: editor.sessionId
+                }
+              }));
+              
+              ws.send(JSON.stringify({
+                type: 'collaboration-state',
+                payload: {
+                  sessionId,
+                  activeEditors: currentEditors,
+                  onlineUsers: Array.from(activeSessions.values()).map(s => ({
+                    id: s.userId,
+                    username: s.username,
+                    sessionId: s.sessionId
+                  }))
+                }
+              }));
+
+              // Broadcast new user joined
+              broadcastToAll({
+                type: 'user-join',
+                payload: {
+                  user: {
+                    id: user.id,
+                    username: user.username,
+                    sessionId
+                  }
+                }
+              }, sessionId);
+            }
+          } catch (error) {
+            ws.close(1008, 'Invalid token');
+            return;
+          }
+        }
+
+        if (!session) return;
+
+        switch (message.type) {
+          case 'cell-start-edit': {
+            const { projectId, column } = message.payload;
+            const cellKey = getCellKey(projectId, column);
+            
+            // Remove user from any previous cell
+            if (session.currentCell) {
+              const prevCellKey = getCellKey(session.currentCell.projectId, session.currentCell.column);
+              cellEditors.delete(prevCellKey);
+            }
+            
+            // Add user to new cell
+            session.currentCell = {
+              projectId,
+              column,
+              timestamp: Date.now()
+            };
+            cellEditors.set(cellKey, session);
+            
+            // Broadcast cell editing started
+            broadcastToAll({
+              type: 'cell-start-edit',
+              payload: {
+                cellKey,
+                projectId,
+                column,
+                user: {
+                  id: session.userId,
+                  username: session.username,
+                  sessionId: session.sessionId
+                }
+              }
+            }, session.sessionId);
+            break;
+          }
+
+          case 'cell-end-edit': {
+            const { projectId, column } = message.payload;
+            const cellKey = getCellKey(projectId, column);
+            
+            cellEditors.delete(cellKey);
+            session.currentCell = undefined;
+            
+            // Broadcast cell editing ended
+            broadcastToAll({
+              type: 'cell-end-edit',
+              payload: {
+                cellKey,
+                projectId,
+                column,
+                user: {
+                  id: session.userId,
+                  username: session.username,
+                  sessionId: session.sessionId
+                }
+              }
+            }, session.sessionId);
+            break;
+          }
+
+          case 'cell-update': {
+            const { projectId, column, value } = message.payload;
+            
+            // Broadcast real-time cell updates
+            broadcastToAll({
+              type: 'cell-update',
+              payload: {
+                projectId,
+                column,
+                value,
+                user: {
+                  id: session.userId,
+                  username: session.username,
+                  sessionId: session.sessionId
+                }
+              }
+            }, session.sessionId);
+            break;
+          }
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+      }
+    });
+
+    ws.on('close', () => {
+      if (session) {
+        // Clean up user's editing state
+        if (session.currentCell) {
+          const cellKey = getCellKey(session.currentCell.projectId, session.currentCell.column);
+          cellEditors.delete(cellKey);
+        }
+        
+        activeSessions.delete(session.sessionId);
+        
+        // Broadcast user left
+        broadcastToAll({
+          type: 'user-leave',
+          payload: {
+            user: {
+              id: session.userId,
+              username: session.username,
+              sessionId: session.sessionId
+            }
+          }
+        });
+      }
+    });
+
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
+  });
+  
   return httpServer;
 }
