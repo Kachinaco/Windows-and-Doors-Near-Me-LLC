@@ -51,6 +51,7 @@ export default function MondayBoard() {
   // Fetch projects and transform to board items
   const { data: projects = [], isLoading, error } = useQuery({
     queryKey: ['/api/projects'],
+    enabled: !!user, // Only fetch when user is available
     refetchInterval: 5000,
   });
 
@@ -304,9 +305,27 @@ export default function MondayBoard() {
     }
   };
 
+  // Show login prompt if not authenticated
+  if (!user) {
+    return (
+      <div className="h-screen bg-gray-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl mb-4">Authentication Required</div>
+          <div className="text-sm text-gray-400 mb-4">Please log in to access the project board</div>
+          <Button 
+            onClick={() => window.location.href = '/auth'}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Go to Login
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
-      <div className="h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="h-screen bg-gray-950 text-white flex items-center justify-center">
         <div className="text-center">
           <div className="text-xl mb-4">Loading Monday.com-style board...</div>
           <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto"></div>

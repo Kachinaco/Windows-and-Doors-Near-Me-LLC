@@ -82,6 +82,9 @@ function Router() {
       <Route path="/quote" component={QuotePage} />
       <Route path="/quote/:id" component={QuoteDashboard} />
       
+      {/* Direct access to Monday.com board for testing */}
+      <Route path="/board" component={MondayBoard} />
+      
       {/* Protected user routes */}
       {isAuthenticated ? (
         <>
