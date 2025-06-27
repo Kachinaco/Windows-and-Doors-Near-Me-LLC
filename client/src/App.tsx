@@ -84,6 +84,7 @@ function Router() {
       
       {/* Direct access to Monday.com board for testing */}
       <Route path="/board" component={MondayBoard} />
+      <Route path="/monday-board" component={MondayBoard} />
       
       {/* Protected user routes */}
       {isAuthenticated ? (
