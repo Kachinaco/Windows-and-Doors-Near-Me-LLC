@@ -407,9 +407,28 @@ export class DatabaseStorage implements IStorage {
 
   // Project management operations
   async getAllProjects(): Promise<Project[]> {
-    return await db.select().from(projects)
+    // Get all active projects
+    const projectsData = await db.select().from(projects)
       .where(eq(projects.projectStatus, 'active'))
       .orderBy(desc(projects.createdAt));
+    
+    // For each project, fetch its sub-items and folders
+    const projectsWithRelated = await Promise.all(
+      projectsData.map(async (project) => {
+        const [subItemsData, subItemFoldersData] = await Promise.all([
+          this.getSubItemsByProject(project.id),
+          this.getSubItemFoldersByProject(project.id)
+        ]);
+        
+        return {
+          ...project,
+          subItems: subItemsData,
+          subItemFolders: subItemFoldersData
+        };
+      })
+    );
+    
+    return projectsWithRelated;
   }
 
   async getProject(id: number): Promise<Project | undefined> {
