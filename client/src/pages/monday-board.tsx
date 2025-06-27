@@ -871,6 +871,19 @@ export default function MondayBoard() {
     createSubItemFolderMutation.mutate({ 
       projectId, 
       name: "New Folder" 
+    }, {
+      onSuccess: (newFolder) => {
+        // Automatically expand the new folder and start editing its name
+        setTimeout(() => {
+          setExpandedFolders(prev => {
+            const newExpanded = new Set(prev);
+            newExpanded.add(newFolder.id);
+            return newExpanded;
+          });
+          setEditingFolder(newFolder.id);
+          setFolderNames(prev => ({...prev, [newFolder.id]: newFolder.name}));
+        }, 100);
+      }
     });
   }, [createSubItemFolderMutation]);
 
