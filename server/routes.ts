@@ -538,9 +538,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { name, ...rest } = req.body;
       
-      // Transform name to title and ensure required fields
+      // Keep name field as expected by schema
       const projectData = {
-        title: name || rest.title || 'Untitled Project',
+        name: name || rest.title || 'Untitled Project',
         serviceType: rest.serviceType || 'windows',
         status: rest.status || 'planning',
         description: rest.description || '',
