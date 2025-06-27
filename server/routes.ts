@@ -2345,7 +2345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const newSubItem = await storage.createSubItem({
         parentProjectId: projectId,
-        name: name || "New Sub Item",
+        name: name || "", // Allow empty names
         status: "not_started",
         priority: "medium",
         folderId: folderId || null,
