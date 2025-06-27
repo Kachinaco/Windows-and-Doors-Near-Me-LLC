@@ -799,6 +799,16 @@ export default function MondayBoard() {
     createSubItemMutation.mutate({ 
       projectId, 
       name: "New Sub Item" 
+    }, {
+      onSuccess: (newSubItem) => {
+        console.log('Sub-item created successfully:', newSubItem);
+        // Automatically start editing the new sub-item name
+        setTimeout(() => {
+          setEditingSubItem(newSubItem.id);
+          setSubItemNames(prev => ({...prev, [newSubItem.id]: ""})); // Start with empty name
+          console.log('Starting to edit sub-item:', newSubItem.id);
+        }, 100);
+      }
     });
   }, [createSubItemMutation]);
 
@@ -817,7 +827,7 @@ export default function MondayBoard() {
             return newExpanded;
           });
           setEditingFolder(newFolder.id);
-          setFolderNames(prev => ({...prev, [newFolder.id]: newFolder.name}));
+          setFolderNames(prev => ({...prev, [newFolder.id]: ""})); // Start with empty name
           console.log('Starting to edit folder:', newFolder.id);
         }, 100);
       }
@@ -836,7 +846,7 @@ export default function MondayBoard() {
         // Automatically start editing the new sub-item name
         setTimeout(() => {
           setEditingSubItem(newSubItem.id);
-          setSubItemNames(prev => ({...prev, [newSubItem.id]: newSubItem.name}));
+          setSubItemNames(prev => ({...prev, [newSubItem.id]: ""})); // Start with empty name
           console.log('Starting to edit sub-item:', newSubItem.id);
         }, 100);
       }
