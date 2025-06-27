@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { type Project } from "@shared/schema";
-import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
+import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2 } from "lucide-react";
 
 interface BoardColumn {
   id: string;
@@ -47,6 +47,7 @@ export default function MondayBoard() {
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState('');
   const [newColumnType, setNewColumnType] = useState<BoardColumn['type']>('text');
+  const [undoStack, setUndoStack] = useState<Array<{action: string, data: any, timestamp: number}>>([]);
 
   // Fetch projects and transform to board items
   const { data: projects = [], isLoading, error } = useQuery({
@@ -118,10 +119,9 @@ export default function MondayBoard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({ title: "Updated" });
     },
     onError: () => {
-      toast({ title: "Update failed", variant: "destructive" });
+      console.error('Update failed');
     },
   });
 
@@ -154,13 +154,34 @@ export default function MondayBoard() {
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (newProjectData) => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({ title: "Added" });
+      // Save to undo stack
+      setUndoStack(prev => [
+        ...prev.slice(-9),
+        {
+          action: 'create_project',
+          data: { projectData: newProjectData },
+          timestamp: Date.now()
+        }
+      ]);
     },
   });
 
   const handleCellUpdate = useCallback((projectId: number, field: string, value: any) => {
+    // Save current value to undo stack before updating
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      setUndoStack(prev => [
+        ...prev.slice(-9),
+        {
+          action: 'update_cell',
+          data: { projectId, field, previousValue: project[field as keyof Project], newValue: value },
+          timestamp: Date.now()
+        }
+      ]);
+    }
+
     // Map board fields to project fields
     const fieldMapping: Record<string, string> = {
       item: 'name',
@@ -172,7 +193,7 @@ export default function MondayBoard() {
 
     const actualField = fieldMapping[field] || field;
     updateCellMutation.mutate({ projectId, field: actualField, value });
-  }, [updateCellMutation]);
+  }, [updateCellMutation, projects]);
 
   const addColumn = () => {
     if (!newColumnName.trim()) return;
@@ -383,6 +404,25 @@ export default function MondayBoard() {
           </div>
           
           <div className="flex items-center space-x-2">
+            {undoStack.length > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  const lastAction = undoStack[undoStack.length - 1];
+                  if (lastAction && lastAction.action === 'update_cell') {
+                    const { projectId, field, previousValue } = lastAction.data;
+                    updateCellMutation.mutate({ projectId, field, value: previousValue });
+                    setUndoStack(prev => prev.slice(0, -1));
+                  }
+                }}
+                className="text-gray-400 hover:text-white text-xs"
+              >
+                <Undo2 className="w-3 h-3 mr-1" />
+                Undo
+              </Button>
+            )}
+            
             <Dialog open={isAddColumnOpen} onOpenChange={setIsAddColumnOpen}>
               <DialogTrigger asChild>
                 <Button
