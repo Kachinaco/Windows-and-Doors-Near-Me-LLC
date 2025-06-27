@@ -880,6 +880,14 @@ export default function MondayBoard() {
       projectId, 
       name: "New Sub Item",
       folderId 
+    }, {
+      onSuccess: (newSubItem) => {
+        // Automatically start editing the new sub-item name
+        setTimeout(() => {
+          setEditingSubItem(newSubItem.id);
+          setSubItemNames(prev => ({...prev, [newSubItem.id]: newSubItem.name}));
+        }, 100);
+      }
     });
   }, [createSubItemMutation]);
 
