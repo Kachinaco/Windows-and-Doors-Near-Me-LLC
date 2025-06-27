@@ -538,12 +538,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { name, ...rest } = req.body;
       
-      // Include both name and title for database compatibility
+      // Keep fields truly blank - only set required fields
       const projectData = {
         name: name || rest.title || '',
         title: name || rest.title || '', // Database schema requires this field
         serviceType: rest.serviceType || 'windows',
-        status: rest.status || 'scheduled', // Use default that matches DB
+        status: rest.status || 'new lead', // Match Monday board status
         description: rest.description || '',
         clientId: rest.customerId || rest.clientId,
         estimatedCost: rest.estimatedCost,
@@ -657,6 +657,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error restoring project:", error);
       res.status(500).json({ message: "Failed to restore project" });
+    }
+  });
+
+  // Bulk operations for projects
+  app.post("/api/projects/bulk/archive", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { projectIds } = req.body;
+      const results = await Promise.all(
+        projectIds.map((id: number) => storage.updateProject(id, { 
+          projectStatus: 'archived',
+          archivedAt: new Date()
+        }))
+      );
+      res.json({ success: true, count: results.length });
+    } catch (error: any) {
+      console.error("Error bulk archiving projects:", error);
+      res.status(500).json({ message: "Failed to archive projects" });
+    }
+  });
+
+  app.post("/api/projects/bulk/trash", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { projectIds } = req.body;
+      const results = await Promise.all(
+        projectIds.map((id: number) => storage.updateProject(id, { 
+          projectStatus: 'trashed',
+          trashedAt: new Date()
+        }))
+      );
+      res.json({ success: true, count: results.length });
+    } catch (error: any) {
+      console.error("Error bulk trashing projects:", error);
+      res.status(500).json({ message: "Failed to trash projects" });
+    }
+  });
+
+  app.post("/api/projects/bulk/delete", authenticateToken, requireRole(['admin']), async (req: AuthenticatedRequest, res) => {
+    try {
+      const { projectIds } = req.body;
+      const results = await Promise.all(
+        projectIds.map((id: number) => storage.deleteProject(id))
+      );
+      res.json({ success: true, count: results.length });
+    } catch (error: any) {
+      console.error("Error bulk deleting projects:", error);
+      res.status(500).json({ message: "Failed to delete projects" });
+    }
+  });
+
+  app.post("/api/projects/bulk/update", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { projectIds, updates } = req.body;
+      const results = await Promise.all(
+        projectIds.map((id: number) => storage.updateProject(id, updates))
+      );
+      res.json({ success: true, count: results.length });
+    } catch (error: any) {
+      console.error("Error bulk updating projects:", error);
+      res.status(500).json({ message: "Failed to update projects" });
     }
   });
 
