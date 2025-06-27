@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -112,6 +112,40 @@ export default function MondayBoard() {
     else if (project.status === 'in progress') groupName = 'In Progress';
     else if (project.status === 'complete') groupName = 'Complete';
     
+    // Generate sample sub-items for testing
+    const sampleSubItems: SubItem[] = [
+      {
+        id: project.id * 100 + 1,
+        projectId: project.id,
+        name: 'Design Planning',
+        status: 'in progress',
+        assignedTo: 'John Doe',
+        order: 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: project.id * 100 + 2,
+        projectId: project.id,
+        name: 'Material Ordering',
+        status: 'new lead',
+        assignedTo: 'Jane Smith',
+        order: 2,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: project.id * 100 + 3,
+        projectId: project.id,
+        name: 'Installation Schedule',
+        status: 'complete',
+        assignedTo: 'Bob Wilson',
+        order: 3,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ];
+
     return {
       id: project.id || 0,
       groupName,
@@ -124,7 +158,9 @@ export default function MondayBoard() {
         tags: [],
         location: project.projectAddress || '',
         phone: project.clientPhone || '',
-      }
+      },
+      subItems: sampleSubItems,
+      subItemFolders: []
     };
   }) : [];
 
@@ -1005,32 +1041,104 @@ export default function MondayBoard() {
               {!group.collapsed && (
                 <>
                   {group.items.map((item) => (
-                    <div key={item.id} className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0">
-                      {/* Selection checkbox */}
-                      <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
-                        <input
-                          type="checkbox"
-                          checked={selectedItems.has(item.id)}
-                          onChange={() => handleToggleSelect(item.id)}
-                          className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
-                        />
-                      </div>
-                      {columns.map((column, index) => (
-                        <div 
-                          key={`${item.id}-${column.id}`} 
-                          className={`px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 ${
-                            index === 0 ? 'sticky left-8 bg-gray-950 z-10' : ''
-                          }`}
-                          style={{ 
-                            width: columnWidths[column.id] || (index === 0 ? 200 : 100),
-                            minWidth: index === 0 ? '150px' : '70px',
-                            maxWidth: 'none'
-                          }}
-                        >
-                          {renderCell(item, column)}
+                    <React.Fragment key={item.id}>
+                      {/* Main Item Row */}
+                      <div className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0">
+                        {/* Selection checkbox */}
+                        <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.has(item.id)}
+                            onChange={() => handleToggleSelect(item.id)}
+                            className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+                          />
                         </div>
-                      ))}
-                    </div>
+                        {columns.map((column, index) => (
+                          <div 
+                            key={`${item.id}-${column.id}`} 
+                            className={`px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 ${
+                              index === 0 ? 'sticky left-8 bg-gray-950 z-10' : ''
+                            }`}
+                            style={{ 
+                              width: columnWidths[column.id] || (index === 0 ? 200 : 100),
+                              minWidth: index === 0 ? '150px' : '70px',
+                              maxWidth: 'none'
+                            }}
+                          >
+                            {renderCell(item, column)}
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Sub-Items Rows (when expanded) */}
+                      {expandedSubItems.has(item.id) && item.subItems && item.subItems.length > 0 && (
+                        <>
+                          {item.subItems.map((subItem) => (
+                            <div key={`sub-${subItem.id}`} className="flex hover:bg-gray-900/20 transition-all bg-gray-900/5 border-b border-gray-800/5">
+                              {/* Empty checkbox space for sub-items */}
+                              <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
+                                <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                              </div>
+                              
+                              {/* Sub-item name (first column) */}
+                              <div 
+                                className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 sticky left-8 bg-gray-950 z-10 flex items-center"
+                                style={{ 
+                                  width: columnWidths['item'] || 200,
+                                  minWidth: '150px',
+                                  maxWidth: 'none'
+                                }}
+                              >
+                                <div className="flex items-center gap-1 text-xs text-gray-400">
+                                  <div className="w-3 h-px bg-gray-600 mr-1"></div>
+                                  <span>{subItem.name}</span>
+                                </div>
+                              </div>
+                              
+                              {/* Sub-item columns */}
+                              {columns.slice(1).map((column) => {
+                                if (column.id === 'subitems') {
+                                  return (
+                                    <div 
+                                      key={`sub-${subItem.id}-${column.id}`}
+                                      className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                      style={{ 
+                                        width: columnWidths[column.id] || 100,
+                                        minWidth: '70px',
+                                        maxWidth: 'none'
+                                      }}
+                                    >
+                                      {/* Empty for sub-items column */}
+                                    </div>
+                                  );
+                                }
+                                
+                                // Render sub-item specific values
+                                let subItemValue = '';
+                                if (column.id === 'status') subItemValue = subItem.status;
+                                else if (column.id === 'assignedTo') subItemValue = subItem.assignedTo || '';
+                                
+                                return (
+                                  <div 
+                                    key={`sub-${subItem.id}-${column.id}`}
+                                    className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                    style={{ 
+                                      width: columnWidths[column.id] || 100,
+                                      minWidth: '70px',
+                                      maxWidth: 'none'
+                                    }}
+                                  >
+                                    <div className="h-4 text-xs text-gray-500 flex items-center">
+                                      {subItemValue || '-'}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </React.Fragment>
                   ))}
                   
                   {/* Add Item Button at bottom of group */}
