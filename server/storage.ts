@@ -399,11 +399,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProject(insertProject: InsertProject): Promise<Project> {
-    const [project] = await db
-      .insert(projects)
-      .values(insertProject)
-      .returning();
-    return project;
+    // Use direct SQL to handle schema mismatch
+    const result = await db.execute(sql`
+      INSERT INTO projects (title, name, description, service_type, status, priority, project_status)
+      VALUES (${insertProject.title || insertProject.name}, ${insertProject.name}, ${insertProject.description || ''}, ${insertProject.serviceType || 'windows'}, ${insertProject.status || 'scheduled'}, ${insertProject.priority || 'medium'}, 'active')
+      RETURNING *
+    `);
+    
+    return result.rows[0] as Project;
   }
 
   async updateProject(id: number, updates: Partial<InsertProject>): Promise<Project> {

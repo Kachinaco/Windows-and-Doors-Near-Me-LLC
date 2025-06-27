@@ -230,7 +230,7 @@ export default function MondayBoard() {
     
     const handlePointerMove = (e: PointerEvent) => {
       e.preventDefault();
-      const newWidth = Math.max(80, startWidth + (e.clientX - startX));
+      const newWidth = Math.max(80, startWidth + (e.clientX - startX)); // No maximum limit
       setColumnWidths(prev => ({ ...prev, [columnId]: newWidth }));
     };
     
