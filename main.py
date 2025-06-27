@@ -20,7 +20,7 @@ from sqlalchemy import String, Integer, Text, DateTime, Date, select, update, de
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 import socketio
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 # Load environment variables
 DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql+asyncpg://localhost/project_manager')
@@ -63,7 +63,7 @@ class Project(Base):
 # Pydantic models
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=20)
-    email: str = Field(..., regex=r'^[^@]+@[^@]+\.[^@]+$')
+    email: str
     password: str = Field(..., min_length=6)
     first_name: str
     last_name: str
@@ -175,7 +175,10 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
     
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
+        user_id = payload.get("sub")
+        if user_id is None:
+            return None
+        user_id = int(user_id)
         if user_id is None:
             return None
     except JWTError:
@@ -303,15 +306,16 @@ async def dashboard(
     projects = result.scalars().all()
     
     # Get statistics
-    total_projects = await db.scalar(select(Project).count())
+    from sqlalchemy import func
+    total_projects = await db.scalar(select(func.count(Project.id)))
     active_projects = await db.scalar(
-        select(Project).where(Project.status.in_(['in progress', 'scheduled'])).count()
+        select(func.count(Project.id)).where(Project.status.in_(['in progress', 'scheduled']))
     )
     completed_projects = await db.scalar(
-        select(Project).where(Project.status == 'complete').count()
+        select(func.count(Project.id)).where(Project.status == 'complete')
     )
     new_leads = await db.scalar(
-        select(Project).where(Project.status == 'new lead').count()
+        select(func.count(Project.id)).where(Project.status == 'new lead')
     )
     
     stats = {
