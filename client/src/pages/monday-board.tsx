@@ -147,8 +147,9 @@ export default function MondayBoard() {
     mutationFn: async (groupName: string = 'New Leads') => {
       const token = localStorage.getItem('authToken') || localStorage.getItem('token');
       const status = groupName === 'New Leads' ? 'new lead' : 
-                    groupName === 'Completed' ? 'complete' : 
-                    groupName === 'Scheduled Work' ? 'scheduled' : 'in progress';
+                    groupName === 'Active Projects' ? 'in progress' :
+                    groupName === 'Scheduled Work' ? 'scheduled' : 
+                    groupName === 'Completed' ? 'complete' : 'new lead';
       
       const response = await fetch('/api/projects', {
         method: 'POST',
@@ -329,7 +330,7 @@ export default function MondayBoard() {
             type="date"
             value={value}
             onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
-            className="h-6 text-xs border-none bg-transparent text-gray-300"
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
           />
         );
       
@@ -339,7 +340,7 @@ export default function MondayBoard() {
             type="number"
             value={value}
             onChange={(e) => handleCellUpdate(item.id, column.id, parseInt(e.target.value) || 0)}
-            className="h-6 text-xs border-none bg-transparent text-gray-300"
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
             placeholder="0"
           />
         );
@@ -372,7 +373,7 @@ export default function MondayBoard() {
           <Input
             value={value}
             onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
-            className="h-6 text-xs border-none bg-transparent text-gray-300"
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
             placeholder="Enter text"
             autoFocus={isNewItem}
             onBlur={() => {
@@ -612,7 +613,7 @@ export default function MondayBoard() {
                       {columns.map((column, index) => (
                         <div 
                           key={`${item.id}-${column.id}`} 
-                          className={`px-2 py-1.5 border-r border-gray-800/10 flex-shrink-0 ${
+                          className={`px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 ${
                             index === 0 ? 'sticky left-0 bg-gray-950 z-10' : ''
                           }`}
                           style={{ 
@@ -630,7 +631,7 @@ export default function MondayBoard() {
                   {/* Add Item Button at bottom of group */}
                   <div className="flex hover:bg-gray-900/10 transition-all">
                     <div 
-                      className="px-2 py-1.5 flex-shrink-0 sticky left-0 bg-gray-950 z-10"
+                      className="px-2 py-0.5 flex-shrink-0 sticky left-0 bg-gray-950 z-10"
                       style={{ 
                         width: columnWidths['item'] || 200,
                         minWidth: '150px',
