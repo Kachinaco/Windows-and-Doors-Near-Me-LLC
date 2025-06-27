@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { type Project } from "@shared/schema";
-import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
 
 interface BoardColumn {
   id: string;
@@ -364,6 +364,15 @@ export default function MondayBoard() {
       <header className="bg-gray-900/50 border-b border-gray-800 px-4 py-2 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => window.location.href = '/dashboard'}
+              className="text-gray-400 hover:text-white text-xs px-2"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back
+            </Button>
             <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
               <div className="w-3 h-3 bg-white rounded-sm" />
             </div>
