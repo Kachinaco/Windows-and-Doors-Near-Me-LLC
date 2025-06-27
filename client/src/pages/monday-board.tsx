@@ -201,6 +201,91 @@ export default function MondayBoard() {
     },
   });
 
+  // Bulk operations mutations
+  const bulkArchiveMutation = useMutation({
+    mutationFn: async (projectIds: number[]) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch('/api/projects/bulk/archive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ projectIds }),
+      });
+      if (!response.ok) throw new Error('Failed to archive items');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      setSelectedItems(new Set());
+      toast({ title: "Success", description: "Items archived successfully" });
+    },
+  });
+
+  const bulkTrashMutation = useMutation({
+    mutationFn: async (projectIds: number[]) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch('/api/projects/bulk/trash', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ projectIds }),
+      });
+      if (!response.ok) throw new Error('Failed to trash items');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      setSelectedItems(new Set());
+      toast({ title: "Success", description: "Items moved to trash successfully" });
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (projectIds: number[]) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch('/api/projects/bulk/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ projectIds }),
+      });
+      if (!response.ok) throw new Error('Failed to delete items');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      setSelectedItems(new Set());
+      toast({ title: "Success", description: "Items deleted permanently" });
+    },
+  });
+
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ projectIds, updates }: { projectIds: number[]; updates: any }) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch('/api/projects/bulk/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ projectIds, updates }),
+      });
+      if (!response.ok) throw new Error('Failed to update items');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      setSelectedItems(new Set());
+      toast({ title: "Success", description: "Items updated successfully" });
+    },
+  });
+
   const handleCellUpdate = useCallback((projectId: number, field: string, value: any) => {
     console.log('handleCellUpdate called:', { projectId, field, value });
     
@@ -230,6 +315,28 @@ export default function MondayBoard() {
     console.log('Field mapping:', { field, actualField });
     updateCellMutation.mutate({ projectId, field: actualField, value });
   }, [updateCellMutation, projects]);
+
+  // Bulk operations helpers
+  const handleSelectAll = useCallback(() => {
+    const allIds = new Set(boardItems.map(item => item.id));
+    setSelectedItems(allIds);
+  }, [boardItems]);
+
+  const handleSelectNone = useCallback(() => {
+    setSelectedItems(new Set());
+  }, []);
+
+  const handleToggleSelect = useCallback((id: number) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  }, []);
 
   const handlePointerDown = (columnId: string, e: React.PointerEvent) => {
     e.preventDefault();
@@ -628,6 +735,15 @@ export default function MondayBoard() {
           {/* Ultra-Slim Column Headers */}
           <div className="sticky top-0 bg-gray-950/95 backdrop-blur-sm z-10 border-b border-gray-800/50">
             <div className="flex">
+              {/* Selection checkbox header */}
+              <div className="w-8 px-1 py-1.5 border-r border-gray-800/30 flex items-center justify-center sticky left-0 bg-gray-950/95 backdrop-blur-sm z-30">
+                <input
+                  type="checkbox"
+                  checked={selectedItems.size > 0 && selectedItems.size === boardItems.length}
+                  onChange={selectedItems.size === boardItems.length ? handleSelectNone : handleSelectAll}
+                  className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+                />
+              </div>
               {columns.map((column, index) => (
                 <div 
                   key={column.id} 
