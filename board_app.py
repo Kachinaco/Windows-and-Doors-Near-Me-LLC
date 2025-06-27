@@ -357,4 +357,4 @@ async def view_board(request: Request, board_id: int, db: Session = Depends(get_
     return await dashboard(request, db)
 
 if __name__ == "__main__":
-    uvicorn.run("board_app:app", host="0.0.0.0", port=5000, reload=True)
+    uvicorn.run("board_app:app", host="0.0.0.0", port=3000, reload=False)
