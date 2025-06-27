@@ -390,7 +390,9 @@ export class DatabaseStorage implements IStorage {
 
   // Project management operations
   async getAllProjects(): Promise<Project[]> {
-    return await db.select().from(projects).orderBy(desc(projects.createdAt));
+    return await db.select().from(projects)
+      .where(eq(projects.projectStatus, 'active'))
+      .orderBy(desc(projects.createdAt));
   }
 
   async getProject(id: number): Promise<Project | undefined> {

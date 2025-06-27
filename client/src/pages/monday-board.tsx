@@ -338,6 +338,39 @@ export default function MondayBoard() {
     });
   }, []);
 
+  const handleSelectGroup = useCallback((groupName: string) => {
+    const group = boardGroups.find(g => g.name === groupName);
+    if (!group) return;
+    
+    const groupItemIds = group.items.map(item => item.id);
+    const allGroupItemsSelected = groupItemIds.every(id => selectedItems.has(id));
+    
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (allGroupItemsSelected) {
+        // Deselect all items in this group
+        groupItemIds.forEach(id => newSet.delete(id));
+      } else {
+        // Select all items in this group
+        groupItemIds.forEach(id => newSet.add(id));
+      }
+      return newSet;
+    });
+  }, [boardGroups, selectedItems]);
+
+  const isGroupSelected = useCallback((groupName: string) => {
+    const group = boardGroups.find(g => g.name === groupName);
+    if (!group || group.items.length === 0) return false;
+    return group.items.every(item => selectedItems.has(item.id));
+  }, [boardGroups, selectedItems]);
+
+  const isGroupPartiallySelected = useCallback((groupName: string) => {
+    const group = boardGroups.find(g => g.name === groupName);
+    if (!group || group.items.length === 0) return false;
+    const selectedInGroup = group.items.filter(item => selectedItems.has(item.id));
+    return selectedInGroup.length > 0 && selectedInGroup.length < group.items.length;
+  }, [boardGroups, selectedItems]);
+
   const handlePointerDown = (columnId: string, e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -779,11 +812,30 @@ export default function MondayBoard() {
           {boardGroups.map((group) => (
             <div key={group.name} className="border-b border-gray-800/50 last:border-b-0">
               {/* Ultra-Slim Group Header */}
-              <div 
-                className="bg-gray-900/20 px-2 py-1 border-b border-gray-800/20 cursor-pointer hover:bg-gray-900/40 transition-all"
-                onClick={() => toggleGroup(group.name)}
-              >
-                <div className="flex items-center space-x-1.5">
+              <div className="bg-gray-900/20 px-2 py-1 border-b border-gray-800/20 flex items-center space-x-1.5 hover:bg-gray-900/40 transition-all">
+                {/* Group Selection Checkbox */}
+                <div className="w-8 px-1 flex items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={isGroupSelected(group.name)}
+                    ref={el => {
+                      if (el) {
+                        el.indeterminate = isGroupPartiallySelected(group.name);
+                      }
+                    }}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleSelectGroup(group.name);
+                    }}
+                    className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+                  />
+                </div>
+                
+                {/* Group Toggle and Info */}
+                <div 
+                  className="flex-1 flex items-center space-x-1.5 cursor-pointer"
+                  onClick={() => toggleGroup(group.name)}
+                >
                   {group.collapsed ? (
                     <ChevronRight className="w-2.5 h-2.5 text-gray-500" />
                   ) : (
