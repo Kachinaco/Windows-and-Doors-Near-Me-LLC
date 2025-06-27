@@ -16,14 +16,23 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import String, Integer, Text, DateTime, Date, select, update, delete
+from sqlalchemy import String, Integer, Text, DateTime, Date, select, update, delete, func
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 import socketio
 from pydantic import BaseModel, Field, EmailStr
 
 # Load environment variables
-DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql+asyncpg://localhost/project_manager')
+# Fix database URL for async driver and remove SSL mode for local development
+db_url = os.getenv('DATABASE_URL', 'postgresql://localhost/project_manager')
+if db_url.startswith('postgresql://') and not db_url.startswith('postgresql+asyncpg://'):
+    DATABASE_URL = db_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
+else:
+    DATABASE_URL = db_url
+
+# Remove SSL mode parameter that causes issues with asyncpg
+if '?sslmode=' in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.split('?sslmode=')[0]
 SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here')
 JWT_SECRET = os.getenv('JWT_SECRET', 'jwt-secret-key')
 ALGORITHM = "HS256"
@@ -306,7 +315,6 @@ async def dashboard(
     projects = result.scalars().all()
     
     # Get statistics
-    from sqlalchemy import func
     total_projects = await db.scalar(select(func.count(Project.id)))
     active_projects = await db.scalar(
         select(func.count(Project.id)).where(Project.status.in_(['in progress', 'scheduled']))
