@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}Projects - Project Manager{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="glassmorphism rounded-xl p-6 shadow-lg border border-slate-200">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Project Management</h1>
+                <p class="text-slate-600 mt-1">Excel-style project tracking with real-time collaboration</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="/projects/new" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New Project
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="glassmorphism rounded-xl p-4 shadow-lg border border-slate-200">
+        <form method="GET" class="flex flex-col sm:flex-row gap-4">
+            <div class="flex-1">
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Search projects..."
+                    value="{{ search }}"
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+            </div>
+            <div class="sm:w-48">
+                <select
+                    name="status"
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                    <option value="">All Statuses</option>
+                    <option value="new lead" {% if status_filter == 'new lead' %}selected{% endif %}>New Lead</option>
+                    <option value="in progress" {% if status_filter == 'in progress' %}selected{% endif %}>In Progress</option>
+                    <option value="on order" {% if status_filter == 'on order' %}selected{% endif %}>On Order</option>
+                    <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                    <option value="complete" {% if status_filter == 'complete' %}selected{% endif %}>Complete</option>
+                </select>
+            </div>
+            <button
+                type="submit"
+                class="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors"
+            >
+                Filter
+            </button>
+        </form>
+    </div>
+
+    <!-- Excel-style Project Table -->
+    <div class="glassmorphism rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gradient-to-r from-slate-50 to-gray-100 border-b border-slate-200">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                            Project Name
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                            Assigned To
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                            Address
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                            Phone
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                            Last Updated
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-slate-200">
+                    {% for project in projects %}
+                    <tr class="hover:bg-slate-50 transition-colors" data-project-id="{{ project.id }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mr-3">
+                                    <span class="text-white font-medium text-sm">
+                                        {{ project.name[0].upper() }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-slate-900 editable-cell" 
+                                         data-project-id="{{ project.id }}" 
+                                         data-field="name">
+                                        {{ project.name }}
+                                    </div>
+                                    {% if project.description %}
+                                    <div class="text-sm text-slate-500 truncate max-w-xs">
+                                        {{ project.description[:50] }}{% if project.description|length > 50 %}...{% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium editable-cell
+                                {% if project.status == 'complete' %}bg-green-100 text-green-800
+                                {% elif project.status == 'in progress' %}bg-blue-100 text-blue-800
+                                {% elif project.status == 'scheduled' %}bg-purple-100 text-purple-800
+                                {% elif project.status == 'on order' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}"
+                                data-project-id="{{ project.id }}" 
+                                data-field="status">
+                                {{ project.status.replace('_', ' ').title() }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 editable-cell" 
+                            data-project-id="{{ project.id }}" 
+                            data-field="assigned_to">
+                            {{ project.assigned_to or '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 editable-cell" 
+                            data-project-id="{{ project.id }}" 
+                            data-field="project_address">
+                            <div class="flex items-center">
+                                {% if project.project_address %}
+                                <svg class="w-4 h-4 text-slate-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                {{ project.project_address }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 editable-cell" 
+                            data-project-id="{{ project.id }}" 
+                            data-field="client_phone">
+                            <div class="flex items-center">
+                                {% if project.client_phone %}
+                                <svg class="w-4 h-4 text-slate-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                </svg>
+                                {{ project.client_phone }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {{ project.updated_at.strftime('%m/%d/%Y') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                                <a href="/projects/{{ project.id }}" class="text-blue-600 hover:text-blue-900">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </a>
+                                <button class="text-slate-400 hover:text-slate-600" onclick="editProject({{ project.id }})">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if not projects %}
+        <div class="text-center py-12">
+            <svg class="w-12 h-12 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-slate-900 mb-2">No projects found</h3>
+            <p class="text-slate-600 mb-4">
+                {% if search or status_filter %}
+                Try adjusting your search criteria or
+                {% endif %}
+                create your first project to get started
+            </p>
+            <a href="/projects/new" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Create Project
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Real-time editing functionality
+let currentlyEditing = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Make cells editable
+    document.querySelectorAll('.editable-cell').forEach(cell => {
+        cell.addEventListener('click', function() {
+            if (currentlyEditing && currentlyEditing !== this) {
+                // Save previous edit
+                saveEdit(currentlyEditing);
+            }
+            startEdit(this);
+        });
+    });
+
+    // Save on Enter, cancel on Escape
+    document.addEventListener('keydown', function(e) {
+        if (currentlyEditing) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveEdit(currentlyEditing);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                cancelEdit(currentlyEditing);
+            }
+        }
+    });
+
+    // Save on click outside
+    document.addEventListener('click', function(e) {
+        if (currentlyEditing && !currentlyEditing.contains(e.target)) {
+            saveEdit(currentlyEditing);
+        }
+    });
+});
+
+function startEdit(cell) {
+    if (currentlyEditing === cell) return;
+    
+    currentlyEditing = cell;
+    const originalValue = cell.textContent.trim();
+    
+    // Create input field
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = originalValue;
+    input.className = 'w-full px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500';
+    
+    // Store original value
+    cell.dataset.originalValue = originalValue;
+    
+    // Replace content with input
+    cell.innerHTML = '';
+    cell.appendChild(input);
+    
+    // Focus and select
+    input.focus();
+    input.select();
+    
+    // Add editing class
+    cell.classList.add('cell-editing');
+    
+    // Notify others via WebSocket
+    if (window.socket) {
+        socket.emit('start_editing', {
+            project_id: parseInt(cell.dataset.projectId),
+            field: cell.dataset.field,
+            username: 'Current User'
+        });
+    }
+}
+
+function saveEdit(cell) {
+    if (!currentlyEditing || currentlyEditing !== cell) return;
+    
+    const input = cell.querySelector('input');
+    if (!input) return;
+    
+    const newValue = input.value.trim();
+    const originalValue = cell.dataset.originalValue;
+    
+    if (newValue !== originalValue) {
+        // Update cell content
+        cell.textContent = newValue;
+        
+        // Send update to server
+        updateProject(cell.dataset.projectId, cell.dataset.field, newValue);
+    } else {
+        // Restore original value
+        cell.textContent = originalValue;
+    }
+    
+    // Clean up
+    cell.classList.remove('cell-editing');
+    delete cell.dataset.originalValue;
+    currentlyEditing = null;
+    
+    // Notify others via WebSocket
+    if (window.socket) {
+        socket.emit('stop_editing', {
+            project_id: parseInt(cell.dataset.projectId),
+            field: cell.dataset.field,
+            username: 'Current User'
+        });
+    }
+}
+
+function cancelEdit(cell) {
+    if (!currentlyEditing || currentlyEditing !== cell) return;
+    
+    const originalValue = cell.dataset.originalValue;
+    cell.textContent = originalValue;
+    
+    // Clean up
+    cell.classList.remove('cell-editing');
+    delete cell.dataset.originalValue;
+    currentlyEditing = null;
+    
+    // Notify others via WebSocket
+    if (window.socket) {
+        socket.emit('stop_editing', {
+            project_id: parseInt(cell.dataset.projectId),
+            field: cell.dataset.field,
+            username: 'Current User'
+        });
+    }
+}
+
+async function updateProject(projectId, field, value) {
+    try {
+        const response = await fetch(`/api/projects/${projectId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ [field]: value })
+        });
+        
+        if (response.ok) {
+            console.log('Project updated successfully');
+        } else {
+            console.error('Failed to update project');
+        }
+    } catch (error) {
+        console.error('Error updating project:', error);
+    }
+}
+
+function editProject(projectId) {
+    window.location.href = `/projects/${projectId}/edit`;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Project Manager{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    
+    <!-- Custom styles -->
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .live-indicator {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .cell-editing {
+            background-color: #fef3cd;
+            border: 2px solid #fbbf24;
+        }
+        
+        .cell-being-edited {
+            background-color: #fee2e2;
+            border: 2px solid #ef4444;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    
+    <!-- Navigation -->
+    <nav class="glassmorphism shadow-sm border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-semibold text-slate-800">Project Manager</h1>
+                    </div>
+                    
+                    {% if session.user_id %}
+                    <!-- Real-time status -->
+                    <div id="connection-status" class="flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium">
+                        <div id="status-dot" class="w-2 h-2 rounded-full live-indicator"></div>
+                        <span id="status-text">Connecting...</span>
+                    </div>
+                    
+                    <!-- Online users -->
+                    <div id="online-users" class="hidden items-center space-x-1 px-2 py-1 rounded text-xs font-medium text-slate-600">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-2.239"></path>
+                        </svg>
+                        <span id="user-count">0</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    {% if session.user_id %}
+                    <div class="flex items-center space-x-3">
+                        <a href="{{ url_for('dashboard') }}" class="text-sm text-slate-600 hover:text-slate-900">Dashboard</a>
+                        <a href="{{ url_for('projects') }}" class="text-sm text-slate-600 hover:text-slate-900">Projects</a>
+                        <a href="{{ url_for('logout') }}" class="text-sm text-slate-600 hover:text-slate-900">Logout</a>
+                    </div>
+                    {% else %}
+                    <div class="flex items-center space-x-2">
+                        <a href="{{ url_for('login') }}" class="text-sm text-slate-600 hover:text-slate-900">Login</a>
+                        <a href="{{ url_for('register') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Register</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mb-4 p-4 rounded-lg border {% if category == 'error' %}bg-red-50 text-red-800 border-red-200{% elif category == 'success' %}bg-green-50 text-green-800 border-green-200{% else %}bg-blue-50 text-blue-800 border-blue-200{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Socket.IO and Real-time functionality -->
+    <script>
+        let socket;
+        const onlineUsers = new Set();
+        const activeEditors = new Map();
+        
+        function initializeSocketIO() {
+            socket = io();
+            
+            socket.on('connect', function() {
+                updateConnectionStatus(true);
+            });
+            
+            socket.on('disconnect', function() {
+                updateConnectionStatus(false);
+            });
+            
+            socket.on('user_connected', function(data) {
+                onlineUsers.add(data.user_id);
+                updateOnlineUsers();
+                showNotification(`${data.username} joined`, 'info');
+            });
+            
+            socket.on('user_disconnected', function(data) {
+                onlineUsers.delete(data.user_id);
+                updateOnlineUsers();
+                showNotification(`${data.username} left`, 'info');
+            });
+            
+            socket.on('cell_editing_started', function(data) {
+                const cellKey = `${data.project_id}-${data.field}`;
+                activeEditors.set(cellKey, data);
+                highlightEditingCell(data.project_id, data.field, data.username, true);
+            });
+            
+            socket.on('cell_editing_stopped', function(data) {
+                const cellKey = `${data.project_id}-${data.field}`;
+                activeEditors.delete(cellKey);
+                highlightEditingCell(data.project_id, data.field, data.username, false);
+            });
+            
+            socket.on('cell_updated', function(data) {
+                updateCellValue(data.project_id, data.field, data.value);
+                showNotification(`${data.updated_by} updated ${data.field}`, 'success');
+            });
+        }
+        
+        function updateConnectionStatus(connected) {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            const statusContainer = document.getElementById('connection-status');
+            
+            if (connected) {
+                statusDot.className = 'w-2 h-2 rounded-full bg-emerald-500 live-indicator';
+                statusText.textContent = 'Live';
+                statusContainer.className = 'flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200';
+            } else {
+                statusDot.className = 'w-2 h-2 rounded-full bg-red-500';
+                statusText.textContent = 'Offline';
+                statusContainer.className = 'flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200';
+            }
+        }
+        
+        function updateOnlineUsers() {
+            const onlineUsersEl = document.getElementById('online-users');
+            const userCountEl = document.getElementById('user-count');
+            
+            if (onlineUsers.size > 0) {
+                onlineUsersEl.classList.remove('hidden');
+                onlineUsersEl.classList.add('flex');
+                userCountEl.textContent = onlineUsers.size;
+            } else {
+                onlineUsersEl.classList.add('hidden');
+                onlineUsersEl.classList.remove('flex');
+            }
+        }
+        
+        function highlightEditingCell(projectId, field, username, isEditing) {
+            const cell = document.querySelector(`[data-project-id="${projectId}"][data-field="${field}"]`);
+            if (cell) {
+                if (isEditing) {
+                    cell.classList.add('cell-being-edited');
+                    cell.title = `${username} is editing this cell`;
+                } else {
+                    cell.classList.remove('cell-being-edited');
+                    cell.title = '';
+                }
+            }
+        }
+        
+        function updateCellValue(projectId, field, value) {
+            const cell = document.querySelector(`[data-project-id="${projectId}"][data-field="${field}"]`);
+            if (cell) {
+                cell.textContent = value;
+                cell.classList.add('bg-green-100');
+                setTimeout(() => {
+                    cell.classList.remove('bg-green-100');
+                }, 2000);
+            }
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if session.user_id %}
+            initializeSocketIO();
+            {% endif %}
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Project Manager{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <!-- Logo and Header -->
+        <div class="text-center">
+            <div class="flex justify-center items-center mb-4">
+                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+            </div>
+            <h2 class="text-3xl font-bold text-slate-900">Create Account</h2>
+            <p class="mt-2 text-sm text-slate-600">Join our project management platform</p>
+        </div>
+
+        <!-- Register Form -->
+        <div class="glassmorphism rounded-xl shadow-lg p-8">
+            {% if error %}
+            <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/register" class="space-y-4">
+                <!-- Profile Type -->
+                <div>
+                    <label for="role" class="block text-sm font-medium text-slate-700 mb-2">
+                        Choose Your Profile Type
+                    </label>
+                    <select
+                        id="role"
+                        name="role"
+                        required
+                        class="w-full h-11 px-4 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                        <option value="customer">Customer (Free) - Basic project tracking</option>
+                        <option value="contractor_trial">Contractor (30-Day Trial) - Full features for 30 days</option>
+                        <option value="contractor_paid">Contractor (Paid) - Full features + premium tools</option>
+                    </select>
+                </div>
+
+                <!-- Name Fields -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="first_name" class="block text-sm font-medium text-slate-700 mb-2">
+                            First Name
+                        </label>
+                        <input
+                            id="first_name"
+                            name="first_name"
+                            type="text"
+                            required
+                            class="w-full h-11 px-4 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="John"
+                        >
+                    </div>
+                    <div>
+                        <label for="last_name" class="block text-sm font-medium text-slate-700 mb-2">
+                            Last Name
+                        </label>
+                        <input
+                            id="last_name"
+                            name="last_name"
+                            type="text"
+                            required
+                            class="w-full h-11 px-4 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Doe"
+                        >
+                    </div>
+                </div>
+
+                <!-- Account Details -->
+                <div>
+                    <label for="username" class="block text-sm font-medium text-slate-700 mb-2">
+                        Username
+                    </label>
+                    <input
+                        id="username"
+                        name="username"
+                        type="text"
+                        required
+                        minlength="3"
+                        maxlength="20"
+                        class="w-full h-11 px-4 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="johndoe"
+                    >
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-slate-700 mb-2">
+                        Email Address
+                    </label>
+                    <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        required
+                        class="w-full h-11 px-4 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="john@example.com"
+                    >
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-slate-700 mb-2">
+                        Password
+                    </label>
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        required
+                        minlength="6"
+                        class="w-full h-11 px-4 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter a secure password"
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full h-11 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm"
+                >
+                    Create Account
+                </button>
+            </form>
+
+            <!-- Login Link -->
+            <div class="mt-6 text-center">
+                <p class="text-sm text-slate-600">
+                    Already have an account?
+                    <a href="/login" class="font-medium text-blue-600 hover:text-blue-500">
+                        Sign in here
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
