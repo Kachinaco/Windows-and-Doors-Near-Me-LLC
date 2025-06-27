@@ -2359,6 +2359,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete sub-item
+  app.delete("/api/sub-items/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const subItemId = parseInt(req.params.id);
+      await storage.deleteSubItem(subItemId);
+      res.json({ message: "Sub-item deleted successfully" });
+    } catch (error: any) {
+      console.error("Error deleting sub-item:", error);
+      res.status(500).json({ message: "Failed to delete sub-item" });
+    }
+  });
+
   // Sub-item folder endpoints
   app.post("/api/projects/:projectId/sub-item-folders", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
@@ -2405,6 +2417,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error updating sub-item folder:", error);
       res.status(500).json({ message: "Failed to update sub-item folder" });
+    }
+  });
+
+  // Delete sub-item folder
+  app.delete("/api/sub-item-folders/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const folderId = parseInt(req.params.id);
+      await storage.deleteSubItemFolder(folderId);
+      res.json({ message: "Sub-item folder deleted successfully" });
+    } catch (error: any) {
+      console.error("Error deleting sub-item folder:", error);
+      res.status(500).json({ message: "Failed to delete sub-item folder" });
     }
   });
 
