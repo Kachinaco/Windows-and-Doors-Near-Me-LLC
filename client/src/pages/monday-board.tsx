@@ -116,6 +116,11 @@ export default function MondayBoard() {
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [bulkEditMode, setBulkEditMode] = useState(false);
   const [expandedSubItems, setExpandedSubItems] = useState<Set<number>>(new Set());
+  
+  // Side panel drawer state
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
+  const [selectedMainItem, setSelectedMainItem] = useState<any>(null);
+  const [selectedFolder, setSelectedFolder] = useState<any>(null);
 
   // Fetch projects and transform to board items
   const { data: projects = [], isLoading, error } = useQuery({
@@ -1554,21 +1559,13 @@ export default function MondayBoard() {
                                             
                                             <button
                                               onClick={() => {
-                                                const newExpanded = new Set(expandedFolders);
-                                                if (isFolderExpanded) {
-                                                  newExpanded.delete(folder.id);
-                                                } else {
-                                                  newExpanded.add(folder.id);
-                                                }
-                                                setExpandedFolders(newExpanded);
+                                                setSelectedMainItem(item);
+                                                setSelectedFolder(folder);
+                                                setSidePanelOpen(true);
                                               }}
                                               className="p-1 hover:bg-amber-500/20 rounded transition-colors"
                                             >
-                                              {isFolderExpanded ? (
-                                                <ChevronDown className="w-3.5 h-3.5 text-amber-300" />
-                                              ) : (
-                                                <ChevronRight className="w-3.5 h-3.5 text-amber-300" />
-                                              )}
+                                              <ChevronRight className="w-3.5 h-3.5 text-amber-300" />
                                             </button>
                                             
                                             <Folder className="w-4 h-4 text-amber-400 drop-shadow-sm" />
@@ -1633,10 +1630,7 @@ export default function MondayBoard() {
                                         ))}
                                       </div>
                                       
-                                      {/* Folder Sub-items (when expanded) */}
-                                      {isFolderExpanded && (
-                                        <>
-                                          {folderSubItems.map((subItem) => (
+                                      {/* Sub-items now handled via side panel drawer */}
                                             <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/5 transition-all bg-slate-900/20 border-b border-slate-700/30">
                                               {/* Sub-item checkbox */}
                                               <div className="w-8 px-1 py-1.5 border-r border-slate-700/20 flex items-center justify-center sticky left-0 bg-slate-900/20 z-20">
