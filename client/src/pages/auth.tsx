@@ -8,8 +8,23 @@ import { Building2 } from "lucide-react";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, login } = useAuth();
   const [, navigate] = useLocation();
+
+  // Auto-login for development
+  useEffect(() => {
+    const autoLogin = async () => {
+      try {
+        await login({ username: "ADMIN", password: "TEST" });
+      } catch (error) {
+        console.log("Auto-login failed, showing login form");
+      }
+    };
+
+    if (!isAuthenticated && !localStorage.getItem("authToken")) {
+      autoLogin();
+    }
+  }, [isAuthenticated, login]);
 
   // Redirect if already authenticated
   useEffect(() => {

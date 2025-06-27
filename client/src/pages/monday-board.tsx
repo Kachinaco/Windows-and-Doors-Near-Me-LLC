@@ -93,6 +93,9 @@ export default function MondayBoard() {
     };
   }) : [];
 
+  // Define fixed group order to prevent automatic reordering
+  const groupOrder = ['New Leads', 'Active Projects', 'Scheduled Work', 'Completed'];
+
   // Group items by group name
   const groupedItems = boardItems.reduce((groups: Record<string, BoardItem[]>, item) => {
     if (!groups[item.groupName]) {
@@ -105,11 +108,14 @@ export default function MondayBoard() {
   // Create board groups with collapse state
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   
-  const boardGroups: BoardGroup[] = Object.entries(groupedItems).map(([name, items]) => ({
-    name,
-    items,
-    collapsed: collapsedGroups[name] || false
-  }));
+  // Create groups in fixed order, only including groups that have items
+  const boardGroups: BoardGroup[] = groupOrder
+    .filter(groupName => groupedItems[groupName] && groupedItems[groupName].length > 0)
+    .map(groupName => ({
+      name: groupName,
+      items: groupedItems[groupName],
+      collapsed: collapsedGroups[groupName] || false
+    }));
 
   // Update cell mutation with proper auth
   const updateCellMutation = useMutation({
