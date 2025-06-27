@@ -48,6 +48,17 @@ export default function MondayBoard() {
   const [newColumnName, setNewColumnName] = useState('');
   const [newColumnType, setNewColumnType] = useState<BoardColumn['type']>('text');
   const [undoStack, setUndoStack] = useState<Array<{action: string, data: any, timestamp: number}>>([]);
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({
+    item: 250,
+    status: 120,
+    assignedTo: 150,
+    location: 200,
+    phone: 140,
+    dueDate: 120,
+    priority: 100,
+    tags: 120
+  });
+  const [isResizing, setIsResizing] = useState<string | null>(null);
 
   // Fetch projects and transform to board items
   const { data: projects = [], isLoading, error } = useQuery({
@@ -194,6 +205,28 @@ export default function MondayBoard() {
     const actualField = fieldMapping[field] || field;
     updateCellMutation.mutate({ projectId, field: actualField, value });
   }, [updateCellMutation, projects]);
+
+  const handleMouseDown = (columnId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(columnId);
+    
+    const startX = e.pageX;
+    const startWidth = columnWidths[columnId] || 120;
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = Math.max(80, startWidth + (e.pageX - startX));
+      setColumnWidths(prev => ({ ...prev, [columnId]: newWidth }));
+    };
+    
+    const handleMouseUp = () => {
+      setIsResizing(null);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
 
   const addColumn = () => {
     if (!newColumnName.trim()) return;
@@ -490,12 +523,22 @@ export default function MondayBoard() {
           {/* Column Headers */}
           <div className="sticky top-0 bg-gray-900 z-10 border-b border-gray-800">
             <div className="flex">
-              {columns.map((column) => (
-                <div key={column.id} className="flex-1 min-w-32 px-3 py-2 border-r border-gray-800">
+              {columns.map((column, index) => (
+                <div 
+                  key={column.id} 
+                  className="px-3 py-2 border-r border-gray-800 relative group"
+                  style={{ width: columnWidths[column.id] || 120 }}
+                >
                   <div className="flex items-center space-x-1.5">
                     {getColumnIcon(column.type)}
                     <span className="font-medium text-xs text-gray-300">{column.name}</span>
                   </div>
+                  {index < columns.length - 1 && (
+                    <div 
+                      className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-transparent hover:bg-blue-500/50 group-hover:bg-blue-500/30"
+                      onMouseDown={(e) => handleMouseDown(column.id, e)}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -526,7 +569,11 @@ export default function MondayBoard() {
                   {group.items.map((item) => (
                     <div key={item.id} className="flex hover:bg-gray-900/20 transition-colors border-b border-gray-800/20 last:border-b-0">
                       {columns.map((column) => (
-                        <div key={`${item.id}-${column.id}`} className="flex-1 min-w-32 px-3 py-2 border-r border-gray-800/20">
+                        <div 
+                          key={`${item.id}-${column.id}`} 
+                          className="px-3 py-2 border-r border-gray-800/20"
+                          style={{ width: columnWidths[column.id] || 120 }}
+                        >
                           {renderCell(item, column)}
                         </div>
                       ))}
