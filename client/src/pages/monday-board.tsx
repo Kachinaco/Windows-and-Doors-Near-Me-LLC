@@ -800,6 +800,76 @@ export default function MondayBoard() {
     });
   }, [toast]);
 
+  // Sub-item mutations
+  const createSubItemMutation = useMutation({
+    mutationFn: async ({ projectId, name }: { projectId: number; name: string }) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/projects/${projectId}/sub-items`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create sub-item');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Sub-item created", description: "New sub-item has been added successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create sub-item", variant: "destructive" });
+    }
+  });
+
+  const createSubItemFolderMutation = useMutation({
+    mutationFn: async ({ projectId, name }: { projectId: number; name: string }) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/projects/${projectId}/sub-item-folders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create sub-item folder');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Folder created", description: "New sub-item folder has been added successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create sub-item folder", variant: "destructive" });
+    }
+  });
+
+  // Handler functions for sub-item operations
+  const handleAddSubItem = useCallback((projectId: number) => {
+    createSubItemMutation.mutate({ 
+      projectId, 
+      name: "New Sub Item" 
+    });
+  }, [createSubItemMutation]);
+
+  const handleAddSubItemFolder = useCallback((projectId: number) => {
+    createSubItemFolderMutation.mutate({ 
+      projectId, 
+      name: "New Folder" 
+    });
+  }, [createSubItemFolderMutation]);
+
   // Render sub-item cells with dedicated column types
   const renderSubItemCell = (subItem: SubItem, column: BoardColumn, projectId: number) => {
     // Map sub-item data to column values
@@ -1504,10 +1574,7 @@ export default function MondayBoard() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {
-                                  // Add new sub-item
-                                  console.log('Adding sub-item to project:', item.id);
-                                }}
+                                onClick={() => handleAddSubItem(item.id)}
                                 className="text-gray-600 hover:text-blue-400 text-xs h-5 px-1 flex items-center gap-1"
                               >
                                 <Plus className="w-2.5 h-2.5" />
@@ -1517,10 +1584,7 @@ export default function MondayBoard() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {
-                                  // Add new folder
-                                  console.log('Adding folder to project:', item.id);
-                                }}
+                                onClick={() => handleAddSubItemFolder(item.id)}
                                 className="text-gray-600 hover:text-amber-400 text-xs h-5 px-1 flex items-center gap-1"
                               >
                                 <Folder className="w-2.5 h-2.5" />

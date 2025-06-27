@@ -157,6 +157,16 @@ export interface IStorage {
   getAllProjectUpdates(): Promise<any[]>;
   getProjectUpdates(projectId: number): Promise<ProjectUpdate[]>;
   createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate>;
+  
+  // Sub-item operations
+  createSubItem(subItem: InsertSubItem): Promise<SubItem>;
+  updateSubItem(id: number, updates: Partial<InsertSubItem>): Promise<SubItem>;
+  getSubItemsByProject(projectId: number): Promise<SubItem[]>;
+  
+  // Sub-item folder operations
+  createSubItemFolder(folder: InsertSubItemFolder): Promise<SubItemFolder>;
+  updateSubItemFolder(id: number, updates: Partial<InsertSubItemFolder>): Promise<SubItemFolder>;
+  getSubItemFoldersByProject(projectId: number): Promise<SubItemFolder[]>;
 
   // Contract management operations
   getAllContracts(): Promise<Contract[]>;
@@ -1144,6 +1154,58 @@ export class DatabaseStorage implements IStorage {
       .where(eq(proposalTemplates.id, id))
       .returning();
     return template;
+  }
+
+  // Sub-item operations
+  async createSubItem(subItem: InsertSubItem): Promise<SubItem> {
+    const [newSubItem] = await db
+      .insert(subItems)
+      .values(subItem)
+      .returning();
+    return newSubItem;
+  }
+
+  async updateSubItem(id: number, updates: Partial<InsertSubItem>): Promise<SubItem> {
+    const [updatedSubItem] = await db
+      .update(subItems)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(subItems.id, id))
+      .returning();
+    return updatedSubItem;
+  }
+
+  async getSubItemsByProject(projectId: number): Promise<SubItem[]> {
+    return await db
+      .select()
+      .from(subItems)
+      .where(eq(subItems.parentProjectId, projectId))
+      .orderBy(subItems.sortOrder, subItems.createdAt);
+  }
+
+  // Sub-item folder operations
+  async createSubItemFolder(folder: InsertSubItemFolder): Promise<SubItemFolder> {
+    const [newFolder] = await db
+      .insert(subItemFolders)
+      .values(folder)
+      .returning();
+    return newFolder;
+  }
+
+  async updateSubItemFolder(id: number, updates: Partial<InsertSubItemFolder>): Promise<SubItemFolder> {
+    const [updatedFolder] = await db
+      .update(subItemFolders)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(subItemFolders.id, id))
+      .returning();
+    return updatedFolder;
+  }
+
+  async getSubItemFoldersByProject(projectId: number): Promise<SubItemFolder[]> {
+    return await db
+      .select()
+      .from(subItemFolders)
+      .where(eq(subItemFolders.projectId, projectId))
+      .orderBy(subItemFolders.sortOrder, subItemFolders.createdAt);
   }
 }
 
