@@ -432,10 +432,10 @@ export default function SimpleExcelManager() {
       >
         {column.key === 'status' ? (
           <Badge className={`${getStatusColor(cellValue.toString())} text-xs px-2 py-0 border`}>
-            {cellValue?.toString()}
+            {String(cellValue)}
           </Badge>
         ) : (
-          <span className="truncate">{cellValue?.toString()}</span>
+          <span className="truncate">{String(cellValue || '')}</span>
         )}
         
         {/* Live editing indicator */}
