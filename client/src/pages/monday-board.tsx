@@ -1349,8 +1349,25 @@ export default function MondayBoard() {
                   ) : (
                     <ChevronDown className="w-2.5 h-2.5 text-gray-500" />
                   )}
-                  <span className="text-xs font-medium text-gray-400">{group.name}</span>
-                  <span className="text-xs text-gray-600">({group.items.length})</span>
+                  <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                    group.name === 'New Leads' ? 'bg-cyan-500' :
+                    group.name === 'Need Attention' ? 'bg-yellow-500' :
+                    group.name === 'Sent Estimate' ? 'bg-purple-500' :
+                    group.name === 'Signed' ? 'bg-emerald-500' :
+                    group.name === 'In Progress' ? 'bg-blue-500' :
+                    group.name === 'Complete' ? 'bg-green-500' :
+                    'bg-gray-500'
+                  }`} />
+                  <span className={`text-xs font-medium ${
+                    group.name === 'New Leads' ? 'text-cyan-300' :
+                    group.name === 'Need Attention' ? 'text-yellow-300' :
+                    group.name === 'Sent Estimate' ? 'text-purple-300' :
+                    group.name === 'Signed' ? 'text-emerald-300' :
+                    group.name === 'In Progress' ? 'text-blue-300' :
+                    group.name === 'Complete' ? 'text-green-300' :
+                    'text-gray-400'
+                  }`}>{group.name}</span>
+                  <span className="text-xs text-gray-500 font-medium">({group.items.length})</span>
                 </div>
               </div>
 
