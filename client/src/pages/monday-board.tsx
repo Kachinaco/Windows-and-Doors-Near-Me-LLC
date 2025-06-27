@@ -43,26 +43,32 @@ export default function MondayBoard() {
   const [newColumnType, setNewColumnType] = useState<BoardColumn['type']>('text');
 
   // Fetch projects and transform to board items
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: projects = [], isLoading, error } = useQuery({
     queryKey: ['/api/projects'],
     refetchInterval: 5000,
   });
 
-  // Transform projects to board items
-  const boardItems: BoardItem[] = (projects as Project[]).map((project: Project) => ({
-    id: project.id,
+  // Transform projects to board items safely
+  const boardItems: BoardItem[] = Array.isArray(projects) ? projects.map((project: any) => ({
+    id: project.id || 0,
     groupName: 'Active Projects',
     values: {
-      item: project.name,
+      item: project.name || 'Untitled Project',
       status: project.status || 'new lead',
       assignedTo: project.assignedTo || '',
       dueDate: project.endDate || '',
       priority: 3,
-      tags: project.status === 'urgent' ? ['Urgent'] : [],
+      tags: [],
       location: project.projectAddress || '',
       phone: project.clientPhone || '',
     }
-  }));
+  })) : [];
+
+  // Debug logging
+  console.log('Projects data:', projects);
+  console.log('Board items:', boardItems);
+  console.log('Loading:', isLoading);
+  console.log('Error:', error);
 
   // Update cell mutation
   const updateCellMutation = useMutation({
@@ -202,7 +208,7 @@ export default function MondayBoard() {
               <SelectValue placeholder="Select person" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="">Unassigned</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
               <SelectItem value="John Doe">John Doe</SelectItem>
               <SelectItem value="Jane Smith">Jane Smith</SelectItem>
               <SelectItem value="Bob Wilson">Bob Wilson</SelectItem>
@@ -269,7 +275,27 @@ export default function MondayBoard() {
   if (isLoading) {
     return (
       <div className="h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-xl">Loading board...</div>
+        <div className="text-center">
+          <div className="text-xl mb-4">Loading Monday.com-style board...</div>
+          <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl mb-4 text-red-400">Error loading board</div>
+          <div className="text-sm text-gray-400">Check console for details</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
