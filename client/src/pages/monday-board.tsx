@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { type Project } from "@shared/schema";
-import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type } from "lucide-react";
+import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight } from "lucide-react";
 
 interface BoardColumn {
   id: string;
@@ -21,6 +21,12 @@ interface BoardItem {
   id: number;
   groupName: string;
   values: Record<string, any>;
+}
+
+interface BoardGroup {
+  name: string;
+  items: BoardItem[];
+  collapsed: boolean;
 }
 
 export default function MondayBoard() {
@@ -49,35 +55,56 @@ export default function MondayBoard() {
   });
 
   // Transform projects to board items safely
-  const boardItems: BoardItem[] = Array.isArray(projects) ? projects.map((project: any) => ({
-    id: project.id || 0,
-    groupName: 'Active Projects',
-    values: {
-      item: project.name || 'Untitled Project',
-      status: project.status || 'new lead',
-      assignedTo: project.assignedTo || '',
-      dueDate: project.endDate || '',
-      priority: 3,
-      tags: [],
-      location: project.projectAddress || '',
-      phone: project.clientPhone || '',
+  const boardItems: BoardItem[] = Array.isArray(projects) ? projects.map((project: any) => {
+    // Group projects by status
+    let groupName = 'Active Projects';
+    if (project.status === 'new lead') groupName = 'New Leads';
+    else if (project.status === 'complete') groupName = 'Completed';
+    else if (project.status === 'scheduled') groupName = 'Scheduled Work';
+    
+    return {
+      id: project.id || 0,
+      groupName,
+      values: {
+        item: project.name || 'Untitled Project',
+        status: project.status || 'new lead',
+        assignedTo: project.assignedTo || '',
+        dueDate: project.endDate || '',
+        priority: 3,
+        tags: [],
+        location: project.projectAddress || '',
+        phone: project.clientPhone || '',
+      }
+    };
+  }) : [];
+
+  // Group items by group name
+  const groupedItems = boardItems.reduce((groups: Record<string, BoardItem[]>, item) => {
+    if (!groups[item.groupName]) {
+      groups[item.groupName] = [];
     }
-  })) : [];
+    groups[item.groupName].push(item);
+    return groups;
+  }, {});
 
-  // Debug logging
-  console.log('Projects data:', projects);
-  console.log('Board items:', boardItems);
-  console.log('Loading:', isLoading);
-  console.log('Error:', error);
+  // Create board groups with collapse state
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  
+  const boardGroups: BoardGroup[] = Object.entries(groupedItems).map(([name, items]) => ({
+    name,
+    items,
+    collapsed: collapsedGroups[name] || false
+  }));
 
-  // Update cell mutation
+  // Update cell mutation with proper auth
   const updateCellMutation = useMutation({
     mutationFn: async ({ projectId, field, value }: { projectId: number; field: string; value: any }) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
       const response = await fetch(`/api/projects/${projectId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ [field]: value }),
       });
@@ -90,25 +117,30 @@ export default function MondayBoard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({ title: "Cell updated successfully" });
+      toast({ title: "Updated" });
     },
     onError: () => {
-      toast({ title: "Failed to update cell", variant: "destructive" });
+      toast({ title: "Update failed", variant: "destructive" });
     },
   });
 
-  // Add new item mutation
+  // Add new item mutation with proper auth
   const addItemMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (groupName: string = 'New Leads') => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const status = groupName === 'New Leads' ? 'new lead' : 
+                    groupName === 'Completed' ? 'complete' : 
+                    groupName === 'Scheduled Work' ? 'scheduled' : 'in progress';
+      
       const response = await fetch('/api/projects', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: 'New Project',
-          status: 'new lead',
+          status: status,
           assignedTo: '',
           projectAddress: '',
           clientPhone: '',
@@ -123,7 +155,7 @@ export default function MondayBoard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({ title: "New item added" });
+      toast({ title: "Added" });
     },
   });
 
@@ -155,7 +187,7 @@ export default function MondayBoard() {
     setIsAddColumnOpen(false);
     setNewColumnName('');
     setNewColumnType('text');
-    toast({ title: "Column added successfully" });
+    toast({ title: "Column added" });
   };
 
   const getColumnIcon = (type: BoardColumn['type']) => {
@@ -179,12 +211,12 @@ export default function MondayBoard() {
             value={value}
             onValueChange={(newValue) => handleCellUpdate(item.id, column.id, newValue)}
           >
-            <SelectTrigger className={`h-8 border-none bg-transparent text-white text-xs font-medium rounded-full px-3 ${
-              value === 'complete' ? 'bg-blue-600' :
-              value === 'in progress' ? 'bg-emerald-600' :
-              value === 'scheduled' ? 'bg-purple-600' :
-              value === 'on order' ? 'bg-yellow-600' :
-              'bg-gray-600'
+            <SelectTrigger className={`h-6 text-xs font-medium rounded-full px-2 border-none ${
+              value === 'complete' ? 'bg-green-500/20 text-green-400' :
+              value === 'in progress' ? 'bg-blue-500/20 text-blue-400' :
+              value === 'scheduled' ? 'bg-purple-500/20 text-purple-400' :
+              value === 'on order' ? 'bg-orange-500/20 text-orange-400' :
+              'bg-gray-500/20 text-gray-400'
             }`}>
               <SelectValue />
             </SelectTrigger>
@@ -204,8 +236,8 @@ export default function MondayBoard() {
             value={value}
             onValueChange={(newValue) => handleCellUpdate(item.id, column.id, newValue)}
           >
-            <SelectTrigger className="h-8 border-none bg-transparent text-white">
-              <SelectValue placeholder="Select person" />
+            <SelectTrigger className="h-6 text-xs border-none bg-transparent text-gray-300">
+              <SelectValue placeholder="Assign" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
               <SelectItem value="unassigned">Unassigned</SelectItem>
@@ -223,7 +255,7 @@ export default function MondayBoard() {
             type="date"
             value={value}
             onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
-            className="h-8 border-none bg-transparent text-white"
+            className="h-6 text-xs border-none bg-transparent text-gray-300"
           />
         );
       
@@ -233,7 +265,7 @@ export default function MondayBoard() {
             type="number"
             value={value}
             onChange={(e) => handleCellUpdate(item.id, column.id, parseInt(e.target.value) || 0)}
-            className="h-8 border-none bg-transparent text-white"
+            className="h-6 text-xs border-none bg-transparent text-gray-300"
             placeholder="0"
           />
         );
@@ -242,13 +274,13 @@ export default function MondayBoard() {
         return (
           <div className="flex flex-wrap gap-1">
             {Array.isArray(value) && value.map((tag: string, idx: number) => (
-              <span key={idx} className="px-2 py-1 bg-purple-600 text-white rounded-full text-xs">
+              <span key={idx} className="px-1.5 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs">
                 {tag}
               </span>
             ))}
             <Input
-              placeholder="Add tags..."
-              className="h-6 border-none bg-transparent text-white text-xs flex-1 min-w-20"
+              placeholder="Add tag"
+              className="h-5 text-xs border-none bg-transparent text-gray-300 flex-1 min-w-16"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                   const newTags = [...(Array.isArray(value) ? value : []), e.currentTarget.value.trim()];
@@ -265,8 +297,8 @@ export default function MondayBoard() {
           <Input
             value={value}
             onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
-            className="h-8 border-none bg-transparent text-white"
-            placeholder="Enter text..."
+            className="h-6 text-xs border-none bg-transparent text-gray-300"
+            placeholder="Enter text"
           />
         );
     }
@@ -300,154 +332,176 @@ export default function MondayBoard() {
     );
   }
 
+  const toggleGroup = (groupName: string) => {
+    setCollapsedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
+  };
+
   return (
-    <div className="h-screen bg-gray-900 text-white flex flex-col overflow-hidden">
-      {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex-shrink-0">
+    <div className="h-screen bg-gray-950 text-white flex flex-col overflow-hidden">
+      {/* Slim Header */}
+      <header className="bg-gray-900/50 border-b border-gray-800 px-4 py-2 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <div className="w-4 h-4 bg-white rounded-sm" />
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
+              <div className="w-3 h-3 bg-white rounded-sm" />
             </div>
-            <h1 className="text-xl font-semibold">Project Management Board</h1>
-            <div className="px-3 py-1 bg-purple-600 text-white rounded-full text-xs font-medium">
-              Monday.com Style
+            <h1 className="text-lg font-medium">Project Board</h1>
+            <div className="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">
+              Monday Style
             </div>
           </div>
           
-          <div className="flex items-center space-x-3">
-            <Button 
-              onClick={() => addItemMutation.mutate()}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              disabled={addItemMutation.isPending}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Item
-            </Button>
+          <div className="flex items-center space-x-2">
+            <Dialog open={isAddColumnOpen} onOpenChange={setIsAddColumnOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-blue-400 text-xs"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Column
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-gray-900 text-white border-gray-700">
+                <DialogHeader>
+                  <DialogTitle>Add Column</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs">Name</Label>
+                    <Input
+                      value={newColumnName}
+                      onChange={(e) => setNewColumnName(e.target.value)}
+                      className="bg-gray-800 border-gray-700 text-white h-8"
+                      placeholder="Column name"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Type</Label>
+                    <Select value={newColumnType} onValueChange={(value) => setNewColumnType(value as BoardColumn['type'])}>
+                      <SelectTrigger className="bg-gray-800 border-gray-700 text-white h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700">
+                        <SelectItem value="text">Text</SelectItem>
+                        <SelectItem value="status">Status</SelectItem>
+                        <SelectItem value="people">People</SelectItem>
+                        <SelectItem value="date">Date</SelectItem>
+                        <SelectItem value="number">Number</SelectItem>
+                        <SelectItem value="tags">Tags</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={addColumn} size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 h-8">
+                      Add
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsAddColumnOpen(false)}
+                      size="sm"
+                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 h-8"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </header>
 
-      {/* Board Table */}
-      <div className="flex-1 overflow-auto">
-        <table className="w-full border-collapse">
+      {/* Compact Board */}
+      <div className="flex-1 overflow-auto bg-gray-950">
+        <div className="min-w-full">
           {/* Column Headers */}
-          <thead className="sticky top-0 bg-gray-800 z-10">
-            <tr>
+          <div className="sticky top-0 bg-gray-900 z-10 border-b border-gray-800">
+            <div className="flex">
               {columns.map((column) => (
-                <th key={column.id} className="text-left p-4 border-r border-gray-700 min-w-[150px]">
-                  <div className="flex items-center space-x-2">
+                <div key={column.id} className="flex-1 min-w-32 px-3 py-2 border-r border-gray-800">
+                  <div className="flex items-center space-x-1.5">
                     {getColumnIcon(column.type)}
-                    <span className="font-medium text-sm">{column.name}</span>
-                    <span className="text-xs text-gray-400 uppercase">{column.type}</span>
+                    <span className="font-medium text-xs text-gray-300">{column.name}</span>
                   </div>
-                </th>
+                </div>
               ))}
-              
-              {/* Add Column Button */}
-              <th className="p-4 min-w-[150px]">
-                <Dialog open={isAddColumnOpen} onOpenChange={setIsAddColumnOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full h-10 border-2 border-dashed border-gray-600 bg-transparent text-gray-400 hover:border-blue-600 hover:text-blue-400"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Column
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-gray-800 text-white border-gray-700">
-                    <DialogHeader>
-                      <DialogTitle>Add New Column</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="column-name">Column Name</Label>
-                        <Input
-                          id="column-name"
-                          value={newColumnName}
-                          onChange={(e) => setNewColumnName(e.target.value)}
-                          className="bg-gray-700 border-gray-600 text-white"
-                          placeholder="Enter column name"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="column-type">Column Type</Label>
-                        <Select value={newColumnType} onValueChange={(value) => setNewColumnType(value as BoardColumn['type'])}>
-                          <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-gray-800 border-gray-700">
-                            <SelectItem value="text">📝 Text</SelectItem>
-                            <SelectItem value="status">🟢 Status</SelectItem>
-                            <SelectItem value="people">👤 People</SelectItem>
-                            <SelectItem value="date">📅 Date</SelectItem>
-                            <SelectItem value="number">🔢 Number</SelectItem>
-                            <SelectItem value="tags">🏷️ Tags</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="flex space-x-3">
-                        <Button onClick={addColumn} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                          Add Column
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setIsAddColumnOpen(false)}
-                          className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </th>
-            </tr>
-          </thead>
+            </div>
+          </div>
 
-          {/* Board Rows */}
-          <tbody>
-            {boardItems.map((item) => (
-              <tr key={item.id} className="border-b border-gray-800 hover:bg-gray-800/20">
-                {columns.map((column) => (
-                  <td key={`${item.id}-${column.id}`} className="p-2 border-r border-gray-700 align-top">
-                    {renderCell(item, column)}
-                  </td>
-                ))}
-                
-                {/* Actions Column */}
-                <td className="p-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-400 hover:text-red-400"
-                    onClick={() => {
-                      // Implement delete functionality
-                      console.log('Delete item:', item.id);
-                    }}
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          {/* Groups and Items */}
+          {boardGroups.map((group) => (
+            <div key={group.name} className="border-b border-gray-800/50 last:border-b-0">
+              {/* Group Header */}
+              <div 
+                className="bg-gray-900/30 px-3 py-1.5 border-b border-gray-800/30 cursor-pointer hover:bg-gray-900/50 transition-colors"
+                onClick={() => toggleGroup(group.name)}
+              >
+                <div className="flex items-center space-x-2">
+                  {group.collapsed ? (
+                    <ChevronRight className="w-3 h-3 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-3 h-3 text-gray-500" />
+                  )}
+                  <span className="text-sm font-medium text-gray-300">{group.name}</span>
+                  <span className="text-xs text-gray-500">({group.items.length})</span>
+                </div>
+              </div>
+
+              {/* Group Items */}
+              {!group.collapsed && (
+                <>
+                  {group.items.map((item) => (
+                    <div key={item.id} className="flex hover:bg-gray-900/20 transition-colors border-b border-gray-800/20 last:border-b-0">
+                      {columns.map((column) => (
+                        <div key={`${item.id}-${column.id}`} className="flex-1 min-w-32 px-3 py-2 border-r border-gray-800/20">
+                          {renderCell(item, column)}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                  
+                  {/* Add Item Button at bottom of group */}
+                  <div className="flex hover:bg-gray-900/20 transition-colors">
+                    <div className="flex-1 px-3 py-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => addItemMutation.mutate(group.name)}
+                        disabled={addItemMutation.isPending}
+                        className="text-gray-500 hover:text-blue-400 text-xs h-6 w-full justify-start"
+                      >
+                        <Plus className="w-3 h-3 mr-1" />
+                        Add item
+                      </Button>
+                    </div>
+                    {columns.slice(1).map((column) => (
+                      <div key={column.id} className="flex-1 min-w-32 px-3 py-2 border-r border-gray-800/20"></div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Status Bar */}
-      <div className="bg-gray-800 border-t border-gray-700 px-6 py-2 flex items-center justify-between text-sm text-gray-400 flex-shrink-0">
-        <div className="flex items-center space-x-4">
-          <span>🐍 Python-Powered Board</span>
-          <span>•</span>
+      {/* Compact Status Bar */}
+      <div className="bg-gray-900/50 border-t border-gray-800 px-4 py-1.5 flex items-center justify-between text-xs text-gray-500 flex-shrink-0">
+        <div className="flex items-center space-x-3">
           <span>{boardItems.length} items</span>
           <span>•</span>
           <span>{columns.length} columns</span>
+          <span>•</span>
+          <span>{boardGroups.length} groups</span>
         </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-          <span>Live Collaboration Active</span>
+        <div className="flex items-center space-x-1.5">
+          <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+          <span>Live</span>
         </div>
       </div>
     </div>
