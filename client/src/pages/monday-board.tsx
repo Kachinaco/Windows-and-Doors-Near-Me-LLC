@@ -1668,28 +1668,18 @@ export default function MondayBoard() {
                             ))
                           )}
                           
-                          {/* Add Sub Item and Add Folder Buttons */}
+                          {/* Add Folder Button */}
                           <div className="flex hover:bg-gray-900/10 transition-all">
                             {/* Empty checkbox space */}
                             <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 sticky left-0 bg-gray-950 z-20"></div>
                             <div 
-                              className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10 flex gap-2"
+                              className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
                               style={{ 
                                 width: columnWidths['item'] || 200,
                                 minWidth: '150px',
                                 maxWidth: 'none'
                               }}
                             >
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleAddSubItem(item.id)}
-                                className="text-gray-600 hover:text-blue-400 text-xs h-5 px-1 flex items-center gap-1"
-                              >
-                                <Plus className="w-2.5 h-2.5" />
-                                Add Sub Item
-                              </Button>
-                              
                               <Button
                                 variant="ghost"
                                 size="sm"
