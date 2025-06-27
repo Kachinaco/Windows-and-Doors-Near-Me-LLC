@@ -227,3 +227,4 @@ Changelog:
 Preferred communication style: Simple, everyday language.
 Design preference: Creative and unique website design that stands out from typical business websites.
 UI/UX preference: No confirmation popups for actions - provide undo functionality instead for better workflow.
+Column preference: Resizable columns with drag functionality for optimal content viewing.
