@@ -199,23 +199,6 @@ export default function MondayBoard() {
     },
   });
 
-  // Handle local state changes for fast typing
-  const handleLocalChange = useCallback((projectId: number, field: string, value: string) => {
-    const key = `${projectId}-${field}`;
-    setLocalValues(prev => ({ ...prev, [key]: value }));
-    
-    // Clear existing timeout for this field
-    if (debounceTimeoutRef.current[key]) {
-      clearTimeout(debounceTimeoutRef.current[key]);
-    }
-    
-    // Set new debounced timeout
-    debounceTimeoutRef.current[key] = setTimeout(() => {
-      handleCellUpdate(projectId, field, value);
-      delete debounceTimeoutRef.current[key];
-    }, 500); // 500ms debounce
-  }, []);
-
   const handleCellUpdate = useCallback((projectId: number, field: string, value: any) => {
     console.log('handleCellUpdate called:', { projectId, field, value });
     
@@ -300,6 +283,23 @@ export default function MondayBoard() {
       default: return <Type className="w-2.5 h-2.5 text-gray-400" />;
     }
   };
+
+  // Handle local state changes for fast typing
+  const handleLocalChange = useCallback((projectId: number, field: string, value: string) => {
+    const key = `${projectId}-${field}`;
+    setLocalValues(prev => ({ ...prev, [key]: value }));
+    
+    // Clear existing timeout for this field
+    if (debounceTimeoutRef.current[key]) {
+      clearTimeout(debounceTimeoutRef.current[key]);
+    }
+    
+    // Set new debounced timeout
+    debounceTimeoutRef.current[key] = setTimeout(() => {
+      handleCellUpdate(projectId, field, value);
+      delete debounceTimeoutRef.current[key];
+    }, 500); // 500ms debounce
+  }, [handleCellUpdate]);
 
   const renderCell = (item: BoardItem, column: BoardColumn) => {
     const value = item.values[column.id] || '';
