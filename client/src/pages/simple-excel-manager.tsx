@@ -4,15 +4,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { 
+import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -41,30 +41,11 @@ import {
   Wifi
 } from "lucide-react";
 
-const getStatusColor = (status: string) => {
-  switch (status?.toLowerCase()) {
-    case 'complete':
-    case 'completed':
-      return 'bg-green-100 text-green-800 border-green-200';
-    case 'on order':
-    case 'ordered':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    case 'in progress':
-      return 'bg-blue-100 text-blue-800 border-blue-200';
-    case 'new lead':
-      return 'bg-purple-100 text-purple-800 border-purple-200';
-    case 'scheduled':
-      return 'bg-orange-100 text-orange-800 border-orange-200';
-    default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
-  }
-};
-
-const formatDate = (date: Date | string | null) => {
-  if (!date) return '';
-  const d = new Date(date);
-  return d.toLocaleDateString('en-US', { 
-    month: 'short', 
+const formatDate = (dateValue: any) => {
+  if (!dateValue) return '';
+  const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+  return date.toLocaleDateString('en-US', {
+    month: 'numeric',
     day: 'numeric',
     year: '2-digit'
   });
@@ -125,6 +106,7 @@ export default function SimpleExcelManager() {
   const inputRef = useRef<HTMLInputElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
+  // Data fetching
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ['/api/projects'],
     enabled: !!user,
@@ -240,14 +222,33 @@ export default function SimpleExcelManager() {
     }
   }, []);
 
-  // Column definitions
+  // Filter and search
+  const filteredProjects = useMemo(() => {
+    let filtered = projects;
+    
+    if (statusFilter) {
+      filtered = filtered.filter(p => p.status?.toLowerCase().includes(statusFilter.toLowerCase()));
+    }
+    
+    if (searchTerm) {
+      filtered = filtered.filter(p => 
+        Object.values(p).some(value => 
+          value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
+    
+    return filtered;
+  }, [projects, statusFilter, searchTerm]);
+
+  // Column configuration
   const columns = [
     { key: 'id', label: 'ID', type: 'number' },
     { key: 'name', label: 'Project Name', type: 'text' },
     { key: 'assignedTo', label: 'Assigned To', type: 'text' },
-    { key: 'projectAddress', label: 'Location', type: 'text' },
+    { key: 'projectAddress', label: 'Address', type: 'text' },
     { key: 'clientPhone', label: 'Phone', type: 'text' },
-    { key: 'status', label: 'Status', type: 'text' },
+    { key: 'status', label: 'Status', type: 'select' },
     { key: 'startDate', label: 'Start Date', type: 'date' },
     { key: 'endDate', label: 'End Date', type: 'date' },
   ].filter(col => visibleColumns.includes(col.key));
@@ -354,39 +355,30 @@ export default function SimpleExcelManager() {
     }
   };
 
-  // Column resizing
-  const handleMouseDown = (e: React.MouseEvent, columnKey: string) => {
-    setResizing(columnKey);
-    setStartX(e.clientX);
-    setStartWidth(columnWidths[columnKey]);
-    e.preventDefault();
+  // Get status color
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'new lead':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'in progress':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'on order':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'scheduled':
+        return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+      case 'complete':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
   };
-
-  // Filtering
-  const filteredProjects = useMemo(() => {
-    return projects.filter(project => {
-      const matchesSearch = searchTerm === '' || 
-        Object.values(project).some(value => 
-          value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      
-      const matchesStatus = statusFilter === '' || 
-        project.status?.toLowerCase().includes(statusFilter.toLowerCase());
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [projects, searchTerm, statusFilter]);
 
   // Get cell value
   const getCellValue = (project: Project, columnKey: string) => {
     switch (columnKey) {
-      case 'assignedTo':
-        const employee = employees.find(e => e.id === project.assignedTo);
-        return employee ? `${employee.firstName || ''} ${employee.lastName || ''}` : 'Unassigned';
       case 'startDate':
       case 'endDate':
-      case 'createdAt':
-        return formatDate(project[columnKey as keyof Project] as Date);
+        return project[columnKey as keyof Project] ? formatDate(project[columnKey as keyof Project]) : '';
       default:
         return project[columnKey as keyof Project] || '';
     }
@@ -421,7 +413,7 @@ export default function SimpleExcelManager() {
 
     return (
       <div
-        className={`h-8 px-2 text-sm cursor-cell hover:bg-blue-50 flex items-center truncate border-r border-gray-200 relative ${
+        className={`h-8 px-2 text-sm cursor-cell hover:bg-blue-50 flex items-center truncate border-r border-slate-100 relative ${
           isBeingEdited ? 'bg-red-50 border-red-200' : ''
         }`}
         onClick={() => handleCellClick(project.id, column.key, cellValue)}
@@ -451,56 +443,69 @@ export default function SimpleExcelManager() {
     );
   };
 
+  const handleResizeStart = (e: React.MouseEvent, columnKey: string) => {
+    setResizing(columnKey);
+    setStartX(e.clientX);
+    setStartWidth(columnWidths[columnKey]);
+  };
+
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-gray-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p>Loading Excel-style Project Manager...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading projects...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white">
-      {/* Mobile-Optimized Toolbar */}
-      <div className="border-b border-gray-200 bg-gray-50">
-        <div className="px-2 sm:px-4 py-2">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-gray-100">
+      {/* Modern Sleek Header */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200 shadow-sm">
+        <div className="px-3 sm:px-6 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
-              <h1 className="text-sm sm:text-lg font-semibold text-gray-900 truncate">
-                <span className="hidden sm:inline">Excel-Style Project Manager</span>
-                <span className="sm:hidden">Projects</span>
-              </h1>
+            {/* Left Section - Title & Collaboration */}
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
+              <div className="flex items-center space-x-2">
+                <div className="p-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-sm">
+                  <Calculator className="h-4 w-4 text-white" />
+                </div>
+                <h1 className="text-lg font-semibold text-slate-800 truncate">
+                  <span className="hidden sm:inline">Project Manager</span>
+                  <span className="sm:hidden">Projects</span>
+                </h1>
+              </div>
               
-              {/* Real-time collaboration indicator - Mobile optimized */}
-              <div className="flex items-center space-x-1 sm:space-x-2">
-                <div className={`flex items-center space-x-1 px-1 sm:px-2 py-1 rounded text-xs ${
-                  isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              {/* Real-time Status Badge */}
+              <div className="flex items-center space-x-2">
+                <div className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium shadow-sm ${
+                  isConnected 
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                    : 'bg-red-50 text-red-700 border border-red-200'
                 }`}>
-                  <Wifi className={`h-3 w-3 ${isConnected ? 'text-green-600' : 'text-red-600'}`} />
-                  <span className="hidden sm:inline">{isConnected ? 'Connected' : 'Disconnected'}</span>
+                  <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`} />
+                  <span className="hidden sm:inline">{isConnected ? 'Live' : 'Offline'}</span>
                 </div>
                 
                 {onlineUsers.length > 0 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-6 sm:h-7 text-xs">
-                        <Users className="h-3 w-3 sm:mr-1" />
-                        <span className="hidden sm:inline">{onlineUsers.length} online</span>
-                        <span className="sm:hidden">{onlineUsers.length}</span>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+                        <Users className="h-3 w-3 mr-1" />
+                        {onlineUsers.length}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <div className="p-2">
-                        <div className="text-xs font-semibold text-gray-500 mb-2">Online Users</div>
+                    <DropdownMenuContent align="end" className="w-52 p-3">
+                      <div className="text-xs font-semibold text-slate-500 mb-3">Active Collaborators</div>
+                      <div className="space-y-2">
                         {onlineUsers.map(user => (
                           <div key={user.sessionId} className="flex items-center space-x-2 py-1">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-sm truncate">{user.username}</span>
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <span className="text-sm text-slate-700 truncate">{user.username}</span>
                             {user.sessionId === sessionId && (
-                              <span className="text-xs text-gray-500">(You)</span>
+                              <span className="text-xs text-blue-600 font-medium">(You)</span>
                             )}
                           </div>
                         ))}
@@ -511,187 +516,256 @@ export default function SimpleExcelManager() {
               </div>
             </div>
             
-            {/* Mobile-Optimized Action Buttons */}
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Button variant="outline" size="sm" className="h-7 px-2 sm:px-3">
-                <Save className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+            {/* Right Section - Actions */}
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="sm" className="h-8 px-3 text-xs font-medium">
+                <Save className="h-3.5 w-3.5 sm:mr-1.5" />
                 <span className="hidden sm:inline">Save</span>
               </Button>
-              <Button variant="outline" size="sm" className="h-7 px-2 sm:px-3">
-                <Download className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+              <Button variant="ghost" size="sm" className="h-8 px-3 text-xs font-medium">
+                <Download className="h-3.5 w-3.5 sm:mr-1.5" />
                 <span className="hidden sm:inline">Export</span>
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 px-2 sm:px-3">
-                    <Columns className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">Columns</span>
+                  <Button variant="ghost" size="sm" className="h-8 px-3 text-xs font-medium">
+                    <Columns className="h-3.5 w-3.5 sm:mr-1.5" />
+                    <span className="hidden sm:inline">View</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  {['id', 'name', 'assignedTo', 'projectAddress', 'clientPhone', 'status', 'startDate', 'endDate'].map(col => (
-                    <DropdownMenuCheckboxItem
-                      key={col}
-                      checked={visibleColumns.includes(col)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setVisibleColumns([...visibleColumns, col]);
-                        } else {
-                          setVisibleColumns(visibleColumns.filter(c => c !== col));
-                        }
-                      }}
-                    >
-                      {col.charAt(0).toUpperCase() + col.slice(1).replace(/([A-Z])/g, ' $1')}
-                    </DropdownMenuCheckboxItem>
-                  ))}
+                  <div className="p-2">
+                    <div className="text-xs font-semibold text-slate-500 mb-2">Show Columns</div>
+                    {['id', 'name', 'assignedTo', 'projectAddress', 'clientPhone', 'status', 'startDate', 'endDate'].map(col => (
+                      <DropdownMenuCheckboxItem
+                        key={col}
+                        checked={visibleColumns.includes(col)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setVisibleColumns([...visibleColumns, col]);
+                          } else {
+                            setVisibleColumns(visibleColumns.filter(c => c !== col));
+                          }
+                        }}
+                        className="text-sm"
+                      >
+                        {col.charAt(0).toUpperCase() + col.slice(1).replace(/([A-Z])/g, ' $1')}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </div>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button size="sm" className="h-7 px-2 sm:px-3">
-                <Plus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                <span className="hidden sm:inline">Add</span>
+              <Button size="sm" className="h-8 px-3 text-xs font-medium bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-sm">
+                <Plus className="h-3.5 w-3.5 sm:mr-1.5" />
+                <span className="hidden sm:inline">New</span>
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="border-b border-gray-200 bg-gray-25 px-4 py-2">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Filter className="h-4 w-4 text-gray-500" />
-            <span className="text-sm text-gray-600">Filters:</span>
+      {/* Modern Data Container */}
+      <div className="flex-1 mx-3 sm:mx-6 my-4 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full flex flex-col">
+          
+          {/* Search & Filter Bar */}
+          <div className="border-b border-slate-100 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center space-x-3 flex-1">
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input
+                    placeholder="Search projects..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 h-9 text-sm border-slate-200 focus:border-blue-300 focus:ring-blue-200"
+                  />
+                </div>
+                <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}>
+                  <SelectTrigger className="w-32 h-9 text-sm">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="new lead">New Lead</SelectItem>
+                    <SelectItem value="in progress">In Progress</SelectItem>
+                    <SelectItem value="on order">On Order</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="complete">Complete</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="text-sm text-slate-500 hidden sm:block">
+                {filteredProjects.length} projects
+              </div>
+            </div>
           </div>
-          <Select value={statusFilter || "all"} onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}>
-            <SelectTrigger className="w-40 h-8">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="new lead">New Lead</SelectItem>
-              <SelectItem value="in progress">In Progress</SelectItem>
-              <SelectItem value="on order">On Order</SelectItem>
-              <SelectItem value="scheduled">Scheduled</SelectItem>
-              <SelectItem value="complete">Complete</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search all fields..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 w-64 h-8"
-            />
+
+          {/* Mobile Cards Layout */}
+          <div className="block sm:hidden flex-1 overflow-auto">
+            <div className="p-4 space-y-3">
+              {filteredProjects.map((project) => (
+                <div key={project.id} className="bg-gradient-to-r from-slate-50 to-white rounded-lg border border-slate-200 p-4 hover:shadow-md transition-all duration-200">
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <h3 className="font-semibold text-slate-900 text-sm truncate flex-1">
+                        {project.name}
+                      </h3>
+                      <Badge className={`${getStatusColor(project.status)} text-xs ml-2 shadow-sm`}>
+                        {project.status}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div className="flex items-center space-x-1">
+                        <span className="text-slate-500">ID:</span>
+                        <span className="font-medium text-slate-700">#{project.id}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <span className="text-slate-500">Assigned:</span>
+                        <span className="truncate text-slate-700">{project.assignedTo || 'Unassigned'}</span>
+                      </div>
+                      <div className="col-span-2 flex items-start space-x-1">
+                        <span className="text-slate-500 mt-0.5">Address:</span>
+                        <span className="text-slate-700 text-xs leading-relaxed">{project.projectAddress}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                      <div className="flex items-center space-x-2">
+                        {activeEditors.has(`${project.id}-name`) && (
+                          <div className="flex items-center space-x-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                            <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></div>
+                            <span className="font-medium">{activeEditors.get(`${project.id}-name`)?.username}</span>
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-3 text-xs hover:bg-blue-50 hover:text-blue-700"
+                        onClick={() => handleCellClick(project.id, 'name', project.name)}
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="text-sm text-gray-500">
-            {filteredProjects.length} of {projects.length} rows
+
+          {/* Desktop Modern Table */}
+          <div className="hidden sm:block flex-1 overflow-auto">
+            <table className="w-full">
+              <thead className="sticky top-0 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 text-white z-10">
+                <tr>
+                  {columns.map((column) => (
+                    <th
+                      key={column.key}
+                      className="relative border-r border-slate-600 last:border-r-0 group"
+                      style={{ width: columnWidths[column.key], minWidth: '120px' }}
+                    >
+                      <div className="flex items-center justify-between px-4 py-3 text-sm font-medium">
+                        <span className="truncate">{column.label}</span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 text-slate-300 hover:text-white hover:bg-slate-600 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                            >
+                              <ChevronDown className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem>
+                              <Filter className="h-4 w-4 mr-2" />
+                              Filter Column
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <SortAsc className="h-4 w-4 mr-2" />
+                              Sort A→Z
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <SortDesc className="h-4 w-4 mr-2" />
+                              Sort Z→A
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>
+                              <Copy className="h-4 w-4 mr-2" />
+                              Duplicate
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      
+                      {/* Resize Handle */}
+                      <div
+                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 transition-colors duration-200"
+                        onMouseDown={(e) => handleResizeStart(e, column.key)}
+                      />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProjects.map((project, index) => (
+                  <tr
+                    key={project.id}
+                    className={`group hover:bg-slate-50 border-b border-slate-100 transition-colors duration-150 ${
+                      index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'
+                    }`}
+                  >
+                    {columns.map((column) => (
+                      <td
+                        key={`${project.id}-${column.key}`}
+                        className="border-r border-slate-100 last:border-r-0 relative"
+                        style={{ width: columnWidths[column.key] }}
+                      >
+                        {renderCell(project, column)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      {/* Spreadsheet */}
-      <div className="flex-1 overflow-auto">
-        <table className="w-full border-collapse bg-white">
-          {/* Header */}
-          <thead className="bg-gray-100 sticky top-0 z-10">
-            <tr>
-              <th className="w-12 h-10 border-r border-gray-300 bg-gray-200 text-xs font-semibold text-gray-600">
-                #
-              </th>
-              {columns.map((column) => (
-                <th
-                  key={column.key}
-                  className="relative border-r border-gray-300 bg-gray-100 h-10 group"
-                  style={{ width: columnWidths[column.key] }}
-                >
-                  <div className="flex items-center justify-between px-2 h-full">
-                    <span className="text-xs font-semibold text-gray-700 truncate">
-                      {column.label}
-                    </span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100">
-                          <ChevronDown className="h-3 w-3" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <SortAsc className="h-4 w-4 mr-2" />
-                          Sort Ascending
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <SortDesc className="h-4 w-4 mr-2" />
-                          Sort Descending
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Filter className="h-4 w-4 mr-2" />
-                          Filter
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  {/* Resize handle */}
-                  <div
-                    className="absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-blue-500 bg-transparent"
-                    onMouseDown={(e) => handleMouseDown(e, column.key)}
-                  />
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          {/* Body */}
-          <tbody>
-            {filteredProjects.map((project, index) => (
-              <tr
-                key={project.id}
-                className={`h-10 hover:bg-gray-50 ${
-                  index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
-                }`}
-              >
-                {/* Row number */}
-                <td className="w-12 h-10 border-r border-gray-200 bg-gray-100 text-xs text-center text-gray-600 font-mono">
-                  {index + 1}
-                </td>
-                {columns.map((column) => (
-                  <td
-                    key={`${project.id}-${column.key}`}
-                    className="h-10 border-r border-gray-200 p-0"
-                    style={{ width: columnWidths[column.key] }}
-                  >
-                    {renderCell(project, column)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile-Optimized Status Bar */}
-      <div className="border-t border-gray-200 bg-gray-50 px-2 sm:px-4 py-1">
-        <div className="flex items-center justify-between text-xs text-gray-600">
-          <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
-            <span>Ready</span>
+      {/* Modern Status Bar */}
+      <div className="border-t border-slate-200 bg-slate-50/50 px-3 sm:px-6 py-2">
+        <div className="flex items-center justify-between text-xs text-slate-600">
+          <div className="flex items-center space-x-3 min-w-0">
+            <span className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+              <span>Ready</span>
+            </span>
             {editingCell && (
-              <span className="text-blue-600 truncate">
+              <span className="text-blue-600 truncate font-medium">
                 <span className="hidden sm:inline">Editing: </span>
                 {columns.find(c => c.key === editingCell.column)?.label}
               </span>
             )}
             {activeEditors.size > 0 && (
-              <span className="text-orange-600 truncate">
-                {activeEditors.size} cell{activeEditors.size > 1 ? 's' : ''} 
-                <span className="hidden sm:inline"> being edited</span>
+              <span className="text-amber-600 truncate">
+                {activeEditors.size} active editor{activeEditors.size > 1 ? 's' : ''}
               </span>
             )}
           </div>
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <span className="hidden lg:inline">Real-time: {isConnected ? 'ON' : 'OFF'}</span>
-            <span className="hidden md:inline">Zoom: 100%</span>
-            <span className="hidden sm:inline">Excel Mode</span>
+          <div className="flex items-center space-x-3">
+            <span className="hidden lg:inline">
+              {isConnected ? 'Live Collaboration' : 'Offline Mode'}
+            </span>
+            <span className="hidden md:inline">
+              {filteredProjects.length} projects
+            </span>
           </div>
         </div>
       </div>
