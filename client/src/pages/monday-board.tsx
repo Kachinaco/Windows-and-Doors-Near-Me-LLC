@@ -59,6 +59,8 @@ export default function MondayBoard() {
     tags: 120
   });
   const [isResizing, setIsResizing] = useState<string | null>(null);
+  const [editingCell, setEditingCell] = useState<{projectId: number, field: string} | null>(null);
+  const [newlyCreatedItem, setNewlyCreatedItem] = useState<number | null>(null);
 
   // Fetch projects and transform to board items
   const { data: projects = [], isLoading, error } = useQuery({
@@ -171,6 +173,11 @@ export default function MondayBoard() {
     },
     onSuccess: (newProjectData) => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      
+      // Set the newly created item for auto-editing
+      setNewlyCreatedItem(newProjectData.id);
+      setEditingCell({ projectId: newProjectData.id, field: 'item' });
+      
       // Save to undo stack
       setUndoStack(prev => [
         ...prev.slice(-9),
@@ -355,12 +362,26 @@ export default function MondayBoard() {
         );
       
       default:
+        const isNewItem = newlyCreatedItem === item.id && editingCell?.projectId === item.id && editingCell?.field === column.id;
         return (
           <Input
             value={value}
             onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
             className="h-6 text-xs border-none bg-transparent text-gray-300"
             placeholder="Enter text"
+            autoFocus={isNewItem}
+            onBlur={() => {
+              if (isNewItem) {
+                setNewlyCreatedItem(null);
+                setEditingCell(null);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && isNewItem) {
+                setNewlyCreatedItem(null);
+                setEditingCell(null);
+              }
+            }}
           />
         );
     }
