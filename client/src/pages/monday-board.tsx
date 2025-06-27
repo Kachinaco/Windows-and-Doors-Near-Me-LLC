@@ -135,72 +135,7 @@ export default function MondayBoard() {
     else if (project.status === 'in progress') groupName = 'In Progress';
     else if (project.status === 'complete') groupName = 'Complete';
     
-    // Generate sample folders and sub-items for testing
-    const sampleFolders: SubItemFolder[] = [
-      {
-        id: project.id * 1000 + 1,
-        projectId: project.id,
-        name: 'Preparation Phase',
-        order: 1,
-        collapsed: false,
-        createdAt: new Date()
-      },
-      {
-        id: project.id * 1000 + 2,
-        projectId: project.id,
-        name: 'Installation Phase',
-        order: 2,
-        collapsed: true,
-        createdAt: new Date()
-      }
-    ];
 
-    const sampleSubItems: SubItem[] = [
-      {
-        id: project.id * 100 + 1,
-        projectId: project.id,
-        name: 'Site Measurement',
-        status: 'complete',
-        assignedTo: 'John Doe',
-        folderId: project.id * 1000 + 1,
-        order: 1,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: project.id * 100 + 2,
-        projectId: project.id,
-        name: 'Material Ordering',
-        status: 'in progress',
-        assignedTo: 'Jane Smith',
-        folderId: project.id * 1000 + 1,
-        order: 2,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: project.id * 100 + 3,
-        projectId: project.id,
-        name: 'Window Installation',
-        status: 'new lead',
-        assignedTo: 'Bob Wilson',
-        folderId: project.id * 1000 + 2,
-        order: 1,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: project.id * 100 + 4,
-        projectId: project.id,
-        name: 'Final Inspection',
-        status: 'new lead',
-        assignedTo: 'Alice Brown',
-        folderId: project.id * 1000 + 2,
-        order: 2,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    ];
 
     return {
       id: project.id || 0,
