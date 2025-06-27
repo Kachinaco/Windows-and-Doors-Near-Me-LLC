@@ -266,12 +266,12 @@ export default function MondayBoard() {
 
   const getColumnIcon = (type: BoardColumn['type']) => {
     switch (type) {
-      case 'status': return <div className="w-3 h-3 rounded-full bg-emerald-500" />;
-      case 'people': return <User className="w-4 h-4 text-purple-400" />;
-      case 'date': return <Calendar className="w-4 h-4 text-orange-400" />;
-      case 'number': return <Hash className="w-4 h-4 text-yellow-400" />;
-      case 'tags': return <Tag className="w-4 h-4 text-red-400" />;
-      default: return <Type className="w-4 h-4 text-gray-400" />;
+      case 'status': return <div className="w-2 h-2 rounded-full bg-emerald-500" />;
+      case 'people': return <User className="w-2.5 h-2.5 text-purple-400" />;
+      case 'date': return <Calendar className="w-2.5 h-2.5 text-orange-400" />;
+      case 'number': return <Hash className="w-2.5 h-2.5 text-yellow-400" />;
+      case 'tags': return <Tag className="w-2.5 h-2.5 text-red-400" />;
+      default: return <Type className="w-2.5 h-2.5 text-gray-400" />;
     }
   };
 
@@ -285,7 +285,7 @@ export default function MondayBoard() {
             value={value}
             onValueChange={(newValue) => handleCellUpdate(item.id, column.id, newValue)}
           >
-            <SelectTrigger className={`h-6 text-xs font-medium rounded-full px-2 border-none ${
+            <SelectTrigger className={`h-4 text-xs font-medium rounded-full px-1.5 border-none ${
               value === 'complete' ? 'bg-green-500/20 text-green-400' :
               value === 'in progress' ? 'bg-blue-500/20 text-blue-400' :
               value === 'scheduled' ? 'bg-purple-500/20 text-purple-400' :
@@ -310,7 +310,7 @@ export default function MondayBoard() {
             value={value}
             onValueChange={(newValue) => handleCellUpdate(item.id, column.id, newValue)}
           >
-            <SelectTrigger className="h-6 text-xs border-none bg-transparent text-gray-300">
+            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-gray-300">
               <SelectValue placeholder="Assign" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
@@ -447,29 +447,29 @@ export default function MondayBoard() {
 
   return (
     <div className="h-screen bg-gray-950 text-white flex flex-col overflow-hidden">
-      {/* Slim Header */}
-      <header className="bg-gray-900/50 border-b border-gray-800 px-4 py-2 flex-shrink-0">
+      {/* Ultra-Slim Header */}
+      <header className="bg-gray-950/80 backdrop-blur-sm border-b border-gray-800/50 px-3 py-1.5 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => window.location.href = '/dashboard'}
-              className="text-gray-400 hover:text-white text-xs px-2"
+              className="text-gray-500 hover:text-white text-xs px-1.5 py-1 h-6"
             >
-              <ArrowLeft className="w-4 h-4 mr-1" />
+              <ArrowLeft className="w-3 h-3 mr-1" />
               Back
             </Button>
-            <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
-              <div className="w-3 h-3 bg-white rounded-sm" />
+            <div className="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
+              <div className="w-2 h-2 bg-white rounded-sm" />
             </div>
-            <h1 className="text-lg font-medium">Project Board</h1>
-            <div className="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">
-              Monday Style
+            <h1 className="text-sm font-medium">Project Board</h1>
+            <div className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">
+              Monday
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             {undoStack.length > 0 && (
               <Button 
                 variant="ghost" 
@@ -482,10 +482,9 @@ export default function MondayBoard() {
                     setUndoStack(prev => prev.slice(0, -1));
                   }
                 }}
-                className="text-gray-400 hover:text-white text-xs"
+                className="text-gray-500 hover:text-white text-xs px-1.5 py-1 h-6"
               >
-                <Undo2 className="w-3 h-3 mr-1" />
-                Undo
+                <Undo2 className="w-3 h-3" />
               </Button>
             )}
             
@@ -494,10 +493,9 @@ export default function MondayBoard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-gray-400 hover:text-blue-400 text-xs"
+                  className="text-gray-500 hover:text-blue-400 text-xs px-1.5 py-1 h-6"
                 >
-                  <Plus className="w-3 h-3 mr-1" />
-                  Column
+                  <Plus className="w-3 h-3" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-gray-900 text-white border-gray-700">
@@ -553,33 +551,33 @@ export default function MondayBoard() {
       {/* Compact Board */}
       <div className="flex-1 overflow-auto bg-gray-950">
         <div className="min-w-max">
-          {/* Column Headers */}
-          <div className="sticky top-0 bg-gray-900 z-10 border-b border-gray-800">
+          {/* Ultra-Slim Column Headers */}
+          <div className="sticky top-0 bg-gray-950/95 backdrop-blur-sm z-10 border-b border-gray-800/50">
             <div className="flex">
               {columns.map((column, index) => (
                 <div 
                   key={column.id} 
-                  className={`px-3 py-2 border-r border-gray-800 relative group flex-shrink-0 ${
-                    index === 0 ? 'sticky left-0 bg-gray-900 z-20' : ''
+                  className={`px-2 py-1.5 border-r border-gray-800/30 relative group flex-shrink-0 ${
+                    index === 0 ? 'sticky left-0 bg-gray-950/95 backdrop-blur-sm z-20' : ''
                   }`}
                   style={{ 
-                    width: columnWidths[column.id] || (index === 0 ? 250 : 120),
-                    minWidth: index === 0 ? '200px' : '80px',
+                    width: columnWidths[column.id] || (index === 0 ? 200 : 100),
+                    minWidth: index === 0 ? '150px' : '70px',
                     maxWidth: 'none'
                   }}
                 >
-                  <div className="flex items-center space-x-1.5">
+                  <div className="flex items-center space-x-1">
                     {getColumnIcon(column.type)}
-                    <span className="font-medium text-xs text-gray-300">{column.name}</span>
+                    <span className="font-medium text-xs text-gray-400">{column.name}</span>
                   </div>
                   {index < columns.length - 1 && (
                     <div 
-                      className="absolute right-0 top-0 bottom-0 w-4 cursor-col-resize flex items-center justify-center bg-transparent hover:bg-blue-500/30 transition-colors group touch-none"
+                      className="absolute right-0 top-0 bottom-0 w-3 cursor-col-resize flex items-center justify-center bg-transparent hover:bg-blue-500/20 transition-all group touch-none"
                       onPointerDown={(e) => handlePointerDown(column.id, e)}
-                      title="Drag to resize column"
+                      title="Resize"
                       style={{ touchAction: 'none' }}
                     >
-                      <div className="w-1 h-6 bg-gray-500 hover:bg-blue-400 rounded-sm transition-all duration-200 group-hover:h-8 group-hover:bg-blue-400"></div>
+                      <div className="w-0.5 h-4 bg-gray-600 hover:bg-blue-400 rounded-full transition-all duration-200 group-hover:h-5 group-hover:bg-blue-400"></div>
                     </div>
                   )}
                 </div>
@@ -590,19 +588,19 @@ export default function MondayBoard() {
           {/* Groups and Items */}
           {boardGroups.map((group) => (
             <div key={group.name} className="border-b border-gray-800/50 last:border-b-0">
-              {/* Group Header */}
+              {/* Ultra-Slim Group Header */}
               <div 
-                className="bg-gray-900/30 px-3 py-1.5 border-b border-gray-800/30 cursor-pointer hover:bg-gray-900/50 transition-colors"
+                className="bg-gray-900/20 px-2 py-1 border-b border-gray-800/20 cursor-pointer hover:bg-gray-900/40 transition-all"
                 onClick={() => toggleGroup(group.name)}
               >
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1.5">
                   {group.collapsed ? (
-                    <ChevronRight className="w-3 h-3 text-gray-500" />
+                    <ChevronRight className="w-2.5 h-2.5 text-gray-500" />
                   ) : (
-                    <ChevronDown className="w-3 h-3 text-gray-500" />
+                    <ChevronDown className="w-2.5 h-2.5 text-gray-500" />
                   )}
-                  <span className="text-sm font-medium text-gray-300">{group.name}</span>
-                  <span className="text-xs text-gray-500">({group.items.length})</span>
+                  <span className="text-xs font-medium text-gray-400">{group.name}</span>
+                  <span className="text-xs text-gray-600">({group.items.length})</span>
                 </div>
               </div>
 
@@ -610,16 +608,16 @@ export default function MondayBoard() {
               {!group.collapsed && (
                 <>
                   {group.items.map((item) => (
-                    <div key={item.id} className="flex hover:bg-gray-900/20 transition-colors border-b border-gray-800/20 last:border-b-0">
+                    <div key={item.id} className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0">
                       {columns.map((column, index) => (
                         <div 
                           key={`${item.id}-${column.id}`} 
-                          className={`px-3 py-2 border-r border-gray-800/20 flex-shrink-0 ${
+                          className={`px-2 py-1.5 border-r border-gray-800/10 flex-shrink-0 ${
                             index === 0 ? 'sticky left-0 bg-gray-950 z-10' : ''
                           }`}
                           style={{ 
-                            width: columnWidths[column.id] || (index === 0 ? 250 : 120),
-                            minWidth: index === 0 ? '200px' : '80px',
+                            width: columnWidths[column.id] || (index === 0 ? 200 : 100),
+                            minWidth: index === 0 ? '150px' : '70px',
                             maxWidth: 'none'
                           }}
                         >
@@ -630,12 +628,12 @@ export default function MondayBoard() {
                   ))}
                   
                   {/* Add Item Button at bottom of group */}
-                  <div className="flex hover:bg-gray-900/20 transition-colors">
+                  <div className="flex hover:bg-gray-900/10 transition-all">
                     <div 
-                      className="px-3 py-2 flex-shrink-0 sticky left-0 bg-gray-950 z-10"
+                      className="px-2 py-1.5 flex-shrink-0 sticky left-0 bg-gray-950 z-10"
                       style={{ 
-                        width: columnWidths['item'] || 250,
-                        minWidth: '200px',
+                        width: columnWidths['item'] || 200,
+                        minWidth: '150px',
                         maxWidth: 'none'
                       }}
                     >
@@ -644,19 +642,19 @@ export default function MondayBoard() {
                         size="sm"
                         onClick={() => addItemMutation.mutate(group.name)}
                         disabled={addItemMutation.isPending}
-                        className="text-gray-500 hover:text-blue-400 text-xs h-6 w-full justify-start"
+                        className="text-gray-600 hover:text-blue-400 text-xs h-5 w-full justify-start px-1"
                       >
-                        <Plus className="w-3 h-3 mr-1" />
+                        <Plus className="w-2.5 h-2.5 mr-1" />
                         Add item
                       </Button>
                     </div>
                     {columns.slice(1).map((column) => (
                       <div 
                         key={column.id} 
-                        className="px-3 py-2 border-r border-gray-800/20 flex-shrink-0"
+                        className="px-2 py-1.5 border-r border-gray-800/10 flex-shrink-0"
                         style={{ 
-                          width: columnWidths[column.id] || 120,
-                          minWidth: '80px',
+                          width: columnWidths[column.id] || 100,
+                          minWidth: '70px',
                           maxWidth: 'none'
                         }}
                       ></div>
