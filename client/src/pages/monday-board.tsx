@@ -63,6 +63,8 @@ export default function MondayBoard() {
   const [newlyCreatedItem, setNewlyCreatedItem] = useState<number | null>(null);
   const [localValues, setLocalValues] = useState<Record<string, string>>({});
   const debounceTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [bulkEditMode, setBulkEditMode] = useState(false);
 
   // Fetch projects and transform to board items
   const { data: projects = [], isLoading, error } = useQuery({

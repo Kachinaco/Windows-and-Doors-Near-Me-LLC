@@ -418,6 +418,10 @@ export class DatabaseStorage implements IStorage {
     return project;
   }
 
+  async deleteProject(id: number): Promise<void> {
+    await db.delete(projects).where(eq(projects.id, id));
+  }
+
   async getProjectsByStatus(status: string): Promise<Project[]> {
     return await db
       .select()
