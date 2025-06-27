@@ -162,11 +162,13 @@ export interface IStorage {
   createSubItem(subItem: InsertSubItem): Promise<SubItem>;
   updateSubItem(id: number, updates: Partial<InsertSubItem>): Promise<SubItem>;
   getSubItemsByProject(projectId: number): Promise<SubItem[]>;
+  deleteSubItem(id: number): Promise<void>;
   
   // Sub-item folder operations
   createSubItemFolder(folder: InsertSubItemFolder): Promise<SubItemFolder>;
   updateSubItemFolder(id: number, updates: Partial<InsertSubItemFolder>): Promise<SubItemFolder>;
   getSubItemFoldersByProject(projectId: number): Promise<SubItemFolder[]>;
+  deleteSubItemFolder(id: number): Promise<void>;
 
   // Contract management operations
   getAllContracts(): Promise<Contract[]>;
@@ -1225,6 +1227,24 @@ export class DatabaseStorage implements IStorage {
       .from(subItemFolders)
       .where(eq(subItemFolders.projectId, projectId))
       .orderBy(subItemFolders.sortOrder, subItemFolders.createdAt);
+  }
+
+  async deleteSubItem(id: number): Promise<void> {
+    await db
+      .delete(subItems)
+      .where(eq(subItems.id, id));
+  }
+
+  async deleteSubItemFolder(id: number): Promise<void> {
+    // First, delete all sub-items in this folder
+    await db
+      .delete(subItems)
+      .where(eq(subItems.folderId, id));
+    
+    // Then delete the folder itself
+    await db
+      .delete(subItemFolders)
+      .where(eq(subItemFolders.id, id));
   }
 }
 
