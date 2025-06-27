@@ -205,11 +205,11 @@ export default function SimpleExcelManager() {
         setOnlineUsers(prev => prev.filter(u => u.sessionId !== message.payload.user.sessionId));
         setActiveEditors(prev => {
           const newMap = new Map(prev);
-          for (const [cellKey, user] of newMap.entries()) {
+          Array.from(newMap.entries()).forEach(([cellKey, user]) => {
             if (user.sessionId === message.payload.user.sessionId) {
               newMap.delete(cellKey);
             }
-          }
+          });
           return newMap;
         });
         break;
@@ -291,7 +291,8 @@ export default function SimpleExcelManager() {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         },
         body: JSON.stringify({
-          [editingCell.column]: editValue
+          [editingCell.column]: editingCell.column.includes('Date') && editValue ? 
+            new Date(editValue).toISOString() : editValue
         })
       });
 
@@ -431,10 +432,10 @@ export default function SimpleExcelManager() {
       >
         {column.key === 'status' ? (
           <Badge className={`${getStatusColor(cellValue.toString())} text-xs px-2 py-0 border`}>
-            {cellValue}
+            {cellValue?.toString()}
           </Badge>
         ) : (
-          <span className="truncate">{cellValue}</span>
+          <span className="truncate">{cellValue?.toString()}</span>
         )}
         
         {/* Live editing indicator */}
@@ -463,39 +464,41 @@ export default function SimpleExcelManager() {
 
   return (
     <div className="h-screen flex flex-col bg-white">
-      {/* Toolbar */}
+      {/* Mobile-Optimized Toolbar */}
       <div className="border-b border-gray-200 bg-gray-50">
-        <div className="px-4 py-2">
+        <div className="px-2 sm:px-4 py-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-lg font-semibold text-gray-900">
-                Excel-Style Project Manager
+            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
+              <h1 className="text-sm sm:text-lg font-semibold text-gray-900 truncate">
+                <span className="hidden sm:inline">Excel-Style Project Manager</span>
+                <span className="sm:hidden">Projects</span>
               </h1>
               
-              {/* Real-time collaboration indicator */}
-              <div className="flex items-center space-x-2">
-                <div className={`flex items-center space-x-1 px-2 py-1 rounded text-xs ${
+              {/* Real-time collaboration indicator - Mobile optimized */}
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <div className={`flex items-center space-x-1 px-1 sm:px-2 py-1 rounded text-xs ${
                   isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }`}>
                   <Wifi className={`h-3 w-3 ${isConnected ? 'text-green-600' : 'text-red-600'}`} />
-                  <span>{isConnected ? 'Connected' : 'Disconnected'}</span>
+                  <span className="hidden sm:inline">{isConnected ? 'Connected' : 'Disconnected'}</span>
                 </div>
                 
                 {onlineUsers.length > 0 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-7">
-                        <Users className="h-3 w-3 mr-1" />
-                        {onlineUsers.length} online
+                      <Button variant="outline" size="sm" className="h-6 sm:h-7 text-xs">
+                        <Users className="h-3 w-3 sm:mr-1" />
+                        <span className="hidden sm:inline">{onlineUsers.length} online</span>
+                        <span className="sm:hidden">{onlineUsers.length}</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent align="end" className="w-48">
                       <div className="p-2">
                         <div className="text-xs font-semibold text-gray-500 mb-2">Online Users</div>
                         {onlineUsers.map(user => (
                           <div key={user.sessionId} className="flex items-center space-x-2 py-1">
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-sm">{user.username}</span>
+                            <span className="text-sm truncate">{user.username}</span>
                             {user.sessionId === sessionId && (
                               <span className="text-xs text-gray-500">(You)</span>
                             )}
@@ -508,23 +511,24 @@ export default function SimpleExcelManager() {
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">
-                <Save className="h-4 w-4 mr-1" />
-                Save
+            {/* Mobile-Optimized Action Buttons */}
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <Button variant="outline" size="sm" className="h-7 px-2 sm:px-3">
+                <Save className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Save</span>
               </Button>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-1" />
-                Export
+              <Button variant="outline" size="sm" className="h-7 px-2 sm:px-3">
+                <Download className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Export</span>
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Columns className="h-4 w-4 mr-1" />
-                    Columns
+                  <Button variant="outline" size="sm" className="h-7 px-2 sm:px-3">
+                    <Columns className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Columns</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent align="end" className="w-56">
                   {['id', 'name', 'assignedTo', 'projectAddress', 'clientPhone', 'status', 'startDate', 'endDate'].map(col => (
                     <DropdownMenuCheckboxItem
                       key={col}
@@ -542,9 +546,9 @@ export default function SimpleExcelManager() {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button>
-                <Plus className="h-4 w-4 mr-1" />
-                Add Row
+              <Button size="sm" className="h-7 px-2 sm:px-3">
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Add</span>
               </Button>
             </div>
           </div>
@@ -666,26 +670,28 @@ export default function SimpleExcelManager() {
         </table>
       </div>
 
-      {/* Status Bar */}
-      <div className="border-t border-gray-200 bg-gray-50 px-4 py-1">
+      {/* Mobile-Optimized Status Bar */}
+      <div className="border-t border-gray-200 bg-gray-50 px-2 sm:px-4 py-1">
         <div className="flex items-center justify-between text-xs text-gray-600">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
             <span>Ready</span>
             {editingCell && (
-              <span className="text-blue-600">
-                Editing: {columns.find(c => c.key === editingCell.column)?.label}
+              <span className="text-blue-600 truncate">
+                <span className="hidden sm:inline">Editing: </span>
+                {columns.find(c => c.key === editingCell.column)?.label}
               </span>
             )}
             {activeEditors.size > 0 && (
-              <span className="text-orange-600">
-                {activeEditors.size} cell{activeEditors.size > 1 ? 's' : ''} being edited
+              <span className="text-orange-600 truncate">
+                {activeEditors.size} cell{activeEditors.size > 1 ? 's' : ''} 
+                <span className="hidden sm:inline"> being edited</span>
               </span>
             )}
           </div>
-          <div className="flex items-center space-x-4">
-            <span>Real-time Collaboration: {isConnected ? 'ON' : 'OFF'}</span>
-            <span>Zoom: 100%</span>
-            <span>Excel-Style Mode</span>
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <span className="hidden lg:inline">Real-time: {isConnected ? 'ON' : 'OFF'}</span>
+            <span className="hidden md:inline">Zoom: 100%</span>
+            <span className="hidden sm:inline">Excel Mode</span>
           </div>
         </div>
       </div>
