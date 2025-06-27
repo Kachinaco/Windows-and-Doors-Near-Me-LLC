@@ -1265,7 +1265,7 @@ export default function MondayBoard() {
                                 {/* Sub-item Column Resizer */}
                                 <div 
                                   className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-transparent hover:bg-blue-400/50 group-hover:bg-blue-400/30"
-                                  onMouseDown={(e) => handlePointerDown(e, column.id)}
+                                  onMouseDown={(e) => handlePointerDown(e as any, column.id)}
                                 />
                                 
                                 {/* Sub-item Column Three-dot Menu */}
