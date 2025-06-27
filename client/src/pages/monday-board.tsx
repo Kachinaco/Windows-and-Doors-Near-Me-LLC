@@ -1118,41 +1118,7 @@ export default function MondayBoard() {
               ))}
             </div>
 
-            {/* Sub-Item Column Headers (shown when any sub-items are expanded) */}
-            {expandedSubItems.size > 0 && (
-              <div className="bg-gray-900/30 border-b border-gray-800/30 flex items-center text-xs text-gray-500">
-                {/* Empty space for checkbox */}
-                <div className="w-8 px-1 py-1 border-r border-gray-800/20 sticky left-0 bg-gray-900/30 z-20"></div>
-                
-                {/* Empty space for main item column */}
-                <div 
-                  className="px-2 py-1 border-r border-gray-800/20 sticky left-8 bg-gray-900/30 z-10 flex items-center"
-                  style={{ 
-                    width: columnWidths['item'] || 200,
-                    minWidth: '150px',
-                    maxWidth: 'none'
-                  }}
-                >
-                  <span className="text-gray-600 text-[10px]">└ Sub-items</span>
-                </div>
-                
-                {/* Sub-item column headers */}
-                {subItemColumns.map((column) => (
-                  <div 
-                    key={`subheader-${column.id}`}
-                    className="px-2 py-1 border-r border-gray-800/20 flex-shrink-0 flex items-center gap-1"
-                    style={{ 
-                      width: columnWidths[column.id] || 120,
-                      minWidth: '80px',
-                      maxWidth: 'none'
-                    }}
-                  >
-                    {getColumnIcon(column.type)}
-                    <span className="font-medium text-[10px] text-gray-500">{column.name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+
           </div>
 
           {/* Groups and Items */}
@@ -1229,6 +1195,40 @@ export default function MondayBoard() {
                       {/* Sub-Items Rows (when expanded) */}
                       {expandedSubItems.has(item.id) && item.subItems && item.subItems.length > 0 && (
                         <>
+                          {/* Sub-item Column Headers - shown only for this expanded item */}
+                          <div className="bg-gray-900/20 border-b border-gray-800/20 flex items-center text-xs text-gray-500">
+                            {/* Empty space for checkbox */}
+                            <div className="w-8 px-1 py-1 border-r border-gray-800/20 sticky left-0 bg-gray-900/20 z-20"></div>
+                            
+                            {/* Empty space for main item column */}
+                            <div 
+                              className="px-2 py-1 border-r border-gray-800/20 sticky left-8 bg-gray-900/20 z-10 flex items-center"
+                              style={{ 
+                                width: columnWidths['item'] || 200,
+                                minWidth: '150px',
+                                maxWidth: 'none'
+                              }}
+                            >
+                              <span className="text-gray-600 text-[10px] ml-6">└ Sub-items</span>
+                            </div>
+                            
+                            {/* Sub-item column headers */}
+                            {subItemColumns.map((column) => (
+                              <div 
+                                key={`subheader-${item.id}-${column.id}`}
+                                className="px-2 py-1 border-r border-gray-800/20 flex-shrink-0 flex items-center gap-1"
+                                style={{ 
+                                  width: columnWidths[column.id] || 120,
+                                  minWidth: '80px',
+                                  maxWidth: 'none'
+                                }}
+                              >
+                                {getColumnIcon(column.type)}
+                                <span className="font-medium text-[10px] text-gray-500">{column.name}</span>
+                              </div>
+                            ))}
+                          </div>
+
                           {item.subItems.map((subItem) => (
                             <div key={`sub-${subItem.id}`} className="flex hover:bg-gray-900/20 transition-all bg-gray-900/5 border-b border-gray-800/5">
                               {/* Empty checkbox space for sub-items */}
