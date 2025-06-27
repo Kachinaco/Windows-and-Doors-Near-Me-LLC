@@ -81,7 +81,7 @@ export default function MondayBoard() {
       id: project.id || 0,
       groupName,
       values: {
-        item: project.name || 'Untitled Project',
+        item: project.name || '',
         status: project.status || 'new lead',
         assignedTo: project.assignedTo || '',
         dueDate: project.endDate || '',
@@ -164,9 +164,9 @@ export default function MondayBoard() {
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: 'New Project',
+          name: '',
           status: status,
-          description: 'New project description',
+          description: '',
           projectAddress: '',
           clientPhone: '',
         }),
@@ -375,26 +375,48 @@ export default function MondayBoard() {
       
       default:
         const isNewItem = newlyCreatedItem === item.id && editingCell?.projectId === item.id && editingCell?.field === column.id;
+        const isEditing = editingCell?.projectId === item.id && editingCell?.field === column.id;
+        
+        if (isEditing || isNewItem) {
+          return (
+            <Input
+              value={value}
+              onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+              className="h-4 text-xs border-none bg-transparent text-gray-300"
+              placeholder="Enter text"
+              autoFocus
+              onBlur={() => {
+                setEditingCell(null);
+                if (isNewItem) {
+                  setNewlyCreatedItem(null);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setEditingCell(null);
+                  if (isNewItem) {
+                    setNewlyCreatedItem(null);
+                  }
+                }
+                if (e.key === 'Escape') {
+                  setEditingCell(null);
+                  if (isNewItem) {
+                    setNewlyCreatedItem(null);
+                  }
+                }
+              }}
+            />
+          );
+        }
+        
         return (
-          <Input
-            value={value}
-            onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
-            className="h-4 text-xs border-none bg-transparent text-gray-300"
-            placeholder="Enter text"
-            autoFocus={isNewItem}
-            onBlur={() => {
-              if (isNewItem) {
-                setNewlyCreatedItem(null);
-                setEditingCell(null);
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && isNewItem) {
-                setNewlyCreatedItem(null);
-                setEditingCell(null);
-              }
-            }}
-          />
+          <div
+            className="h-4 text-xs text-gray-300 cursor-text hover:bg-gray-800/50 flex items-center px-1 rounded transition-colors"
+            onClick={() => setEditingCell({ projectId: item.id, field: column.id })}
+            title="Click to edit"
+          >
+            {value || <span className="text-gray-500">Click to add...</span>}
+          </div>
         );
     }
   };
