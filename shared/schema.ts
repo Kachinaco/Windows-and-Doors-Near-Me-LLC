@@ -133,6 +133,41 @@ export const projects = pgTable("projects", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Sub-items for hierarchical project structure
+export const subItems = pgTable("sub_items", {
+  id: serial("id").primaryKey(),
+  parentProjectId: integer("parent_project_id").references(() => projects.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("not_started"), // not_started, in_progress, completed, blocked
+  priority: text("priority").default("medium"), // low, medium, high, urgent
+  assignedTo: integer("assigned_to").references(() => users.id),
+  dueDate: timestamp("due_date"),
+  completedAt: timestamp("completed_at"),
+  folderId: integer("folder_id"), // For organizing sub-items into folders
+  folderName: text("folder_name"), // Name of the folder this belongs to
+  sortOrder: integer("sort_order").default(0), // For custom ordering within folders
+  estimatedHours: decimal("estimated_hours", { precision: 5, scale: 2 }),
+  actualHours: decimal("actual_hours", { precision: 5, scale: 2 }),
+  tags: jsonb("tags"), // Array of tags for categorization
+  metadata: jsonb("metadata"), // Additional custom field data
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Sub-item folders for organization
+export const subItemFolders = pgTable("sub_item_folders", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  color: text("color").default("blue"), // Folder color for visual organization
+  sortOrder: integer("sort_order").default(0),
+  isCollapsed: boolean("is_collapsed").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Project updates and communication
 export const projectUpdates = pgTable("project_updates", {
   id: serial("id").primaryKey(),
@@ -663,6 +698,8 @@ export const projectsRelations = relations(projects, ({ many, one }) => ({
   }),
   jobs: many(jobs),
   proposals: many(proposals),
+  subItems: many(subItems),
+  subItemFolders: many(subItemFolders),
   metrics: one(projectMetrics),
   interactions: many(customerInteractions),
 }));
@@ -709,6 +746,25 @@ export const proposalInvoicesRelations = relations(proposalInvoices, ({ one }) =
   proposal: one(proposals, {
     fields: [proposalInvoices.proposalId],
     references: [proposals.id],
+  }),
+}));
+
+// Sub-items relations
+export const subItemsRelations = relations(subItems, ({ one }) => ({
+  project: one(projects, {
+    fields: [subItems.parentProjectId],
+    references: [projects.id],
+  }),
+  assignedUser: one(users, {
+    fields: [subItems.assignedTo],
+    references: [users.id],
+  }),
+}));
+
+export const subItemFoldersRelations = relations(subItemFolders, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [subItemFolders.projectId],
+    references: [projects.id],
   }),
 }));
 
@@ -812,6 +868,18 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
 });
 
 export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSubItemSchema = createInsertSchema(subItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSubItemFolderSchema = createInsertSchema(subItemFolders).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -1027,3 +1095,9 @@ export type ProposalPayment = typeof proposalPayments.$inferSelect;
 export type InsertProposalPayment = z.infer<typeof insertProposalPaymentSchema>;
 export type ProposalTemplate = typeof proposalTemplates.$inferSelect;
 export type InsertProposalTemplate = z.infer<typeof insertProposalTemplateSchema>;
+
+// Sub-items types
+export type SubItem = typeof subItems.$inferSelect;
+export type InsertSubItem = z.infer<typeof insertSubItemSchema>;
+export type SubItemFolder = typeof subItemFolders.$inferSelect;
+export type InsertSubItemFolder = z.infer<typeof insertSubItemFolderSchema>;
