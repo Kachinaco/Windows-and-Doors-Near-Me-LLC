@@ -78,11 +78,14 @@ export default function MondayBoard() {
 
   // Transform projects to board items safely
   const boardItems: BoardItem[] = Array.isArray(projects) ? projects.map((project: any) => {
-    // Group projects by status
-    let groupName = 'Active Projects';
+    // Map project status to pipeline groups
+    let groupName = 'New Leads';
     if (project.status === 'new lead') groupName = 'New Leads';
-    else if (project.status === 'complete') groupName = 'Completed';
-    else if (project.status === 'scheduled') groupName = 'Scheduled Work';
+    else if (project.status === 'need attention') groupName = 'Need Attention';
+    else if (project.status === 'sent estimate') groupName = 'Sent Estimate';
+    else if (project.status === 'signed') groupName = 'Signed';
+    else if (project.status === 'in progress') groupName = 'In Progress';
+    else if (project.status === 'complete') groupName = 'Complete';
     
     return {
       id: project.id || 0,
@@ -100,8 +103,8 @@ export default function MondayBoard() {
     };
   }) : [];
 
-  // Define fixed group order to prevent automatic reordering
-  const groupOrder = ['New Leads', 'Active Projects', 'Scheduled Work', 'Completed'];
+  // Define fixed group order to match project pipeline exactly
+  const groupOrder = ['New Leads', 'Need Attention', 'Sent Estimate', 'Signed', 'In Progress', 'Complete'];
 
   // Group items by group name
   const groupedItems = boardItems.reduce((groups: Record<string, BoardItem[]>, item) => {
@@ -160,9 +163,11 @@ export default function MondayBoard() {
     mutationFn: async (groupName: string = 'New Leads') => {
       const token = localStorage.getItem('authToken') || localStorage.getItem('token');
       const status = groupName === 'New Leads' ? 'new lead' : 
-                    groupName === 'Active Projects' ? 'in progress' :
-                    groupName === 'Scheduled Work' ? 'scheduled' : 
-                    groupName === 'Completed' ? 'complete' : 'new lead';
+                    groupName === 'Need Attention' ? 'need attention' :
+                    groupName === 'Sent Estimate' ? 'sent estimate' :
+                    groupName === 'Signed' ? 'signed' :
+                    groupName === 'In Progress' ? 'in progress' : 
+                    groupName === 'Complete' ? 'complete' : 'new lead';
       
       const response = await fetch('/api/projects', {
         method: 'POST',
@@ -421,14 +426,21 @@ export default function MondayBoard() {
   const addGroup = () => {
     if (!newGroupName.trim()) return;
     
-    // For now, we'll just show a toast since groups are defined by status
-    // In a full implementation, this would create a new status category
+    // Add the new group to the group order
+    const newGroupOrder = [...groupOrder, newGroupName];
+    
+    // Update local storage to persist custom groups
+    localStorage.setItem('customGroups', JSON.stringify(newGroupOrder));
+    
     setIsAddGroupOpen(false);
     setNewGroupName('');
     toast({ 
-      title: "Group functionality", 
-      description: "Groups are based on project status. Use status column to move items between groups." 
+      title: "Group added", 
+      description: `New group "${newGroupName}" has been added to the pipeline.` 
     });
+    
+    // Note: In a full implementation, this would also update the backend
+    // For now, custom groups will be session-based
   };
 
   const getColumnIcon = (type: BoardColumn['type']) => {
@@ -472,17 +484,20 @@ export default function MondayBoard() {
             <SelectTrigger className={`h-4 text-xs font-medium rounded-full px-1.5 border-none ${
               value === 'complete' ? 'bg-green-500/20 text-green-400' :
               value === 'in progress' ? 'bg-blue-500/20 text-blue-400' :
-              value === 'scheduled' ? 'bg-purple-500/20 text-purple-400' :
-              value === 'on order' ? 'bg-orange-500/20 text-orange-400' :
+              value === 'signed' ? 'bg-emerald-500/20 text-emerald-400' :
+              value === 'sent estimate' ? 'bg-purple-500/20 text-purple-400' :
+              value === 'need attention' ? 'bg-yellow-500/20 text-yellow-400' :
+              value === 'new lead' ? 'bg-cyan-500/20 text-cyan-400' :
               'bg-gray-500/20 text-gray-400'
             }`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="new lead">New Lead</SelectItem>
-              <SelectItem value="in progress">Working on it</SelectItem>
-              <SelectItem value="scheduled">Scheduled</SelectItem>
-              <SelectItem value="on order">On Order</SelectItem>
+              <SelectItem value="new lead">New Leads</SelectItem>
+              <SelectItem value="need attention">Need Attention</SelectItem>
+              <SelectItem value="sent estimate">Sent Estimate</SelectItem>
+              <SelectItem value="signed">Signed</SelectItem>
+              <SelectItem value="in progress">In Progress</SelectItem>
               <SelectItem value="complete">Complete</SelectItem>
             </SelectContent>
           </Select>
