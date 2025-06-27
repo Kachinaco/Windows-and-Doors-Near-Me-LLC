@@ -6,24 +6,21 @@ This is a comprehensive business management platform for Windows & Doors Near Me
 
 ## System Architecture
 
-### Frontend Architecture
-- **Framework**: React 18 with TypeScript
-- **Routing**: Wouter for client-side routing with protected route authentication
-- **Styling**: Tailwind CSS with shadcn/ui component library and professional blue corporate theme
-- **State Management**: TanStack Query (React Query) for server state management
-- **Authentication**: JWT-based authentication with localStorage token storage
-- **Build Tool**: Vite for fast development and optimized builds
-- **UI Components**: Comprehensive shadcn/ui component system with project management dashboard
+### Full-Stack Python Architecture (FastAPI + Jinja2)
+- **Framework**: FastAPI with async/await support and automatic API documentation
+- **Templates**: Jinja2 server-side rendering for modern, responsive UI
+- **Runtime**: Python 3.11 with async capabilities
+- **Database**: PostgreSQL 16 with SQLAlchemy 2.0 async ORM
+- **Authentication**: JWT tokens with PassLib bcrypt password hashing
+- **Authorization**: Role-based access control (customer, contractor_trial, contractor_paid, admin)
+- **Real-time**: Python-SocketIO for live collaboration features
+- **Validation**: Pydantic models for request/response validation
+- **Styling**: Tailwind CSS with glassmorphism design and gradient themes
 
-### Backend Architecture
-- **Framework**: Express.js with TypeScript
-- **Runtime**: Node.js 20
-- **Database**: PostgreSQL 16 with full project management schema
-- **ORM**: Drizzle ORM for type-safe database operations
-- **Authentication**: JWT tokens with bcryptjs password hashing
-- **Authorization**: Role-based access control (customer, employee, admin)
-- **Session Management**: Express sessions with PostgreSQL storage
-- **Schema Validation**: Zod for runtime type validation
+### Previous Architecture (Deprecated)
+- **Frontend**: React 18 with TypeScript, Wouter routing, TanStack Query
+- **Backend**: Express.js with TypeScript, Drizzle ORM
+- **Note**: Migrated to all-Python solution for unified development experience
 
 ### Authentication & Authorization System
 - **User Profiles**: Three subscription tiers with role-based access control
@@ -38,9 +35,9 @@ This is a comprehensive business management platform for Windows & Doors Near Me
 
 ### Development Environment
 - **Platform**: Replit with PostgreSQL 16 module
-- **Development Server**: Vite dev server with hot module replacement
-- **TypeScript**: Strict type checking across the entire codebase
-- **Path Aliases**: Configured for clean imports (@/, @shared/, @assets/)
+- **Development Server**: Uvicorn ASGI server with auto-reload
+- **Python**: Type hints with Pydantic validation and SQLAlchemy 2.0
+- **Templates**: Jinja2 with Tailwind CSS for responsive design
 
 ## Key Components
 
@@ -166,6 +163,7 @@ All endpoints include proper authentication middleware, role-based authorization
 
 Changelog:
 - June 17, 2025. Initial setup
+- June 27, 2025. **MAJOR ARCHITECTURAL CHANGE**: Migrated from React/TypeScript frontend + Express.js backend to unified FastAPI + Jinja2 Templates all-Python solution with async capabilities, real-time collaboration via Python-SocketIO, and modern glassmorphism UI design
 - June 17, 2025. Major creative redesign with unique visual elements, custom color scheme, and integrated company logo
 - June 17, 2025. Fixed mobile navigation accessibility - added Login button to mobile hamburger menu for better user experience
 - June 17, 2025. Implemented comprehensive consultation scheduling system with full editing capabilities and employee assignment features
