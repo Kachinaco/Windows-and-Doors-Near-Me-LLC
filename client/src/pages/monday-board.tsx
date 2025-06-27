@@ -14,14 +14,37 @@ import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, Ch
 interface BoardColumn {
   id: string;
   name: string;
-  type: 'status' | 'text' | 'date' | 'people' | 'number' | 'tags';
+  type: 'status' | 'text' | 'date' | 'people' | 'number' | 'tags' | 'subitems';
   order: number;
+}
+
+interface SubItem {
+  id: number;
+  projectId: number;
+  name: string;
+  status: string;
+  assignedTo?: string;
+  folderId?: number;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface SubItemFolder {
+  id: number;
+  projectId: number;
+  name: string;
+  order: number;
+  collapsed: boolean;
+  createdAt: Date;
 }
 
 interface BoardItem {
   id: number;
   groupName: string;
   values: Record<string, any>;
+  subItems?: SubItem[];
+  subItemFolders?: SubItemFolder[];
 }
 
 interface BoardGroup {
@@ -35,14 +58,15 @@ export default function MondayBoard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Default board columns
+  // Default board columns - Main Item Columns + Sub Items
   const [columns, setColumns] = useState<BoardColumn[]>([
-    { id: 'item', name: 'Item', type: 'text', order: 1 },
-    { id: 'status', name: 'Status', type: 'status', order: 2 },
-    { id: 'assignedTo', name: 'People', type: 'people', order: 3 },
-    { id: 'dueDate', name: 'Due Date', type: 'date', order: 4 },
-    { id: 'priority', name: 'Priority', type: 'number', order: 5 },
-    { id: 'tags', name: 'Tags', type: 'tags', order: 6 },
+    { id: 'item', name: 'Main Item', type: 'text', order: 1 },
+    { id: 'subitems', name: 'Sub Items', type: 'subitems', order: 2 },
+    { id: 'status', name: 'Status', type: 'status', order: 3 },
+    { id: 'assignedTo', name: 'People', type: 'people', order: 4 },
+    { id: 'dueDate', name: 'Due Date', type: 'date', order: 5 },
+    { id: 'priority', name: 'Priority', type: 'number', order: 6 },
+    { id: 'tags', name: 'Tags', type: 'tags', order: 7 },
   ]);
 
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
@@ -68,6 +92,7 @@ export default function MondayBoard() {
   const debounceTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [bulkEditMode, setBulkEditMode] = useState(false);
+  const [expandedSubItems, setExpandedSubItems] = useState<Set<number>>(new Set());
 
   // Fetch projects and transform to board items
   const { data: projects = [], isLoading, error } = useQuery({
@@ -562,6 +587,45 @@ export default function MondayBoard() {
                 }
               }}
             />
+          </div>
+        );
+
+      case 'subitems':
+        const isExpanded = expandedSubItems.has(item.id);
+        const subItemCount = item.subItems?.length || 0;
+        
+        return (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpandedSubItems(prev => {
+                  const newSet = new Set(prev);
+                  if (newSet.has(item.id)) {
+                    newSet.delete(item.id);
+                  } else {
+                    newSet.add(item.id);
+                  }
+                  return newSet;
+                });
+              }}
+              className="flex items-center gap-1 hover:bg-gray-800/50 px-1 py-0.5 rounded text-xs text-gray-400 hover:text-gray-300"
+            >
+              {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              <Folder className="w-3 h-3" />
+              <span>{subItemCount} items</span>
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // TODO: Implement add sub-item functionality
+                toast({ title: "Add Sub-item", description: "Sub-item creation coming soon!" });
+              }}
+              className="text-xs text-gray-500 hover:text-gray-300 px-1"
+              title="Add sub-item"
+            >
+              +
+            </button>
           </div>
         );
       
