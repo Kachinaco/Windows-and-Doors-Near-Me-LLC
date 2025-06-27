@@ -76,6 +76,13 @@ import {
 
   type ProjectUpdate,
   type InsertProjectUpdate,
+  
+  subItems,
+  subItemFolders,
+  type SubItem,
+  type InsertSubItem,
+  type SubItemFolder,
+  type InsertSubItemFolder,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, desc, and, gte, lte, inArray, sql } from "drizzle-orm";

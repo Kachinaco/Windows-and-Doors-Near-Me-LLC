@@ -2337,6 +2337,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sub-item endpoints
+  app.post("/api/projects/:projectId/sub-items", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const { name, folderId } = req.body;
+      
+      const newSubItem = await storage.createSubItem({
+        parentProjectId: projectId,
+        name: name || "New Sub Item",
+        status: "not_started",
+        priority: "medium",
+        folderId: folderId || null,
+        sortOrder: 0
+      });
+      
+      res.status(201).json(newSubItem);
+    } catch (error: any) {
+      console.error("Error creating sub-item:", error);
+      res.status(500).json({ message: "Failed to create sub-item" });
+    }
+  });
+
+  // Sub-item folder endpoints
+  app.post("/api/projects/:projectId/sub-item-folders", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const { name } = req.body;
+      
+      const newFolder = await storage.createSubItemFolder({
+        projectId,
+        name: name || "New Folder",
+        color: "amber",
+        sortOrder: 0,
+        isCollapsed: false
+      });
+      
+      res.status(201).json(newFolder);
+    } catch (error: any) {
+      console.error("Error creating sub-item folder:", error);
+      res.status(500).json({ message: "Failed to create sub-item folder" });
+    }
+  });
+
+  // Update sub-item
+  app.put("/api/sub-items/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const subItemId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const updatedSubItem = await storage.updateSubItem(subItemId, updates);
+      res.json(updatedSubItem);
+    } catch (error: any) {
+      console.error("Error updating sub-item:", error);
+      res.status(500).json({ message: "Failed to update sub-item" });
+    }
+  });
+
+  // Update sub-item folder
+  app.put("/api/sub-item-folders/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const folderId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const updatedFolder = await storage.updateSubItemFolder(folderId, updates);
+      res.json(updatedFolder);
+    } catch (error: any) {
+      console.error("Error updating sub-item folder:", error);
+      res.status(500).json({ message: "Failed to update sub-item folder" });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Set up WebSocket server for real-time collaboration
