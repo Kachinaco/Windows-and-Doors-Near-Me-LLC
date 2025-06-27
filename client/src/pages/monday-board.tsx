@@ -1630,7 +1630,10 @@ export default function MondayBoard() {
                                         ))}
                                       </div>
                                       
-                                      {/* Sub-items now handled via side panel drawer */}
+                                      {/* Sub-items in this folder */}
+                                      {expandedFolders.has(folder.id) && (
+                                        <>
+                                          {folderSubItems.map((subItem) => (
                                             <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/5 transition-all bg-slate-900/20 border-b border-slate-700/30">
                                               {/* Sub-item checkbox */}
                                               <div className="w-8 px-1 py-1.5 border-r border-slate-700/20 flex items-center justify-center sticky left-0 bg-slate-900/20 z-20">
