@@ -61,7 +61,7 @@ function Router() {
   return (
     <Switch>
       {/* Public marketing website routes */}
-      <Route path="/" component={Home} />
+      <Route path="/" component={isAuthenticated ? MondayBoard : Home} />
       <Route path="/gilbert-windows-doors" component={GilbertWindowsDoors} />
       <Route path="/mesa-windows-doors" component={MesaWindowsDoors} />
       <Route path="/chandler-windows-doors" component={ChandlerWindowsDoors} />
