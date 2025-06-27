@@ -798,7 +798,7 @@ export default function MondayBoard() {
   const handleAddSubItem = useCallback((projectId: number) => {
     createSubItemMutation.mutate({ 
       projectId, 
-      name: "New Sub Item" 
+      name: "" // Create with empty name
     }, {
       onSuccess: (newSubItem) => {
         console.log('Sub-item created successfully:', newSubItem);
@@ -815,7 +815,7 @@ export default function MondayBoard() {
   const handleAddSubItemFolder = useCallback((projectId: number) => {
     createSubItemFolderMutation.mutate({ 
       projectId, 
-      name: "New Folder" 
+      name: "" // Create with empty name
     }, {
       onSuccess: (newFolder) => {
         console.log('Folder created successfully:', newFolder);
@@ -838,7 +838,7 @@ export default function MondayBoard() {
   const handleAddSubItemToFolder = useCallback((projectId: number, folderId: number) => {
     createSubItemMutation.mutate({ 
       projectId, 
-      name: "New Sub Item",
+      name: "", // Create with empty name
       folderId 
     }, {
       onSuccess: (newSubItem) => {
