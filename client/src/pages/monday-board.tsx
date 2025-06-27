@@ -1405,7 +1405,7 @@ export default function MondayBoard() {
                       </div>
                       
                       {/* Sub-Items Rows (when expanded) */}
-                      {expandedSubItems.has(item.id) && item.subItems && item.subItems.length > 0 && (
+                      {expandedSubItems.has(item.id) && (
                         <>
                           {/* Sub-item Column Headers - shown only for this expanded item */}
                           <div className="bg-gray-900/20 border-b border-gray-800/20 flex items-center text-xs text-gray-500">
