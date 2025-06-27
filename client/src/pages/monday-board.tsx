@@ -748,7 +748,7 @@ export default function MondayBoard() {
                 <div 
                   key={column.id} 
                   className={`px-2 py-1.5 border-r border-gray-800/30 relative group flex-shrink-0 ${
-                    index === 0 ? 'sticky left-0 bg-gray-950/95 backdrop-blur-sm z-20' : ''
+                    index === 0 ? 'sticky left-8 bg-gray-950/95 backdrop-blur-sm z-20' : ''
                   }`}
                   style={{ 
                     width: columnWidths[column.id] || (index === 0 ? 200 : 100),
@@ -799,11 +799,20 @@ export default function MondayBoard() {
                 <>
                   {group.items.map((item) => (
                     <div key={item.id} className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0">
+                      {/* Selection checkbox */}
+                      <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.has(item.id)}
+                          onChange={() => handleToggleSelect(item.id)}
+                          className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+                        />
+                      </div>
                       {columns.map((column, index) => (
                         <div 
                           key={`${item.id}-${column.id}`} 
                           className={`px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 ${
-                            index === 0 ? 'sticky left-0 bg-gray-950 z-10' : ''
+                            index === 0 ? 'sticky left-8 bg-gray-950 z-10' : ''
                           }`}
                           style={{ 
                             width: columnWidths[column.id] || (index === 0 ? 200 : 100),
@@ -819,8 +828,10 @@ export default function MondayBoard() {
                   
                   {/* Add Item Button at bottom of group */}
                   <div className="flex hover:bg-gray-900/10 transition-all">
+                    {/* Empty checkbox space */}
+                    <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 sticky left-0 bg-gray-950 z-20"></div>
                     <div 
-                      className="px-2 py-0.5 flex-shrink-0 sticky left-0 bg-gray-950 z-10"
+                      className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
                       style={{ 
                         width: columnWidths['item'] || 200,
                         minWidth: '150px',
@@ -871,6 +882,63 @@ export default function MondayBoard() {
           <span>Live</span>
         </div>
       </div>
+
+      {/* Sleek Bulk Operations Popup */}
+      {selectedItems.size > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom-1 duration-200">
+          <div className="bg-gray-900/95 backdrop-blur-sm border-t border-gray-700/50 px-4 py-2 mx-4 mb-4 rounded-lg shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-xs font-medium text-white">
+                  {selectedItems.size}
+                </div>
+                <span className="text-sm text-gray-300">
+                  {selectedItems.size === 1 ? 'item selected' : 'items selected'}
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => bulkArchiveMutation.mutate(Array.from(selectedItems))}
+                  disabled={bulkArchiveMutation.isPending}
+                  className="text-xs h-7 px-3 text-gray-300 hover:text-white hover:bg-gray-800"
+                >
+                  Archive
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => bulkTrashMutation.mutate(Array.from(selectedItems))}
+                  disabled={bulkTrashMutation.isPending}
+                  className="text-xs h-7 px-3 text-gray-300 hover:text-white hover:bg-gray-800"
+                >
+                  Trash
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => bulkDeleteMutation.mutate(Array.from(selectedItems))}
+                  disabled={bulkDeleteMutation.isPending}
+                  className="text-xs h-7 px-3 text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                >
+                  Delete
+                </Button>
+                <div className="w-px h-4 bg-gray-700"></div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedItems(new Set())}
+                  className="text-xs h-7 px-2 text-gray-500 hover:text-gray-300"
+                >
+                  ✕
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
