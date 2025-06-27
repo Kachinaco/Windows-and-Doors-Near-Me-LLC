@@ -1637,23 +1637,27 @@ export default function MondayBoard() {
                                       {isFolderExpanded && (
                                         <>
                                           {folderSubItems.map((subItem) => (
-                                            <div key={`sub-${subItem.id}`} className="group flex hover:bg-gray-900/20 transition-all bg-gray-900/5 border-b border-gray-800/5">
-                                              {/* Empty checkbox space for sub-items */}
-                                              <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
-                                                <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                            <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/5 transition-all bg-slate-900/20 border-b border-slate-700/30">
+                                              {/* Sub-item checkbox */}
+                                              <div className="w-8 px-1 py-1.5 border-r border-slate-700/20 flex items-center justify-center sticky left-0 bg-slate-900/20 z-20">
+                                                <input 
+                                                  type="checkbox" 
+                                                  className="w-3 h-3 rounded border-slate-500/50 bg-slate-800/50 text-blue-500 focus:ring-blue-400 focus:ring-1"
+                                                />
                                               </div>
                                               
-                                              {/* Editable Sub-item name with deeper indent */}
+                                              {/* Sub-item name with deeper indent */}
                                               <div 
-                                                className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 sticky left-8 bg-gray-950 z-10 flex items-center"
+                                                className="px-3 py-1.5 border-r border-slate-700/20 flex-shrink-0 sticky left-8 bg-slate-900/20 z-10 flex items-center"
                                                 style={{ 
                                                   width: columnWidths['item'] || 200,
                                                   minWidth: '150px',
                                                   maxWidth: 'none'
                                                 }}
                                               >
-                                                <div className="flex items-center gap-1 text-xs text-gray-400">
-                                                  <div className="w-6 h-px bg-gray-600 mr-1"></div>
+                                                <div className="flex items-center gap-2 text-sm">
+                                                  <div className="w-6 h-px bg-blue-400/40"></div>
+                                                  <div className="w-1 h-1 bg-blue-400/60 rounded-full"></div>
                                                   {editingSubItem === subItem.id ? (
                                                     <input
                                                       type="text"
