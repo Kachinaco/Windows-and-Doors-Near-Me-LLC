@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { type Project } from "@shared/schema";
-import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2 } from "lucide-react";
+import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns } from "lucide-react";
 
 interface BoardColumn {
   id: string;
@@ -47,6 +48,8 @@ export default function MondayBoard() {
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState('');
   const [newColumnType, setNewColumnType] = useState<BoardColumn['type']>('text');
+  const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
   const [undoStack, setUndoStack] = useState<Array<{action: string, data: any, timestamp: number}>>([]);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({
     item: 250,
@@ -415,6 +418,19 @@ export default function MondayBoard() {
     toast({ title: "Column added" });
   };
 
+  const addGroup = () => {
+    if (!newGroupName.trim()) return;
+    
+    // For now, we'll just show a toast since groups are defined by status
+    // In a full implementation, this would create a new status category
+    setIsAddGroupOpen(false);
+    setNewGroupName('');
+    toast({ 
+      title: "Group functionality", 
+      description: "Groups are based on project status. Use status column to move items between groups." 
+    });
+  };
+
   const getColumnIcon = (type: BoardColumn['type']) => {
     switch (type) {
       case 'status': return <div className="w-2 h-2 rounded-full bg-emerald-500" />;
@@ -702,8 +718,8 @@ export default function MondayBoard() {
               </Button>
             )}
             
-            <Dialog open={isAddColumnOpen} onOpenChange={setIsAddColumnOpen}>
-              <DialogTrigger asChild>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -711,7 +727,34 @@ export default function MondayBoard() {
                 >
                   <Plus className="w-3 h-3" />
                 </Button>
-              </DialogTrigger>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-gray-900 border-gray-700 text-white">
+                <DropdownMenuItem 
+                  onClick={() => addItemMutation.mutate('New Leads')}
+                  className="text-xs hover:bg-gray-800 focus:bg-gray-800"
+                >
+                  <Plus className="w-3 h-3 mr-2" />
+                  Add Item
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setIsAddGroupOpen(true)}
+                  className="text-xs hover:bg-gray-800 focus:bg-gray-800"
+                >
+                  <Folder className="w-3 h-3 mr-2" />
+                  Add Group
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setIsAddColumnOpen(true)}
+                  className="text-xs hover:bg-gray-800 focus:bg-gray-800"
+                >
+                  <Columns className="w-3 h-3 mr-2" />
+                  Add Column
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Add Column Dialog */}
+            <Dialog open={isAddColumnOpen} onOpenChange={setIsAddColumnOpen}>
               <DialogContent className="bg-gray-900 text-white border-gray-700">
                 <DialogHeader>
                   <DialogTitle>Add Column</DialogTitle>
@@ -750,6 +793,39 @@ export default function MondayBoard() {
                       variant="outline" 
                       onClick={() => setIsAddColumnOpen(false)}
                       size="sm"
+                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 h-8"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Add Group Dialog */}
+            <Dialog open={isAddGroupOpen} onOpenChange={setIsAddGroupOpen}>
+              <DialogContent className="bg-gray-900 text-white border-gray-700">
+                <DialogHeader>
+                  <DialogTitle>Add Group</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs">Group Name</Label>
+                    <Input
+                      value={newGroupName}
+                      onChange={(e) => setNewGroupName(e.target.value)}
+                      className="bg-gray-800 border-gray-700 text-white h-8"
+                      placeholder="Enter group name"
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={addGroup} size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 h-8">
+                      Add Group
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsAddGroupOpen(false)} 
+                      size="sm" 
                       className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 h-8"
                     >
                       Cancel
