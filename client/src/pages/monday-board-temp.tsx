@@ -1598,35 +1598,3 @@ export default function MondayBoard() {
                                             
                                             <span className="text-amber-400/70 text-xs ml-1 font-medium">
                                               ({folderSubItems.length} items)
-                                            </span>
-                                            
-                                            {/* Delete folder button */}
-                                            <button
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteSubItemFolder(folder.id);
-                                              }}
-                                              className="ml-auto opacity-0 group-hover:opacity-100 p-0.5 hover:bg-red-600/20 rounded text-red-400 hover:text-red-300 transition-all"
-                                              title="Delete folder"
-                                            >
-                                              <Trash2 className="w-3 h-3" />
-                                            </button>
-                                          </div>
-                                        </div>
-                                        
-                                        {/* Empty cells for folder row */}
-                                        {subItemColumns.map((column) => (
-                                          <div 
-                                            key={`folder-${folder.id}-${column.id}`}
-                                            className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                            style={{ 
-                                              width: columnWidths[column.id] || 120,
-                                              minWidth: '80px',
-                                              maxWidth: 'none'
-                                            }}
-                                          >
-                                            {/* Empty for folder headers */}
-                                          </div>
-                                        ))}
-                                      </div>
-                                      
