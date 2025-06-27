@@ -669,7 +669,7 @@ export default function MondayBoard() {
               value={localValue}
               onChange={(e) => handleLocalChange(item.id, column.id, e.target.value)}
               className="h-4 text-xs border-none bg-transparent text-gray-300"
-              placeholder="Enter text"
+              placeholder={column.id === 'item' ? "Enter project name" : "Enter text"}
               autoFocus
               onBlur={() => {
                 setEditingCell(null);
@@ -718,11 +718,26 @@ export default function MondayBoard() {
         
         return (
           <div
-            className="h-4 text-xs text-gray-300 cursor-text hover:bg-gray-800/50 flex items-center px-1 rounded transition-colors"
+            className={`h-4 text-xs cursor-text hover:bg-gray-800/50 flex items-center px-1 rounded transition-colors ${
+              column.id === 'item' 
+                ? 'text-gray-100 font-medium flex items-center gap-1.5' 
+                : 'text-gray-300'
+            }`}
             onClick={() => setEditingCell({ projectId: item.id, field: column.id })}
             title="Click to edit"
           >
-            {value || <span className="text-gray-500">Click to add...</span>}
+            {column.id === 'item' && (
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                item.values['status'] === 'complete' ? 'bg-green-500' :
+                item.values['status'] === 'in progress' ? 'bg-blue-500' :
+                item.values['status'] === 'signed' ? 'bg-emerald-500' :
+                item.values['status'] === 'sent estimate' ? 'bg-purple-500' :
+                item.values['status'] === 'need attention' ? 'bg-yellow-500' :
+                item.values['status'] === 'new lead' ? 'bg-cyan-500' :
+                'bg-gray-500'
+              }`} />
+            )}
+            {value || <span className="text-gray-500">{column.id === 'item' ? 'Untitled Project' : 'Click to add...'}</span>}
           </div>
         );
     }
@@ -1297,7 +1312,15 @@ export default function MondayBoard() {
           {boardGroups.map((group) => (
             <div key={group.name} className="border-b border-gray-800/50 last:border-b-0">
               {/* Ultra-Slim Group Header */}
-              <div className="bg-gray-900/20 px-2 py-1 border-b border-gray-800/20 flex items-center space-x-1.5 hover:bg-gray-900/40 transition-all">
+              <div className={`px-2 py-1.5 border-b border-gray-800/20 flex items-center space-x-1.5 hover:bg-gray-900/40 transition-all ${
+                group.name === 'New Leads' ? 'bg-gradient-to-r from-cyan-900/20 to-gray-900/20' :
+                group.name === 'Need Attention' ? 'bg-gradient-to-r from-yellow-900/20 to-gray-900/20' :
+                group.name === 'Sent Estimate' ? 'bg-gradient-to-r from-purple-900/20 to-gray-900/20' :
+                group.name === 'Signed' ? 'bg-gradient-to-r from-emerald-900/20 to-gray-900/20' :
+                group.name === 'In Progress' ? 'bg-gradient-to-r from-blue-900/20 to-gray-900/20' :
+                group.name === 'Complete' ? 'bg-gradient-to-r from-green-900/20 to-gray-900/20' :
+                'bg-gray-900/20'
+              }`}>
                 {/* Group Selection Checkbox */}
                 <div className="w-8 px-1 flex items-center justify-center">
                   <input
@@ -1337,7 +1360,7 @@ export default function MondayBoard() {
                   {group.items.map((item) => (
                     <React.Fragment key={item.id}>
                       {/* Main Item Row */}
-                      <div className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0">
+                      <div className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0 bg-gradient-to-r from-gray-900/5 to-transparent">
                         {/* Selection checkbox */}
                         <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
                           <input
