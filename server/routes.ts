@@ -2367,7 +2367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const newFolder = await storage.createSubItemFolder({
         projectId,
-        name: name || "New Folder",
+        name: name || "", // Allow empty names
         color: "amber",
         sortOrder: 0,
         isCollapsed: false
