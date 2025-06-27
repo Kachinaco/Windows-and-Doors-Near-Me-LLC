@@ -164,6 +164,7 @@ All endpoints include proper authentication middleware, role-based authorization
 Changelog:
 - June 17, 2025. Initial setup
 - June 27, 2025. **MAJOR ARCHITECTURAL CHANGE**: Migrated from React/TypeScript frontend + Express.js backend to unified FastAPI + Jinja2 Templates all-Python solution with async capabilities, real-time collaboration via Python-SocketIO, and modern glassmorphism UI design
+- June 27, 2025. **TRANSFORMED TO MONDAY.COM-STYLE BOARD**: Rebuilt project management interface as row-based Monday.com-style board builder with dark theme, inline editing, multiple column types (Status, People, Text, Date, Number, Tags), SQLAlchemy models for boards/columns/items/values, and real-time cell updates - complete board management system with FastAPI backend
 - June 17, 2025. Major creative redesign with unique visual elements, custom color scheme, and integrated company logo
 - June 17, 2025. Fixed mobile navigation accessibility - added Login button to mobile hamburger menu for better user experience
 - June 17, 2025. Implemented comprehensive consultation scheduling system with full editing capabilities and employee assignment features
