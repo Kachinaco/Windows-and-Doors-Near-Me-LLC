@@ -1408,35 +1408,39 @@ export default function MondayBoard() {
                       {expandedSubItems.has(item.id) && (
                         <>
                           {/* Sub-item Column Headers - shown only for this expanded item */}
-                          <div className="bg-gray-900/20 border-b border-gray-800/20 flex items-center text-xs text-gray-500">
+                          <div className="bg-gradient-to-r from-slate-900/40 to-gray-900/30 border-b-2 border-blue-500/20 flex items-center text-xs text-gray-400 shadow-sm">
                             {/* Empty space for checkbox */}
-                            <div className="w-8 px-1 py-1 border-r border-gray-800/20 sticky left-0 bg-gray-900/20 z-20"></div>
+                            <div className="w-8 px-1 py-2 border-r border-gray-700/30 sticky left-0 bg-gradient-to-r from-slate-900/40 to-gray-900/30 z-20"></div>
                             
-                            {/* Empty space for main item column */}
+                            {/* Sub-items section header */}
                             <div 
-                              className="px-2 py-1 border-r border-gray-800/20 sticky left-8 bg-gray-900/20 z-10 flex items-center"
+                              className="px-3 py-2 border-r border-gray-700/30 sticky left-8 bg-gradient-to-r from-slate-900/40 to-gray-900/30 z-10 flex items-center"
                               style={{ 
                                 width: columnWidths['item'] || 200,
                                 minWidth: '150px',
                                 maxWidth: 'none'
                               }}
                             >
-                              <span className="text-gray-600 text-[10px] ml-6">└ Sub-items</span>
+                              <div className="flex items-center gap-2">
+                                <div className="w-4 h-px bg-blue-400/60"></div>
+                                <span className="text-blue-300 text-xs font-semibold uppercase tracking-wide">Sub-Items</span>
+                                <div className="w-4 h-px bg-blue-400/60"></div>
+                              </div>
                             </div>
                             
                             {/* Sub-item column headers with resizers */}
                             {subItemColumns.map((column, index) => (
                               <div 
                                 key={`subheader-${item.id}-${column.id}`}
-                                className="px-2 py-1 border-r border-gray-800/20 flex-shrink-0 flex items-center gap-1 relative group"
+                                className="px-3 py-2 border-r border-gray-700/30 flex-shrink-0 flex items-center gap-2 relative group"
                                 style={{ 
                                   width: columnWidths[column.id] || 120,
                                   minWidth: '80px',
                                   maxWidth: 'none'
                                 }}
                               >
-                                {getColumnIcon(column.type)}
-                                <span className="font-medium text-[10px] text-gray-500">{column.name}</span>
+                                <div className="text-blue-400/80">{getColumnIcon(column.type)}</div>
+                                <span className="font-semibold text-xs text-blue-200">{column.name}</span>
                                 
                                 {/* Sub-item Column Resizer */}
                                 <div 
@@ -1476,12 +1480,12 @@ export default function MondayBoard() {
                             ))}
                           </div>
 
-                          {/* Always show Add Folder Button first */}
-                          <div className="flex hover:bg-gray-900/10 transition-all">
+                          {/* Add Folder Section */}
+                          <div className="flex hover:bg-amber-500/5 transition-all border-b border-amber-500/10">
                             {/* Empty checkbox space */}
-                            <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 sticky left-0 bg-gray-950 z-20"></div>
+                            <div className="w-8 px-1 py-1.5 border-r border-gray-700/20 sticky left-0 bg-gray-950 z-20"></div>
                             <div 
-                              className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
+                              className="px-3 py-1.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
                               style={{ 
                                 width: columnWidths['item'] || 200,
                                 minWidth: '150px',
@@ -1492,9 +1496,9 @@ export default function MondayBoard() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleAddSubItemFolder(item.id)}
-                                className="text-gray-600 hover:text-amber-400 text-xs h-5 px-1 flex items-center gap-1"
+                                className="text-amber-400/80 hover:text-amber-300 hover:bg-amber-500/10 text-xs h-6 px-2 flex items-center gap-1.5 font-medium border border-amber-500/20 hover:border-amber-400/40 rounded-md transition-all"
                               >
-                                <Folder className="w-2.5 h-2.5" />
+                                <Folder className="w-3 h-3" />
                                 Add Folder
                               </Button>
                             </div>
@@ -1527,26 +1531,26 @@ export default function MondayBoard() {
                                   return (
                                     <React.Fragment key={folder.id}>
                                       {/* Folder Header */}
-                                      <div className="group flex hover:bg-gray-800/20 transition-all bg-gray-800/10 border-b border-gray-700/20">
-                                        {/* Empty checkbox space for folder */}
-                                        <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
+                                      <div className="group flex hover:bg-amber-500/8 transition-all bg-gradient-to-r from-amber-950/15 to-orange-950/8 border-b-2 border-amber-500/25 shadow-sm">
+                                        {/* Folder checkbox */}
+                                        <div className="w-8 px-1 py-2 border-r border-amber-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-amber-950/15 to-orange-950/8 z-20">
                                           <input 
                                             type="checkbox" 
-                                            className="w-3 h-3 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-1"
+                                            className="w-3.5 h-3.5 rounded border-amber-500/50 bg-amber-900/30 text-amber-400 focus:ring-amber-400 focus:ring-1"
                                           />
                                         </div>
                                         
                                         {/* Folder name with expand/collapse */}
                                         <div 
-                                          className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 sticky left-8 bg-gray-950 z-10 flex items-center"
+                                          className="px-3 py-2 border-r border-amber-500/20 flex-shrink-0 sticky left-8 bg-gradient-to-r from-amber-950/15 to-orange-950/8 z-10 flex items-center"
                                           style={{ 
                                             width: columnWidths['item'] || 200,
                                             minWidth: '150px',
                                             maxWidth: 'none'
                                           }}
                                         >
-                                          <div className="flex items-center gap-1 text-xs">
-                                            <div className="w-3 h-px bg-gray-600 mr-1"></div>
+                                          <div className="flex items-center gap-2 text-sm">
+                                            <div className="w-5 h-px bg-amber-400/50"></div>
                                             
                                             <button
                                               onClick={() => {
@@ -1558,16 +1562,16 @@ export default function MondayBoard() {
                                                 }
                                                 setExpandedFolders(newExpanded);
                                               }}
-                                              className="p-0.5 hover:bg-gray-700/50 rounded"
+                                              className="p-1 hover:bg-amber-500/20 rounded transition-colors"
                                             >
                                               {isFolderExpanded ? (
-                                                <ChevronDown className="w-3 h-3 text-gray-400" />
+                                                <ChevronDown className="w-3.5 h-3.5 text-amber-300" />
                                               ) : (
-                                                <ChevronRight className="w-3 h-3 text-gray-400" />
+                                                <ChevronRight className="w-3.5 h-3.5 text-amber-300" />
                                               )}
                                             </button>
                                             
-                                            <Folder className="w-3 h-3 text-amber-400" />
+                                            <Folder className="w-4 h-4 text-amber-400 drop-shadow-sm" />
                                             
                                             {isEditingThisFolder ? (
                                               <input
@@ -1583,20 +1587,20 @@ export default function MondayBoard() {
                                                     setEditingFolder(null);
                                                   }
                                                 }}
-                                                className="bg-transparent text-amber-300 text-xs font-medium px-1 py-0 border border-amber-500/50 rounded focus:outline-none focus:border-amber-400 ml-1"
+                                                className="bg-amber-900/20 text-amber-200 text-sm font-semibold px-2 py-1 border border-amber-400/60 rounded-md focus:outline-none focus:border-amber-300 focus:bg-amber-900/30 ml-1"
                                                 autoFocus
                                               />
                                             ) : (
                                               <span 
-                                                className="text-amber-300 text-xs font-medium cursor-pointer hover:text-amber-200 ml-1"
+                                                className="text-amber-200 text-sm font-semibold cursor-pointer hover:text-amber-100 ml-1 px-2 py-1 rounded hover:bg-amber-500/10 transition-colors"
                                                 onClick={() => setEditingFolder(folder.id)}
                                               >
                                                 {currentFolderName}
                                               </span>
                                             )}
                                             
-                                            <span className="text-gray-500 text-xs ml-1">
-                                              ({folderSubItems.length})
+                                            <span className="text-amber-400/70 text-xs ml-1 font-medium">
+                                              ({folderSubItems.length} items)
                                             </span>
                                             
                                             {/* Delete folder button */}
