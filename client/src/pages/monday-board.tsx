@@ -220,26 +220,31 @@ export default function MondayBoard() {
     updateCellMutation.mutate({ projectId, field: actualField, value });
   }, [updateCellMutation, projects]);
 
-  const handleMouseDown = (columnId: string, e: React.MouseEvent) => {
+  const handlePointerDown = (columnId: string, e: React.PointerEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsResizing(columnId);
     
-    const startX = e.pageX;
+    const startX = e.clientX;
     const startWidth = columnWidths[columnId] || 120;
     
-    const handleMouseMove = (e: MouseEvent) => {
-      const newWidth = Math.max(80, startWidth + (e.pageX - startX));
+    const handlePointerMove = (e: PointerEvent) => {
+      e.preventDefault();
+      const newWidth = Math.max(80, startWidth + (e.clientX - startX));
       setColumnWidths(prev => ({ ...prev, [columnId]: newWidth }));
     };
     
-    const handleMouseUp = () => {
+    const handlePointerUp = (e: PointerEvent) => {
+      e.preventDefault();
       setIsResizing(null);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
     };
     
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
+    document.addEventListener('pointercancel', handlePointerUp);
   };
 
   const addColumn = () => {
@@ -563,9 +568,10 @@ export default function MondayBoard() {
                   </div>
                   {index < columns.length - 1 && (
                     <div 
-                      className="absolute right-0 top-0 bottom-0 w-3 cursor-col-resize flex items-center justify-center bg-transparent hover:bg-blue-500/30 transition-colors group"
-                      onMouseDown={(e) => handleMouseDown(column.id, e)}
+                      className="absolute right-0 top-0 bottom-0 w-4 cursor-col-resize flex items-center justify-center bg-transparent hover:bg-blue-500/30 transition-colors group touch-none"
+                      onPointerDown={(e) => handlePointerDown(column.id, e)}
                       title="Drag to resize column"
+                      style={{ touchAction: 'none' }}
                     >
                       <div className="w-1 h-6 bg-gray-500 hover:bg-blue-400 rounded-sm transition-all duration-200 group-hover:h-8 group-hover:bg-blue-400"></div>
                     </div>
