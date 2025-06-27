@@ -48,12 +48,13 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username" className="text-sm font-medium">Username</Label>
             <Input
               id="username"
               type="text"
               {...form.register("username")}
               placeholder="Enter your username"
+              className="h-11 text-base" // Larger touch target for mobile
             />
             {form.formState.errors.username && (
               <p className="text-sm text-red-600">{form.formState.errors.username.message}</p>
@@ -61,12 +62,13 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-sm font-medium">Password</Label>
             <Input
               id="password"
               type="password"
               {...form.register("password")}
               placeholder="Enter your password"
+              className="h-11 text-base" // Larger touch target for mobile
             />
             {form.formState.errors.password && (
               <p className="text-sm text-red-600">{form.formState.errors.password.message}</p>
@@ -81,7 +83,11 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
             </Alert>
           )}
 
-          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoginPending}>
+          <Button 
+            type="submit" 
+            className="w-full bg-blue-600 hover:bg-blue-700 h-11 text-base font-medium" 
+            disabled={isLoginPending}
+          >
             {isLoginPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

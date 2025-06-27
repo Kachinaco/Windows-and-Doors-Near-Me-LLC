@@ -86,7 +86,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
                 }
               }}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-11">
                 <SelectValue placeholder="Select profile type" />
               </SelectTrigger>
               <SelectContent>
@@ -112,12 +112,13 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
               <Input
                 id="firstName"
                 type="text"
+                className="h-11 text-base"
                 {...form.register("firstName")}
                 placeholder="John"
               />
@@ -127,10 +128,11 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
               <Input
                 id="lastName"
                 type="text"
+                className="h-11 text-base"
                 {...form.register("lastName")}
                 placeholder="Doe"
               />
