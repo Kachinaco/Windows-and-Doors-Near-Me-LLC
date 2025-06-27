@@ -540,8 +540,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Include both name and title for database compatibility
       const projectData = {
-        name: name || rest.title || 'Untitled Project',
-        title: name || rest.title || 'Untitled Project', // Database schema requires this field
+        name: name || rest.title || '',
+        title: name || rest.title || '', // Database schema requires this field
         serviceType: rest.serviceType || 'windows',
         status: rest.status || 'scheduled', // Use default that matches DB
         description: rest.description || '',

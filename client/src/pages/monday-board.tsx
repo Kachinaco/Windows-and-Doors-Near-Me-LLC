@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,8 @@ export default function MondayBoard() {
   const [isResizing, setIsResizing] = useState<string | null>(null);
   const [editingCell, setEditingCell] = useState<{projectId: number, field: string} | null>(null);
   const [newlyCreatedItem, setNewlyCreatedItem] = useState<number | null>(null);
+  const [localValues, setLocalValues] = useState<Record<string, string>>({});
+  const debounceTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   // Fetch projects and transform to board items
   const { data: projects = [], isLoading, error } = useQuery({
@@ -196,6 +198,23 @@ export default function MondayBoard() {
       ]);
     },
   });
+
+  // Handle local state changes for fast typing
+  const handleLocalChange = useCallback((projectId: number, field: string, value: string) => {
+    const key = `${projectId}-${field}`;
+    setLocalValues(prev => ({ ...prev, [key]: value }));
+    
+    // Clear existing timeout for this field
+    if (debounceTimeoutRef.current[key]) {
+      clearTimeout(debounceTimeoutRef.current[key]);
+    }
+    
+    // Set new debounced timeout
+    debounceTimeoutRef.current[key] = setTimeout(() => {
+      handleCellUpdate(projectId, field, value);
+      delete debounceTimeoutRef.current[key];
+    }, 500); // 500ms debounce
+  }, []);
 
   const handleCellUpdate = useCallback((projectId: number, field: string, value: any) => {
     console.log('handleCellUpdate called:', { projectId, field, value });
@@ -378,10 +397,13 @@ export default function MondayBoard() {
         const isEditing = editingCell?.projectId === item.id && editingCell?.field === column.id;
         
         if (isEditing || isNewItem) {
+          const localKey = `${item.id}-${column.id}`;
+          const localValue = localValues[localKey] !== undefined ? localValues[localKey] : value;
+          
           return (
             <Input
-              value={value}
-              onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+              value={localValue}
+              onChange={(e) => handleLocalChange(item.id, column.id, e.target.value)}
               className="h-4 text-xs border-none bg-transparent text-gray-300"
               placeholder="Enter text"
               autoFocus
@@ -390,6 +412,13 @@ export default function MondayBoard() {
                 if (isNewItem) {
                   setNewlyCreatedItem(null);
                 }
+                // Clear local value when exiting edit mode
+                const key = `${item.id}-${column.id}`;
+                setLocalValues(prev => {
+                  const newValues = { ...prev };
+                  delete newValues[key];
+                  return newValues;
+                });
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -397,12 +426,26 @@ export default function MondayBoard() {
                   if (isNewItem) {
                     setNewlyCreatedItem(null);
                   }
+                  // Clear local value when exiting edit mode
+                  const key = `${item.id}-${column.id}`;
+                  setLocalValues(prev => {
+                    const newValues = { ...prev };
+                    delete newValues[key];
+                    return newValues;
+                  });
                 }
                 if (e.key === 'Escape') {
                   setEditingCell(null);
                   if (isNewItem) {
                     setNewlyCreatedItem(null);
                   }
+                  // Clear local value when escaping
+                  const key = `${item.id}-${column.id}`;
+                  setLocalValues(prev => {
+                    const newValues = { ...prev };
+                    delete newValues[key];
+                    return newValues;
+                  });
                 }
               }}
             />
