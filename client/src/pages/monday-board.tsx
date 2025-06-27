@@ -69,6 +69,15 @@ export default function MondayBoard() {
     { id: 'tags', name: 'Tags', type: 'tags', order: 7 },
   ]);
 
+  // Sub-item specific columns
+  const [subItemColumns, setSubItemColumns] = useState<BoardColumn[]>([
+    { id: 'subitem_name', name: 'Task', type: 'text', order: 1 },
+    { id: 'subitem_status', name: 'Status', type: 'status', order: 2 },
+    { id: 'subitem_assignedTo', name: 'Owner', type: 'people', order: 3 },
+    { id: 'subitem_priority', name: 'Priority', type: 'number', order: 4 },
+    { id: 'subitem_dueDate', name: 'Due', type: 'date', order: 5 },
+  ]);
+
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState('');
   const [newColumnType, setNewColumnType] = useState<BoardColumn['type']>('text');
@@ -77,13 +86,20 @@ export default function MondayBoard() {
   const [undoStack, setUndoStack] = useState<Array<{action: string, data: any, timestamp: number}>>([]);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({
     item: 250,
+    subitems: 120,
     status: 120,
     assignedTo: 150,
     location: 200,
     phone: 140,
     dueDate: 120,
     priority: 100,
-    tags: 120
+    tags: 120,
+    // Sub-item column widths
+    subitem_name: 180,
+    subitem_status: 100,
+    subitem_assignedTo: 120,
+    subitem_priority: 80,
+    subitem_dueDate: 100
   });
   const [isResizing, setIsResizing] = useState<string | null>(null);
   const [editingCell, setEditingCell] = useState<{projectId: number, field: string} | null>(null);
@@ -737,6 +753,110 @@ export default function MondayBoard() {
     }
   };
 
+  // Sub-item cell update handler
+  const handleSubItemCellUpdate = useCallback(async (subItemId: number, field: string, value: any) => {
+    console.log('Sub-item cell update triggered:', { subItemId, field, value });
+    
+    // TODO: Implement sub-item update API endpoint
+    toast({ 
+      title: "Sub-item Update", 
+      description: `Updated ${field} to ${value} for sub-item ${subItemId}` 
+    });
+  }, [toast]);
+
+  // Render sub-item cells with dedicated column types
+  const renderSubItemCell = (subItem: SubItem, column: BoardColumn, projectId: number) => {
+    // Map sub-item data to column values
+    let value = '';
+    switch (column.id) {
+      case 'subitem_name':
+        value = subItem.name;
+        break;
+      case 'subitem_status':
+        value = subItem.status;
+        break;
+      case 'subitem_assignedTo':
+        value = subItem.assignedTo || '';
+        break;
+      case 'subitem_priority':
+        value = '3'; // Default priority
+        break;
+      case 'subitem_dueDate':
+        value = ''; // No due date in current schema
+        break;
+      default:
+        value = '';
+    }
+    
+    switch (column.type) {
+      case 'status':
+        return (
+          <Select
+            value={value}
+            onValueChange={(newValue) => handleSubItemCellUpdate(subItem.id, column.id, newValue)}
+          >
+            <SelectTrigger className={`h-4 text-xs font-medium rounded-full px-1.5 border-none ${
+              value === 'complete' ? 'bg-green-500/20 text-green-400' :
+              value === 'in progress' ? 'bg-blue-500/20 text-blue-400' :
+              value === 'signed' ? 'bg-emerald-500/20 text-emerald-400' :
+              value === 'sent estimate' ? 'bg-purple-500/20 text-purple-400' :
+              value === 'need attention' ? 'bg-yellow-500/20 text-yellow-400' :
+              value === 'new lead' ? 'bg-cyan-500/20 text-cyan-400' :
+              'bg-gray-500/20 text-gray-400'
+            }`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700">
+              <SelectItem value="new lead">New</SelectItem>
+              <SelectItem value="in progress">In Progress</SelectItem>
+              <SelectItem value="complete">Complete</SelectItem>
+            </SelectContent>
+          </Select>
+        );
+        
+      case 'people':
+        return (
+          <Input
+            value={value}
+            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
+            placeholder="Assign to..."
+          />
+        );
+        
+      case 'number':
+        return (
+          <Input
+            type="number"
+            value={value}
+            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
+            placeholder="0"
+          />
+        );
+        
+      case 'date':
+        return (
+          <Input
+            type="date"
+            value={value}
+            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
+          />
+        );
+        
+      default:
+        return (
+          <Input
+            value={value}
+            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
+            placeholder="Enter text..."
+          />
+        );
+    }
+  };
+
   // Show login prompt if not authenticated
   if (!user) {
     return (
@@ -997,6 +1117,42 @@ export default function MondayBoard() {
                 </div>
               ))}
             </div>
+
+            {/* Sub-Item Column Headers (shown when any sub-items are expanded) */}
+            {expandedSubItems.size > 0 && (
+              <div className="bg-gray-900/30 border-b border-gray-800/30 flex items-center text-xs text-gray-500">
+                {/* Empty space for checkbox */}
+                <div className="w-8 px-1 py-1 border-r border-gray-800/20 sticky left-0 bg-gray-900/30 z-20"></div>
+                
+                {/* Empty space for main item column */}
+                <div 
+                  className="px-2 py-1 border-r border-gray-800/20 sticky left-8 bg-gray-900/30 z-10 flex items-center"
+                  style={{ 
+                    width: columnWidths['item'] || 200,
+                    minWidth: '150px',
+                    maxWidth: 'none'
+                  }}
+                >
+                  <span className="text-gray-600 text-[10px]">└ Sub-items</span>
+                </div>
+                
+                {/* Sub-item column headers */}
+                {subItemColumns.map((column) => (
+                  <div 
+                    key={`subheader-${column.id}`}
+                    className="px-2 py-1 border-r border-gray-800/20 flex-shrink-0 flex items-center gap-1"
+                    style={{ 
+                      width: columnWidths[column.id] || 120,
+                      minWidth: '80px',
+                      maxWidth: 'none'
+                    }}
+                  >
+                    {getColumnIcon(column.type)}
+                    <span className="font-medium text-[10px] text-gray-500">{column.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Groups and Items */}
@@ -1095,45 +1251,20 @@ export default function MondayBoard() {
                                 </div>
                               </div>
                               
-                              {/* Sub-item columns */}
-                              {columns.slice(1).map((column) => {
-                                if (column.id === 'subitems') {
-                                  return (
-                                    <div 
-                                      key={`sub-${subItem.id}-${column.id}`}
-                                      className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                      style={{ 
-                                        width: columnWidths[column.id] || 100,
-                                        minWidth: '70px',
-                                        maxWidth: 'none'
-                                      }}
-                                    >
-                                      {/* Empty for sub-items column */}
-                                    </div>
-                                  );
-                                }
-                                
-                                // Render sub-item specific values
-                                let subItemValue = '';
-                                if (column.id === 'status') subItemValue = subItem.status;
-                                else if (column.id === 'assignedTo') subItemValue = subItem.assignedTo || '';
-                                
-                                return (
-                                  <div 
-                                    key={`sub-${subItem.id}-${column.id}`}
-                                    className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                    style={{ 
-                                      width: columnWidths[column.id] || 100,
-                                      minWidth: '70px',
-                                      maxWidth: 'none'
-                                    }}
-                                  >
-                                    <div className="h-4 text-xs text-gray-500 flex items-center">
-                                      {subItemValue || '-'}
-                                    </div>
-                                  </div>
-                                );
-                              })}
+                              {/* Sub-item dedicated columns */}
+                              {subItemColumns.map((column) => (
+                                <div 
+                                  key={`sub-${subItem.id}-${column.id}`}
+                                  className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                  style={{ 
+                                    width: columnWidths[column.id] || 120,
+                                    minWidth: '80px',
+                                    maxWidth: 'none'
+                                  }}
+                                >
+                                  {renderSubItemCell(subItem, column, item.id)}
+                                </div>
+                              ))}
                             </div>
                           ))}
                         </>
