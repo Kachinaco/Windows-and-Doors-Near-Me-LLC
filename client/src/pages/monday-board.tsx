@@ -112,6 +112,7 @@ export default function MondayBoard() {
   // Update cell mutation with proper auth
   const updateCellMutation = useMutation({
     mutationFn: async ({ projectId, field, value }: { projectId: number; field: string; value: any }) => {
+      console.log('Updating cell:', { projectId, field, value });
       const token = localStorage.getItem('authToken') || localStorage.getItem('token');
       const response = await fetch(`/api/projects/${projectId}`, {
         method: 'PUT',
@@ -123,16 +124,19 @@ export default function MondayBoard() {
       });
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Update failed:', errorText);
         throw new Error('Failed to update cell');
       }
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Update successful:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
     },
-    onError: () => {
-      console.error('Update failed');
+    onError: (error) => {
+      console.error('Update mutation error:', error);
     },
   });
 
@@ -153,7 +157,7 @@ export default function MondayBoard() {
         body: JSON.stringify({
           name: 'New Project',
           status: status,
-          assignedTo: '',
+          description: 'New project description',
           projectAddress: '',
           clientPhone: '',
         }),
@@ -180,8 +184,10 @@ export default function MondayBoard() {
   });
 
   const handleCellUpdate = useCallback((projectId: number, field: string, value: any) => {
+    console.log('handleCellUpdate called:', { projectId, field, value });
+    
     // Save current value to undo stack before updating
-    const project = projects.find(p => p.id === projectId);
+    const project = (projects as any)?.find((p: any) => p.id === projectId);
     if (project) {
       setUndoStack(prev => [
         ...prev.slice(-9),
@@ -203,6 +209,7 @@ export default function MondayBoard() {
     };
 
     const actualField = fieldMapping[field] || field;
+    console.log('Field mapping:', { field, actualField });
     updateCellMutation.mutate({ projectId, field: actualField, value });
   }, [updateCellMutation, projects]);
 
