@@ -215,8 +215,8 @@ export default function MondayBoard() {
         location: project.projectAddress || '',
         phone: project.clientPhone || '',
       },
-      subItems: sampleSubItems,
-      subItemFolders: sampleFolders
+      subItems: project.subItems || [],
+      subItemFolders: project.subItemFolders || []
     };
   }) : [];
 
@@ -873,6 +873,7 @@ export default function MondayBoard() {
       name: "New Folder" 
     }, {
       onSuccess: (newFolder) => {
+        console.log('Folder created successfully:', newFolder);
         // Automatically expand the new folder and start editing its name
         setTimeout(() => {
           setExpandedFolders(prev => {
@@ -882,6 +883,7 @@ export default function MondayBoard() {
           });
           setEditingFolder(newFolder.id);
           setFolderNames(prev => ({...prev, [newFolder.id]: newFolder.name}));
+          console.log('Starting to edit folder:', newFolder.id);
         }, 100);
       }
     });
@@ -895,10 +897,12 @@ export default function MondayBoard() {
       folderId 
     }, {
       onSuccess: (newSubItem) => {
+        console.log('Sub-item created successfully:', newSubItem);
         // Automatically start editing the new sub-item name
         setTimeout(() => {
           setEditingSubItem(newSubItem.id);
           setSubItemNames(prev => ({...prev, [newSubItem.id]: newSubItem.name}));
+          console.log('Starting to edit sub-item:', newSubItem.id);
         }, 100);
       }
     });
