@@ -542,9 +542,12 @@ export default function MondayBoard() {
                   </div>
                   {index < columns.length - 1 && (
                     <div 
-                      className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-transparent hover:bg-blue-500/50 group-hover:bg-blue-500/30"
+                      className="absolute right-0 top-0 bottom-0 w-3 cursor-col-resize flex items-center justify-center bg-transparent hover:bg-blue-500/30 transition-colors group"
                       onMouseDown={(e) => handleMouseDown(column.id, e)}
-                    />
+                      title="Drag to resize column"
+                    >
+                      <div className="w-1 h-6 bg-gray-500 hover:bg-blue-400 rounded-sm transition-all duration-200 group-hover:h-8 group-hover:bg-blue-400"></div>
+                    </div>
                   )}
                 </div>
               ))}

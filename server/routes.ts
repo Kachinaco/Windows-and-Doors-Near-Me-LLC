@@ -538,9 +538,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { name, ...rest } = req.body;
       
-      // Keep name field as expected by schema
+      // Include both name and title for database compatibility
       const projectData = {
         name: name || rest.title || 'Untitled Project',
+        title: name || rest.title || 'Untitled Project', // Database still expects this field
         serviceType: rest.serviceType || 'windows',
         status: rest.status || 'planning',
         description: rest.description || '',
