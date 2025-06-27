@@ -1476,6 +1476,43 @@ export default function MondayBoard() {
                             ))}
                           </div>
 
+                          {/* Always show Add Folder Button first */}
+                          <div className="flex hover:bg-gray-900/10 transition-all">
+                            {/* Empty checkbox space */}
+                            <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 sticky left-0 bg-gray-950 z-20"></div>
+                            <div 
+                              className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
+                              style={{ 
+                                width: columnWidths['item'] || 200,
+                                minWidth: '150px',
+                                maxWidth: 'none'
+                              }}
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleAddSubItemFolder(item.id)}
+                                className="text-gray-600 hover:text-amber-400 text-xs h-5 px-1 flex items-center gap-1"
+                              >
+                                <Folder className="w-2.5 h-2.5" />
+                                Add Folder
+                              </Button>
+                            </div>
+                            
+                            {/* Empty cells for other columns */}
+                            {subItemColumns.map((column) => (
+                              <div 
+                                key={`addsub-${item.id}-${column.id}`}
+                                className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                style={{ 
+                                  width: columnWidths[column.id] || 120,
+                                  minWidth: '80px',
+                                  maxWidth: 'none'
+                                }}
+                              />
+                            ))}
+                          </div>
+
                           {/* Render folders and their sub-items */}
                           {item.subItemFolders && item.subItemFolders.length > 0 ? (
                             <>
@@ -1760,43 +1797,7 @@ export default function MondayBoard() {
                               </div>
                             ))
                           )}
-                          
-                          {/* Add Folder Button */}
-                          <div className="flex hover:bg-gray-900/10 transition-all">
-                            {/* Empty checkbox space */}
-                            <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 sticky left-0 bg-gray-950 z-20"></div>
-                            <div 
-                              className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
-                              style={{ 
-                                width: columnWidths['item'] || 200,
-                                minWidth: '150px',
-                                maxWidth: 'none'
-                              }}
-                            >
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleAddSubItemFolder(item.id)}
-                                className="text-gray-600 hover:text-amber-400 text-xs h-5 px-1 flex items-center gap-1"
-                              >
-                                <Folder className="w-2.5 h-2.5" />
-                                Add Folder
-                              </Button>
-                            </div>
-                            
-                            {/* Empty cells for other columns */}
-                            {subItemColumns.map((column) => (
-                              <div 
-                                key={`addsub-${item.id}-${column.id}`}
-                                className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                style={{ 
-                                  width: columnWidths[column.id] || 120,
-                                  minWidth: '80px',
-                                  maxWidth: 'none'
-                                }}
-                              />
-                            ))}
-                          </div>
+
                         </>
                       )}
                     </React.Fragment>
