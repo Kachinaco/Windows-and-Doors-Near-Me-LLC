@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { type Project } from "@shared/schema";
-import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns } from "lucide-react";
+import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns, Trash2 } from "lucide-react";
 
 interface BoardColumn {
   id: string;
@@ -794,6 +794,57 @@ export default function MondayBoard() {
     }
   });
 
+  // Delete mutations
+  const deleteSubItemMutation = useMutation({
+    mutationFn: async (subItemId: number) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/sub-items/${subItemId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete sub-item');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Sub-item deleted", description: "Sub-item has been deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete sub-item", variant: "destructive" });
+    }
+  });
+
+  const deleteSubItemFolderMutation = useMutation({
+    mutationFn: async (folderId: number) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/sub-item-folders/${folderId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete sub-item folder');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Folder deleted", description: "Folder and all its sub-items have been deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete folder", variant: "destructive" });
+    }
+  });
+
   // Handler functions for sub-item operations
   const handleAddSubItem = useCallback((projectId: number) => {
     createSubItemMutation.mutate({ 
@@ -833,6 +884,14 @@ export default function MondayBoard() {
       }
     });
   }, [createSubItemFolderMutation]);
+
+  const handleDeleteSubItem = useCallback((subItemId: number) => {
+    deleteSubItemMutation.mutate(subItemId);
+  }, [deleteSubItemMutation]);
+
+  const handleDeleteSubItemFolder = useCallback((folderId: number) => {
+    deleteSubItemFolderMutation.mutate(folderId);
+  }, [deleteSubItemFolderMutation]);
 
   // Handler for adding sub-items to specific folders
   const handleAddSubItemToFolder = useCallback((projectId: number, folderId: number) => {
@@ -1391,7 +1450,7 @@ export default function MondayBoard() {
                                   return (
                                     <React.Fragment key={folder.id}>
                                       {/* Folder Header */}
-                                      <div className="flex hover:bg-gray-800/20 transition-all bg-gray-800/10 border-b border-gray-700/20">
+                                      <div className="group flex hover:bg-gray-800/20 transition-all bg-gray-800/10 border-b border-gray-700/20">
                                         {/* Empty checkbox space for folder */}
                                         <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
                                           <input 
@@ -1462,6 +1521,18 @@ export default function MondayBoard() {
                                             <span className="text-gray-500 text-xs ml-1">
                                               ({folderSubItems.length})
                                             </span>
+                                            
+                                            {/* Delete folder button */}
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteSubItemFolder(folder.id);
+                                              }}
+                                              className="ml-auto opacity-0 group-hover:opacity-100 p-0.5 hover:bg-red-600/20 rounded text-red-400 hover:text-red-300 transition-all"
+                                              title="Delete folder"
+                                            >
+                                              <Trash2 className="w-3 h-3" />
+                                            </button>
                                           </div>
                                         </div>
                                         
@@ -1485,7 +1556,7 @@ export default function MondayBoard() {
                                       {isFolderExpanded && (
                                         <>
                                           {folderSubItems.map((subItem) => (
-                                            <div key={`sub-${subItem.id}`} className="flex hover:bg-gray-900/20 transition-all bg-gray-900/5 border-b border-gray-800/5">
+                                            <div key={`sub-${subItem.id}`} className="group flex hover:bg-gray-900/20 transition-all bg-gray-900/5 border-b border-gray-800/5">
                                               {/* Empty checkbox space for sub-items */}
                                               <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
                                                 <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
