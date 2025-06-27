@@ -552,15 +552,21 @@ export default function MondayBoard() {
 
       {/* Compact Board */}
       <div className="flex-1 overflow-auto bg-gray-950">
-        <div className="min-w-full">
+        <div className="min-w-max">
           {/* Column Headers */}
           <div className="sticky top-0 bg-gray-900 z-10 border-b border-gray-800">
             <div className="flex">
               {columns.map((column, index) => (
                 <div 
                   key={column.id} 
-                  className="px-3 py-2 border-r border-gray-800 relative group"
-                  style={{ width: columnWidths[column.id] || 120 }}
+                  className={`px-3 py-2 border-r border-gray-800 relative group flex-shrink-0 ${
+                    index === 0 ? 'sticky left-0 bg-gray-900 z-20' : ''
+                  }`}
+                  style={{ 
+                    width: columnWidths[column.id] || (index === 0 ? 250 : 120),
+                    minWidth: index === 0 ? '200px' : '80px',
+                    maxWidth: 'none'
+                  }}
                 >
                   <div className="flex items-center space-x-1.5">
                     {getColumnIcon(column.type)}
@@ -605,11 +611,17 @@ export default function MondayBoard() {
                 <>
                   {group.items.map((item) => (
                     <div key={item.id} className="flex hover:bg-gray-900/20 transition-colors border-b border-gray-800/20 last:border-b-0">
-                      {columns.map((column) => (
+                      {columns.map((column, index) => (
                         <div 
                           key={`${item.id}-${column.id}`} 
-                          className="px-3 py-2 border-r border-gray-800/20"
-                          style={{ width: columnWidths[column.id] || 120 }}
+                          className={`px-3 py-2 border-r border-gray-800/20 flex-shrink-0 ${
+                            index === 0 ? 'sticky left-0 bg-gray-950 z-10' : ''
+                          }`}
+                          style={{ 
+                            width: columnWidths[column.id] || (index === 0 ? 250 : 120),
+                            minWidth: index === 0 ? '200px' : '80px',
+                            maxWidth: 'none'
+                          }}
                         >
                           {renderCell(item, column)}
                         </div>
@@ -619,7 +631,14 @@ export default function MondayBoard() {
                   
                   {/* Add Item Button at bottom of group */}
                   <div className="flex hover:bg-gray-900/20 transition-colors">
-                    <div className="flex-1 px-3 py-2">
+                    <div 
+                      className="px-3 py-2 flex-shrink-0 sticky left-0 bg-gray-950 z-10"
+                      style={{ 
+                        width: columnWidths['item'] || 250,
+                        minWidth: '200px',
+                        maxWidth: 'none'
+                      }}
+                    >
                       <Button
                         variant="ghost"
                         size="sm"
@@ -632,7 +651,15 @@ export default function MondayBoard() {
                       </Button>
                     </div>
                     {columns.slice(1).map((column) => (
-                      <div key={column.id} className="flex-1 min-w-32 px-3 py-2 border-r border-gray-800/20"></div>
+                      <div 
+                        key={column.id} 
+                        className="px-3 py-2 border-r border-gray-800/20 flex-shrink-0"
+                        style={{ 
+                          width: columnWidths[column.id] || 120,
+                          minWidth: '80px',
+                          maxWidth: 'none'
+                        }}
+                      ></div>
                     ))}
                   </div>
                 </>
