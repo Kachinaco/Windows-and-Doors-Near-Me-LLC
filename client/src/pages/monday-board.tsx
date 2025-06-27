@@ -84,6 +84,9 @@ export default function MondayBoard() {
   const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [undoStack, setUndoStack] = useState<Array<{action: string, data: any, timestamp: number}>>([]);
+  const [expandedFolders, setExpandedFolders] = useState<Set<number>>(new Set());
+  const [editingFolder, setEditingFolder] = useState<number | null>(null);
+  const [folderNames, setFolderNames] = useState<Record<number, string>>({});
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({
     item: 250,
     subitems: 120,
@@ -128,14 +131,34 @@ export default function MondayBoard() {
     else if (project.status === 'in progress') groupName = 'In Progress';
     else if (project.status === 'complete') groupName = 'Complete';
     
-    // Generate sample sub-items for testing
+    // Generate sample folders and sub-items for testing
+    const sampleFolders: SubItemFolder[] = [
+      {
+        id: project.id * 1000 + 1,
+        projectId: project.id,
+        name: 'Preparation Phase',
+        order: 1,
+        collapsed: false,
+        createdAt: new Date()
+      },
+      {
+        id: project.id * 1000 + 2,
+        projectId: project.id,
+        name: 'Installation Phase',
+        order: 2,
+        collapsed: true,
+        createdAt: new Date()
+      }
+    ];
+
     const sampleSubItems: SubItem[] = [
       {
         id: project.id * 100 + 1,
         projectId: project.id,
-        name: 'Design Planning',
-        status: 'in progress',
+        name: 'Site Measurement',
+        status: 'complete',
         assignedTo: 'John Doe',
+        folderId: project.id * 1000 + 1,
         order: 1,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -144,8 +167,9 @@ export default function MondayBoard() {
         id: project.id * 100 + 2,
         projectId: project.id,
         name: 'Material Ordering',
-        status: 'new lead',
+        status: 'in progress',
         assignedTo: 'Jane Smith',
+        folderId: project.id * 1000 + 1,
         order: 2,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -153,10 +177,22 @@ export default function MondayBoard() {
       {
         id: project.id * 100 + 3,
         projectId: project.id,
-        name: 'Installation Schedule',
-        status: 'complete',
+        name: 'Window Installation',
+        status: 'new lead',
         assignedTo: 'Bob Wilson',
-        order: 3,
+        folderId: project.id * 1000 + 2,
+        order: 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: project.id * 100 + 4,
+        projectId: project.id,
+        name: 'Final Inspection',
+        status: 'new lead',
+        assignedTo: 'Alice Brown',
+        folderId: project.id * 1000 + 2,
+        order: 2,
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -176,7 +212,7 @@ export default function MondayBoard() {
         phone: project.clientPhone || '',
       },
       subItems: sampleSubItems,
-      subItemFolders: []
+      subItemFolders: sampleFolders
     };
   }) : [];
 
@@ -1212,11 +1248,11 @@ export default function MondayBoard() {
                               <span className="text-gray-600 text-[10px] ml-6">└ Sub-items</span>
                             </div>
                             
-                            {/* Sub-item column headers */}
-                            {subItemColumns.map((column) => (
+                            {/* Sub-item column headers with resizers */}
+                            {subItemColumns.map((column, index) => (
                               <div 
                                 key={`subheader-${item.id}-${column.id}`}
-                                className="px-2 py-1 border-r border-gray-800/20 flex-shrink-0 flex items-center gap-1"
+                                className="px-2 py-1 border-r border-gray-800/20 flex-shrink-0 flex items-center gap-1 relative group"
                                 style={{ 
                                   width: columnWidths[column.id] || 120,
                                   minWidth: '80px',
@@ -1225,48 +1261,233 @@ export default function MondayBoard() {
                               >
                                 {getColumnIcon(column.type)}
                                 <span className="font-medium text-[10px] text-gray-500">{column.name}</span>
+                                
+                                {/* Sub-item Column Resizer */}
+                                <div 
+                                  className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-transparent hover:bg-blue-400/50 group-hover:bg-blue-400/30"
+                                  onMouseDown={(e) => handlePointerDown(e, column.id)}
+                                />
+                                
+                                {/* Sub-item Column Three-dot Menu */}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger className="absolute top-0 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-gray-500 hover:text-gray-300">
+                                      <span className="text-[8px]">⋯</span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="bg-gray-900 border-gray-700">
+                                    <DropdownMenuItem onClick={() => {
+                                      // Add sub-item column to the right
+                                      const newColumn: BoardColumn = {
+                                        id: `subitem_new_${Date.now()}`,
+                                        name: 'New Column',
+                                        type: 'text',
+                                        order: column.order + 1
+                                      };
+                                      setSubItemColumns(prev => [...prev, newColumn].sort((a, b) => a.order - b.order));
+                                    }} className="text-gray-300 hover:bg-gray-800">
+                                      Add column to the right
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => {
+                                      // Delete this sub-item column
+                                      setSubItemColumns(prev => prev.filter(col => col.id !== column.id));
+                                    }} className="text-red-400 hover:bg-gray-800">
+                                      Delete column
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             ))}
                           </div>
 
-                          {item.subItems.map((subItem) => (
-                            <div key={`sub-${subItem.id}`} className="flex hover:bg-gray-900/20 transition-all bg-gray-900/5 border-b border-gray-800/5">
-                              {/* Empty checkbox space for sub-items */}
-                              <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
-                                <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
-                              </div>
-                              
-                              {/* Sub-item name (first column) */}
-                              <div 
-                                className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 sticky left-8 bg-gray-950 z-10 flex items-center"
-                                style={{ 
-                                  width: columnWidths['item'] || 200,
-                                  minWidth: '150px',
-                                  maxWidth: 'none'
-                                }}
-                              >
-                                <div className="flex items-center gap-1 text-xs text-gray-400">
-                                  <div className="w-3 h-px bg-gray-600 mr-1"></div>
-                                  <span>{subItem.name}</span>
+                          {/* Render folders and their sub-items */}
+                          {item.subItemFolders && item.subItemFolders.length > 0 ? (
+                            <>
+                              {item.subItemFolders
+                                .sort((a, b) => a.order - b.order)
+                                .map((folder) => {
+                                  const folderSubItems = item.subItems?.filter(subItem => subItem.folderId === folder.id) || [];
+                                  const isFolderExpanded = expandedFolders.has(folder.id);
+                                  const isEditingThisFolder = editingFolder === folder.id;
+                                  const currentFolderName = folderNames[folder.id] || folder.name;
+                                  
+                                  return (
+                                    <React.Fragment key={folder.id}>
+                                      {/* Folder Header */}
+                                      <div className="flex hover:bg-gray-800/20 transition-all bg-gray-800/10 border-b border-gray-700/20">
+                                        {/* Empty checkbox space for folder */}
+                                        <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
+                                          <input 
+                                            type="checkbox" 
+                                            className="w-3 h-3 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-1"
+                                          />
+                                        </div>
+                                        
+                                        {/* Folder name with expand/collapse */}
+                                        <div 
+                                          className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 sticky left-8 bg-gray-950 z-10 flex items-center"
+                                          style={{ 
+                                            width: columnWidths['item'] || 200,
+                                            minWidth: '150px',
+                                            maxWidth: 'none'
+                                          }}
+                                        >
+                                          <div className="flex items-center gap-1 text-xs">
+                                            <div className="w-3 h-px bg-gray-600 mr-1"></div>
+                                            
+                                            <button
+                                              onClick={() => {
+                                                const newExpanded = new Set(expandedFolders);
+                                                if (isFolderExpanded) {
+                                                  newExpanded.delete(folder.id);
+                                                } else {
+                                                  newExpanded.add(folder.id);
+                                                }
+                                                setExpandedFolders(newExpanded);
+                                              }}
+                                              className="p-0.5 hover:bg-gray-700/50 rounded"
+                                            >
+                                              {isFolderExpanded ? (
+                                                <ChevronDown className="w-3 h-3 text-gray-400" />
+                                              ) : (
+                                                <ChevronRight className="w-3 h-3 text-gray-400" />
+                                              )}
+                                            </button>
+                                            
+                                            <Folder className="w-3 h-3 text-amber-400" />
+                                            
+                                            {isEditingThisFolder ? (
+                                              <input
+                                                type="text"
+                                                value={currentFolderName}
+                                                onChange={(e) => setFolderNames(prev => ({...prev, [folder.id]: e.target.value}))}
+                                                onBlur={() => setEditingFolder(null)}
+                                                onKeyDown={(e) => {
+                                                  if (e.key === 'Enter') {
+                                                    setEditingFolder(null);
+                                                  } else if (e.key === 'Escape') {
+                                                    setFolderNames(prev => ({...prev, [folder.id]: folder.name}));
+                                                    setEditingFolder(null);
+                                                  }
+                                                }}
+                                                className="bg-transparent text-amber-300 text-xs font-medium px-1 py-0 border border-amber-500/50 rounded focus:outline-none focus:border-amber-400 ml-1"
+                                                autoFocus
+                                              />
+                                            ) : (
+                                              <span 
+                                                className="text-amber-300 text-xs font-medium cursor-pointer hover:text-amber-200 ml-1"
+                                                onClick={() => setEditingFolder(folder.id)}
+                                              >
+                                                {currentFolderName}
+                                              </span>
+                                            )}
+                                            
+                                            <span className="text-gray-500 text-xs ml-1">
+                                              ({folderSubItems.length})
+                                            </span>
+                                          </div>
+                                        </div>
+                                        
+                                        {/* Empty cells for folder row */}
+                                        {subItemColumns.map((column) => (
+                                          <div 
+                                            key={`folder-${folder.id}-${column.id}`}
+                                            className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                            style={{ 
+                                              width: columnWidths[column.id] || 120,
+                                              minWidth: '80px',
+                                              maxWidth: 'none'
+                                            }}
+                                          >
+                                            {/* Empty for folder headers */}
+                                          </div>
+                                        ))}
+                                      </div>
+                                      
+                                      {/* Folder Sub-items (when expanded) */}
+                                      {isFolderExpanded && folderSubItems.map((subItem) => (
+                                        <div key={`sub-${subItem.id}`} className="flex hover:bg-gray-900/20 transition-all bg-gray-900/5 border-b border-gray-800/5">
+                                          {/* Empty checkbox space for sub-items */}
+                                          <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
+                                            <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                          </div>
+                                          
+                                          {/* Sub-item name with deeper indent */}
+                                          <div 
+                                            className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 sticky left-8 bg-gray-950 z-10 flex items-center"
+                                            style={{ 
+                                              width: columnWidths['item'] || 200,
+                                              minWidth: '150px',
+                                              maxWidth: 'none'
+                                            }}
+                                          >
+                                            <div className="flex items-center gap-1 text-xs text-gray-400">
+                                              <div className="w-6 h-px bg-gray-600 mr-1"></div>
+                                              <span>{subItem.name}</span>
+                                            </div>
+                                          </div>
+                                          
+                                          {/* Sub-item cells */}
+                                          {subItemColumns.map((column) => (
+                                            <div 
+                                              key={`sub-${subItem.id}-${column.id}`}
+                                              className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                              style={{ 
+                                                width: columnWidths[column.id] || 120,
+                                                minWidth: '80px',
+                                                maxWidth: 'none'
+                                              }}
+                                            >
+                                              {renderSubItemCell(subItem, column, item.id)}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      ))}
+                                    </React.Fragment>
+                                  );
+                                })}
+                            </>
+                          ) : (
+                            // Fallback: render sub-items without folders if no folders exist
+                            item.subItems?.map((subItem) => (
+                              <div key={`sub-${subItem.id}`} className="flex hover:bg-gray-900/20 transition-all bg-gray-900/5 border-b border-gray-800/5">
+                                {/* Empty checkbox space for sub-items */}
+                                <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
+                                  <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
                                 </div>
-                              </div>
-                              
-                              {/* Sub-item dedicated columns */}
-                              {subItemColumns.map((column) => (
+                                
+                                {/* Sub-item name (first column) */}
                                 <div 
-                                  key={`sub-${subItem.id}-${column.id}`}
-                                  className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                  className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 sticky left-8 bg-gray-950 z-10 flex items-center"
                                   style={{ 
-                                    width: columnWidths[column.id] || 120,
-                                    minWidth: '80px',
+                                    width: columnWidths['item'] || 200,
+                                    minWidth: '150px',
                                     maxWidth: 'none'
                                   }}
                                 >
-                                  {renderSubItemCell(subItem, column, item.id)}
+                                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                                    <div className="w-3 h-px bg-gray-600 mr-1"></div>
+                                    <span>{subItem.name}</span>
+                                  </div>
                                 </div>
-                              ))}
-                            </div>
-                          ))}
+                                
+                                {/* Sub-item dedicated columns */}
+                                {subItemColumns.map((column) => (
+                                  <div 
+                                    key={`sub-${subItem.id}-${column.id}`}
+                                    className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                    style={{ 
+                                      width: columnWidths[column.id] || 120,
+                                      minWidth: '80px',
+                                      maxWidth: 'none'
+                                    }}
+                                  >
+                                    {renderSubItemCell(subItem, column, item.id)}
+                                  </div>
+                                ))}
+                              </div>
+                            ))
+                          )}
                         </>
                       )}
                     </React.Fragment>
