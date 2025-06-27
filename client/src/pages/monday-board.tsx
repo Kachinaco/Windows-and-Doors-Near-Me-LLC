@@ -1605,6 +1605,18 @@ export default function MondayBoard() {
                                                       {subItem.name}
                                                     </span>
                                                   )}
+                                                  
+                                                  {/* Delete sub-item button */}
+                                                  <button
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      handleDeleteSubItem(subItem.id);
+                                                    }}
+                                                    className="ml-auto opacity-0 group-hover:opacity-100 p-0.5 hover:bg-red-600/20 rounded text-red-400 hover:text-red-300 transition-all"
+                                                    title="Delete sub-item"
+                                                  >
+                                                    <Trash2 className="w-3 h-3" />
+                                                  </button>
                                                 </div>
                                               </div>
                                               
