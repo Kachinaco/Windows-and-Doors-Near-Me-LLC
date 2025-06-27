@@ -1,0 +1,126 @@
+Build me a Monday.com-style board builder in Flask using Python, Jinja2 templates, SQLAlchemy, and JavaScript.
+
+I want a board like in Monday.com where I can:
+
+- Start from a blank table
+- Add columns of different types (Status, People, Text, Date, Number, Tags, Timeline, Subitems)
+- Add new rows (items)
+- Edit cell values inline
+- Save data to a database
+- Group rows if possible
+- Have a dark theme
+
+---
+
+📦 Backend:
+
+### 1. Database Models:
+
+Use SQLAlchemy and create the following tables:
+
+#### `boards`
+- id (int, primary key)
+- name (string)
+- created_by (string or user_id)
+
+#### `columns`
+- id (int, primary key)
+- board_id (foreign key to boards)
+- name (string)
+- type (enum: 'status', 'text', 'date', 'people', 'number', 'tags', 'timeline', 'subitems')
+- order (int)
+
+#### `items`
+- id (int, primary key)
+- board_id (foreign key to boards)
+- group_name (string)
+- created_on (datetime)
+
+#### `item_values`
+- id (int, primary key)
+- item_id (foreign key to items)
+- column_id (foreign key to columns)
+- value (string or JSON depending on type)
+
+---
+
+🖥️ Routes to Build:
+
+### `/board/<board_id>`
+- Render the full board table
+- Pull all columns and items for that board
+- Dynamically create a table layout using Jinja2:
+  - First row = column headers
+  - Each row = one item (job/task)
+  - Each cell = one column value rendered based on `type`
+
+### `/add_column` (POST)
+- Accept board_id, column name, type
+- Create a new column
+- Return updated list of columns
+
+### `/add_item` (POST)
+- Create a new row (item) under a board
+- For each column, generate blank default `item_values` entries
+- Return the updated board data
+
+### `/update_cell` (POST)
+- Accept item_id, column_id, value
+- Update `item_values` table with the new value
+- Return success
+
+---
+
+🎨 Frontend (HTML + JS with Bootstrap):
+
+### 1. `dashboard.html` template
+
+- Dark theme styling
+- Table layout
+- Each `<th>` shows the column name and type icon
+- Each `<td>` shows:
+  - **Status**: colored dropdown pill (gray, green, orange, red)
+  - **People**: dropdown with user names
+  - **Text**: editable input
+  - **Date**: date input
+  - **Number**: numeric input
+  - **Tags**: multiselect chips
+  - **Timeline**: two date inputs
+  - **Subitems**: empty box for now
+
+- Use JS event listeners on input changes to send updates to `/update_cell`
+
+### 2. Add New Column Modal
+- Show options for:
+  - Status
+  - People
+  - Text
+  - Date
+  - Number
+  - Tags
+  - Timeline
+  - Subitems
+- On submit, call `/add_column` with board_id, name, and type
+
+### 3. Add New Item Button
+- On click, call `/add_item`
+- Refresh the table to show the new row
+
+---
+
+🛠️ Packages to Install:
+- flask
+- flask_sqlalchemy
+- flask_cors
+- jinja2
+- python-dotenv (optional)
+
+---
+
+🔄 Real-Time Updates:
+For now, just reload the board or section using JS `fetch` on success after cell updates.
+Later, you can add WebSocket or polling support.
+
+---
+
+📂 File Layout:
