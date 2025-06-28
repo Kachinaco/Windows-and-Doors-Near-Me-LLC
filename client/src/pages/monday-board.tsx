@@ -265,10 +265,7 @@ export default function MondayBoard() {
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-green-600">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm font-medium">Online</span>
-            </div>
+            {/* Space for future controls */}
           </div>
         </div>
       </div>
