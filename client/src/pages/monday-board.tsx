@@ -1227,18 +1227,18 @@ export default function MondayBoard() {
   };
 
   return (
-    <div className="h-screen bg-gray-950 text-white flex overflow-hidden">
+    <div className="h-screen bg-white text-gray-900 flex overflow-hidden">
       {/* Main Board Container */}
       <div className={`flex flex-col transition-all duration-300 ${selectedProjectForUpdates ? 'flex-1' : 'w-full'}`}>
         {/* Enhanced Header */}
-        <header className="bg-gray-950/80 backdrop-blur-sm border-b border-gray-800/50 px-4 py-3 flex-shrink-0">
+        <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => window.location.href = '/dashboard'}
-              className="text-gray-500 hover:text-white text-sm px-3 py-2 h-8"
+              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 text-sm px-3 py-2 h-8 rounded-md"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
@@ -1247,8 +1247,8 @@ export default function MondayBoard() {
               <div className="w-3 h-3 bg-white rounded-sm" />
             </div>
             <h1 className="text-lg font-medium">Project Board</h1>
-            <div className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm">
-              Monday
+            <div className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md text-sm font-medium border border-blue-200">
+              Project Board
             </div>
           </div>
           
@@ -1265,7 +1265,7 @@ export default function MondayBoard() {
                     setUndoStack(prev => prev.slice(0, -1));
                   }
                 }}
-                className="text-gray-500 hover:text-white text-xs px-1.5 py-1 h-6"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 text-xs px-1.5 py-1 h-6 rounded-md"
               >
                 <Undo2 className="w-3 h-3" />
               </Button>
@@ -1276,7 +1276,7 @@ export default function MondayBoard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-gray-500 hover:text-blue-400 text-xs px-1.5 py-1 h-6"
+                  className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 text-xs px-1.5 py-1 h-6 rounded-md"
                 >
                   <Plus className="w-3 h-3" />
                 </Button>
