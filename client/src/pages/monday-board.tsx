@@ -627,7 +627,7 @@ export default function MondayBoard() {
         const actualField = fieldMapping[field] || field;
         
         // Process the value based on field type
-        let processedValue = value;
+        let processedValue: any = value;
         if (actualField === 'dueDate' && value) {
           processedValue = new Date(value).toISOString();
         } else if (actualField === 'priority' && value) {
@@ -644,7 +644,10 @@ export default function MondayBoard() {
         });
         
         if (response.ok) {
-          queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+          // Only invalidate after a slight delay to prevent feedback loops
+          setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+          }, 100);
         }
       } catch (error) {
         console.error('Error updating sub-item:', error);
