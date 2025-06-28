@@ -1314,30 +1314,64 @@ export default function MondayBoard() {
                             onChange={() => handleToggleSelect(item.id)}
                             className="w-4 h-4 rounded border-gray-600"
                           />
-                          <span className="font-medium text-sm text-white">
-                            {item.values.item || 'Untitled'}
-                          </span>
+                          <input
+                            value={item.values.item || ''}
+                            onChange={(e) => handleCellUpdate(item.id, 'item', e.target.value)}
+                            className="font-medium text-sm text-white bg-transparent border-none outline-none flex-1"
+                            placeholder="Untitled project"
+                          />
                         </div>
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          item.values.status === 'complete' ? 'bg-green-500/20 text-green-400' :
-                          item.values.status === 'in progress' ? 'bg-blue-500/20 text-blue-400' :
-                          item.values.status === 'signed' ? 'bg-emerald-500/20 text-emerald-400' :
-                          item.values.status === 'sent estimate' ? 'bg-purple-500/20 text-purple-400' :
-                          item.values.status === 'need attention' ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-cyan-500/20 text-cyan-400'
-                        }`}>
-                          {item.values.status || 'New Lead'}
-                        </div>
+                        <Select
+                          value={item.values.status || 'new lead'}
+                          onValueChange={(newValue) => handleCellUpdate(item.id, 'status', newValue)}
+                        >
+                          <SelectTrigger className={`px-2 py-1 rounded-full text-xs font-medium border-none ${
+                            item.values.status === 'complete' ? 'bg-green-500/20 text-green-400' :
+                            item.values.status === 'in progress' ? 'bg-blue-500/20 text-blue-400' :
+                            item.values.status === 'signed' ? 'bg-emerald-500/20 text-emerald-400' :
+                            item.values.status === 'sent estimate' ? 'bg-purple-500/20 text-purple-400' :
+                            item.values.status === 'need attention' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-cyan-500/20 text-cyan-400'
+                          }`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-gray-800 border-gray-700">
+                            <SelectItem value="new lead">New Lead</SelectItem>
+                            <SelectItem value="need attention">Need Attention</SelectItem>
+                            <SelectItem value="sent estimate">Sent Estimate</SelectItem>
+                            <SelectItem value="signed">Signed</SelectItem>
+                            <SelectItem value="in progress">In Progress</SelectItem>
+                            <SelectItem value="complete">Complete</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
-                        <div>
-                          <span className="text-gray-500">Assigned:</span> {item.values.assignedTo || 'Unassigned'}
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Assigned:</span>
+                          <input
+                            value={item.values.assignedTo || ''}
+                            onChange={(e) => handleCellUpdate(item.id, 'assignedTo', e.target.value)}
+                            className="bg-transparent text-gray-300 border-none outline-none flex-1 text-xs"
+                            placeholder="Unassigned"
+                          />
                         </div>
-                        <div>
-                          <span className="text-gray-500">Phone:</span> {item.values.phone || 'N/A'}
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Phone:</span>
+                          <input
+                            value={item.values.phone || ''}
+                            onChange={(e) => handleCellUpdate(item.id, 'phone', e.target.value)}
+                            className="bg-transparent text-gray-300 border-none outline-none flex-1 text-xs"
+                            placeholder="N/A"
+                          />
                         </div>
-                        <div className="col-span-2">
-                          <span className="text-gray-500">Location:</span> {item.values.location || 'No address'}
+                        <div className="col-span-2 flex items-center gap-1">
+                          <span className="text-gray-500">Location:</span>
+                          <input
+                            value={item.values.location || ''}
+                            onChange={(e) => handleCellUpdate(item.id, 'location', e.target.value)}
+                            className="bg-transparent text-gray-300 border-none outline-none flex-1 text-xs"
+                            placeholder="No address"
+                          />
                         </div>
                       </div>
                     </div>
