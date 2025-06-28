@@ -822,12 +822,42 @@ export default function MondayBoard() {
   const handleSubItemCellUpdate = useCallback(async (subItemId: number, field: string, value: any) => {
     console.log('Sub-item cell update triggered:', { subItemId, field, value });
     
-    // TODO: Implement sub-item update API endpoint
-    toast({ 
-      title: "Sub-item Update", 
-      description: `Updated ${field} to ${value} for sub-item ${subItemId}` 
-    });
-  }, [toast]);
+    try {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      
+      // Process the value based on field type to handle dates properly
+      let processedValue = value;
+      if (field === 'dueDate' && value) {
+        // Convert date string to ISO string for database
+        processedValue = new Date(value).toISOString();
+      }
+      
+      const response = await fetch(`/api/sub-items/${subItemId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ [field]: processedValue }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update sub-item');
+      }
+      
+      // Refetch projects to get updated data
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      
+      console.log('Sub-item updated successfully');
+    } catch (error) {
+      console.error('Error updating sub-item:', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to update sub-item", 
+        variant: "destructive" 
+      });
+    }
+  }, [toast, queryClient]);
 
   // Sub-item mutations
   const createSubItemMutation = useMutation({
