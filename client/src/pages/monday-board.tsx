@@ -1707,7 +1707,11 @@ export default function MondayBoard() {
                     >
                       {/* Main Item Row - Hover to show sub-items */}
                       <div 
-                        className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0 bg-gradient-to-r from-gray-900/5 to-transparent cursor-pointer"
+                        className={`flex transition-all border-b border-gray-800/10 last:border-b-0 bg-gradient-to-r from-gray-900/5 to-transparent cursor-pointer ${
+                          hoveredItem === item.id 
+                            ? 'bg-tron-cyan/5 shadow-lg shadow-tron-cyan/20 border-l-4 border-l-tron-cyan border-tron-cyan/40' 
+                            : 'hover:bg-gray-900/10'
+                        }`}
                         onClick={(e) => {
                           // Only trigger if not clicking on a form element or checkbox
                           const target = e.target as HTMLElement;
@@ -1770,7 +1774,11 @@ export default function MondayBoard() {
                                       className="folder-hover-group"
                                     >
                                       {/* Folder Header with Column Headers */}
-                                      <div className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-950/8 border-b-2 border-blue-500/25 shadow-sm">
+                                      <div className={`group flex transition-all bg-gradient-to-r from-blue-950/15 to-slate-950/8 border-b-2 border-blue-500/25 shadow-sm ${
+                                        hoveredFolder === folder.id 
+                                          ? 'bg-tron-blue/10 shadow-lg shadow-tron-blue/30 border-l-4 border-l-tron-blue border-tron-blue/60' 
+                                          : 'hover:bg-blue-500/8'
+                                      }`}>
                                         {/* Empty space where checkbox used to be */}
                                         <div className="w-12 px-2 py-2 border-r border-blue-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/15 to-slate-950/8 z-20">
                                         </div>
@@ -1935,7 +1943,11 @@ export default function MondayBoard() {
                                             {folderSubItems.map((subItem, index) => (
                                               <div 
                                                 key={`sub-${subItem.id}`} 
-                                                className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-900/10 border-b border-blue-500/10 relative ml-4"
+                                                className={`group flex transition-all bg-gradient-to-r from-blue-950/15 to-slate-900/10 border-b border-blue-500/10 relative ml-4 ${
+                                                  hoveredSubItem === subItem.id 
+                                                    ? 'bg-tron-cyan/5 shadow-lg shadow-tron-cyan/20 border-l-4 border-l-tron-cyan border-tron-cyan/40' 
+                                                    : 'hover:bg-blue-500/8'
+                                                }`}
                                                 onMouseEnter={() => setHoveredSubItem(subItem.id)}
                                                 onMouseLeave={() => setHoveredSubItem(null)}
                                               >
