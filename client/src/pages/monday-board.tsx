@@ -161,14 +161,19 @@ export default function MondayBoard() {
   // Mutations
   const addItemMutation = useMutation({
     mutationFn: async (data: { name: string; status: string; groupName: string }) => {
-      return apiRequest('/api/projects', {
+      const response = await fetch('/api/projects', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           name: data.name,
+          title: data.name,
           status: data.status,
-          groupName: data.groupName,
+          serviceType: 'windows'
         }),
       });
+      if (!response.ok) throw new Error('Failed to create project');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
@@ -177,10 +182,14 @@ export default function MondayBoard() {
 
   const updateProjectMutation = useMutation({
     mutationFn: async ({ id, ...data }: any) => {
-      return apiRequest(`/api/projects/${id}`, {
+      const response = await fetch(`/api/projects/${id}`, {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error('Failed to update project');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
