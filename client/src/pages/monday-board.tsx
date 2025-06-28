@@ -1625,7 +1625,7 @@ export default function MondayBoard() {
                                 {/* Sub-item Column Resizer */}
                                 <div 
                                   className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-transparent hover:bg-blue-400/50 group-hover:bg-blue-400/30"
-                                  onMouseDown={(e) => handlePointerDown(e as any, column.id)}
+                                  onPointerDown={(e) => handlePointerDown(column.id, e)}
                                 />
                                 
                                 {/* Sub-item Column Three-dot Menu */}
@@ -1657,43 +1657,6 @@ export default function MondayBoard() {
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </div>
-                            ))}
-                          </div>
-
-                          {/* Add Folder Section */}
-                          <div className="flex hover:bg-amber-500/5 transition-all border-b border-amber-500/10">
-                            {/* Empty checkbox space */}
-                            <div className="w-8 px-1 py-1.5 border-r border-gray-700/20 sticky left-0 bg-gray-950 z-20"></div>
-                            <div 
-                              className="px-3 py-1.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
-                              style={{ 
-                                width: columnWidths['item'] || 200,
-                                minWidth: '150px',
-                                maxWidth: 'none'
-                              }}
-                            >
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleAddSubItemFolder(item.id)}
-                                className="text-amber-400/80 hover:text-amber-300 hover:bg-amber-500/10 text-xs h-6 px-2 flex items-center gap-1.5 font-medium border border-amber-500/20 hover:border-amber-400/40 rounded-md transition-all"
-                              >
-                                <Folder className="w-3 h-3" />
-                                Add Folder
-                              </Button>
-                            </div>
-                            
-                            {/* Empty cells for other columns */}
-                            {subItemColumns.map((column) => (
-                              <div 
-                                key={`addsub-${item.id}-${column.id}`}
-                                className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                style={{ 
-                                  width: columnWidths[column.id] || 120,
-                                  minWidth: '80px',
-                                  maxWidth: 'none'
-                                }}
-                              />
                             ))}
                           </div>
 
@@ -1998,6 +1961,43 @@ export default function MondayBoard() {
                                     </React.Fragment>
                                   );
                                 })}
+
+                              {/* Add Folder Section - positioned after all folders */}
+                              <div className="flex hover:bg-amber-500/5 transition-all border-b border-amber-500/10">
+                                {/* Empty checkbox space */}
+                                <div className="w-8 px-1 py-1.5 border-r border-gray-700/20 sticky left-0 bg-gray-950 z-20"></div>
+                                <div 
+                                  className="px-3 py-1.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
+                                  style={{ 
+                                    width: columnWidths['item'] || 200,
+                                    minWidth: '150px',
+                                    maxWidth: 'none'
+                                  }}
+                                >
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleAddSubItemFolder(item.id)}
+                                    className="text-amber-400/80 hover:text-amber-300 hover:bg-amber-500/10 text-xs h-6 px-2 flex items-center gap-1.5 font-medium border border-amber-500/20 hover:border-amber-400/40 rounded-md transition-all"
+                                  >
+                                    <Folder className="w-3 h-3" />
+                                    Add Folder
+                                  </Button>
+                                </div>
+                                
+                                {/* Empty cells for other columns */}
+                                {subItemColumns.map((column) => (
+                                  <div 
+                                    key={`addsub-${item.id}-${column.id}`}
+                                    className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                    style={{ 
+                                      width: columnWidths[column.id] || 120,
+                                      minWidth: '80px',
+                                      maxWidth: 'none'
+                                    }}
+                                  />
+                                ))}
+                              </div>
                           </>
                         ) : (
                             // Fallback: render sub-items without folders if no folders exist
