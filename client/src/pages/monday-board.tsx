@@ -1553,8 +1553,8 @@ export default function MondayBoard() {
                           }
                         }}
                       >
-                        {/* Selection checkbox */}
-                        <div className="w-12 px-2 py-2 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
+                        {/* Selection checkbox - standardized width */}
+                        <div className="w-12 px-2 py-3 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
                           <input
                             type="checkbox"
                             checked={selectedItems.has(item.id)}
@@ -1568,12 +1568,12 @@ export default function MondayBoard() {
                         {columns.map((column, index) => (
                           <div 
                             key={`${item.id}-${column.id}`} 
-                            className={`px-3 py-3 border-r border-gray-800/10 flex-shrink-0 flex items-center ${
-                              index === 0 ? 'sticky left-12 bg-gray-950 z-10 justify-start pl-4' : 'justify-center'
+                            className={`px-4 py-3 border-r border-gray-800/10 flex-shrink-0 flex items-center ${
+                              index === 0 ? 'sticky left-12 bg-gray-950 z-10 justify-start' : 'justify-center'
                             }`}
                             style={{ 
-                              width: columnWidths[column.id] || (index === 0 ? 240 : 120),
-                              minWidth: index === 0 ? '180px' : '90px',
+                              width: columnWidths[column.id] || (index === 0 ? 240 : 140),
+                              minWidth: index === 0 ? '180px' : '100px',
                               maxWidth: 'none'
                             }}
                           >
@@ -1760,22 +1760,20 @@ export default function MondayBoard() {
                                                   <div className="w-2 h-2 bg-amber-400/80 rounded-full border border-amber-300/50 shadow-sm"></div>
                                                 </div>
                                                 
-                                                {/* Sub-item checkbox with enhanced spacing - indented for hierarchy */}
-                                                <div className="w-8 px-1 py-1.5 border-r border-blue-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/20 to-slate-900/15 z-20">
-                                                  <div className="w-4 h-full flex items-center justify-end ml-2">
-                                                    <input 
-                                                      type="checkbox" 
-                                                      className="w-3 h-3 rounded border-blue-400/60 bg-blue-900/40 text-blue-400 focus:ring-blue-400 focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900 mr-1"
+                                                {/* Sub-item checkbox - aligned with main items */}
+                                                <div className="w-12 px-2 py-3 border-r border-blue-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/20 to-slate-900/15 z-20">
+                                                  <input 
+                                                    type="checkbox" 
+                                                    className="w-4 h-4 rounded border-blue-400/60 bg-blue-900/40 text-blue-400 focus:ring-blue-400 focus:ring-1"
                                                     />
-                                                  </div>
                                                 </div>
                                                 
-                                                {/* Sub-item name with clear hierarchy indicators */}
+                                                {/* Sub-item name - aligned with main columns */}
                                                 <div 
-                                                  className="px-3 py-1.5 border-r border-blue-500/20 flex-shrink-0 sticky left-8 bg-gradient-to-r from-blue-950/20 to-slate-900/15 z-10 flex items-center"
+                                                  className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 sticky left-12 bg-gradient-to-r from-blue-950/20 to-slate-900/15 z-10 flex items-center"
                                                   style={{ 
-                                                    width: (columnWidths['item'] || 200),
-                                                    minWidth: '150px',
+                                                    width: (columnWidths['item'] || 240),
+                                                    minWidth: '180px',
                                                     maxWidth: 'none'
                                                   }}
                                                 >
