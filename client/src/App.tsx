@@ -20,7 +20,7 @@ import QuotePage from "@/pages/quote";
 import ProjectsPage from "@/pages/projects";
 import ProjectTablePage from "@/pages/project-table";
 import SimpleExcelManager from "@/pages/simple-excel-manager";
-import SimpleMondayBoard from "@/pages/monday-board-simple";
+import MondayBoard from "@/pages/monday-board";
 import PipelinePage from "@/pages/pipeline";
 import LeadsPage from "@/pages/leads";
 import SchedulingPage from "@/pages/scheduling";
@@ -61,7 +61,7 @@ function Router() {
   return (
     <Switch>
       {/* Public marketing website routes */}
-      <Route path="/" component={isAuthenticated ? SimpleMondayBoard : AuthPage} />
+      <Route path="/" component={isAuthenticated ? MondayBoard : AuthPage} />
       <Route path="/gilbert-windows-doors" component={GilbertWindowsDoors} />
       <Route path="/mesa-windows-doors" component={MesaWindowsDoors} />
       <Route path="/chandler-windows-doors" component={ChandlerWindowsDoors} />
@@ -83,8 +83,8 @@ function Router() {
       <Route path="/quote/:id" component={QuoteDashboard} />
       
       {/* Direct access to Monday.com board for testing */}
-      <Route path="/board" component={SimpleMondayBoard} />
-      <Route path="/monday-board" component={SimpleMondayBoard} />
+      <Route path="/board" component={MondayBoard} />
+      <Route path="/monday-board" component={MondayBoard} />
       
       {/* Protected user routes */}
       {isAuthenticated ? (
@@ -93,7 +93,7 @@ function Router() {
           <Route path="/catalog" component={CatalogPage} />
           <Route path="/quotes-manager" component={QuoteDashboard} />
           <Route path="/quote" component={QuotePage} />
-          <Route path="/projects" component={SimpleMondayBoard} />
+          <Route path="/projects" component={MondayBoard} />
           <Route path="/projects/:id" component={ProjectDashboardPage} />
           <Route path="/projects/:id/detail" component={ProjectDetailPage} />
           <Route path="/projects-list" component={ProjectsPage} />
