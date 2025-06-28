@@ -1506,13 +1506,13 @@ export default function MondayBoard() {
                   <div 
                     key={`group-${group.name}-${column.id}`}
                     className={`px-2 py-1.5 border-r flex-shrink-0 ${
-                      group.name === 'New Leads' ? 'border-cyan-500/20 bg-gradient-to-r from-cyan-950/10 to-slate-950/5' :
-                      group.name === 'Need Attention' ? 'border-yellow-500/20 bg-gradient-to-r from-yellow-950/10 to-slate-950/5' :
-                      group.name === 'Sent Estimate' ? 'border-purple-500/20 bg-gradient-to-r from-purple-950/10 to-slate-950/5' :
-                      group.name === 'Signed' ? 'border-emerald-500/20 bg-gradient-to-r from-emerald-950/10 to-slate-950/5' :
-                      group.name === 'In Progress' ? 'border-blue-500/20 bg-gradient-to-r from-blue-950/10 to-slate-950/5' :
-                      group.name === 'Complete' ? 'border-green-500/20 bg-gradient-to-r from-green-950/10 to-slate-950/5' :
-                      'border-gray-500/20 bg-gradient-to-r from-gray-950/10 to-slate-950/5'
+                      group.name === 'New Leads' ? 'border-cyan-200 bg-cyan-50/50' :
+                      group.name === 'Need Attention' ? 'border-yellow-200 bg-yellow-50/50' :
+                      group.name === 'Sent Estimate' ? 'border-purple-200 bg-purple-50/50' :
+                      group.name === 'Signed' ? 'border-emerald-200 bg-emerald-50/50' :
+                      group.name === 'In Progress' ? 'border-blue-200 bg-blue-50/50' :
+                      group.name === 'Complete' ? 'border-green-200 bg-green-50/50' :
+                      'border-gray-200 bg-gray-50/50'
                     }`}
                     style={{ 
                       width: columnWidths[column.id] || 100,
@@ -1523,13 +1523,13 @@ export default function MondayBoard() {
                     {/* Main column header */}
                     <div className="flex items-center justify-center w-full">
                       <span className={`text-sm font-medium uppercase tracking-wide text-center ${
-                        group.name === 'New Leads' ? 'text-cyan-300/80' :
-                        group.name === 'Need Attention' ? 'text-yellow-300/80' :
-                        group.name === 'Sent Estimate' ? 'text-purple-300/80' :
-                        group.name === 'Signed' ? 'text-emerald-300/80' :
-                        group.name === 'In Progress' ? 'text-blue-300/80' :
-                        group.name === 'Complete' ? 'text-green-300/80' :
-                        'text-gray-300/80'
+                        group.name === 'New Leads' ? 'text-cyan-600' :
+                        group.name === 'Need Attention' ? 'text-yellow-600' :
+                        group.name === 'Sent Estimate' ? 'text-purple-600' :
+                        group.name === 'Signed' ? 'text-emerald-600' :
+                        group.name === 'In Progress' ? 'text-blue-600' :
+                        group.name === 'Complete' ? 'text-green-600' :
+                        'text-gray-600'
                       }`}>
                         {column.name}
                       </span>
@@ -1545,40 +1545,40 @@ export default function MondayBoard() {
                           'bg-gray-400/60'
                         }`}></div>}
                         {column.type === 'text' && <Type className={`w-3 h-3 ${
-                          group.name === 'New Leads' ? 'text-cyan-400/60' :
-                          group.name === 'Need Attention' ? 'text-yellow-400/60' :
-                          group.name === 'Sent Estimate' ? 'text-purple-400/60' :
-                          group.name === 'Signed' ? 'text-emerald-400/60' :
-                          group.name === 'In Progress' ? 'text-blue-400/60' :
-                          group.name === 'Complete' ? 'text-green-400/60' :
-                          'text-gray-400/60'
+                          group.name === 'New Leads' ? 'text-cyan-500/80' :
+                          group.name === 'Need Attention' ? 'text-yellow-500/80' :
+                          group.name === 'Sent Estimate' ? 'text-purple-500/80' :
+                          group.name === 'Signed' ? 'text-emerald-500/80' :
+                          group.name === 'In Progress' ? 'text-blue-500/80' :
+                          group.name === 'Complete' ? 'text-green-500/80' :
+                          'text-gray-500/80'
                         }`} />}
                         {column.type === 'date' && <Calendar className={`w-3 h-3 ${
-                          group.name === 'New Leads' ? 'text-cyan-400/60' :
-                          group.name === 'Need Attention' ? 'text-yellow-400/60' :
-                          group.name === 'Sent Estimate' ? 'text-purple-400/60' :
-                          group.name === 'Signed' ? 'text-emerald-400/60' :
-                          group.name === 'In Progress' ? 'text-blue-400/60' :
-                          group.name === 'Complete' ? 'text-green-400/60' :
-                          'text-gray-400/60'
+                          group.name === 'New Leads' ? 'text-cyan-500/80' :
+                          group.name === 'Need Attention' ? 'text-yellow-500/80' :
+                          group.name === 'Sent Estimate' ? 'text-purple-500/80' :
+                          group.name === 'Signed' ? 'text-emerald-500/80' :
+                          group.name === 'In Progress' ? 'text-blue-500/80' :
+                          group.name === 'Complete' ? 'text-green-500/80' :
+                          'text-gray-500/80'
                         }`} />}
                         {column.type === 'people' && <Users className={`w-3 h-3 ${
-                          group.name === 'New Leads' ? 'text-cyan-400/60' :
-                          group.name === 'Need Attention' ? 'text-yellow-400/60' :
-                          group.name === 'Sent Estimate' ? 'text-purple-400/60' :
-                          group.name === 'Signed' ? 'text-emerald-400/60' :
-                          group.name === 'In Progress' ? 'text-blue-400/60' :
-                          group.name === 'Complete' ? 'text-green-400/60' :
-                          'text-gray-400/60'
+                          group.name === 'New Leads' ? 'text-cyan-500/80' :
+                          group.name === 'Need Attention' ? 'text-yellow-500/80' :
+                          group.name === 'Sent Estimate' ? 'text-purple-500/80' :
+                          group.name === 'Signed' ? 'text-emerald-500/80' :
+                          group.name === 'In Progress' ? 'text-blue-500/80' :
+                          group.name === 'Complete' ? 'text-green-500/80' :
+                          'text-gray-500/80'
                         }`} />}
                         {column.type === 'number' && <Hash className={`w-3 h-3 ${
-                          group.name === 'New Leads' ? 'text-cyan-400/60' :
-                          group.name === 'Need Attention' ? 'text-yellow-400/60' :
-                          group.name === 'Sent Estimate' ? 'text-purple-400/60' :
-                          group.name === 'Signed' ? 'text-emerald-400/60' :
-                          group.name === 'In Progress' ? 'text-blue-400/60' :
-                          group.name === 'Complete' ? 'text-green-400/60' :
-                          'text-gray-400/60'
+                          group.name === 'New Leads' ? 'text-cyan-500/80' :
+                          group.name === 'Need Attention' ? 'text-yellow-500/80' :
+                          group.name === 'Sent Estimate' ? 'text-purple-500/80' :
+                          group.name === 'Signed' ? 'text-emerald-500/80' :
+                          group.name === 'In Progress' ? 'text-blue-500/80' :
+                          group.name === 'Complete' ? 'text-green-500/80' :
+                          'text-gray-500/80'
                         }`} />}
                         {column.type === 'tags' && <Tag className={`w-3 h-3 ${
                           group.name === 'New Leads' ? 'text-cyan-400/60' :
