@@ -39,11 +39,21 @@ interface SubItem {
   updatedAt: Date;
 }
 
+interface SubItemFolder {
+  id: number;
+  projectId: number;
+  name: string;
+  order: number;
+  collapsed: boolean;
+  createdAt: Date;
+}
+
 interface BoardItem {
   id: number;
   groupName: string;
   values: Record<string, any>;
   subItems?: SubItem[];
+  subItemFolders?: SubItemFolder[];
 }
 
 interface BoardGroup {
