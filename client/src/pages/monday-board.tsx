@@ -26,6 +26,9 @@ interface SubItem {
   assignedTo?: string;
   folderId?: number;
   order: number;
+  notes?: string;
+  dueDate?: string;
+  priority?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -477,6 +480,31 @@ export default function MondayBoard() {
     const selectedInGroup = group.items.filter(item => selectedItems.has(item.id));
     return selectedInGroup.length > 0 && selectedInGroup.length < group.items.length;
   }, [boardGroups, selectedItems]);
+
+  // Handle updating sub-item properties
+  const handleUpdateSubItem = useCallback(async (subItemId: number, updates: Record<string, any>) => {
+    try {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/sub-items/${subItemId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates)
+      });
+
+      if (response.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+        toast({ title: "Success", description: "Sub-item updated successfully" });
+      } else {
+        throw new Error('Failed to update sub-item');
+      }
+    } catch (error) {
+      console.error('Error updating sub-item:', error);
+      toast({ title: "Error", description: "Failed to update sub-item", variant: "destructive" });
+    }
+  }, [queryClient, toast]);
 
   const handlePointerDown = (columnId: string, e: React.PointerEvent) => {
     e.preventDefault();
@@ -1842,29 +1870,58 @@ export default function MondayBoard() {
                                                       maxWidth: 'none'
                                                     }}
                                                   >
-                                                    {/* Render sub-item data based on sub-item column types */}
+                                                    {/* Render editable sub-item data based on column types */}
                                                     <div className="text-xs text-gray-300 text-center w-full">
                                                       {column.type === 'status' && (
-                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                          subItem.status === 'not_started' ? 'bg-gray-600/30 text-gray-300' :
-                                                          subItem.status === 'in_progress' ? 'bg-blue-600/30 text-blue-300' :
-                                                          subItem.status === 'completed' ? 'bg-green-600/30 text-green-300' :
-                                                          'bg-gray-600/30 text-gray-300'
-                                                        }`}>
-                                                          {subItem.status?.replace('_', ' ') || 'Not Started'}
-                                                        </span>
+                                                        <select
+                                                          value={subItem.status || 'not_started'}
+                                                          onChange={(e) => handleUpdateSubItem(subItem.id, { status: e.target.value })}
+                                                          className={`px-2 py-1 rounded-full text-xs font-medium border-0 bg-transparent cursor-pointer hover:bg-blue-500/20 transition-colors ${
+                                                            subItem.status === 'not_started' ? 'bg-gray-600/30 text-gray-300' :
+                                                            subItem.status === 'in_progress' ? 'bg-blue-600/30 text-blue-300' :
+                                                            subItem.status === 'completed' ? 'bg-green-600/30 text-green-300' :
+                                                            'bg-gray-600/30 text-gray-300'
+                                                          }`}
+                                                        >
+                                                          <option value="not_started">Not Started</option>
+                                                          <option value="in_progress">In Progress</option>
+                                                          <option value="completed">Completed</option>
+                                                        </select>
                                                       )}
                                                       {column.type === 'people' && (
-                                                        <span className="text-blue-300 font-medium">{subItem.assignedTo || '-'}</span>
+                                                        <input
+                                                          type="text"
+                                                          value={subItem.assignedTo || ''}
+                                                          onChange={(e) => handleUpdateSubItem(subItem.id, { assignedTo: e.target.value })}
+                                                          placeholder="Assign to..."
+                                                          className="w-full bg-transparent text-blue-300 font-medium text-center border-0 outline-none hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors px-1 py-1 rounded"
+                                                        />
                                                       )}
                                                       {column.type === 'text' && (
-                                                        <span className="text-gray-300">{column.name === 'Notes' ? 'Add notes...' : '-'}</span>
+                                                        <input
+                                                          type="text"
+                                                          value={(subItem as any).notes || ''}
+                                                          onChange={(e) => handleUpdateSubItem(subItem.id, { notes: e.target.value })}
+                                                          placeholder="Add notes..."
+                                                          className="w-full bg-transparent text-gray-300 text-center border-0 outline-none hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors px-1 py-1 rounded"
+                                                        />
                                                       )}
                                                       {column.type === 'date' && (
-                                                        <span className="text-gray-400">-</span>
+                                                        <input
+                                                          type="date"
+                                                          value={(subItem as any).dueDate || ''}
+                                                          onChange={(e) => handleUpdateSubItem(subItem.id, { dueDate: e.target.value })}
+                                                          className="w-full bg-transparent text-gray-400 text-center border-0 outline-none hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors px-1 py-1 rounded text-xs"
+                                                        />
                                                       )}
                                                       {column.type === 'number' && (
-                                                        <span className="text-gray-400">-</span>
+                                                        <input
+                                                          type="number"
+                                                          value={(subItem as any).priority || ''}
+                                                          onChange={(e) => handleUpdateSubItem(subItem.id, { priority: parseInt(e.target.value) || 0 })}
+                                                          placeholder="Priority"
+                                                          className="w-full bg-transparent text-gray-400 text-center border-0 outline-none hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors px-1 py-1 rounded"
+                                                        />
                                                       )}
                                                     </div>
                                                   </div>
