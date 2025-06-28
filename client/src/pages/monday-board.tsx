@@ -1777,8 +1777,8 @@ export default function MondayBoard() {
                                     </React.Fragment>
                                   );
                                 })}
-                            </>
-                          ) : (
+                          </>
+                        ) : (
                             // Fallback: render sub-items without folders if no folders exist
                             item.subItems?.map((subItem) => (
                               <div key={`sub-${subItem.id}`} className="flex hover:bg-gray-900/20 transition-all bg-gray-900/5 border-b border-gray-800/5">
