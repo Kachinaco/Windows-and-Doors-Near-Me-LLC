@@ -1633,28 +1633,39 @@ export default function MondayBoard() {
                                       {/* Sub-items in this folder */}
                                       {expandedFolders.has(folder.id) && (
                                         <>
-                                          {folderSubItems.map((subItem) => (
-                                            <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/5 transition-all bg-slate-900/20 border-b border-slate-700/30">
-                                              {/* Sub-item checkbox */}
-                                              <div className="w-8 px-1 py-1.5 border-r border-slate-700/20 flex items-center justify-center sticky left-0 bg-slate-900/20 z-20">
-                                                <input 
-                                                  type="checkbox" 
-                                                  className="w-3 h-3 rounded border-slate-500/50 bg-slate-800/50 text-blue-500 focus:ring-blue-400 focus:ring-1"
-                                                />
-                                              </div>
-                                              
-                                              {/* Sub-item name with deeper indent */}
-                                              <div 
-                                                className="px-3 py-1.5 border-r border-slate-700/20 flex-shrink-0 sticky left-8 bg-slate-900/20 z-10 flex items-center"
-                                                style={{ 
-                                                  width: columnWidths['item'] || 200,
-                                                  minWidth: '150px',
-                                                  maxWidth: 'none'
-                                                }}
-                                              >
-                                                <div className="flex items-center gap-2 text-sm">
-                                                  <div className="w-6 h-px bg-blue-400/40"></div>
-                                                  <div className="w-1 h-1 bg-blue-400/60 rounded-full"></div>
+                                          {/* Folder content container with enhanced visual grouping */}
+                                          <div className="relative border-l-2 border-amber-400/30 ml-4">
+                                            {folderSubItems.map((subItem, index) => (
+                                              <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-900/10 border-b border-blue-500/10 relative">
+                                                {/* Connection line to folder */}
+                                                <div className="absolute left-0 top-0 w-3 h-full flex items-center">
+                                                  <div className="w-3 h-px bg-amber-400/40"></div>
+                                                </div>
+                                                
+                                                {/* Sub-item checkbox */}
+                                                <div className="w-8 px-1 py-1.5 border-r border-blue-500/15 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/15 to-slate-900/10 z-20 ml-4">
+                                                  <input 
+                                                    type="checkbox" 
+                                                    className="w-3 h-3 rounded border-blue-400/50 bg-blue-900/30 text-blue-400 focus:ring-blue-400 focus:ring-1"
+                                                  />
+                                                </div>
+                                                
+                                                {/* Sub-item name with enhanced indent and visual hierarchy */}
+                                                <div 
+                                                  className="px-3 py-1.5 border-r border-blue-500/15 flex-shrink-0 sticky left-12 bg-gradient-to-r from-blue-950/15 to-slate-900/10 z-10 flex items-center"
+                                                  style={{ 
+                                                    width: (columnWidths['item'] || 200) - 16,
+                                                    minWidth: '134px',
+                                                    maxWidth: 'none'
+                                                  }}
+                                                >
+                                                  <div className="flex items-center gap-2 text-sm pl-2">
+                                                    {/* Enhanced visual connection */}
+                                                    <div className="flex items-center gap-1">
+                                                      <div className="w-2 h-px bg-blue-400/50"></div>
+                                                      <div className="w-1.5 h-1.5 bg-blue-400/70 rounded-full border border-blue-300/30"></div>
+                                                      <div className="w-1 h-px bg-blue-400/30"></div>
+                                                    </div>
                                                   {editingSubItem === subItem.id ? (
                                                     <input
                                                       type="text"
@@ -1686,74 +1697,80 @@ export default function MondayBoard() {
                                                     >
                                                       {subItem.name}
                                                     </span>
-                                                  )}
-                                                  
-                                                  {/* Delete sub-item button */}
-                                                  <button
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      handleDeleteSubItem(subItem.id);
-                                                    }}
-                                                    className="ml-auto opacity-0 group-hover:opacity-100 p-0.5 hover:bg-red-600/20 rounded text-red-400 hover:text-red-300 transition-all"
-                                                    title="Delete sub-item"
-                                                  >
-                                                    <Trash2 className="w-3 h-3" />
-                                                  </button>
+                                                    )}
+                                                    
+                                                    {/* Delete sub-item button with enhanced styling */}
+                                                    <button
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteSubItem(subItem.id);
+                                                      }}
+                                                      className="ml-auto opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 rounded-md text-red-400 hover:text-red-300 transition-all text-xs"
+                                                      title="Delete sub-item"
+                                                    >
+                                                      <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                  </div>
                                                 </div>
+                                                
+                                                {/* Sub-item cells with enhanced styling */}
+                                                {subItemColumns.map((column) => (
+                                                  <div 
+                                                    key={`sub-${subItem.id}-${column.id}`}
+                                                    className="px-2 py-1.5 border-r border-blue-500/10 flex-shrink-0 bg-gradient-to-r from-blue-950/10 to-slate-900/5"
+                                                    style={{ 
+                                                      width: columnWidths[column.id] || 120,
+                                                      minWidth: '80px',
+                                                      maxWidth: 'none'
+                                                    }}
+                                                  >
+                                                    {renderSubItemCell(subItem, column, item.id)}
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            ))}
+                                            
+                                            {/* Add Sub Item button with enhanced styling */}
+                                            <div className="flex hover:bg-blue-500/5 transition-all bg-gradient-to-r from-blue-950/8 to-slate-900/5 border-b border-blue-500/10 relative">
+                                              {/* Connection line to folder */}
+                                              <div className="absolute left-0 top-0 w-3 h-full flex items-center">
+                                                <div className="w-3 h-px bg-amber-400/30"></div>
                                               </div>
                                               
-                                              {/* Sub-item cells */}
+                                              {/* Empty checkbox space with matching spacing */}
+                                              <div className="w-8 px-1 py-1.5 border-r border-blue-500/10 sticky left-0 bg-gradient-to-r from-blue-950/8 to-slate-900/5 z-20 ml-4"></div>
+                                              <div 
+                                                className="px-2 py-1.5 flex-shrink-0 sticky left-12 bg-gradient-to-r from-blue-950/8 to-slate-900/5 z-10"
+                                                style={{ 
+                                                  width: (columnWidths['item'] || 200) - 16,
+                                                  minWidth: '134px',
+                                                  maxWidth: 'none'
+                                                }}
+                                              >
+                                                <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  onClick={() => handleAddSubItemToFolder(item.id, folder.id)}
+                                                  className="text-blue-400/70 hover:text-blue-300 hover:bg-blue-500/10 text-xs h-6 px-2 flex items-center gap-1.5 ml-2 border border-blue-500/20 rounded-md transition-all"
+                                                >
+                                                  <Plus className="w-3 h-3" />
+                                                  Add Sub Item
+                                                </Button>
+                                              </div>
+                                              
+                                              {/* Empty cells for other columns with matching background */}
                                               {subItemColumns.map((column) => (
                                                 <div 
-                                                  key={`sub-${subItem.id}-${column.id}`}
-                                                  className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                                  key={`add-sub-${folder.id}-${column.id}`}
+                                                  className="px-2 py-1.5 border-r border-blue-500/10 flex-shrink-0 bg-gradient-to-r from-blue-950/8 to-slate-900/5"
                                                   style={{ 
                                                     width: columnWidths[column.id] || 120,
                                                     minWidth: '80px',
                                                     maxWidth: 'none'
                                                   }}
-                                                >
-                                                  {renderSubItemCell(subItem, column, item.id)}
-                                                </div>
+                                                />
                                               ))}
                                             </div>
-                                          ))}
-                                          
-                                          {/* Add Sub Item button (only appears when folder is expanded) */}
-                                          <div className="flex hover:bg-gray-900/10 transition-all">
-                                            {/* Empty checkbox space */}
-                                            <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 sticky left-0 bg-gray-950 z-20"></div>
-                                            <div 
-                                              className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
-                                              style={{ 
-                                                width: columnWidths['item'] || 200,
-                                                minWidth: '150px',
-                                                maxWidth: 'none'
-                                              }}
-                                            >
-                                              <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleAddSubItemToFolder(item.id, folder.id)}
-                                                className="text-gray-600 hover:text-blue-400 text-xs h-5 px-1 flex items-center gap-1 ml-6"
-                                              >
-                                                <Plus className="w-2.5 h-2.5" />
-                                                Add Sub Item
-                                              </Button>
-                                            </div>
-                                            
-                                            {/* Empty cells for other columns */}
-                                            {subItemColumns.map((column) => (
-                                              <div 
-                                                key={`add-sub-${folder.id}-${column.id}`}
-                                                className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                                style={{ 
-                                                  width: columnWidths[column.id] || 120,
-                                                  minWidth: '80px',
-                                                  maxWidth: 'none'
-                                                }}
-                                              />
-                                            ))}
                                           </div>
                                         </>
                                       )}
