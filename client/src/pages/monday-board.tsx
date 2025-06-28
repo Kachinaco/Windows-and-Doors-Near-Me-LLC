@@ -1526,6 +1526,66 @@ export default function MondayBoard() {
                           </div>
                         ))}
                       </div>
+
+                      {/* Updates Section (when opened) */}
+                      {openUpdates.has(item.id) && (
+                        <div className="bg-slate-900/30 border-l-4 border-blue-500/50 mx-8 px-4 py-3 border-b border-gray-800/20">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-sm font-medium text-gray-300">Project Updates & Comments</h4>
+                            <span className="text-xs text-gray-500">Project #{item.id}</span>
+                          </div>
+                          
+                          {/* Updates List */}
+                          <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
+                            {/* Sample updates - replace with real data */}
+                            <div className="flex space-x-3">
+                              <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white">
+                                JD
+                              </div>
+                              <div className="flex-1">
+                                <div className="text-xs text-gray-400">
+                                  <span className="text-gray-300 font-medium">John Doe</span> · 2 hours ago
+                                </div>
+                                <p className="text-sm text-gray-300 mt-1">Initial consultation completed. Customer is interested in 6 windows for living room and kitchen.</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex space-x-3">
+                              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-xs text-white">
+                                SM
+                              </div>
+                              <div className="flex-1">
+                                <div className="text-xs text-gray-400">
+                                  <span className="text-gray-300 font-medium">Sarah Miller</span> · 1 day ago
+                                </div>
+                                <p className="text-sm text-gray-300 mt-1">Measurements taken. Preparing detailed quote with V400 series windows.</p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Add Update Form */}
+                          <div className="flex space-x-3">
+                            <div className="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center text-xs text-white">
+                              {user?.username?.[0]?.toUpperCase() || 'U'}
+                            </div>
+                            <div className="flex-1">
+                              <textarea
+                                placeholder="Add an update or comment..."
+                                className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                rows={2}
+                              />
+                              <div className="flex justify-end mt-2 space-x-2">
+                                <Button size="sm" variant="outline" className="text-xs">
+                                  Cancel
+                                </Button>
+                                <Button size="sm" className="text-xs bg-blue-600 hover:bg-blue-700">
+                                  Post Update
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       
                       {/* Sub-Items Rows (when expanded) */}
                       {expandedSubItems.has(item.id) && (
