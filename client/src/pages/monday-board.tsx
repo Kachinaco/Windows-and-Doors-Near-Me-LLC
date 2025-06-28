@@ -1172,24 +1172,24 @@ export default function MondayBoard() {
     <div className="h-screen bg-gray-950 text-white flex overflow-hidden">
       {/* Main Board Container */}
       <div className={`flex flex-col transition-all duration-300 ${selectedProjectForUpdates ? 'flex-1' : 'w-full'}`}>
-        {/* Ultra-Slim Header */}
-        <header className="bg-gray-950/80 backdrop-blur-sm border-b border-gray-800/50 px-3 py-1.5 flex-shrink-0">
+        {/* Enhanced Header */}
+        <header className="bg-gray-950/80 backdrop-blur-sm border-b border-gray-800/50 px-4 py-3 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => window.location.href = '/dashboard'}
-              className="text-gray-500 hover:text-white text-xs px-1.5 py-1 h-6"
+              className="text-gray-500 hover:text-white text-sm px-3 py-2 h-8"
             >
-              <ArrowLeft className="w-3 h-3 mr-1" />
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
-            <div className="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
-              <div className="w-2 h-2 bg-white rounded-sm" />
+            <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
+              <div className="w-3 h-3 bg-white rounded-sm" />
             </div>
-            <h1 className="text-sm font-medium">Project Board</h1>
-            <div className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">
+            <h1 className="text-lg font-medium">Project Board</h1>
+            <div className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm">
               Monday
             </div>
           </div>
@@ -1336,33 +1336,33 @@ export default function MondayBoard() {
       {/* Compact Board */}
       <div className="flex-1 overflow-auto bg-gray-950">
         <div className="min-w-max">
-          {/* Ultra-Slim Column Headers */}
+          {/* Enhanced Column Headers */}
           <div className="sticky top-0 bg-gray-950/95 backdrop-blur-sm z-10 border-b border-gray-800/50">
             <div className="flex">
               {/* Selection checkbox header */}
-              <div className="w-8 px-1 py-1.5 border-r border-gray-800/30 flex items-center justify-center sticky left-0 bg-gray-950/95 backdrop-blur-sm z-30">
+              <div className="w-12 px-2 py-3 border-r border-gray-800/30 flex items-center justify-center sticky left-0 bg-gray-950/95 backdrop-blur-sm z-30">
                 <input
                   type="checkbox"
                   checked={selectedItems.size > 0 && selectedItems.size === boardItems.length}
                   onChange={selectedItems.size === boardItems.length ? handleSelectNone : handleSelectAll}
-                  className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+                  className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
                 />
               </div>
               {columns.map((column, index) => (
                 <div 
                   key={column.id} 
-                  className={`px-2 py-1.5 border-r border-gray-800/30 relative group flex-shrink-0 ${
-                    index === 0 ? 'sticky left-8 bg-gray-950/95 backdrop-blur-sm z-20' : ''
+                  className={`px-3 py-3 border-r border-gray-800/30 relative group flex-shrink-0 ${
+                    index === 0 ? 'sticky left-12 bg-gray-950/95 backdrop-blur-sm z-20' : ''
                   }`}
                   style={{ 
-                    width: columnWidths[column.id] || (index === 0 ? 200 : 100),
-                    minWidth: index === 0 ? '150px' : '70px',
+                    width: columnWidths[column.id] || (index === 0 ? 240 : 120),
+                    minWidth: index === 0 ? '180px' : '90px',
                     maxWidth: 'none'
                   }}
                 >
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-2">
                     {getColumnIcon(column.type)}
-                    <span className="font-medium text-xs text-gray-400">{column.name}</span>
+                    <span className="font-medium text-sm text-gray-300">{column.name}</span>
                   </div>
                   {index < columns.length - 1 && (
                     <div 
@@ -1384,8 +1384,8 @@ export default function MondayBoard() {
           {/* Groups and Items */}
           {boardGroups.map((group) => (
             <div key={group.name} className="border-b border-gray-800/50 last:border-b-0">
-              {/* Ultra-Slim Group Header */}
-              <div className={`px-2 py-1.5 border-b border-gray-800/20 flex items-center space-x-1.5 hover:bg-gray-900/40 transition-all ${
+              {/* Enhanced Group Header */}
+              <div className={`px-3 py-3 border-b border-gray-800/20 flex items-center space-x-2 hover:bg-gray-900/40 transition-all ${
                 group.name === 'New Leads' ? 'bg-gradient-to-r from-cyan-900/20 to-gray-900/20' :
                 group.name === 'Need Attention' ? 'bg-gradient-to-r from-yellow-900/20 to-gray-900/20' :
                 group.name === 'Sent Estimate' ? 'bg-gradient-to-r from-purple-900/20 to-gray-900/20' :
@@ -1431,7 +1431,7 @@ export default function MondayBoard() {
                     group.name === 'Complete' ? 'bg-green-500' :
                     'bg-gray-500'
                   }`} />
-                  <span className={`text-xs font-medium ${
+                  <span className={`text-sm font-medium ${
                     group.name === 'New Leads' ? 'text-cyan-300' :
                     group.name === 'Need Attention' ? 'text-yellow-300' :
                     group.name === 'Sent Estimate' ? 'text-purple-300' :
@@ -1440,7 +1440,7 @@ export default function MondayBoard() {
                     group.name === 'Complete' ? 'text-green-300' :
                     'text-gray-400'
                   }`}>{group.name}</span>
-                  <span className="text-xs text-gray-500 font-medium">({group.items.length})</span>
+                  <span className="text-sm text-gray-500 font-medium">({group.items.length})</span>
                 </div>
                 
                 {/* Main column headers on group header row */}
@@ -1554,7 +1554,7 @@ export default function MondayBoard() {
                         }}
                       >
                         {/* Selection checkbox */}
-                        <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
+                        <div className="w-12 px-2 py-2 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
                           <input
                             type="checkbox"
                             checked={selectedItems.has(item.id)}
@@ -1562,18 +1562,18 @@ export default function MondayBoard() {
                               e.stopPropagation();
                               handleToggleSelect(item.id);
                             }}
-                            className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+                            className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
                           />
                         </div>
                         {columns.map((column, index) => (
                           <div 
                             key={`${item.id}-${column.id}`} 
-                            className={`px-1 py-0.5 border-r border-gray-800/10 flex-shrink-0 flex items-center ${
-                              index === 0 ? 'sticky left-8 bg-gray-950 z-10 justify-start pl-3' : 'justify-center'
+                            className={`px-3 py-3 border-r border-gray-800/10 flex-shrink-0 flex items-center ${
+                              index === 0 ? 'sticky left-12 bg-gray-950 z-10 justify-start pl-4' : 'justify-center'
                             }`}
                             style={{ 
-                              width: columnWidths[column.id] || (index === 0 ? 200 : 100),
-                              minWidth: index === 0 ? '150px' : '70px',
+                              width: columnWidths[column.id] || (index === 0 ? 240 : 120),
+                              minWidth: index === 0 ? '180px' : '90px',
                               maxWidth: 'none'
                             }}
                           >
