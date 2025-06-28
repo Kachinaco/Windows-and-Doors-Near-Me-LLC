@@ -1764,39 +1764,341 @@ export default function MondayBoard() {
                                         </div>
                                       )}
                                       
-                                      {/* Sub-items in this folder */}
+                                      {/* Sub-items - each sub-item has columns pre-loaded but blank */}
+                                      {expandedFolders.has(folder.id) && folderSubItems.map((subItem) => (
+                                        <div key={`sub-${subItem.id}`} className="flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-900/10 border-b border-blue-500/10">
+                                          {/* Sub-item checkbox - aligned with main items */}
+                                          <div className="w-12 px-2 py-3 border-r border-blue-500/20 flex items-center justify-center">
+                                            <input 
+                                              type="checkbox" 
+                                              className="w-4 h-4 rounded border-blue-500/50 bg-blue-900/30 text-blue-400 focus:ring-blue-400 focus:ring-1"
+                                            />
+                                          </div>
+                                          
+                                          {/* Sub-item columns - each column with exact same width as headers */}
+                                          {subItemColumns.map((column, colIndex) => (
+                                            <div 
+                                              key={`sub-col-${subItem.id}-${column.id}`}
+                                              className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 flex items-center"
+                                              style={{ 
+                                                width: columnWidths[column.id] || (colIndex === 0 ? 240 : 140),
+                                                minWidth: colIndex === 0 ? '180px' : '100px',
+                                                maxWidth: 'none'
+                                              }}
+                                            >
+                                              <span 
+                                                className="text-blue-200 text-sm cursor-pointer hover:bg-blue-500/20 px-2 py-1 rounded w-full"
+                                              >
+                                                {subItem[column.id] || 'Click to edit'}
+                                              </span>
+                                            </div>
+                                          ))}
+                                          
+                                          {/* Actions column aligned with main items */}
+                                          <div className="w-12 px-2 py-3 flex items-center justify-center">
+                                            <DropdownMenu>
+                                              <DropdownMenuTrigger className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-blue-400 hover:text-blue-300">
+                                                  <MoreHorizontal className="w-4 h-4" />
+                                                </Button>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent align="end" className="bg-gray-900 border-gray-700">
+                                                <DropdownMenuItem 
+                                                  onClick={() => handleDeleteSubItem(subItem.id)}
+                                                  className="text-red-400 hover:bg-red-900/20"
+                                                >
+                                                  Delete sub-item
+                                                </DropdownMenuItem>
+                                              </DropdownMenuContent>
+                                            </DropdownMenu>
+                                          </div>
+                                        </div>
+                                      ))}
+                                      
+                                      {/* Add sub-item button - aligned with folder contents */}
                                       {expandedFolders.has(folder.id) && (
-                                        <>
-                                          {/* Folder content container with enhanced visual grouping */}
-                                          <div className="relative ml-3">
-                                            {/* Vertical connection line for entire folder group */}
-                                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400/60 via-blue-400/40 to-blue-400/20 rounded-full"></div>
-                                            
-                                            {folderSubItems.map((subItem, index) => (
-                                              <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-900/10 border-b border-blue-500/10 relative ml-4">
-                                                {/* Enhanced connection line to folder */}
-                                                <div className="absolute -left-4 top-0 w-4 h-full flex items-center">
-                                                  <div className="w-full h-px bg-gradient-to-r from-blue-400/60 to-blue-400/60"></div>
-                                                </div>
-                                                
-                                                {/* Connection dot */}
-                                                <div className="absolute -left-5 top-1/2 transform -translate-y-1/2">
-                                                  <div className="w-2 h-2 bg-blue-400/80 rounded-full border border-blue-300/50 shadow-sm"></div>
-                                                </div>
-                                                
-                                                {/* Sub-item checkbox - aligned with main items */}
-                                                <div className="w-12 px-2 py-3 border-r border-blue-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/20 to-slate-900/15 z-20">
-                                                  <input 
-                                                    type="checkbox" 
-                                                    className="w-4 h-4 rounded border-blue-500/50 bg-blue-900/30 text-blue-400 focus:ring-blue-400 focus:ring-1"
-                                                  />
-                                                </div>
-                                                
-                                                {/* Sub-item columns - each column with exact same width as headers */}
-                                                {subItemColumns.map((column, colIndex) => (
-                                                  <div 
-                                                    key={`sub-col-${subItem.id}-${column.id}`}
-                                                    className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 flex items-center relative group/cell"
+                                        <div className="flex hover:bg-blue-500/5 transition-all bg-gradient-to-r from-blue-950/10 to-slate-900/5 border-b border-blue-500/10">
+                                          {/* Button alignment with checkbox column */}
+                                          <div className="w-12 px-2 py-3 border-r border-blue-500/20 flex items-center justify-center">
+                                            <Plus className="w-4 h-4 text-blue-400/60" />
+                                          </div>
+                                          
+                                          {/* Add button spans across all sub-item columns */}
+                                          <div 
+                                            className="flex-1 px-4 py-3 border-r border-blue-500/20 flex items-center cursor-pointer text-blue-400/70 hover:text-blue-300 hover:bg-blue-500/10 transition-colors"
+                                            onClick={() => handleAddSubItem(folder.id)}
+                                          >
+                                            <span className="text-sm font-medium">Add sub-item</span>
+                                          </div>
+                                          
+                                          {/* Actions column alignment */}
+                                          <div className="w-12 px-2 py-3"></div>
+                                        </div>
+                                      )}
+                                    </React.Fragment>
+                                  ))}
+                                </>
+                              )}
+                              
+                              {/* Add button for new sub-item folder */}
+                              <div className="flex hover:bg-blue-500/5 transition-all bg-gradient-to-r from-blue-950/5 to-slate-900/5 border-b border-blue-500/10">
+                                <div className="w-12 px-2 py-3 border-r border-blue-500/20 flex items-center justify-center">
+                                  <Plus className="w-4 h-4 text-blue-400/60" />
+                                </div>
+                                <div 
+                                  className="flex-1 px-4 py-3 border-r border-blue-500/20 flex items-center cursor-pointer text-blue-400/70 hover:text-blue-300 hover:bg-blue-500/10 transition-colors"
+                                  onClick={() => handleAddSubItemFolder(group.name)}
+                                >
+                                  <span className="text-sm font-medium">Add folder</span>
+                                </div>
+                                <div className="w-12 px-2 py-3"></div>
+                              </div>
+                            </div>
+                          )}
+                        </React.Fragment>
+                      ))}
+
+                      {/* Add item button for each group */}
+                      <div className="flex hover:bg-blue-500/5 transition-all bg-gradient-to-r from-blue-950/5 to-slate-900/5 border-b border-blue-500/10">
+                        <div className="w-12 px-2 py-3 border-r border-blue-500/20 flex items-center justify-center">
+                          <Plus className="w-4 h-4 text-blue-400/60" />
+                        </div>
+                        <div 
+                          className="flex-1 px-4 py-3 border-r border-blue-500/20 flex items-center cursor-pointer text-blue-400/70 hover:text-blue-300 hover:bg-blue-500/10 transition-colors"
+                          onClick={() => {
+                            addItemMutation.mutate({ 
+                              name: 'New Project',
+                              status: group.name === 'New Leads' ? 'new lead' : group.name.toLowerCase().replace(' ', '_'),
+                              groupName: group.name
+                            });
+                          }}
+                          disabled={addItemMutation.isPending}
+                        >
+                          <span className="text-sm font-medium">Add item</span>
+                        </div>
+                        <div className="w-12 px-2 py-3"></div>
+                      </div>
+                    </div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+
+            {/* Footer Section */}
+            <div className="border-t border-blue-500/20 bg-gradient-to-r from-gray-950/50 to-blue-950/20 px-6 py-4">
+              <div className="flex items-center justify-between text-sm text-blue-300">
+                <div className="flex items-center gap-4">
+                  <span>
+                    Total Items: {boardItems.length}
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Columns: {columns.length}
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Groups: {boardGroups.length}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* Team avatars */}
+                  <div className="flex -space-x-2">
+                    {onlineUsers.map((user, index) => (
+                      <div key={index} className="w-6 h-6 rounded-full bg-blue-500 border-2 border-gray-900 flex items-center justify-center text-xs text-white font-medium">
+                        {user.slice(0,1).toUpperCase()}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bulk Actions Panel */}
+          {selectedItems.length > 0 && (
+            <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 border border-blue-500/30 rounded-lg shadow-2xl px-6 py-4 flex items-center gap-4 z-50">
+              <span className="text-blue-200 text-sm font-medium">
+                {selectedItems.length} item{selectedItems.length !== 1 ? 's' : ''} selected
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    bulkArchiveMutation.mutate(selectedItems);
+                  }}
+                  disabled={bulkArchiveMutation.isPending}
+                  className="text-amber-400 border-amber-500/50 hover:bg-amber-500/10"
+                >
+                  Archive
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    bulkTrashMutation.mutate(selectedItems);
+                  }}
+                  disabled={bulkTrashMutation.isPending}
+                  className="text-orange-400 border-orange-500/50 hover:bg-orange-500/10"
+                >
+                  Move to Trash
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    bulkDeleteMutation.mutate(selectedItems);
+                  }}
+                  disabled={bulkDeleteMutation.isPending}
+                  className="text-red-400 border-red-500/50 hover:bg-red-500/10"
+                >
+                  Delete
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedItems([])}
+                  className="text-gray-400 hover:text-gray-300"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Side Panel */}
+          {sidePanelOpen && selectedMainItem && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex justify-end">
+              <div className="w-1/3 bg-gray-900 border-l border-blue-500/30 h-full overflow-y-auto">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-blue-200">
+                      {selectedMainItem.name}
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSidePanelOpen(false);
+                        setSelectedMainItem(null);
+                      }}
+                      className="text-gray-400 hover:text-gray-300"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  {/* Updates Section */}
+                  <div className="space-y-4">
+                    <h4 className="text-md font-medium text-blue-300 mb-3">Recent Updates</h4>
+                    {updatesLoading ? (
+                      <div className="text-gray-400 text-sm">Loading updates...</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {projectUpdates && projectUpdates.length > 0 ? (
+                          projectUpdates.slice(0, 5).map((update: any) => (
+                            <div key={update.id} className="bg-gray-800 p-3 rounded border border-blue-500/20">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white">
+                                  {user?.firstName?.charAt(0) || 'U'}
+                                </div>
+                                <div className="text-sm">
+                                  <span className="text-blue-200 font-medium">
+                                    {user?.firstName} {user?.lastName}
+                                  </span>
+                                  <span className="text-gray-400 ml-2">
+                                    {new Date(update.createdAt).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-gray-300 text-sm">{update.content}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-gray-400 text-sm">No updates yet</div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Add Update Form */}
+                    <div className="mt-6 p-4 bg-gray-800 rounded border border-blue-500/20">
+                      <h5 className="text-sm font-medium text-blue-300 mb-3">Add Update</h5>
+                      <textarea
+                        value={updateContent}
+                        onChange={(e) => setUpdateContent(e.target.value)}
+                        placeholder="Share an update..."
+                        className="w-full p-3 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 text-sm"
+                        rows={3}
+                        disabled={isPosting}
+                      />
+                      
+                      {/* File Upload */}
+                      <div className="mt-3">
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*,.pdf,.doc,.docx"
+                          onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
+                          className="hidden"
+                          id="file-upload"
+                        />
+                        <label
+                          htmlFor="file-upload"
+                          className="inline-flex items-center gap-2 px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded text-sm text-white cursor-pointer transition-colors"
+                        >
+                          <Paperclip className="w-4 h-4" />
+                          Attach Files
+                        </label>
+                        {selectedFiles.length > 0 && (
+                          <div className="mt-2 text-xs text-gray-400">
+                            {selectedFiles.map((file, index) => (
+                              <div key={index} className="flex items-center gap-2">
+                                <span>{file.name}</span>
+                                <button
+                                  onClick={() => setSelectedFiles(files => files.filter((_, i) => i !== index))}
+                                  className="text-red-400 hover:text-red-300"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex justify-end mt-3">
+                        <Button
+                          onClick={() => {
+                            setUpdateContent('');
+                            setSelectedFiles([]);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          disabled={isPosting}
+                          className="text-gray-400 hover:text-gray-300 mr-2"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handlePostUpdate}
+                          disabled={!updateContent.trim() || isPosting}
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-500 text-white"
+                        >
+                          {isPosting ? 'Posting...' : 'Post Update'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
                                                     style={{ 
                                                       width: columnWidths[column.id] || (colIndex === 0 ? 240 : 140),
                                                       minWidth: colIndex === 0 ? '180px' : '100px',
