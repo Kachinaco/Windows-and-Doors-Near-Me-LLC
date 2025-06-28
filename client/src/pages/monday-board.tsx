@@ -72,8 +72,6 @@ export default function MondayBoard() {
   });
   
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState(0);
   
   const queryClient = useQueryClient();
 
@@ -208,140 +206,106 @@ export default function MondayBoard() {
     switch (column.type) {
       case 'status':
         return (
-          <div className={`px-2 py-1 rounded text-xs font-mono border ${
-            value === 'new lead' ? 'bg-tron-blue/20 text-tron-blue border-tron-blue/40' :
-            value === 'in progress' ? 'bg-tron-orange/20 text-tron-orange border-tron-orange/40' :
-            value === 'scheduled' ? 'bg-tron-purple/20 text-tron-purple border-tron-purple/40' :
-            value === 'complete' ? 'bg-tron-green/20 text-tron-green border-tron-green/40' :
-            'bg-gray-500/20 text-gray-400 border-gray-500/40'
+          <div className={`px-2 py-1 rounded-full text-xs font-medium border ${
+            value === 'new lead' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+            value === 'in progress' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+            value === 'scheduled' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+            value === 'complete' ? 'bg-green-50 text-green-700 border-green-200' :
+            'bg-gray-50 text-gray-600 border-gray-200'
           }`}>
-            {value?.toUpperCase() || 'UNKNOWN'}
+            {value || 'Unknown'}
           </div>
         );
       case 'people':
         return (
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-tron-cyan rounded-full flex items-center justify-center">
-              <span className="text-xs font-mono text-gray-900">
+            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+              <span className="text-xs font-medium text-white">
                 {value?.charAt(0)?.toUpperCase() || 'U'}
               </span>
             </div>
-            <span className="text-sm font-mono text-tron-light">{value || 'Unassigned'}</span>
+            <span className="text-sm text-gray-900">{value || 'Unassigned'}</span>
           </div>
         );
       default:
         return (
-          <span className="text-sm font-mono text-tron-light">{value || '-'}</span>
+          <span className="text-sm text-gray-900">{value || '-'}</span>
         );
     }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-tron-cyan font-mono">Loading TRON PROJECT MATRIX...</div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-gray-600 font-medium">Loading projects...</div>
       </div>
     );
   }
 
-  // Debug logging
-  console.log('Projects data:', projects);
-  console.log('Board groups:', boardGroups);
-  console.log('Transformed groups:', transformedGroups);
 
-  // Show debug info if groups are not properly initialized
-  if (!isLoading && (!boardGroups || boardGroups.length === 0)) {
-    return (
-      <div className="min-h-screen bg-gray-950 text-tron-light font-orbitron p-6">
-        <h1 className="text-xl font-mono text-tron-cyan mb-4">DEBUG INFO</h1>
-        <div className="space-y-2 font-mono text-sm">
-          <div>Projects loading: {isLoading ? 'true' : 'false'}</div>
-          <div>Projects data: {JSON.stringify(projects?.slice?.(0, 2), null, 2) || 'undefined'}</div>
-          <div>Projects length: {Array.isArray(projects) ? projects.length : 'not array'}</div>
-          <div>Board groups length: {boardGroups?.length || 0}</div>
-          <div>Transformed groups length: {transformedGroups?.length || 0}</div>
-        </div>
-        
-        <button 
-          onClick={() => setBoardGroups(transformedGroups)}
-          className="mt-4 px-4 py-2 bg-tron-cyan text-gray-900 rounded font-mono"
-        >
-          Force Refresh Board
-        </button>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-tron-light font-orbitron"
-         style={{
-           backgroundImage: `
-             radial-gradient(rgba(6, 182, 212, 0.15) 1px, transparent 1px),
-             linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px),
-             linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px)
-           `,
-           backgroundSize: '20px 20px, 100px 100px, 100px 100px'
-         }}>
+    <div className="min-h-screen bg-white text-gray-900">
       
       {/* Header */}
-      <div className="bg-gray-900/80 backdrop-blur-md border-b border-tron-cyan/30 shadow-lg">
+      <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-4">
             <Link 
               to="/dashboard"
-              className="flex items-center gap-2 text-tron-cyan hover:text-tron-light transition-colors"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
-              <span className="font-mono text-sm">BACK TO SYSTEMS</span>
+              <span className="text-sm font-medium">Back to Dashboard</span>
             </Link>
-            <div className="h-6 w-px bg-tron-cyan/30"></div>
-            <h1 className="text-xl font-mono text-tron-light">
-              TRON PROJECT MATRIX
+            <div className="h-6 w-px bg-gray-300"></div>
+            <h1 className="text-xl font-semibold text-gray-900">
+              Project Board
             </h1>
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-tron-green">
-              <div className="w-2 h-2 bg-tron-green rounded-full animate-pulse"></div>
-              <span className="text-sm font-mono">SYSTEM ACTIVE</span>
+            <div className="flex items-center gap-2 text-green-600">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm font-medium">Online</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Board Content */}
-      <div className="p-6">
+      <div className="p-6 bg-gray-50 min-h-screen">
         <div className="space-y-6">
           {boardGroups.map((group) => (
             <div key={group.name} className="space-y-3">
               {/* Group Header */}
               <div 
-                className="flex items-center justify-between p-4 bg-gray-900/50 backdrop-blur-sm border border-tron-cyan/20 rounded-lg cursor-pointer hover:border-tron-cyan/40 transition-all"
+                className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300 hover:shadow-sm transition-all"
                 onClick={() => toggleGroup(group.name)}
               >
                 <div className="flex items-center gap-3">
                   {group.collapsed ? (
-                    <ChevronRight className="w-4 h-4 text-tron-cyan" />
+                    <ChevronRight className="w-4 h-4 text-gray-600" />
                   ) : (
-                    <ChevronDown className="w-4 h-4 text-tron-cyan" />
+                    <ChevronDown className="w-4 h-4 text-gray-600" />
                   )}
-                  <h2 className="text-lg font-mono font-bold text-tron-light uppercase tracking-wide">
+                  <h2 className="text-lg font-semibold text-gray-900">
                     {group.name}
                   </h2>
-                  <div className="px-2 py-1 bg-tron-cyan/20 border border-tron-cyan/40 rounded text-xs font-mono text-tron-cyan">
+                  <div className="px-2 py-1 bg-blue-50 border border-blue-200 rounded text-xs font-medium text-blue-700">
                     {group.items.length}
                   </div>
                 </div>
               </div>
 
               {!group.collapsed && (
-                <div className="space-y-0 border border-tron-cyan/20 rounded-lg overflow-hidden bg-gray-900/30 backdrop-blur-sm">
+                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
                   {/* Column Headers */}
-                  <div className="flex bg-gray-800/50 border-b border-tron-cyan/20">
+                  <div className="flex bg-gray-50 border-b border-gray-200">
                     {columns.map((column, index) => (
                       <div
                         key={column.id}
-                        className="px-4 py-3 border-r border-tron-cyan/20 last:border-r-0 font-mono text-sm font-bold text-tron-cyan uppercase tracking-wide"
+                        className="px-4 py-3 border-r border-gray-200 last:border-r-0 text-sm font-semibold text-gray-700"
                         style={{ 
                           width: columnWidths[column.id] || (index === 0 ? 240 : 140),
                           minWidth: index === 0 ? '180px' : '100px'
@@ -357,8 +321,8 @@ export default function MondayBoard() {
                     <div key={item.id}>
                       {/* Main Item Row */}
                       <div 
-                        className={`flex border-b border-gray-800/50 hover:bg-tron-cyan/5 transition-all cursor-pointer ${
-                          hoveredItem === item.id ? 'bg-tron-cyan/10 shadow-lg shadow-tron-cyan/20' : ''
+                        className={`flex border-b border-gray-200 hover:bg-blue-50/50 transition-all cursor-pointer ${
+                          hoveredItem === item.id ? 'bg-blue-50 shadow-sm' : ''
                         }`}
                         onMouseEnter={() => setHoveredItem(item.id)}
                         onMouseLeave={() => setHoveredItem(null)}
@@ -366,8 +330,8 @@ export default function MondayBoard() {
                         {columns.map((column, index) => (
                           <div
                             key={column.id}
-                            className={`px-4 py-3 border-r border-gray-800/50 last:border-r-0 text-sm ${
-                              hoveredItem === item.id ? 'border-tron-cyan/20' : ''
+                            className={`px-4 py-3 border-r border-gray-200 last:border-r-0 text-sm ${
+                              hoveredItem === item.id ? 'border-blue-200' : ''
                             }`}
                             style={{ 
                               width: columnWidths[column.id] || (index === 0 ? 240 : 140),
@@ -381,18 +345,18 @@ export default function MondayBoard() {
 
                       {/* Sub-Items Section (when hovered) - Clean, simple layout */}
                       {hoveredItem === item.id && item.subItems && item.subItems.length > 0 && (
-                        <div className="bg-gray-900/30 border-t border-tron-cyan/20">
+                        <div className="bg-gray-50 border-t border-gray-200">
                           <div className="px-16 py-3 space-y-2">
                             {item.subItems.map((subItem) => (
                               <div 
                                 key={subItem.id}
-                                className="flex items-center gap-4 p-2 rounded-lg bg-gray-800/50 hover:bg-tron-cyan/10 transition-all border border-transparent hover:border-tron-cyan/40"
+                                className="flex items-center gap-4 p-2 rounded-md bg-white hover:bg-blue-50 transition-all border border-gray-200 hover:border-blue-300"
                               >
-                                <div className="w-2 h-2 bg-tron-cyan rounded-full"></div>
-                                <span className="text-tron-light font-mono text-sm">{subItem.name}</span>
-                                <span className="text-tron-cyan/70 text-xs">{subItem.status}</span>
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <span className="text-gray-900 font-medium text-sm">{subItem.name}</span>
+                                <span className="text-gray-600 text-xs">{subItem.status}</span>
                                 {subItem.assignedTo && (
-                                  <span className="text-tron-green/70 text-xs">@{subItem.assignedTo}</span>
+                                  <span className="text-blue-600 text-xs">@{subItem.assignedTo}</span>
                                 )}
                               </div>
                             ))}
@@ -406,11 +370,11 @@ export default function MondayBoard() {
 
               {/* Add Item Button */}
               {!group.collapsed && (
-                <div className="flex items-center gap-2 px-4 py-2 text-tron-cyan hover:text-tron-light transition-colors">
+                <div className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-800 transition-colors">
                   <Plus className="w-4 h-4" />
                   <button 
                     onClick={() => handleAddItem(group.name)}
-                    className="text-sm font-mono hover:underline"
+                    className="text-sm font-medium hover:underline"
                   >
                     Add Item
                   </button>
