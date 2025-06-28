@@ -111,6 +111,7 @@ export default function MondayBoard() {
   const [isResizing, setIsResizing] = useState<string | null>(null);
   const [editingCell, setEditingCell] = useState<{projectId: number, field: string} | null>(null);
   const [newlyCreatedItem, setNewlyCreatedItem] = useState<number | null>(null);
+  const [openUpdates, setOpenUpdates] = useState<Set<number>>(new Set());
   const [localValues, setLocalValues] = useState<Record<string, string>>({});
   const debounceTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
@@ -932,6 +933,18 @@ export default function MondayBoard() {
     });
   }, [createSubItemMutation]);
 
+  const handleToggleUpdates = useCallback((projectId: number) => {
+    setOpenUpdates(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(projectId)) {
+        newSet.delete(projectId);
+      } else {
+        newSet.add(projectId);
+      }
+      return newSet;
+    });
+  }, []);
+
   // Handler for updating sub-item names
   const handleUpdateSubItemName = useCallback(async (subItemId: number, newName: string) => {
     try {
@@ -1474,22 +1487,34 @@ export default function MondayBoard() {
                 <>
                   {group.items.map((item) => (
                     <React.Fragment key={item.id}>
-                      {/* Main Item Row */}
-                      <div className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0 bg-gradient-to-r from-gray-900/5 to-transparent">
+                      {/* Main Item Row - Clickable for Updates */}
+                      <div 
+                        className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0 bg-gradient-to-r from-gray-900/5 to-transparent cursor-pointer"
+                        onClick={(e) => {
+                          // Only trigger if not clicking on a form element or checkbox
+                          const target = e.target as HTMLElement;
+                          if (!target.closest('input, select, button')) {
+                            handleToggleUpdates(item.id);
+                          }
+                        }}
+                      >
                         {/* Selection checkbox */}
                         <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
                           <input
                             type="checkbox"
                             checked={selectedItems.has(item.id)}
-                            onChange={() => handleToggleSelect(item.id)}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleToggleSelect(item.id);
+                            }}
                             className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
                           />
                         </div>
                         {columns.map((column, index) => (
                           <div 
                             key={`${item.id}-${column.id}`} 
-                            className={`px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 flex items-center justify-center ${
-                              index === 0 ? 'sticky left-8 bg-gray-950 z-10 justify-start' : ''
+                            className={`px-1 py-0.5 border-r border-gray-800/10 flex-shrink-0 flex items-center ${
+                              index === 0 ? 'sticky left-8 bg-gray-950 z-10 justify-start pl-3' : 'justify-center'
                             }`}
                             style={{ 
                               width: columnWidths[column.id] || (index === 0 ? 200 : 100),
