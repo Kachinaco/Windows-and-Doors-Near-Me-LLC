@@ -1104,24 +1104,27 @@ export default function MondayBoard() {
 
   return (
     <div className="h-screen bg-gray-950 text-white flex flex-col overflow-hidden">
-      {/* Ultra-Slim Header */}
-      <header className="bg-gray-950/80 backdrop-blur-sm border-b border-gray-800/50 px-3 py-1.5 flex-shrink-0">
+      {/* Responsive Header */}
+      <header className="bg-gray-950/80 backdrop-blur-sm border-b border-gray-800/50 px-2 md:px-3 py-2 md:py-1.5 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 md:space-x-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => window.location.href = '/dashboard'}
-              className="text-gray-500 hover:text-white text-xs px-1.5 py-1 h-6"
+              className="text-gray-500 hover:text-white text-xs px-1 md:px-1.5 py-1 h-7 md:h-6"
             >
               <ArrowLeft className="w-3 h-3 mr-1" />
-              Back
+              <span className="hidden sm:inline">Back</span>
             </Button>
             <div className="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
               <div className="w-2 h-2 bg-white rounded-sm" />
             </div>
-            <h1 className="text-sm font-medium">Project Board</h1>
-            <div className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">
+            <h1 className="text-xs md:text-sm font-medium truncate">
+              <span className="hidden sm:inline">Project Board</span>
+              <span className="sm:hidden">Board</span>
+            </h1>
+            <div className="px-1 md:px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">
               Monday
             </div>
           </div>
@@ -1139,7 +1142,7 @@ export default function MondayBoard() {
                     setUndoStack(prev => prev.slice(0, -1));
                   }
                 }}
-                className="text-gray-500 hover:text-white text-xs px-1.5 py-1 h-6"
+                className="text-gray-500 hover:text-white text-xs px-1 md:px-1.5 py-1 h-7 md:h-6"
               >
                 <Undo2 className="w-3 h-3" />
               </Button>
@@ -1150,12 +1153,13 @@ export default function MondayBoard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-gray-500 hover:text-blue-400 text-xs px-1.5 py-1 h-6"
+                  className="text-gray-500 hover:text-blue-400 text-xs px-1 md:px-1.5 py-1 h-7 md:h-6"
                 >
                   <Plus className="w-3 h-3" />
+                  <span className="hidden sm:inline ml-1">Add</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-gray-900 border-gray-700 text-white">
+              <DropdownMenuContent className="bg-gray-900 border-gray-700 text-white" align="end">
                 <DropdownMenuItem 
                   onClick={() => addItemMutation.mutate('New Leads')}
                   className="text-xs hover:bg-gray-800 focus:bg-gray-800"
