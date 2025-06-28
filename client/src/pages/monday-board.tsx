@@ -1831,40 +1831,40 @@ export default function MondayBoard() {
                                                   </div>
                                                 </div>
                                                 
-                                                {/* Sub-item cells aligned with main project columns */}
-                                                {columns.slice(1).map((column) => (
+                                                {/* Sub-item cells synchronized with sub-item column headers */}
+                                                {subItemColumns.map((column) => (
                                                   <div 
                                                     key={`sub-${subItem.id}-${column.id}`}
-                                                    className="px-2 py-1.5 border-r border-blue-500/10 flex-shrink-0 bg-gradient-to-r from-blue-950/10 to-slate-900/5 flex items-center justify-center"
+                                                    className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 bg-gradient-to-r from-blue-950/10 to-slate-900/5 flex items-center justify-center"
                                                     style={{ 
-                                                      width: columnWidths[column.id] || (column.id === 'item' ? 200 : 100),
-                                                      minWidth: column.id === 'item' ? '150px' : '70px',
+                                                      width: columnWidths[column.id] || 140,
+                                                      minWidth: '100px',
                                                       maxWidth: 'none'
                                                     }}
                                                   >
-                                                    {/* Render sub-item data in main project column structure */}
-                                                    <div className="text-xs text-gray-400 text-center w-full">
-                                                      {column.id === 'status' && (
-                                                        <span className={`px-2 py-0.5 rounded-full text-xs ${
-                                                          subItem.status === 'not_started' ? 'bg-gray-600/20 text-gray-400' :
-                                                          subItem.status === 'in_progress' ? 'bg-blue-600/20 text-blue-400' :
-                                                          subItem.status === 'completed' ? 'bg-green-600/20 text-green-400' :
-                                                          'bg-gray-600/20 text-gray-400'
+                                                    {/* Render sub-item data based on sub-item column types */}
+                                                    <div className="text-xs text-gray-300 text-center w-full">
+                                                      {column.type === 'status' && (
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                          subItem.status === 'not_started' ? 'bg-gray-600/30 text-gray-300' :
+                                                          subItem.status === 'in_progress' ? 'bg-blue-600/30 text-blue-300' :
+                                                          subItem.status === 'completed' ? 'bg-green-600/30 text-green-300' :
+                                                          'bg-gray-600/30 text-gray-300'
                                                         }`}>
-                                                          {subItem.status.replace('_', ' ')}
+                                                          {subItem.status?.replace('_', ' ') || 'Not Started'}
                                                         </span>
                                                       )}
-                                                      {column.id === 'assignedTo' && subItem.assignedTo && (
-                                                        <span className="text-blue-400">{subItem.assignedTo}</span>
+                                                      {column.type === 'people' && (
+                                                        <span className="text-blue-300 font-medium">{subItem.assignedTo || '-'}</span>
                                                       )}
-                                                      {column.id === 'estimatedCost' && (
-                                                        <span className="text-gray-500">-</span>
+                                                      {column.type === 'text' && (
+                                                        <span className="text-gray-300">{column.name === 'Notes' ? 'Add notes...' : '-'}</span>
                                                       )}
-                                                      {column.id === 'startDate' && (
-                                                        <span className="text-gray-500">-</span>
+                                                      {column.type === 'date' && (
+                                                        <span className="text-gray-400">-</span>
                                                       )}
-                                                      {column.id === 'endDate' && (
-                                                        <span className="text-gray-500">-</span>
+                                                      {column.type === 'number' && (
+                                                        <span className="text-gray-400">-</span>
                                                       )}
                                                     </div>
                                                   </div>
@@ -1900,14 +1900,14 @@ export default function MondayBoard() {
                                                 </Button>
                                               </div>
                                               
-                                              {/* Empty cells aligned with main project columns */}
-                                              {columns.slice(1).map((column) => (
+                                              {/* Empty cells synchronized with sub-item columns */}
+                                              {subItemColumns.map((column) => (
                                                 <div 
                                                   key={`add-sub-${folder.id}-${column.id}`}
-                                                  className="px-2 py-1.5 border-r border-blue-500/10 flex-shrink-0 bg-gradient-to-r from-blue-950/8 to-slate-900/5"
+                                                  className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 bg-gradient-to-r from-blue-950/8 to-slate-900/5"
                                                   style={{ 
-                                                    width: columnWidths[column.id] || (column.id === 'item' ? 200 : 100),
-                                                    minWidth: column.id === 'item' ? '150px' : '70px',
+                                                    width: columnWidths[column.id] || 140,
+                                                    minWidth: '100px',
                                                     maxWidth: 'none'
                                                   }}
                                                 />
@@ -1943,11 +1943,11 @@ export default function MondayBoard() {
                                   </Button>
                                 </div>
                                 
-                                {/* Sub-item column spaces aligned with headers */}
+                                {/* Sub-item column spaces synchronized with sub-item headers */}
                                 {subItemColumns.map((column) => (
                                   <div 
                                     key={`addfolder-${item.id}-${column.id}`}
-                                    className="px-4 py-2 border-r border-blue-500/10 flex-shrink-0"
+                                    className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0"
                                     style={{ 
                                       width: columnWidths[column.id] || 140,
                                       minWidth: '100px',
