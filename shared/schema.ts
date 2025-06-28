@@ -171,14 +171,21 @@ export const subItemFolders = pgTable("sub_item_folders", {
 // Project updates and communication
 export const projectUpdates = pgTable("project_updates", {
   id: serial("id").primaryKey(),
-  projectId: integer("project_id").references(() => projects.id),
-  userId: integer("user_id").references(() => users.id),
-  updateType: text("update_type").notNull(), // status_change, comment, file_upload, milestone
-  title: text("title"),
+  projectId: integer("project_id").references(() => projects.id).notNull(),
+  authorId: integer("author_id").references(() => users.id).notNull(),
   content: text("content").notNull(),
-  attachments: jsonb("attachments"), // file URLs or metadata
-  isClientVisible: boolean("is_client_visible").default(true),
+  attachments: jsonb("attachments").$type<Array<{
+    fileName: string;
+    fileUrl: string;
+    fileType: string;
+    fileSize: number;
+  }>>().default([]),
+  mentions: jsonb("mentions").$type<Array<{
+    userId: number;
+    username: string;
+  }>>().default([]),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Blog posts for home improvement tips
@@ -621,6 +628,8 @@ export const pipelineAnalytics = pgTable("pipeline_analytics", {
   calculatedDate: timestamp("calculated_date").defaultNow().notNull(),
 });
 
+
+
 // ===== RELATIONS =====
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -636,6 +645,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   interactions: many(customerInteractions),
   assignedProjects: many(projects),
   createdProposals: many(proposals),
+  projectUpdates: many(projectUpdates),
 }));
 
 export const productsRelations = relations(products, ({ many }) => ({
