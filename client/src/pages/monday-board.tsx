@@ -608,24 +608,24 @@ export default function MondayBoard() {
             value={value}
             onValueChange={(newValue) => handleCellUpdate(item.id, column.id, newValue)}
           >
-            <SelectTrigger className={`h-4 text-xs font-medium rounded-full px-1.5 border-none ${
-              value === 'complete' ? 'bg-green-500/20 text-green-400' :
-              value === 'in progress' ? 'bg-blue-500/20 text-blue-400' :
-              value === 'signed' ? 'bg-emerald-500/20 text-emerald-400' :
-              value === 'sent estimate' ? 'bg-purple-500/20 text-purple-400' :
-              value === 'need attention' ? 'bg-yellow-500/20 text-yellow-400' :
-              value === 'new lead' ? 'bg-cyan-500/20 text-cyan-400' :
-              'bg-gray-500/20 text-gray-400'
+            <SelectTrigger className={`h-4 text-xs font-mono font-bold rounded-md px-1.5 border border-opacity-50 ${
+              value === 'complete' ? 'bg-tron-green/20 text-tron-green border-tron-green tron-glow' :
+              value === 'in progress' ? 'bg-tron-blue/20 text-tron-blue border-tron-blue tron-glow' :
+              value === 'signed' ? 'bg-tron-purple/20 text-tron-purple border-tron-purple tron-glow' :
+              value === 'sent estimate' ? 'bg-tron-orange/20 text-tron-orange border-tron-orange tron-glow' :
+              value === 'need attention' ? 'bg-tron-red/20 text-tron-red border-tron-red tron-glow' :
+              value === 'new lead' ? 'bg-tron-cyan/20 text-tron-cyan border-tron-cyan tron-glow' :
+              'bg-tron-light/10 text-tron-light border-tron-light/50'
             }`}>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="new lead">New Leads</SelectItem>
-              <SelectItem value="need attention">Need Attention</SelectItem>
-              <SelectItem value="sent estimate">Sent Estimate</SelectItem>
-              <SelectItem value="signed">Signed</SelectItem>
-              <SelectItem value="in progress">In Progress</SelectItem>
-              <SelectItem value="complete">Complete</SelectItem>
+            <SelectContent className="bg-tron-darker border-tron-cyan/50">
+              <SelectItem value="new lead" className="font-mono text-tron-cyan hover:bg-tron-cyan/20">NEW.LEAD</SelectItem>
+              <SelectItem value="need attention" className="font-mono text-tron-red hover:bg-tron-red/20">ALERT.REQ</SelectItem>
+              <SelectItem value="sent estimate" className="font-mono text-tron-orange hover:bg-tron-orange/20">EST.SENT</SelectItem>
+              <SelectItem value="signed" className="font-mono text-tron-purple hover:bg-tron-purple/20">SIGNED</SelectItem>
+              <SelectItem value="in progress" className="font-mono text-tron-blue hover:bg-tron-blue/20">ACTIVE</SelectItem>
+              <SelectItem value="complete" className="font-mono text-tron-green hover:bg-tron-green/20">COMPLETE</SelectItem>
             </SelectContent>
           </Select>
         );
@@ -1227,32 +1227,40 @@ export default function MondayBoard() {
   };
 
   return (
-    <div className="h-screen bg-gray-950 text-white flex overflow-hidden">
+    <div className="h-screen bg-tron-dark tron-grid-bg text-tron-light flex overflow-hidden relative">
+      {/* Tron Circuit Animations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="tron-circuit absolute top-1/3 left-0 w-full h-0.5 bg-tron-cyan opacity-20"></div>
+        <div className="tron-circuit absolute top-2/3 left-0 w-full h-0.5 bg-tron-blue opacity-15" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-0 left-0 w-0.5 h-full bg-gradient-to-b from-transparent via-tron-cyan to-transparent animate-tron-scan"></div>
+      </div>
+      
       {/* Main Board Container */}
-      <div className={`flex flex-col transition-all duration-300 ${selectedProjectForUpdates ? 'flex-1' : 'w-full'}`}>
-        {/* Enhanced Header */}
-        <header className="bg-gray-950/80 backdrop-blur-sm border-b border-gray-800/50 px-4 py-3 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.location.href = '/dashboard'}
-              className="text-gray-500 hover:text-white text-sm px-3 py-2 h-8"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
-              <div className="w-3 h-3 bg-white rounded-sm" />
+      <div className={`flex flex-col transition-all duration-300 ${selectedProjectForUpdates ? 'flex-1' : 'w-full'} relative z-10`}>
+        {/* Tron Enhanced Header */}
+        <header className="bg-tron-darker/90 backdrop-blur-sm border-b border-tron-cyan/30 px-4 py-3 flex-shrink-0 relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-tron-cyan/10 via-transparent to-tron-blue/10"></div>
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.location.href = '/dashboard'}
+                className="tron-btn text-sm px-3 py-2 h-8 font-mono"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                BACK
+              </Button>
+              <div className="w-6 h-6 bg-tron-cyan/20 rounded border border-tron-cyan/50 tron-glow flex items-center justify-center">
+                <div className="w-3 h-3 bg-tron-cyan rounded-sm tron-pulse" />
+              </div>
+              <h1 className="text-lg font-bold tron-text-glow font-mono">TRON PROJECT MATRIX</h1>
+              <div className="px-3 py-1 bg-tron-cyan/20 text-tron-cyan rounded border border-tron-cyan/50 text-sm font-mono tron-glow">
+                GRID.V1.0
+              </div>
             </div>
-            <h1 className="text-lg font-medium">Project Board</h1>
-            <div className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm">
-              Monday
-            </div>
-          </div>
           
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-2">
             {undoStack.length > 0 && (
               <Button 
                 variant="ghost" 
@@ -1265,9 +1273,10 @@ export default function MondayBoard() {
                     setUndoStack(prev => prev.slice(0, -1));
                   }
                 }}
-                className="text-gray-500 hover:text-white text-xs px-1.5 py-1 h-6"
+                className="tron-btn text-xs px-2 py-1 h-7 font-mono border-tron-orange text-tron-orange hover:bg-tron-orange hover:text-tron-dark"
               >
-                <Undo2 className="w-3 h-3" />
+                <Undo2 className="w-3 h-3 mr-1" />
+                UNDO
               </Button>
             )}
             
@@ -1276,112 +1285,113 @@ export default function MondayBoard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-gray-500 hover:text-blue-400 text-xs px-1.5 py-1 h-6"
+                  className="tron-btn text-xs px-2 py-1 h-7 font-mono border-tron-green text-tron-green hover:bg-tron-green hover:text-tron-dark"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-3 h-3 mr-1" />
+                  ADD
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-gray-900 border-gray-700 text-white">
+              <DropdownMenuContent className="bg-tron-darker border-tron-cyan/50">
                 <DropdownMenuItem 
                   onClick={() => addItemMutation.mutate('New Leads')}
-                  className="text-xs hover:bg-gray-800 focus:bg-gray-800"
+                  className="text-xs hover:bg-tron-cyan/20 focus:bg-tron-cyan/20 text-tron-light font-mono"
                 >
                   <Plus className="w-3 h-3 mr-2" />
-                  Add Item
+                  ADD NODE
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => setIsAddGroupOpen(true)}
-                  className="text-xs hover:bg-gray-800 focus:bg-gray-800"
+                  className="text-xs hover:bg-tron-cyan/20 focus:bg-tron-cyan/20 text-tron-light font-mono"
                 >
                   <Folder className="w-3 h-3 mr-2" />
-                  Add Group
+                  ADD CLUSTER
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => setIsAddColumnOpen(true)}
-                  className="text-xs hover:bg-gray-800 focus:bg-gray-800"
+                  className="text-xs hover:bg-tron-cyan/20 focus:bg-tron-cyan/20 text-tron-light font-mono"
                 >
                   <Columns className="w-3 h-3 mr-2" />
-                  Add Column
+                  ADD MATRIX
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Add Column Dialog */}
+            {/* Tron Add Column Dialog */}
             <Dialog open={isAddColumnOpen} onOpenChange={setIsAddColumnOpen}>
-              <DialogContent className="bg-gray-900 text-white border-gray-700">
+              <DialogContent className="bg-tron-darker border-tron-cyan/50 tron-glow">
                 <DialogHeader>
-                  <DialogTitle>Add Column</DialogTitle>
+                  <DialogTitle className="text-tron-light font-mono tron-text-glow">ADD MATRIX COLUMN</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
                   <div>
-                    <Label className="text-xs">Name</Label>
+                    <Label className="text-xs font-mono text-tron-cyan">IDENTIFIER</Label>
                     <Input
                       value={newColumnName}
                       onChange={(e) => setNewColumnName(e.target.value)}
-                      className="bg-gray-800 border-gray-700 text-white h-8"
-                      placeholder="Column name"
+                      className="bg-tron-dark border-tron-cyan/50 text-tron-light h-8 font-mono tron-glow"
+                      placeholder="COLUMN.NAME"
                     />
                   </div>
                   <div>
-                    <Label className="text-xs">Type</Label>
+                    <Label className="text-xs font-mono text-tron-cyan">DATA TYPE</Label>
                     <Select value={newColumnType} onValueChange={(value) => setNewColumnType(value as BoardColumn['type'])}>
-                      <SelectTrigger className="bg-gray-800 border-gray-700 text-white h-8">
+                      <SelectTrigger className="bg-tron-dark border-tron-cyan/50 text-tron-light h-8 font-mono tron-glow">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-700">
-                        <SelectItem value="text">Text</SelectItem>
-                        <SelectItem value="status">Status</SelectItem>
-                        <SelectItem value="people">People</SelectItem>
-                        <SelectItem value="date">Date</SelectItem>
-                        <SelectItem value="number">Number</SelectItem>
-                        <SelectItem value="tags">Tags</SelectItem>
+                      <SelectContent className="bg-tron-darker border-tron-cyan/50">
+                        <SelectItem value="text" className="text-tron-light font-mono hover:bg-tron-cyan/20">TEXT.STR</SelectItem>
+                        <SelectItem value="status" className="text-tron-light font-mono hover:bg-tron-cyan/20">STATUS.ENUM</SelectItem>
+                        <SelectItem value="people" className="text-tron-light font-mono hover:bg-tron-cyan/20">USER.ID</SelectItem>
+                        <SelectItem value="date" className="text-tron-light font-mono hover:bg-tron-cyan/20">TIME.STAMP</SelectItem>
+                        <SelectItem value="number" className="text-tron-light font-mono hover:bg-tron-cyan/20">INT.VAL</SelectItem>
+                        <SelectItem value="tags" className="text-tron-light font-mono hover:bg-tron-cyan/20">TAG.ARRAY</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="flex space-x-2">
-                    <Button onClick={addColumn} size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 h-8">
-                      Add
+                    <Button onClick={addColumn} size="sm" className="flex-1 tron-btn border-tron-green text-tron-green hover:bg-tron-green hover:text-tron-dark h-8 font-mono">
+                      EXECUTE
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => setIsAddColumnOpen(false)}
                       size="sm"
-                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 h-8"
+                      className="flex-1 tron-btn border-tron-red text-tron-red hover:bg-tron-red hover:text-tron-dark h-8 font-mono"
                     >
-                      Cancel
+                      ABORT
                     </Button>
                   </div>
                 </div>
               </DialogContent>
             </Dialog>
 
-            {/* Add Group Dialog */}
+            {/* Tron Add Group Dialog */}
             <Dialog open={isAddGroupOpen} onOpenChange={setIsAddGroupOpen}>
-              <DialogContent className="bg-gray-900 text-white border-gray-700">
+              <DialogContent className="bg-tron-darker border-tron-cyan/50 tron-glow">
                 <DialogHeader>
-                  <DialogTitle>Add Group</DialogTitle>
+                  <DialogTitle className="text-tron-light font-mono tron-text-glow">CREATE CLUSTER</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
                   <div>
-                    <Label className="text-xs">Group Name</Label>
+                    <Label className="text-xs font-mono text-tron-cyan">CLUSTER.NAME</Label>
                     <Input
                       value={newGroupName}
                       onChange={(e) => setNewGroupName(e.target.value)}
-                      className="bg-gray-800 border-gray-700 text-white h-8"
-                      placeholder="Enter group name"
+                      className="bg-tron-dark border-tron-cyan/50 text-tron-light h-8 font-mono tron-glow"
+                      placeholder="CLUSTER.IDENTIFIER"
                     />
                   </div>
                   <div className="flex space-x-2">
-                    <Button onClick={addGroup} size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 h-8">
-                      Add Group
+                    <Button onClick={addGroup} size="sm" className="flex-1 tron-btn border-tron-green text-tron-green hover:bg-tron-green hover:text-tron-dark h-8 font-mono">
+                      INITIALIZE
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => setIsAddGroupOpen(false)} 
                       size="sm" 
-                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 h-8"
+                      className="flex-1 tron-btn border-tron-red text-tron-red hover:bg-tron-red hover:text-tron-dark h-8 font-mono"
                     >
-                      Cancel
+                      ABORT
                     </Button>
                   </div>
                 </div>

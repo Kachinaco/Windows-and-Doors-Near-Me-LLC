@@ -336,24 +336,24 @@ export default function Dashboard() {
                 </Card>
               </Link>
               
-              {/* Three-dot menu */}
+              {/* Tron Three-dot menu */}
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      className="h-8 w-8 p-0 bg-tron-darker/90 hover:bg-tron-cyan/20 border border-tron-cyan/50 tron-glow"
                       onClick={(e) => e.preventDefault()}
                     >
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="h-4 w-4 text-tron-cyan" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
-                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
-                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="bg-tron-darker border-tron-cyan/50">
+                    <DropdownMenuItem className="text-tron-light hover:bg-tron-cyan/20 font-mono">EDIT MODULE</DropdownMenuItem>
+                    <DropdownMenuItem className="text-tron-light hover:bg-tron-cyan/20 font-mono">ADD MODULE</DropdownMenuItem>
+                    <DropdownMenuItem className="text-tron-light hover:bg-tron-cyan/20 font-mono">DUPLICATE</DropdownMenuItem>
+                    <DropdownMenuItem className="text-tron-red hover:bg-tron-red/20 font-mono">DELETE MODULE</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -362,16 +362,16 @@ export default function Dashboard() {
             {/* My Orders */}
             <div className="relative group">
               <Link href="/customer-orders">
-                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+                <Card className="tron-glow-hover transition-all duration-300 cursor-pointer bg-tron-darker/80 backdrop-blur-sm border-tron-green/50">
                   <CardContent className="p-3 sm:p-6">
                     <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                      <div className="p-2 sm:p-4 bg-green-600 rounded-xl sm:rounded-2xl shadow-lg">
-                        <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      <div className="p-2 sm:p-4 bg-tron-green/20 rounded-xl sm:rounded-2xl tron-glow border border-tron-green/50">
+                        <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-tron-green tron-pulse" />
                       </div>
                       <div>
-                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">My Orders</p>
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                          Track your window orders
+                        <p className="text-sm sm:text-xl font-bold text-tron-light mb-1 sm:mb-2 font-mono">ORDER TRACKING</p>
+                        <p className="text-xs sm:text-sm text-tron-green hidden sm:block font-mono">
+                          MONITOR.STATUS.DELIVERY
                         </p>
                       </div>
                     </div>
