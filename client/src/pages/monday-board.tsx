@@ -92,6 +92,8 @@ export default function MondayBoard() {
       'Completed': []
     };
 
+    if (!Array.isArray(projects)) return [];
+
     projects.forEach((project: any) => {
       const boardItem: BoardItem = {
         id: project.id,
@@ -170,15 +172,12 @@ export default function MondayBoard() {
   // Add item mutation
   const addItemMutation = useMutation({
     mutationFn: async (groupName: string) => {
-      return apiRequest('/api/projects', {
-        method: 'POST',
-        body: {
-          name: 'New Project',
-          status: groupName === 'New Leads' ? 'new lead' : 
-                 groupName === 'Active Projects' ? 'in progress' :
-                 groupName === 'Scheduled Work' ? 'scheduled' : 'complete',
-          assigned_to: 'Unassigned'
-        },
+      return apiRequest('POST', '/api/projects', {
+        name: 'New Project',
+        status: groupName === 'New Leads' ? 'new lead' : 
+               groupName === 'Active Projects' ? 'in progress' :
+               groupName === 'Scheduled Work' ? 'scheduled' : 'complete',
+        assigned_to: 'Unassigned'
       });
     },
     onSuccess: () => {
