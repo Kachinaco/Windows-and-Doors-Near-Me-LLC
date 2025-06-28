@@ -1681,17 +1681,45 @@ export default function MondayBoard() {
                                           </div>
                                         </div>
                                         
-                                        {/* Sub-item column headers with resizers */}
-                                        {subItemColumns.map((column, index) => (
+                                        {/* Main header columns - align with project columns */}
+                                        {columns.slice(1).map((column, index) => (
                                           <div 
-                                            key={`folder-subheader-${folder.id}-${column.id}`}
-                                            className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 flex items-center gap-2 relative group bg-gradient-to-r from-blue-950/10 to-slate-950/5"
+                                            key={`folder-header-${folder.id}-${column.id}`}
+                                            className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 flex items-center justify-center"
                                             style={{ 
                                               width: columnWidths[column.id] || 140,
                                               minWidth: '100px',
                                               maxWidth: 'none'
                                             }}
-                                          >
+                                          />
+                                        ))}
+                                        
+                                        {/* Checkbox area to match main rows */}
+                                        <div className="w-12 px-2 py-3 flex items-center justify-center">
+                                          <input 
+                                            type="checkbox" 
+                                            className="w-4 h-4 rounded border-blue-500/50 bg-blue-900/30 text-blue-400 focus:ring-blue-400 focus:ring-1"
+                                          />
+                                        </div>
+                                      </div>
+
+                                      {/* Sub-item column headers - only show when folder is expanded */}
+                                      {expandedFolders.has(folder.id) && (
+                                        <div className="flex bg-gradient-to-r from-blue-950/10 to-slate-950/5 border-b border-blue-500/15">
+                                          {/* Empty space for checkbox */}
+                                          <div className="w-12 border-r border-blue-500/20"></div>
+                                          
+                                          {/* Sub-item column headers */}
+                                          {subItemColumns.map((column, index) => (
+                                            <div 
+                                              key={`folder-subheader-${folder.id}-${column.id}`}
+                                              className="px-4 py-2 border-r border-blue-500/20 flex-shrink-0 flex items-center gap-2 relative group"
+                                              style={{ 
+                                                width: columnWidths[column.id] || (index === 0 ? 240 : 140),
+                                                minWidth: index === 0 ? '180px' : '100px',
+                                                maxWidth: 'none'
+                                              }}
+                                            >
                                             <div className="text-blue-400/80">{getColumnIcon(column.type)}</div>
                                             <span className="font-semibold text-sm text-blue-200">{column.name}</span>
                                             
@@ -1731,14 +1759,10 @@ export default function MondayBoard() {
                                           </div>
                                         ))}
                                         
-                                        {/* Folder checkbox positioned on the right */}
-                                        <div className="w-12 px-2 py-3 flex items-center justify-center ml-auto bg-gradient-to-r from-blue-950/10 to-slate-950/5">
-                                          <input 
-                                            type="checkbox" 
-                                            className="w-4 h-4 rounded border-blue-500/50 bg-blue-900/30 text-blue-400 focus:ring-blue-400 focus:ring-1"
-                                          />
+                                        {/* Empty space for checkbox alignment */}
+                                        <div className="w-12"></div>
                                         </div>
-                                      </div>
+                                      )}
                                       
                                       {/* Sub-items in this folder */}
                                       {expandedFolders.has(folder.id) && (
@@ -1752,16 +1776,89 @@ export default function MondayBoard() {
                                               <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-900/10 border-b border-blue-500/10 relative ml-4">
                                                 {/* Enhanced connection line to folder */}
                                                 <div className="absolute -left-4 top-0 w-4 h-full flex items-center">
-                                                  <div className="w-full h-px bg-gradient-to-r from-amber-400/60 to-blue-400/60"></div>
+                                                  <div className="w-full h-px bg-gradient-to-r from-blue-400/60 to-blue-400/60"></div>
                                                 </div>
                                                 
                                                 {/* Connection dot */}
                                                 <div className="absolute -left-5 top-1/2 transform -translate-y-1/2">
-                                                  <div className="w-2 h-2 bg-amber-400/80 rounded-full border border-amber-300/50 shadow-sm"></div>
+                                                  <div className="w-2 h-2 bg-blue-400/80 rounded-full border border-blue-300/50 shadow-sm"></div>
                                                 </div>
                                                 
                                                 {/* Sub-item checkbox - aligned with main items */}
                                                 <div className="w-12 px-2 py-3 border-r border-blue-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/20 to-slate-900/15 z-20">
+                                                  <input 
+                                                    type="checkbox" 
+                                                    className="w-4 h-4 rounded border-blue-500/50 bg-blue-900/30 text-blue-400 focus:ring-blue-400 focus:ring-1"
+                                                  />
+                                                </div>
+                                                
+                                                {/* Sub-item columns - each column with exact same width as headers */}
+                                                {subItemColumns.map((column, colIndex) => (
+                                                  <div 
+                                                    key={`sub-col-${subItem.id}-${column.id}`}
+                                                    className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 flex items-center relative group/cell"
+                                                    style={{ 
+                                                      width: columnWidths[column.id] || (colIndex === 0 ? 240 : 140),
+                                                      minWidth: colIndex === 0 ? '180px' : '100px',
+                                                      maxWidth: 'none'
+                                                    }}
+                                                  >
+                                                    {editingSubItem === subItem.id && editingColumn === column.id ? (
+                                                      <input
+                                                        type="text"
+                                                        value={editingValue}
+                                                        onChange={(e) => setEditingValue(e.target.value)}
+                                                        onBlur={async () => {
+                                                          await handleUpdateSubItem(subItem.id, { [column.id]: editingValue });
+                                                          setEditingSubItem(null);
+                                                          setEditingColumn(null);
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                          if (e.key === 'Enter') {
+                                                            e.target.blur();
+                                                          } else if (e.key === 'Escape') {
+                                                            setEditingSubItem(null);
+                                                            setEditingColumn(null);
+                                                          }
+                                                        }}
+                                                        className="w-full bg-blue-900/30 text-blue-100 text-sm border border-blue-400/50 rounded px-2 py-1 focus:outline-none focus:border-blue-300"
+                                                        autoFocus
+                                                      />
+                                                    ) : (
+                                                      <span 
+                                                        className="text-blue-200 text-sm cursor-pointer hover:bg-blue-500/20 px-2 py-1 rounded w-full"
+                                                        onClick={() => {
+                                                          setEditingSubItem(subItem.id);
+                                                          setEditingColumn(column.id);
+                                                          setEditingValue(subItem[column.id] || '');
+                                                        }}
+                                                      >
+                                                        {subItem[column.id] || 'Click to edit'}
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                ))}
+                                                
+                                                {/* Actions column aligned with main items */}
+                                                <div className="w-12 px-2 py-3 flex items-center justify-center">
+                                                  <DropdownMenu>
+                                                    <DropdownMenuTrigger className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-blue-400 hover:text-blue-300">
+                                                        <MoreHorizontal className="w-4 h-4" />
+                                                      </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="bg-gray-900 border-gray-700">
+                                                      <DropdownMenuItem 
+                                                        onClick={() => handleDeleteSubItem(subItem.id)}
+                                                        className="text-red-400 hover:bg-red-900/20"
+                                                      >
+                                                        Delete sub-item
+                                                      </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                  </DropdownMenu>
+                                                </div>
+                                              </div>
+                                            ))}
                                                   <input 
                                                     type="checkbox" 
                                                     className="w-4 h-4 rounded border-blue-400/60 bg-blue-900/40 text-blue-400 focus:ring-blue-400 focus:ring-1"
