@@ -1709,14 +1709,21 @@ export default function MondayBoard() {
                                           </div>
                                         </div>
                                         
-                                        {/* Sub-item column headers with resizers */}
-                                        {subItemColumns.map((column, index) => (
+                                        {/* Sub-item column headers with resizers - aligned with main columns */}
+                                        {subItemColumns.map((column, index) => {
+                                          // Map sub-item columns to main columns for consistent width
+                                          const correspondingMainColumn = columns.slice(1)[index]; // Skip first main column (item name)
+                                          const columnWidth = correspondingMainColumn ? 
+                                            (columnWidths[correspondingMainColumn.id] || 100) : 
+                                            (columnWidths[column.id] || 100);
+                                          
+                                          return (
                                           <div 
                                             key={`folder-subheader-${folder.id}-${column.id}`}
                                             className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 flex items-center gap-2 relative group bg-gradient-to-r from-blue-950/10 to-slate-950/5"
                                             style={{ 
-                                              width: columnWidths[column.id] || 140,
-                                              minWidth: '100px',
+                                              width: columnWidth,
+                                              minWidth: '70px',
                                               maxWidth: 'none'
                                             }}
                                           >
@@ -1757,7 +1764,8 @@ export default function MondayBoard() {
                                               </DropdownMenuContent>
                                             </DropdownMenu>
                                           </div>
-                                        ))}
+                                          );
+                                        })}
                                         
                                         {/* Folder checkbox positioned on the right */}
                                         <div className="w-12 px-2 py-3 flex items-center justify-center ml-auto bg-gradient-to-r from-blue-950/10 to-slate-950/5">
