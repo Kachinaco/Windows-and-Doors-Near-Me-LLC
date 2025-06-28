@@ -1374,6 +1374,99 @@ export default function MondayBoard() {
                   }`}>{group.name}</span>
                   <span className="text-xs text-gray-500 font-medium">({group.items.length})</span>
                 </div>
+                
+                {/* Main column headers on group header row */}
+                {columns.slice(1).map((column) => (
+                  <div 
+                    key={`group-${group.name}-${column.id}`}
+                    className={`px-2 py-1.5 border-r flex-shrink-0 ${
+                      group.name === 'New Leads' ? 'border-cyan-500/20 bg-gradient-to-r from-cyan-950/10 to-slate-950/5' :
+                      group.name === 'Need Attention' ? 'border-yellow-500/20 bg-gradient-to-r from-yellow-950/10 to-slate-950/5' :
+                      group.name === 'Sent Estimate' ? 'border-purple-500/20 bg-gradient-to-r from-purple-950/10 to-slate-950/5' :
+                      group.name === 'Signed' ? 'border-emerald-500/20 bg-gradient-to-r from-emerald-950/10 to-slate-950/5' :
+                      group.name === 'In Progress' ? 'border-blue-500/20 bg-gradient-to-r from-blue-950/10 to-slate-950/5' :
+                      group.name === 'Complete' ? 'border-green-500/20 bg-gradient-to-r from-green-950/10 to-slate-950/5' :
+                      'border-gray-500/20 bg-gradient-to-r from-gray-950/10 to-slate-950/5'
+                    }`}
+                    style={{ 
+                      width: columnWidths[column.id] || 100,
+                      minWidth: '70px',
+                      maxWidth: 'none'
+                    }}
+                  >
+                    {/* Main column header */}
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-medium uppercase tracking-wide ${
+                        group.name === 'New Leads' ? 'text-cyan-300/80' :
+                        group.name === 'Need Attention' ? 'text-yellow-300/80' :
+                        group.name === 'Sent Estimate' ? 'text-purple-300/80' :
+                        group.name === 'Signed' ? 'text-emerald-300/80' :
+                        group.name === 'In Progress' ? 'text-blue-300/80' :
+                        group.name === 'Complete' ? 'text-green-300/80' :
+                        'text-gray-300/80'
+                      }`}>
+                        {column.name}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {/* Column type indicator */}
+                        {column.type === 'status' && <div className={`w-2 h-2 rounded-full ${
+                          group.name === 'New Leads' ? 'bg-cyan-400/60' :
+                          group.name === 'Need Attention' ? 'bg-yellow-400/60' :
+                          group.name === 'Sent Estimate' ? 'bg-purple-400/60' :
+                          group.name === 'Signed' ? 'bg-emerald-400/60' :
+                          group.name === 'In Progress' ? 'bg-blue-400/60' :
+                          group.name === 'Complete' ? 'bg-green-400/60' :
+                          'bg-gray-400/60'
+                        }`}></div>}
+                        {column.type === 'text' && <Type className={`w-3 h-3 ${
+                          group.name === 'New Leads' ? 'text-cyan-400/60' :
+                          group.name === 'Need Attention' ? 'text-yellow-400/60' :
+                          group.name === 'Sent Estimate' ? 'text-purple-400/60' :
+                          group.name === 'Signed' ? 'text-emerald-400/60' :
+                          group.name === 'In Progress' ? 'text-blue-400/60' :
+                          group.name === 'Complete' ? 'text-green-400/60' :
+                          'text-gray-400/60'
+                        }`} />}
+                        {column.type === 'date' && <Calendar className={`w-3 h-3 ${
+                          group.name === 'New Leads' ? 'text-cyan-400/60' :
+                          group.name === 'Need Attention' ? 'text-yellow-400/60' :
+                          group.name === 'Sent Estimate' ? 'text-purple-400/60' :
+                          group.name === 'Signed' ? 'text-emerald-400/60' :
+                          group.name === 'In Progress' ? 'text-blue-400/60' :
+                          group.name === 'Complete' ? 'text-green-400/60' :
+                          'text-gray-400/60'
+                        }`} />}
+                        {column.type === 'people' && <Users className={`w-3 h-3 ${
+                          group.name === 'New Leads' ? 'text-cyan-400/60' :
+                          group.name === 'Need Attention' ? 'text-yellow-400/60' :
+                          group.name === 'Sent Estimate' ? 'text-purple-400/60' :
+                          group.name === 'Signed' ? 'text-emerald-400/60' :
+                          group.name === 'In Progress' ? 'text-blue-400/60' :
+                          group.name === 'Complete' ? 'text-green-400/60' :
+                          'text-gray-400/60'
+                        }`} />}
+                        {column.type === 'number' && <Hash className={`w-3 h-3 ${
+                          group.name === 'New Leads' ? 'text-cyan-400/60' :
+                          group.name === 'Need Attention' ? 'text-yellow-400/60' :
+                          group.name === 'Sent Estimate' ? 'text-purple-400/60' :
+                          group.name === 'Signed' ? 'text-emerald-400/60' :
+                          group.name === 'In Progress' ? 'text-blue-400/60' :
+                          group.name === 'Complete' ? 'text-green-400/60' :
+                          'text-gray-400/60'
+                        }`} />}
+                        {column.type === 'tags' && <Tag className={`w-3 h-3 ${
+                          group.name === 'New Leads' ? 'text-cyan-400/60' :
+                          group.name === 'Need Attention' ? 'text-yellow-400/60' :
+                          group.name === 'Sent Estimate' ? 'text-purple-400/60' :
+                          group.name === 'Signed' ? 'text-emerald-400/60' :
+                          group.name === 'In Progress' ? 'text-blue-400/60' :
+                          group.name === 'Complete' ? 'text-green-400/60' :
+                          'text-gray-400/60'
+                        }`} />}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Group Items */}
@@ -1614,18 +1707,32 @@ export default function MondayBoard() {
                                           </div>
                                         </div>
                                         
-                                        {/* Empty cells for folder row */}
+                                        {/* Sub-item column headers on folder row */}
                                         {subItemColumns.map((column) => (
                                           <div 
                                             key={`folder-${folder.id}-${column.id}`}
-                                            className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                            className="px-2 py-0.5 border-r border-amber-500/20 flex-shrink-0 bg-gradient-to-r from-amber-950/10 to-orange-950/5"
                                             style={{ 
                                               width: columnWidths[column.id] || 120,
                                               minWidth: '80px',
                                               maxWidth: 'none'
                                             }}
                                           >
-                                            {/* Empty for folder headers */}
+                                            {/* Sub-item column header */}
+                                            <div className="flex items-center justify-between">
+                                              <span className="text-amber-300/80 text-xs font-medium uppercase tracking-wide">
+                                                {column.name}
+                                              </span>
+                                              <div className="flex items-center gap-1">
+                                                {/* Column type indicator */}
+                                                {column.type === 'status' && <div className="w-2 h-2 bg-green-400/60 rounded-full"></div>}
+                                                {column.type === 'text' && <Type className="w-3 h-3 text-amber-400/60" />}
+                                                {column.type === 'date' && <Calendar className="w-3 h-3 text-amber-400/60" />}
+                                                {column.type === 'people' && <Users className="w-3 h-3 text-amber-400/60" />}
+                                                {column.type === 'number' && <Hash className="w-3 h-3 text-amber-400/60" />}
+                                                {column.type === 'tags' && <Tag className="w-3 h-3 text-amber-400/60" />}
+                                              </div>
+                                            </div>
                                           </div>
                                         ))}
                                       </div>
@@ -1634,37 +1741,45 @@ export default function MondayBoard() {
                                       {expandedFolders.has(folder.id) && (
                                         <>
                                           {/* Folder content container with enhanced visual grouping */}
-                                          <div className="relative border-l-2 border-amber-400/30 ml-4">
+                                          <div className="relative ml-2">
+                                            {/* Vertical connection line for entire folder group */}
+                                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-400/60 via-amber-400/40 to-amber-400/20 rounded-full"></div>
+                                            
                                             {folderSubItems.map((subItem, index) => (
-                                              <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-900/10 border-b border-blue-500/10 relative">
-                                                {/* Connection line to folder */}
-                                                <div className="absolute left-0 top-0 w-3 h-full flex items-center">
-                                                  <div className="w-3 h-px bg-amber-400/40"></div>
+                                              <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-900/10 border-b border-blue-500/10 relative ml-4">
+                                                {/* Enhanced connection line to folder */}
+                                                <div className="absolute -left-4 top-0 w-4 h-full flex items-center">
+                                                  <div className="w-full h-px bg-gradient-to-r from-amber-400/60 to-blue-400/60"></div>
                                                 </div>
                                                 
-                                                {/* Sub-item checkbox */}
-                                                <div className="w-8 px-1 py-1.5 border-r border-blue-500/15 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/15 to-slate-900/10 z-20 ml-4">
+                                                {/* Connection dot */}
+                                                <div className="absolute -left-5 top-1/2 transform -translate-y-1/2">
+                                                  <div className="w-2 h-2 bg-amber-400/80 rounded-full border border-amber-300/50 shadow-sm"></div>
+                                                </div>
+                                                
+                                                {/* Sub-item checkbox with enhanced spacing */}
+                                                <div className="w-8 px-1 py-1.5 border-r border-blue-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/20 to-slate-900/15 z-20">
                                                   <input 
                                                     type="checkbox" 
-                                                    className="w-3 h-3 rounded border-blue-400/50 bg-blue-900/30 text-blue-400 focus:ring-blue-400 focus:ring-1"
+                                                    className="w-3.5 h-3.5 rounded border-blue-400/60 bg-blue-900/40 text-blue-400 focus:ring-blue-400 focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900"
                                                   />
                                                 </div>
                                                 
-                                                {/* Sub-item name with enhanced indent and visual hierarchy */}
+                                                {/* Sub-item name with clear hierarchy indicators */}
                                                 <div 
-                                                  className="px-3 py-1.5 border-r border-blue-500/15 flex-shrink-0 sticky left-12 bg-gradient-to-r from-blue-950/15 to-slate-900/10 z-10 flex items-center"
+                                                  className="px-3 py-1.5 border-r border-blue-500/20 flex-shrink-0 sticky left-8 bg-gradient-to-r from-blue-950/20 to-slate-900/15 z-10 flex items-center"
                                                   style={{ 
-                                                    width: (columnWidths['item'] || 200) - 16,
-                                                    minWidth: '134px',
+                                                    width: (columnWidths['item'] || 200),
+                                                    minWidth: '150px',
                                                     maxWidth: 'none'
                                                   }}
                                                 >
-                                                  <div className="flex items-center gap-2 text-sm pl-2">
-                                                    {/* Enhanced visual connection */}
-                                                    <div className="flex items-center gap-1">
-                                                      <div className="w-2 h-px bg-blue-400/50"></div>
-                                                      <div className="w-1.5 h-1.5 bg-blue-400/70 rounded-full border border-blue-300/30"></div>
-                                                      <div className="w-1 h-px bg-blue-400/30"></div>
+                                                  <div className="flex items-center gap-2 text-sm">
+                                                    {/* Clear visual hierarchy indicator */}
+                                                    <div className="flex items-center gap-1 ml-2">
+                                                      <div className="w-3 h-px bg-blue-400/60"></div>
+                                                      <div className="w-2 h-2 bg-blue-400/80 rounded-full border border-blue-300/40 shadow-sm"></div>
+                                                      <div className="w-2 h-px bg-blue-400/40"></div>
                                                     </div>
                                                   {editingSubItem === subItem.id ? (
                                                     <input
