@@ -1720,7 +1720,15 @@ export default function MondayBoard() {
                                           return (
                                           <div 
                                             key={`folder-subheader-${folder.id}-${column.id}`}
-                                            className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 flex items-center gap-2 relative group bg-gradient-to-r from-blue-950/10 to-slate-950/5"
+                                            className={`px-4 py-3 border-r flex-shrink-0 flex items-center gap-2 relative group ${
+                                              group.name === 'New Leads' ? 'border-cyan-500/20 bg-gradient-to-r from-cyan-950/10 to-slate-950/5' :
+                                              group.name === 'Need Attention' ? 'border-yellow-500/20 bg-gradient-to-r from-yellow-950/10 to-slate-950/5' :
+                                              group.name === 'Sent Estimate' ? 'border-purple-500/20 bg-gradient-to-r from-purple-950/10 to-slate-950/5' :
+                                              group.name === 'Signed' ? 'border-emerald-500/20 bg-gradient-to-r from-emerald-950/10 to-slate-950/5' :
+                                              group.name === 'In Progress' ? 'border-blue-500/20 bg-gradient-to-r from-blue-950/10 to-slate-950/5' :
+                                              group.name === 'Complete' ? 'border-green-500/20 bg-gradient-to-r from-green-950/10 to-slate-950/5' :
+                                              'border-gray-500/20 bg-gradient-to-r from-gray-950/10 to-slate-950/5'
+                                            }`}
                                             style={{ 
                                               width: columnWidth,
                                               minWidth: '70px',
@@ -1878,7 +1886,15 @@ export default function MondayBoard() {
                                                   return (
                                                   <div 
                                                     key={`sub-${subItem.id}-${column.id}`}
-                                                    className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 bg-gradient-to-r from-blue-950/10 to-slate-900/5 flex items-center justify-center"
+                                                    className={`px-4 py-3 border-r flex-shrink-0 flex items-center justify-center ${
+                                                      group.name === 'New Leads' ? 'border-cyan-500/20 bg-gradient-to-r from-cyan-950/10 to-slate-900/5' :
+                                                      group.name === 'Need Attention' ? 'border-yellow-500/20 bg-gradient-to-r from-yellow-950/10 to-slate-900/5' :
+                                                      group.name === 'Sent Estimate' ? 'border-purple-500/20 bg-gradient-to-r from-purple-950/10 to-slate-900/5' :
+                                                      group.name === 'Signed' ? 'border-emerald-500/20 bg-gradient-to-r from-emerald-950/10 to-slate-900/5' :
+                                                      group.name === 'In Progress' ? 'border-blue-500/20 bg-gradient-to-r from-blue-950/10 to-slate-900/5' :
+                                                      group.name === 'Complete' ? 'border-green-500/20 bg-gradient-to-r from-green-950/10 to-slate-900/5' :
+                                                      'border-gray-500/20 bg-gradient-to-r from-gray-950/10 to-slate-900/5'
+                                                    }`}
                                                     style={{ 
                                                       width: columnWidth,
                                                       minWidth: '70px',
@@ -1974,17 +1990,33 @@ export default function MondayBoard() {
                                               </div>
                                               
                                               {/* Empty cells synchronized with sub-item columns */}
-                                              {subItemColumns.map((column) => (
+                                              {subItemColumns.map((column, index) => {
+                                                // Use same width mapping as sub-item cells
+                                                const correspondingMainColumn = columns.slice(1)[index]; 
+                                                const columnWidth = correspondingMainColumn ? 
+                                                  (columnWidths[correspondingMainColumn.id] || 100) : 
+                                                  (columnWidths[column.id] || 100);
+                                                
+                                                return (
                                                 <div 
                                                   key={`add-sub-${folder.id}-${column.id}`}
-                                                  className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 bg-gradient-to-r from-blue-950/8 to-slate-900/5"
+                                                  className={`px-4 py-3 border-r flex-shrink-0 ${
+                                                    group.name === 'New Leads' ? 'border-cyan-500/20 bg-gradient-to-r from-cyan-950/8 to-slate-900/5' :
+                                                    group.name === 'Need Attention' ? 'border-yellow-500/20 bg-gradient-to-r from-yellow-950/8 to-slate-900/5' :
+                                                    group.name === 'Sent Estimate' ? 'border-purple-500/20 bg-gradient-to-r from-purple-950/8 to-slate-900/5' :
+                                                    group.name === 'Signed' ? 'border-emerald-500/20 bg-gradient-to-r from-emerald-950/8 to-slate-900/5' :
+                                                    group.name === 'In Progress' ? 'border-blue-500/20 bg-gradient-to-r from-blue-950/8 to-slate-900/5' :
+                                                    group.name === 'Complete' ? 'border-green-500/20 bg-gradient-to-r from-green-950/8 to-slate-900/5' :
+                                                    'border-gray-500/20 bg-gradient-to-r from-gray-950/8 to-slate-900/5'
+                                                  }`}
                                                   style={{ 
-                                                    width: columnWidths[column.id] || 140,
-                                                    minWidth: '100px',
+                                                    width: columnWidth,
+                                                    minWidth: '70px',
                                                     maxWidth: 'none'
                                                   }}
                                                 />
-                                              ))}
+                                                )
+                                              })}
                                             </div>
                                           </div>
                                         </>
