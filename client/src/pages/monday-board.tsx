@@ -1675,12 +1675,14 @@ export default function MondayBoard() {
                                     <React.Fragment key={folder.id}>
                                       {/* Folder Header */}
                                       <div className="group flex hover:bg-amber-500/8 transition-all bg-gradient-to-r from-amber-950/15 to-orange-950/8 border-b-2 border-amber-500/25 shadow-sm">
-                                        {/* Folder checkbox */}
+                                        {/* Folder checkbox - indented for hierarchy */}
                                         <div className="w-8 px-1 py-2 border-r border-amber-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-amber-950/15 to-orange-950/8 z-20">
-                                          <input 
-                                            type="checkbox" 
-                                            className="w-3.5 h-3.5 rounded border-amber-500/50 bg-amber-900/30 text-amber-400 focus:ring-amber-400 focus:ring-1"
-                                          />
+                                          <div className="w-4 h-full flex items-center justify-end">
+                                            <input 
+                                              type="checkbox" 
+                                              className="w-3 h-3 rounded border-amber-500/50 bg-amber-900/30 text-amber-400 focus:ring-amber-400 focus:ring-1 mr-1"
+                                            />
+                                          </div>
                                         </div>
                                         
                                         {/* Folder name with expand/collapse */}
@@ -1802,12 +1804,14 @@ export default function MondayBoard() {
                                                   <div className="w-2 h-2 bg-amber-400/80 rounded-full border border-amber-300/50 shadow-sm"></div>
                                                 </div>
                                                 
-                                                {/* Sub-item checkbox with enhanced spacing */}
+                                                {/* Sub-item checkbox with enhanced spacing - indented for hierarchy */}
                                                 <div className="w-8 px-1 py-1.5 border-r border-blue-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/20 to-slate-900/15 z-20">
-                                                  <input 
-                                                    type="checkbox" 
-                                                    className="w-3.5 h-3.5 rounded border-blue-400/60 bg-blue-900/40 text-blue-400 focus:ring-blue-400 focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900"
-                                                  />
+                                                  <div className="w-4 h-full flex items-center justify-end ml-2">
+                                                    <input 
+                                                      type="checkbox" 
+                                                      className="w-3 h-3 rounded border-blue-400/60 bg-blue-900/40 text-blue-400 focus:ring-blue-400 focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900 mr-1"
+                                                    />
+                                                  </div>
                                                 </div>
                                                 
                                                 {/* Sub-item name with clear hierarchy indicators */}
