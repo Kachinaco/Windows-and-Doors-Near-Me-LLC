@@ -112,6 +112,7 @@ export default function MondayBoard() {
   const [editingCell, setEditingCell] = useState<{projectId: number, field: string} | null>(null);
   const [newlyCreatedItem, setNewlyCreatedItem] = useState<number | null>(null);
   const [openUpdates, setOpenUpdates] = useState<Set<number>>(new Set());
+  const [selectedProjectForUpdates, setSelectedProjectForUpdates] = useState<number | null>(null);
   const [localValues, setLocalValues] = useState<Record<string, string>>({});
   const debounceTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
@@ -934,16 +935,12 @@ export default function MondayBoard() {
   }, [createSubItemMutation]);
 
   const handleToggleUpdates = useCallback((projectId: number) => {
-    setOpenUpdates(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(projectId)) {
-        newSet.delete(projectId);
-      } else {
-        newSet.add(projectId);
-      }
-      return newSet;
-    });
-  }, []);
+    if (selectedProjectForUpdates === projectId) {
+      setSelectedProjectForUpdates(null);
+    } else {
+      setSelectedProjectForUpdates(projectId);
+    }
+  }, [selectedProjectForUpdates]);
 
   // Handler for updating sub-item names
   const handleUpdateSubItemName = useCallback(async (subItemId: number, newName: string) => {
@@ -1116,9 +1113,11 @@ export default function MondayBoard() {
   };
 
   return (
-    <div className="h-screen bg-gray-950 text-white flex flex-col overflow-hidden">
-      {/* Ultra-Slim Header */}
-      <header className="bg-gray-950/80 backdrop-blur-sm border-b border-gray-800/50 px-3 py-1.5 flex-shrink-0">
+    <div className="h-screen bg-gray-950 text-white flex overflow-hidden">
+      {/* Main Board Container */}
+      <div className={`flex flex-col transition-all duration-300 ${selectedProjectForUpdates ? 'flex-1' : 'w-full'}`}>
+        {/* Ultra-Slim Header */}
+        <header className="bg-gray-950/80 backdrop-blur-sm border-b border-gray-800/50 px-3 py-1.5 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Button
@@ -1527,65 +1526,7 @@ export default function MondayBoard() {
                         ))}
                       </div>
 
-                      {/* Updates Section (when opened) */}
-                      {openUpdates.has(item.id) && (
-                        <div className="bg-slate-900/30 border-l-4 border-blue-500/50 mx-8 px-4 py-3 border-b border-gray-800/20">
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-sm font-medium text-gray-300">Project Updates & Comments</h4>
-                            <span className="text-xs text-gray-500">Project #{item.id}</span>
-                          </div>
-                          
-                          {/* Updates List */}
-                          <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
-                            {/* Sample updates - replace with real data */}
-                            <div className="flex space-x-3">
-                              <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white">
-                                JD
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-xs text-gray-400">
-                                  <span className="text-gray-300 font-medium">John Doe</span> · 2 hours ago
-                                </div>
-                                <p className="text-sm text-gray-300 mt-1">Initial consultation completed. Customer is interested in 6 windows for living room and kitchen.</p>
-                              </div>
-                            </div>
-                            
-                            <div className="flex space-x-3">
-                              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-xs text-white">
-                                SM
-                              </div>
-                              <div className="flex-1">
-                                <div className="text-xs text-gray-400">
-                                  <span className="text-gray-300 font-medium">Sarah Miller</span> · 1 day ago
-                                </div>
-                                <p className="text-sm text-gray-300 mt-1">Measurements taken. Preparing detailed quote with V400 series windows.</p>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Add Update Form */}
-                          <div className="flex space-x-3">
-                            <div className="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center text-xs text-white">
-                              {user?.username?.[0]?.toUpperCase() || 'U'}
-                            </div>
-                            <div className="flex-1">
-                              <textarea
-                                placeholder="Add an update or comment..."
-                                className="w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                                rows={2}
-                              />
-                              <div className="flex justify-end mt-2 space-x-2">
-                                <Button size="sm" variant="outline" className="text-xs">
-                                  Cancel
-                                </Button>
-                                <Button size="sm" className="text-xs bg-blue-600 hover:bg-blue-700">
-                                  Post Update
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+
                       
                       {/* Sub-Items Rows (when expanded) */}
                       {expandedSubItems.has(item.id) && (
@@ -2157,6 +2098,101 @@ export default function MondayBoard() {
                 >
                   ✕
                 </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
+
+      {/* Updates Side Panel */}
+      {selectedProjectForUpdates && (
+        <div className="w-96 bg-gray-900 border-l border-gray-800 flex flex-col">
+          {/* Side Panel Header */}
+          <div className="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-gray-200">Project Updates</h3>
+              <p className="text-xs text-gray-400">Project #{selectedProjectForUpdates}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedProjectForUpdates(null)}
+              className="text-gray-400 hover:text-gray-200 p-1"
+            >
+              ✕
+            </Button>
+          </div>
+
+          {/* Updates Content */}
+          <div className="flex-1 overflow-auto p-4">
+            {/* Updates List */}
+            <div className="space-y-4 mb-6">
+              {/* Sample updates - replace with real data */}
+              <div className="flex space-x-3">
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white font-medium">
+                  JD
+                </div>
+                <div className="flex-1">
+                  <div className="text-xs text-gray-400 mb-1">
+                    <span className="text-gray-300 font-medium">John Doe</span> · 2 hours ago
+                  </div>
+                  <div className="bg-gray-800 rounded-lg p-3">
+                    <p className="text-sm text-gray-300">Initial consultation completed. Customer is interested in 6 windows for living room and kitchen. Need to schedule measurement appointment.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex space-x-3">
+                <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-xs text-white font-medium">
+                  SM
+                </div>
+                <div className="flex-1">
+                  <div className="text-xs text-gray-400 mb-1">
+                    <span className="text-gray-300 font-medium">Sarah Miller</span> · 1 day ago
+                  </div>
+                  <div className="bg-gray-800 rounded-lg p-3">
+                    <p className="text-sm text-gray-300">Measurements taken. Preparing detailed quote with V400 series windows. Customer prefers white frames with low-E glass.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-xs text-white font-medium">
+                  MJ
+                </div>
+                <div className="flex-1">
+                  <div className="text-xs text-gray-400 mb-1">
+                    <span className="text-gray-300 font-medium">Mike Johnson</span> · 3 days ago
+                  </div>
+                  <div className="bg-gray-800 rounded-lg p-3">
+                    <p className="text-sm text-gray-300">Lead generated from website contact form. Customer mentioned urgency due to damaged window frame.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Add Update Form */}
+            <div className="border-t border-gray-700 pt-4">
+              <div className="flex space-x-3">
+                <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium">
+                  {user?.username?.[0]?.toUpperCase() || 'U'}
+                </div>
+                <div className="flex-1">
+                  <textarea
+                    placeholder="Add an update or comment..."
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    rows={3}
+                  />
+                  <div className="flex justify-end mt-3 space-x-2">
+                    <Button size="sm" variant="outline" className="text-xs border-gray-600 text-gray-400 hover:bg-gray-700">
+                      Cancel
+                    </Button>
+                    <Button size="sm" className="text-xs bg-blue-600 hover:bg-blue-700">
+                      Post Update
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
