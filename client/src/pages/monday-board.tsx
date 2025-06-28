@@ -1707,30 +1707,30 @@ export default function MondayBoard() {
                                           </div>
                                         </div>
                                         
-                                        {/* Sub-item column headers on folder row */}
-                                        {subItemColumns.map((column) => (
+                                        {/* Main project columns aligned with group headers */}
+                                        {columns.slice(1).map((column) => (
                                           <div 
-                                            key={`folder-${folder.id}-${column.id}`}
+                                            key={`folder-main-${folder.id}-${column.id}`}
                                             className="px-2 py-0.5 border-r border-amber-500/20 flex-shrink-0 bg-gradient-to-r from-amber-950/10 to-orange-950/5"
                                             style={{ 
-                                              width: columnWidths[column.id] || 120,
-                                              minWidth: '80px',
+                                              width: columnWidths[column.id] || (column.id === 'item' ? 200 : 100),
+                                              minWidth: column.id === 'item' ? '150px' : '70px',
                                               maxWidth: 'none'
                                             }}
                                           >
-                                            {/* Sub-item column header */}
+                                            {/* Main column header aligned */}
                                             <div className="flex items-center justify-between">
-                                              <span className="text-amber-300/80 text-xs font-medium uppercase tracking-wide">
+                                              <span className="text-amber-300/60 text-xs font-medium uppercase tracking-wide opacity-50">
                                                 {column.name}
                                               </span>
                                               <div className="flex items-center gap-1">
                                                 {/* Column type indicator */}
-                                                {column.type === 'status' && <div className="w-2 h-2 bg-green-400/60 rounded-full"></div>}
-                                                {column.type === 'text' && <Type className="w-3 h-3 text-amber-400/60" />}
-                                                {column.type === 'date' && <Calendar className="w-3 h-3 text-amber-400/60" />}
-                                                {column.type === 'people' && <Users className="w-3 h-3 text-amber-400/60" />}
-                                                {column.type === 'number' && <Hash className="w-3 h-3 text-amber-400/60" />}
-                                                {column.type === 'tags' && <Tag className="w-3 h-3 text-amber-400/60" />}
+                                                {column.type === 'status' && <div className="w-2 h-2 bg-amber-400/40 rounded-full"></div>}
+                                                {column.type === 'text' && <Type className="w-3 h-3 text-amber-400/40" />}
+                                                {column.type === 'date' && <Calendar className="w-3 h-3 text-amber-400/40" />}
+                                                {column.type === 'people' && <Users className="w-3 h-3 text-amber-400/40" />}
+                                                {column.type === 'number' && <Hash className="w-3 h-3 text-amber-400/40" />}
+                                                {column.type === 'tags' && <Tag className="w-3 h-3 text-amber-400/40" />}
                                               </div>
                                             </div>
                                           </div>
@@ -1828,18 +1828,42 @@ export default function MondayBoard() {
                                                   </div>
                                                 </div>
                                                 
-                                                {/* Sub-item cells with enhanced styling */}
-                                                {subItemColumns.map((column) => (
+                                                {/* Sub-item cells aligned with main project columns */}
+                                                {columns.slice(1).map((column) => (
                                                   <div 
                                                     key={`sub-${subItem.id}-${column.id}`}
                                                     className="px-2 py-1.5 border-r border-blue-500/10 flex-shrink-0 bg-gradient-to-r from-blue-950/10 to-slate-900/5"
                                                     style={{ 
-                                                      width: columnWidths[column.id] || 120,
-                                                      minWidth: '80px',
+                                                      width: columnWidths[column.id] || (column.id === 'item' ? 200 : 100),
+                                                      minWidth: column.id === 'item' ? '150px' : '70px',
                                                       maxWidth: 'none'
                                                     }}
                                                   >
-                                                    {renderSubItemCell(subItem, column, item.id)}
+                                                    {/* Render sub-item data in main project column structure */}
+                                                    <div className="text-xs text-gray-400">
+                                                      {column.id === 'status' && (
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs ${
+                                                          subItem.status === 'not_started' ? 'bg-gray-600/20 text-gray-400' :
+                                                          subItem.status === 'in_progress' ? 'bg-blue-600/20 text-blue-400' :
+                                                          subItem.status === 'completed' ? 'bg-green-600/20 text-green-400' :
+                                                          'bg-gray-600/20 text-gray-400'
+                                                        }`}>
+                                                          {subItem.status.replace('_', ' ')}
+                                                        </span>
+                                                      )}
+                                                      {column.id === 'assignedTo' && subItem.assignedTo && (
+                                                        <span className="text-blue-400">{subItem.assignedTo}</span>
+                                                      )}
+                                                      {column.id === 'estimatedCost' && (
+                                                        <span className="text-gray-500">-</span>
+                                                      )}
+                                                      {column.id === 'startDate' && (
+                                                        <span className="text-gray-500">-</span>
+                                                      )}
+                                                      {column.id === 'endDate' && (
+                                                        <span className="text-gray-500">-</span>
+                                                      )}
+                                                    </div>
                                                   </div>
                                                 ))}
                                               </div>
@@ -1873,14 +1897,14 @@ export default function MondayBoard() {
                                                 </Button>
                                               </div>
                                               
-                                              {/* Empty cells for other columns with matching background */}
-                                              {subItemColumns.map((column) => (
+                                              {/* Empty cells aligned with main project columns */}
+                                              {columns.slice(1).map((column) => (
                                                 <div 
                                                   key={`add-sub-${folder.id}-${column.id}`}
                                                   className="px-2 py-1.5 border-r border-blue-500/10 flex-shrink-0 bg-gradient-to-r from-blue-950/8 to-slate-900/5"
                                                   style={{ 
-                                                    width: columnWidths[column.id] || 120,
-                                                    minWidth: '80px',
+                                                    width: columnWidths[column.id] || (column.id === 'item' ? 200 : 100),
+                                                    minWidth: column.id === 'item' ? '150px' : '70px',
                                                     maxWidth: 'none'
                                                   }}
                                                 />
