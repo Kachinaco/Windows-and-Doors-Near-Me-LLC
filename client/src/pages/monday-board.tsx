@@ -137,7 +137,7 @@ export default function MondayBoard() {
   });
 
   // Fetch project updates for selected project
-  const { data: projectUpdates = [], isLoading: updatesLoading } = useQuery({
+  const { data: projectUpdates = [], isLoading: updatesLoading } = useQuery<any[]>({
     queryKey: ['/api/projects', selectedMainItem?.id, 'updates'],
     enabled: !!selectedMainItem?.id,
     refetchInterval: 3000, // Refresh more frequently for real-time updates
@@ -981,6 +981,22 @@ export default function MondayBoard() {
       setSidePanelOpen(true);
     }
   }, [boardItems]);
+
+  // Handle posting new update
+  const handlePostUpdate = useCallback(() => {
+    if (!updateContent.trim() || !selectedMainItem?.id) return;
+    
+    setIsPosting(true);
+    createUpdateMutation.mutate({
+      projectId: selectedMainItem.id,
+      content: updateContent.trim(),
+      attachments: selectedFiles.length > 0 ? selectedFiles.map(file => ({
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      })) : undefined
+    });
+  }, [updateContent, selectedMainItem?.id, selectedFiles, createUpdateMutation]);
 
   // Handler for updating sub-item names
   const handleUpdateSubItemName = useCallback(async (subItemId: number, newName: string) => {
@@ -2171,48 +2187,40 @@ export default function MondayBoard() {
           <div className="flex-1 overflow-auto p-4">
             {/* Updates List */}
             <div className="space-y-4 mb-6">
-              {/* Sample updates - replace with real data */}
-              <div className="flex space-x-3">
-                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white font-medium">
-                  JD
+              {updatesLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
                 </div>
-                <div className="flex-1">
-                  <div className="text-xs text-gray-400 mb-1">
-                    <span className="text-gray-300 font-medium">John Doe</span> · 2 hours ago
+              ) : projectUpdates.length > 0 ? (
+                projectUpdates.map((update: any) => (
+                  <div key={update.id} className="flex space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white font-medium">
+                      {user?.username?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs text-gray-400 mb-1">
+                        <span className="text-gray-300 font-medium">{user?.username || 'User'}</span> · {new Date(update.createdAt).toLocaleDateString()}
+                      </div>
+                      <div className="bg-gray-800 rounded-lg p-3">
+                        <p className="text-sm text-gray-300">{update.content}</p>
+                        {update.attachments && update.attachments.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {update.attachments.map((file: any, index: number) => (
+                              <div key={index} className="text-xs text-blue-400 hover:text-blue-300 cursor-pointer">
+                                📎 {file.fileName}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-gray-800 rounded-lg p-3">
-                    <p className="text-sm text-gray-300">Initial consultation completed. Customer is interested in 6 windows for living room and kitchen. Need to schedule measurement appointment.</p>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-400 text-sm">
+                  No updates yet. Be the first to add an update for this project.
                 </div>
-              </div>
-              
-              <div className="flex space-x-3">
-                <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-xs text-white font-medium">
-                  SM
-                </div>
-                <div className="flex-1">
-                  <div className="text-xs text-gray-400 mb-1">
-                    <span className="text-gray-300 font-medium">Sarah Miller</span> · 1 day ago
-                  </div>
-                  <div className="bg-gray-800 rounded-lg p-3">
-                    <p className="text-sm text-gray-300">Measurements taken. Preparing detailed quote with V400 series windows. Customer prefers white frames with low-E glass.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex space-x-3">
-                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-xs text-white font-medium">
-                  MJ
-                </div>
-                <div className="flex-1">
-                  <div className="text-xs text-gray-400 mb-1">
-                    <span className="text-gray-300 font-medium">Mike Johnson</span> · 3 days ago
-                  </div>
-                  <div className="bg-gray-800 rounded-lg p-3">
-                    <p className="text-sm text-gray-300">Lead generated from website contact form. Customer mentioned urgency due to damaged window frame.</p>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Add Update Form */}
@@ -2223,16 +2231,68 @@ export default function MondayBoard() {
                 </div>
                 <div className="flex-1">
                   <textarea
+                    value={updateContent}
+                    onChange={(e) => setUpdateContent(e.target.value)}
                     placeholder="Add an update or comment..."
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     rows={3}
+                    disabled={isPosting}
                   />
+                  
+                  {/* File Upload Area */}
+                  <div className="mt-2">
+                    <input
+                      type="file"
+                      multiple
+                      onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
+                      className="hidden"
+                      id="file-upload"
+                      accept="image/*,application/pdf,.doc,.docx,.txt"
+                    />
+                    <label
+                      htmlFor="file-upload"
+                      className="inline-flex items-center px-2 py-1 text-xs text-gray-400 hover:text-gray-300 cursor-pointer border border-gray-600 rounded hover:border-gray-500 transition-colors"
+                    >
+                      📎 Attach Files
+                    </label>
+                    
+                    {selectedFiles.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {selectedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between text-xs text-gray-400 bg-gray-700 rounded px-2 py-1">
+                            <span>📎 {file.name}</span>
+                            <button
+                              onClick={() => setSelectedFiles(files => files.filter((_, i) => i !== index))}
+                              className="text-red-400 hover:text-red-300 ml-2"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="flex justify-end mt-3 space-x-2">
-                    <Button size="sm" variant="outline" className="text-xs border-gray-600 text-gray-400 hover:bg-gray-700">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="text-xs border-gray-600 text-gray-400 hover:bg-gray-700"
+                      onClick={() => {
+                        setUpdateContent('');
+                        setSelectedFiles([]);
+                      }}
+                      disabled={isPosting}
+                    >
                       Cancel
                     </Button>
-                    <Button size="sm" className="text-xs bg-blue-600 hover:bg-blue-700">
-                      Post Update
+                    <Button 
+                      size="sm" 
+                      className="text-xs bg-blue-600 hover:bg-blue-700"
+                      onClick={handlePostUpdate}
+                      disabled={!updateContent.trim() || isPosting}
+                    >
+                      {isPosting ? 'Posting...' : 'Post Update'}
                     </Button>
                   </div>
                 </div>
