@@ -1269,659 +1269,258 @@ export default function MondayBoard() {
         </div>
       </header>
 
-      {/* Compact Board */}
-      <div className="flex-1 overflow-auto bg-gray-950">
-        <div className="min-w-max">
-          {/* Ultra-Slim Column Headers */}
-          <div className="sticky top-0 bg-gray-950/95 backdrop-blur-sm z-10 border-b border-gray-800/50">
-            <div className="flex">
-              {/* Selection checkbox header */}
-              <div className="w-8 px-1 py-1.5 border-r border-gray-800/30 flex items-center justify-center sticky left-0 bg-gray-950/95 backdrop-blur-sm z-30">
-                <input
-                  type="checkbox"
-                  checked={selectedItems.size > 0 && selectedItems.size === boardItems.length}
-                  onChange={selectedItems.size === boardItems.length ? handleSelectNone : handleSelectAll}
-                  className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
-                />
-              </div>
-              {columns.map((column, index) => (
-                <div 
-                  key={column.id} 
-                  className={`px-2 py-1.5 border-r border-gray-800/30 relative group flex-shrink-0 ${
-                    index === 0 ? 'sticky left-8 bg-gray-950/95 backdrop-blur-sm z-20' : ''
-                  }`}
-                  style={{ 
-                    width: columnWidths[column.id] || (index === 0 ? 200 : 100),
-                    minWidth: index === 0 ? '150px' : '70px',
-                    maxWidth: 'none'
-                  }}
-                >
-                  <div className="flex items-center space-x-1">
-                    {getColumnIcon(column.type)}
-                    <span className="font-medium text-xs text-gray-400">{column.name}</span>
-                  </div>
-                  {index < columns.length - 1 && (
-                    <div 
-                      className="absolute right-0 top-0 bottom-0 w-3 cursor-col-resize flex items-center justify-center bg-transparent hover:bg-blue-500/20 transition-all group touch-none"
-                      onPointerDown={(e) => handlePointerDown(column.id, e)}
-                      title="Resize"
-                      style={{ touchAction: 'none' }}
-                    >
-                      <div className="w-0.5 h-4 bg-gray-600 hover:bg-blue-400 rounded-full transition-all duration-200 group-hover:h-5 group-hover:bg-blue-400"></div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-
-          </div>
-
-          {/* Groups and Items */}
+      {/* Modern Board Container */}
+      <div className="flex-1 overflow-hidden bg-gray-950">
+        {/* Mobile View - Card Layout */}
+        <div className="block md:hidden h-full overflow-auto p-4">
           {boardGroups.map((group) => (
-            <div key={group.name} className="border-b border-gray-800/50 last:border-b-0">
-              {/* Ultra-Slim Group Header */}
-              <div className={`px-2 py-1.5 border-b border-gray-800/20 flex items-center space-x-1.5 hover:bg-gray-900/40 transition-all ${
-                group.name === 'New Leads' ? 'bg-gradient-to-r from-cyan-900/20 to-gray-900/20' :
-                group.name === 'Need Attention' ? 'bg-gradient-to-r from-yellow-900/20 to-gray-900/20' :
-                group.name === 'Sent Estimate' ? 'bg-gradient-to-r from-purple-900/20 to-gray-900/20' :
-                group.name === 'Signed' ? 'bg-gradient-to-r from-emerald-900/20 to-gray-900/20' :
-                group.name === 'In Progress' ? 'bg-gradient-to-r from-blue-900/20 to-gray-900/20' :
-                group.name === 'Complete' ? 'bg-gradient-to-r from-green-900/20 to-gray-900/20' :
-                'bg-gray-900/20'
-              }`}>
-                {/* Group Selection Checkbox */}
-                <div className="w-8 px-1 flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    checked={isGroupSelected(group.name)}
-                    ref={el => {
-                      if (el) {
-                        el.indeterminate = isGroupPartiallySelected(group.name);
-                      }
-                    }}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      handleSelectGroup(group.name);
-                    }}
-                    className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
-                  />
+            <div key={group.name} className="mb-6">
+              {/* Mobile Group Header */}
+              <div className="flex items-center justify-between mb-3 px-3 py-2 bg-gray-900/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => toggleGroup(group.name)}
+                    className="p-1 hover:bg-gray-800 rounded"
+                  >
+                    {group.collapsed ? (
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                    )}
+                  </button>
+                  <h3 className="font-medium text-sm text-gray-200">{group.name}</h3>
+                  <span className="text-xs text-gray-500">({group.items.length})</span>
                 </div>
-                
-                {/* Group Toggle and Info */}
-                <div 
-                  className="flex-1 flex items-center space-x-1.5 cursor-pointer"
-                  onClick={() => toggleGroup(group.name)}
+                <Button
+                  onClick={() => addItemMutation.mutate(group.name)}
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 text-gray-400 hover:text-blue-400"
                 >
-                  {group.collapsed ? (
-                    <ChevronRight className="w-2.5 h-2.5 text-gray-500" />
-                  ) : (
-                    <ChevronDown className="w-2.5 h-2.5 text-gray-500" />
-                  )}
-                  <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-                    group.name === 'New Leads' ? 'bg-cyan-500' :
-                    group.name === 'Need Attention' ? 'bg-yellow-500' :
-                    group.name === 'Sent Estimate' ? 'bg-purple-500' :
-                    group.name === 'Signed' ? 'bg-emerald-500' :
-                    group.name === 'In Progress' ? 'bg-blue-500' :
-                    group.name === 'Complete' ? 'bg-green-500' :
-                    'bg-gray-500'
-                  }`} />
-                  <span className={`text-xs font-medium ${
-                    group.name === 'New Leads' ? 'text-cyan-300' :
-                    group.name === 'Need Attention' ? 'text-yellow-300' :
-                    group.name === 'Sent Estimate' ? 'text-purple-300' :
-                    group.name === 'Signed' ? 'text-emerald-300' :
-                    group.name === 'In Progress' ? 'text-blue-300' :
-                    group.name === 'Complete' ? 'text-green-300' :
-                    'text-gray-400'
-                  }`}>{group.name}</span>
-                  <span className="text-xs text-gray-500 font-medium">({group.items.length})</span>
-                </div>
+                  <Plus className="w-3 h-3" />
+                </Button>
               </div>
 
-              {/* Group Items */}
+              {/* Mobile Cards */}
               {!group.collapsed && (
-                <>
+                <div className="space-y-2">
                   {group.items.map((item) => (
-                    <React.Fragment key={item.id}>
-                      {/* Main Item Row */}
-                      <div className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0 bg-gradient-to-r from-gray-900/5 to-transparent">
-                        {/* Selection checkbox */}
-                        <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
+                    <div key={item.id} className="bg-gray-900/80 rounded-lg p-3 border border-gray-800">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             checked={selectedItems.has(item.id)}
                             onChange={() => handleToggleSelect(item.id)}
-                            className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+                            className="w-4 h-4 rounded border-gray-600"
+                          />
+                          <span className="font-medium text-sm text-white">
+                            {item.values.item || 'Untitled'}
+                          </span>
+                        </div>
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          item.values.status === 'complete' ? 'bg-green-500/20 text-green-400' :
+                          item.values.status === 'in progress' ? 'bg-blue-500/20 text-blue-400' :
+                          item.values.status === 'signed' ? 'bg-emerald-500/20 text-emerald-400' :
+                          item.values.status === 'sent estimate' ? 'bg-purple-500/20 text-purple-400' :
+                          item.values.status === 'need attention' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-cyan-500/20 text-cyan-400'
+                        }`}>
+                          {item.values.status || 'New Lead'}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
+                        <div>
+                          <span className="text-gray-500">Assigned:</span> {item.values.assignedTo || 'Unassigned'}
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Phone:</span> {item.values.phone || 'N/A'}
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-gray-500">Location:</span> {item.values.location || 'No address'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop View - Table Layout */}
+        <div className="hidden md:block h-full overflow-auto">
+          <div className="min-w-max">
+            {/* Modern Column Headers */}
+            <div className="sticky top-0 bg-gray-900 border-b border-gray-700/50 z-10">
+              <div className="flex items-center h-10">
+                {/* Selection checkbox header */}
+                <div className="w-10 flex items-center justify-center border-r border-gray-700/30">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.size > 0 && selectedItems.size === boardItems.length}
+                    onChange={selectedItems.size === boardItems.length ? handleSelectNone : handleSelectAll}
+                    className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-blue-500"
+                  />
+                </div>
+                {columns.map((column, index) => (
+                  <div 
+                    key={column.id} 
+                    className="px-4 py-2 border-r border-gray-700/30 relative group flex-shrink-0 bg-gray-900"
+                    style={{ 
+                      width: columnWidths[column.id] || (index === 0 ? 240 : 120),
+                      minWidth: index === 0 ? '200px' : '100px'
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500">{getColumnIcon(column.type)}</span>
+                      <span className="font-medium text-sm text-gray-300">{column.name}</span>
+                    </div>
+                    {/* Column Resizer */}
+                    <div 
+                      className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-transparent hover:bg-blue-500/50"
+                      onPointerDown={(e) => handlePointerDown(column.id, e)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modern Groups and Items */}
+            {boardGroups.map((group) => (
+              <div key={group.name}>
+                {/* Clean Group Header */}
+                <div className="bg-gray-900/60 border-b border-gray-700/30 h-9 flex items-center px-3 sticky top-10 z-5">
+                  <div className="flex items-center gap-3 flex-1">
+                    <button
+                      onClick={() => toggleGroup(group.name)}
+                      className="p-1 hover:bg-gray-800 rounded"
+                    >
+                      {group.collapsed ? (
+                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                      )}
+                    </button>
+                    
+                    <div className={`w-3 h-3 rounded-sm ${
+                      group.name === 'New Leads' ? 'bg-pink-500' :
+                      group.name === 'Need Attention' ? 'bg-orange-500' :
+                      group.name === 'Sent Estimate' ? 'bg-purple-500' :
+                      group.name === 'Signed' ? 'bg-green-500' :
+                      group.name === 'In Progress' ? 'bg-blue-500' :
+                      group.name === 'Complete' ? 'bg-emerald-500' :
+                      'bg-gray-500'
+                    }`} />
+                    
+                    <span className="text-sm font-medium text-white">{group.name}</span>
+                    <span className="text-sm text-gray-400">{group.items.length} item{group.items.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  
+                  <Button
+                    onClick={() => addItemMutation.mutate(group.name)}
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 text-gray-400 hover:text-blue-400"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {/* Group Items */}
+                {!group.collapsed && (
+                  <div className="bg-gray-950">
+                    {group.items.map((item) => (
+                      <div key={item.id} className="flex items-center h-12 hover:bg-gray-900/30 border-b border-gray-800/20 transition-colors">
+                        {/* Selection checkbox */}
+                        <div className="w-10 flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.has(item.id)}
+                            onChange={() => handleToggleSelect(item.id)}
+                            className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-blue-500"
                           />
                         </div>
+                        
                         {columns.map((column, index) => (
                           <div 
                             key={`${item.id}-${column.id}`} 
-                            className={`px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 ${
-                              index === 0 ? 'sticky left-8 bg-gray-950 z-10' : ''
-                            }`}
+                            className="px-4 py-2 border-r border-gray-700/30 flex-shrink-0 flex items-center"
                             style={{ 
-                              width: columnWidths[column.id] || (index === 0 ? 200 : 100),
-                              minWidth: index === 0 ? '150px' : '70px',
-                              maxWidth: 'none'
+                              width: columnWidths[column.id] || (index === 0 ? 240 : 120),
+                              minWidth: index === 0 ? '200px' : '100px'
                             }}
                           >
                             {renderCell(item, column)}
                           </div>
                         ))}
                       </div>
-                      
-                      {/* Sub-Items Rows (when expanded) */}
-                      {expandedSubItems.has(item.id) && (
-                        <>
-                          {/* Sub-item Column Headers - shown only for this expanded item */}
-                          <div className="bg-gradient-to-r from-slate-900/40 to-gray-900/30 border-b-2 border-blue-500/20 flex items-center text-xs text-gray-400 shadow-sm">
-                            {/* Empty space for checkbox */}
-                            <div className="w-8 px-1 py-2 border-r border-gray-700/30 sticky left-0 bg-gradient-to-r from-slate-900/40 to-gray-900/30 z-20"></div>
-                            
-                            {/* Sub-items section header */}
-                            <div 
-                              className="px-3 py-2 border-r border-gray-700/30 sticky left-8 bg-gradient-to-r from-slate-900/40 to-gray-900/30 z-10 flex items-center"
-                              style={{ 
-                                width: columnWidths['item'] || 200,
-                                minWidth: '150px',
-                                maxWidth: 'none'
-                              }}
-                            >
-                              <div className="flex items-center gap-2">
-                                <div className="w-4 h-px bg-blue-400/60"></div>
-                                <span className="text-blue-300 text-xs font-semibold uppercase tracking-wide">Sub-Items</span>
-                                <div className="w-4 h-px bg-blue-400/60"></div>
-                              </div>
-                            </div>
-                            
-                            {/* Sub-item column headers with resizers */}
-                            {subItemColumns.map((column, index) => (
-                              <div 
-                                key={`subheader-${item.id}-${column.id}`}
-                                className="px-3 py-2 border-r border-gray-700/30 flex-shrink-0 flex items-center gap-2 relative group"
-                                style={{ 
-                                  width: columnWidths[column.id] || 120,
-                                  minWidth: '80px',
-                                  maxWidth: 'none'
-                                }}
-                              >
-                                <div className="text-blue-400/80">{getColumnIcon(column.type)}</div>
-                                <span className="font-semibold text-xs text-blue-200">{column.name}</span>
-                                
-                                {/* Sub-item Column Resizer */}
-                                <div 
-                                  className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-transparent hover:bg-blue-400/50 group-hover:bg-blue-400/30"
-                                  onMouseDown={(e) => handlePointerDown(e as any, column.id)}
-                                />
-                                
-                                {/* Sub-item Column Three-dot Menu */}
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger className="absolute top-0 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button variant="ghost" size="sm" className="h-3 w-3 p-0 text-gray-500 hover:text-gray-300">
-                                      <span className="text-[8px]">⋯</span>
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="bg-gray-900 border-gray-700">
-                                    <DropdownMenuItem onClick={() => {
-                                      // Add sub-item column to the right
-                                      const newColumn: BoardColumn = {
-                                        id: `subitem_new_${Date.now()}`,
-                                        name: 'New Column',
-                                        type: 'text',
-                                        order: column.order + 1
-                                      };
-                                      setSubItemColumns(prev => [...prev, newColumn].sort((a, b) => a.order - b.order));
-                                    }} className="text-gray-300 hover:bg-gray-800">
-                                      Add column to the right
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => {
-                                      // Delete this sub-item column
-                                      setSubItemColumns(prev => prev.filter(col => col.id !== column.id));
-                                    }} className="text-red-400 hover:bg-gray-800">
-                                      Delete column
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Add Folder Section */}
-                          <div className="flex hover:bg-amber-500/5 transition-all border-b border-amber-500/10">
-                            {/* Empty checkbox space */}
-                            <div className="w-8 px-1 py-1.5 border-r border-gray-700/20 sticky left-0 bg-gray-950 z-20"></div>
-                            <div 
-                              className="px-3 py-1.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
-                              style={{ 
-                                width: columnWidths['item'] || 200,
-                                minWidth: '150px',
-                                maxWidth: 'none'
-                              }}
-                            >
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleAddSubItemFolder(item.id)}
-                                className="text-amber-400/80 hover:text-amber-300 hover:bg-amber-500/10 text-xs h-6 px-2 flex items-center gap-1.5 font-medium border border-amber-500/20 hover:border-amber-400/40 rounded-md transition-all"
-                              >
-                                <Folder className="w-3 h-3" />
-                                Add Folder
-                              </Button>
-                            </div>
-                            
-                            {/* Empty cells for other columns */}
-                            {subItemColumns.map((column) => (
-                              <div 
-                                key={`addsub-${item.id}-${column.id}`}
-                                className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                style={{ 
-                                  width: columnWidths[column.id] || 120,
-                                  minWidth: '80px',
-                                  maxWidth: 'none'
-                                }}
-                              />
-                            ))}
-                          </div>
-
-                          {/* Render folders and their sub-items */}
-                          {item.subItemFolders && item.subItemFolders.length > 0 ? (
-                            <>
-                              {item.subItemFolders
-                                .sort((a, b) => a.order - b.order)
-                                .map((folder) => {
-                                  const folderSubItems = item.subItems?.filter(subItem => subItem.folderId === folder.id) || [];
-                                  const isFolderExpanded = expandedFolders.has(folder.id);
-                                  const isEditingThisFolder = editingFolder === folder.id;
-                                  const currentFolderName = folderNames[folder.id] || folder.name;
-                                  
-                                  return (
-                                    <React.Fragment key={folder.id}>
-                                      {/* Folder Header */}
-                                      <div className="group flex hover:bg-amber-500/8 transition-all bg-gradient-to-r from-amber-950/15 to-orange-950/8 border-b-2 border-amber-500/25 shadow-sm">
-                                        {/* Folder checkbox */}
-                                        <div className="w-8 px-1 py-2 border-r border-amber-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-amber-950/15 to-orange-950/8 z-20">
-                                          <input 
-                                            type="checkbox" 
-                                            className="w-3.5 h-3.5 rounded border-amber-500/50 bg-amber-900/30 text-amber-400 focus:ring-amber-400 focus:ring-1"
-                                          />
-                                        </div>
-                                        
-                                        {/* Folder name with expand/collapse */}
-                                        <div 
-                                          className="px-3 py-2 border-r border-amber-500/20 flex-shrink-0 sticky left-8 bg-gradient-to-r from-amber-950/15 to-orange-950/8 z-10 flex items-center"
-                                          style={{ 
-                                            width: columnWidths['item'] || 200,
-                                            minWidth: '150px',
-                                            maxWidth: 'none'
-                                          }}
-                                        >
-                                          <div className="flex items-center gap-2 text-sm">
-                                            <div className="w-5 h-px bg-amber-400/50"></div>
-                                            
-                                            <button
-                                              onClick={() => {
-                                                setSelectedMainItem(item);
-                                                setSelectedFolder(folder);
-                                                setSidePanelOpen(true);
-                                              }}
-                                              className="p-1 hover:bg-amber-500/20 rounded transition-colors"
-                                            >
-                                              <ChevronRight className="w-3.5 h-3.5 text-amber-300" />
-                                            </button>
-                                            
-                                            <Folder className="w-4 h-4 text-amber-400 drop-shadow-sm" />
-                                            
-                                            {isEditingThisFolder ? (
-                                              <input
-                                                type="text"
-                                                value={currentFolderName}
-                                                onChange={(e) => setFolderNames(prev => ({...prev, [folder.id]: e.target.value}))}
-                                                onBlur={() => setEditingFolder(null)}
-                                                onKeyDown={(e) => {
-                                                  if (e.key === 'Enter') {
-                                                    setEditingFolder(null);
-                                                  } else if (e.key === 'Escape') {
-                                                    setFolderNames(prev => ({...prev, [folder.id]: folder.name}));
-                                                    setEditingFolder(null);
-                                                  }
-                                                }}
-                                                className="bg-amber-900/20 text-amber-200 text-sm font-semibold px-2 py-1 border border-amber-400/60 rounded-md focus:outline-none focus:border-amber-300 focus:bg-amber-900/30 ml-1"
-                                                autoFocus
-                                              />
-                                            ) : (
-                                              <span 
-                                                className="text-amber-200 text-sm font-semibold cursor-pointer hover:text-amber-100 ml-1 px-2 py-1 rounded hover:bg-amber-500/10 transition-colors"
-                                                onClick={() => setEditingFolder(folder.id)}
-                                              >
-                                                {currentFolderName}
-                                              </span>
-                                            )}
-                                            
-                                            <span className="text-amber-400/70 text-xs ml-1 font-medium">
-                                              ({folderSubItems.length} items)
-                                            </span>
-                                            
-                                            {/* Delete folder button */}
-                                            <button
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteSubItemFolder(folder.id);
-                                              }}
-                                              className="ml-auto opacity-0 group-hover:opacity-100 p-0.5 hover:bg-red-600/20 rounded text-red-400 hover:text-red-300 transition-all"
-                                              title="Delete folder"
-                                            >
-                                              <Trash2 className="w-3 h-3" />
-                                            </button>
-                                          </div>
-                                        </div>
-                                        
-                                        {/* Empty cells for folder row */}
-                                        {subItemColumns.map((column) => (
-                                          <div 
-                                            key={`folder-${folder.id}-${column.id}`}
-                                            className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                            style={{ 
-                                              width: columnWidths[column.id] || 120,
-                                              minWidth: '80px',
-                                              maxWidth: 'none'
-                                            }}
-                                          >
-                                            {/* Empty for folder headers */}
-                                          </div>
-                                        ))}
-                                      </div>
-                                      
-                                      {/* Sub-items in this folder */}
-                                      {expandedFolders.has(folder.id) && (
-                                        <>
-                                          {folderSubItems.map((subItem) => (
-                                            <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/5 transition-all bg-slate-900/20 border-b border-slate-700/30">
-                                              {/* Sub-item checkbox */}
-                                              <div className="w-8 px-1 py-1.5 border-r border-slate-700/20 flex items-center justify-center sticky left-0 bg-slate-900/20 z-20">
-                                                <input 
-                                                  type="checkbox" 
-                                                  className="w-3 h-3 rounded border-slate-500/50 bg-slate-800/50 text-blue-500 focus:ring-blue-400 focus:ring-1"
-                                                />
-                                              </div>
-                                              
-                                              {/* Sub-item name with deeper indent */}
-                                              <div 
-                                                className="px-3 py-1.5 border-r border-slate-700/20 flex-shrink-0 sticky left-8 bg-slate-900/20 z-10 flex items-center"
-                                                style={{ 
-                                                  width: columnWidths['item'] || 200,
-                                                  minWidth: '150px',
-                                                  maxWidth: 'none'
-                                                }}
-                                              >
-                                                <div className="flex items-center gap-2 text-sm">
-                                                  <div className="w-6 h-px bg-blue-400/40"></div>
-                                                  <div className="w-1 h-1 bg-blue-400/60 rounded-full"></div>
-                                                  {editingSubItem === subItem.id ? (
-                                                    <input
-                                                      type="text"
-                                                      value={subItemNames[subItem.id] || subItem.name}
-                                                      onChange={(e) => setSubItemNames(prev => ({...prev, [subItem.id]: e.target.value}))}
-                                                      onBlur={() => {
-                                                        handleUpdateSubItemName(subItem.id, subItemNames[subItem.id] || subItem.name);
-                                                        setEditingSubItem(null);
-                                                      }}
-                                                      onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                          handleUpdateSubItemName(subItem.id, subItemNames[subItem.id] || subItem.name);
-                                                          setEditingSubItem(null);
-                                                        } else if (e.key === 'Escape') {
-                                                          setSubItemNames(prev => ({...prev, [subItem.id]: subItem.name}));
-                                                          setEditingSubItem(null);
-                                                        }
-                                                      }}
-                                                      className="bg-transparent text-gray-300 text-xs px-1 py-0 border border-gray-500/50 rounded focus:outline-none focus:border-blue-400"
-                                                      autoFocus
-                                                    />
-                                                  ) : (
-                                                    <span 
-                                                      className="cursor-pointer hover:text-gray-300"
-                                                      onClick={() => {
-                                                        setEditingSubItem(subItem.id);
-                                                        setSubItemNames(prev => ({...prev, [subItem.id]: subItem.name}));
-                                                      }}
-                                                    >
-                                                      {subItem.name}
-                                                    </span>
-                                                  )}
-                                                  
-                                                  {/* Delete sub-item button */}
-                                                  <button
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      handleDeleteSubItem(subItem.id);
-                                                    }}
-                                                    className="ml-auto opacity-0 group-hover:opacity-100 p-0.5 hover:bg-red-600/20 rounded text-red-400 hover:text-red-300 transition-all"
-                                                    title="Delete sub-item"
-                                                  >
-                                                    <Trash2 className="w-3 h-3" />
-                                                  </button>
-                                                </div>
-                                              </div>
-                                              
-                                              {/* Sub-item cells */}
-                                              {subItemColumns.map((column) => (
-                                                <div 
-                                                  key={`sub-${subItem.id}-${column.id}`}
-                                                  className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                                  style={{ 
-                                                    width: columnWidths[column.id] || 120,
-                                                    minWidth: '80px',
-                                                    maxWidth: 'none'
-                                                  }}
-                                                >
-                                                  {renderSubItemCell(subItem, column, item.id)}
-                                                </div>
-                                              ))}
-                                            </div>
-                                          ))}
-                                          
-                                          {/* Add Sub Item button (only appears when folder is expanded) */}
-                                          <div className="flex hover:bg-gray-900/10 transition-all">
-                                            {/* Empty checkbox space */}
-                                            <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 sticky left-0 bg-gray-950 z-20"></div>
-                                            <div 
-                                              className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
-                                              style={{ 
-                                                width: columnWidths['item'] || 200,
-                                                minWidth: '150px',
-                                                maxWidth: 'none'
-                                              }}
-                                            >
-                                              <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleAddSubItemToFolder(item.id, folder.id)}
-                                                className="text-gray-600 hover:text-blue-400 text-xs h-5 px-1 flex items-center gap-1 ml-6"
-                                              >
-                                                <Plus className="w-2.5 h-2.5" />
-                                                Add Sub Item
-                                              </Button>
-                                            </div>
-                                            
-                                            {/* Empty cells for other columns */}
-                                            {subItemColumns.map((column) => (
-                                              <div 
-                                                key={`add-sub-${folder.id}-${column.id}`}
-                                                className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                                style={{ 
-                                                  width: columnWidths[column.id] || 120,
-                                                  minWidth: '80px',
-                                                  maxWidth: 'none'
-                                                }}
-                                              />
-                                            ))}
-                                          </div>
-                                        </>
-                                      )}
-                                    </React.Fragment>
-                                  );
-                                })}
-                            </>
-                          ) : (
-                            // Fallback: render sub-items without folders if no folders exist
-                            item.subItems?.map((subItem) => (
-                              <div key={`sub-${subItem.id}`} className="flex hover:bg-gray-900/20 transition-all bg-gray-900/5 border-b border-gray-800/5">
-                                {/* Empty checkbox space for sub-items */}
-                                <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
-                                  <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
-                                </div>
-                                
-                                {/* Sub-item name (first column) */}
-                                <div 
-                                  className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 sticky left-8 bg-gray-950 z-10 flex items-center"
-                                  style={{ 
-                                    width: columnWidths['item'] || 200,
-                                    minWidth: '150px',
-                                    maxWidth: 'none'
-                                  }}
-                                >
-                                  <div className="flex items-center gap-1 text-xs text-gray-400">
-                                    <div className="w-3 h-px bg-gray-600 mr-1"></div>
-                                    <span>{subItem.name}</span>
-                                  </div>
-                                </div>
-                                
-                                {/* Sub-item dedicated columns */}
-                                {subItemColumns.map((column) => (
-                                  <div 
-                                    key={`sub-${subItem.id}-${column.id}`}
-                                    className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                    style={{ 
-                                      width: columnWidths[column.id] || 120,
-                                      minWidth: '80px',
-                                      maxWidth: 'none'
-                                    }}
-                                  >
-                                    {renderSubItemCell(subItem, column, item.id)}
-                                  </div>
-                                ))}
-                              </div>
-                            ))
-                          )}
-
-                        </>
-                      )}
-                    </React.Fragment>
-                  ))}
-                  
-                  {/* Add Item Button at bottom of group */}
-                  <div className="flex hover:bg-gray-900/10 transition-all">
-                    {/* Empty checkbox space */}
-                    <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 sticky left-0 bg-gray-950 z-20"></div>
-                    <div 
-                      className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
-                      style={{ 
-                        width: columnWidths['item'] || 200,
-                        minWidth: '150px',
-                        maxWidth: 'none'
-                      }}
-                    >
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => addItemMutation.mutate(group.name)}
-                        disabled={addItemMutation.isPending}
-                        className="text-gray-600 hover:text-blue-400 text-xs h-5 w-full justify-start px-1"
-                      >
-                        <Plus className="w-2.5 h-2.5 mr-1" />
-                        Add item
-                      </Button>
-                    </div>
-                    {columns.slice(1).map((column) => (
-                      <div 
-                        key={column.id} 
-                        className="px-2 py-1.5 border-r border-gray-800/10 flex-shrink-0"
-                        style={{ 
-                          width: columnWidths[column.id] || 100,
-                          minWidth: '70px',
-                          maxWidth: 'none'
-                        }}
-                      ></div>
                     ))}
+                    
+                    {/* Add Item Row */}
+                    <div className="flex items-center h-10 hover:bg-gray-900/20 border-b border-gray-800/10 transition-colors">
+                      <div className="w-10"></div>
+                      <div className="px-4 py-2 flex items-center text-gray-500 text-sm">
+                        <button
+                          onClick={() => addItemMutation.mutate(group.name)}
+                          className="flex items-center gap-2 hover:text-blue-400 transition-colors"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Add item
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-
-      {/* Compact Status Bar */}
-      <div className="bg-gray-900/50 border-t border-gray-800 px-4 py-1.5 flex items-center justify-between text-xs text-gray-500 flex-shrink-0">
-        <div className="flex items-center space-x-3">
-          <span>{boardItems.length} items</span>
-          <span>•</span>
-          <span>{columns.length} columns</span>
-          <span>•</span>
-          <span>{boardGroups.length} groups</span>
-        </div>
-        <div className="flex items-center space-x-1.5">
-          <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-          <span>Live</span>
-        </div>
-      </div>
-
-      {/* Sleek Bulk Operations Popup */}
+      
+      {/* Bulk Actions Bar */}
       {selectedItems.size > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom-1 duration-200">
-          <div className="bg-gray-900/95 backdrop-blur-sm border-t border-gray-700/50 px-4 py-2 mx-4 mb-4 rounded-lg shadow-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-xs font-medium text-white">
-                  {selectedItems.size}
-                </div>
-                <span className="text-sm text-gray-300">
-                  {selectedItems.size === 1 ? 'item selected' : 'items selected'}
-                </span>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => bulkArchiveMutation.mutate(Array.from(selectedItems))}
-                  disabled={bulkArchiveMutation.isPending}
-                  className="text-xs h-7 px-3 text-gray-300 hover:text-white hover:bg-gray-800"
-                >
-                  Archive
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => bulkTrashMutation.mutate(Array.from(selectedItems))}
-                  disabled={bulkTrashMutation.isPending}
-                  className="text-xs h-7 px-3 text-gray-300 hover:text-white hover:bg-gray-800"
-                >
-                  Trash
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => bulkDeleteMutation.mutate(Array.from(selectedItems))}
-                  disabled={bulkDeleteMutation.isPending}
-                  className="text-xs h-7 px-3 text-red-400 hover:text-red-300 hover:bg-red-900/20"
-                >
-                  Delete
-                </Button>
-                <div className="w-px h-4 bg-gray-700"></div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedItems(new Set())}
-                  className="text-xs h-7 px-2 text-gray-500 hover:text-gray-300"
-                >
-                  ✕
-                </Button>
-              </div>
-            </div>
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-gray-800 border border-gray-600 rounded-lg shadow-lg px-4 py-2 flex items-center gap-3">
+            <span className="text-sm text-gray-300">
+              {selectedItems.size} item{selectedItems.size > 1 ? 's' : ''} selected
+            </span>
+            <div className="w-px h-4 bg-gray-600"></div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => bulkArchiveMutation.mutate(Array.from(selectedItems))}
+              disabled={bulkArchiveMutation.isPending}
+              className="text-xs h-7 px-3 text-gray-300 hover:text-white hover:bg-gray-700"
+            >
+              Archive
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => bulkTrashMutation.mutate(Array.from(selectedItems))}
+              disabled={bulkTrashMutation.isPending}
+              className="text-xs h-7 px-3 text-orange-400 hover:text-orange-300 hover:bg-orange-900/20"
+            >
+              Trash
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => bulkDeleteMutation.mutate(Array.from(selectedItems))}
+              disabled={bulkDeleteMutation.isPending}
+              className="text-xs h-7 px-3 text-red-400 hover:text-red-300 hover:bg-red-900/20"
+            >
+              Delete
+            </Button>
+            <div className="w-px h-4 bg-gray-700"></div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedItems(new Set())}
+              className="text-xs h-7 px-2 text-gray-500 hover:text-gray-300"
+            >
+              ✕
+            </Button>
           </div>
         </div>
       )}
