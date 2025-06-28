@@ -98,21 +98,33 @@ export default function MondayBoard() {
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['/api/projects'],
     queryFn: async () => {
-      const response = await apiRequest('/api/projects');
-      return response || [];
+      try {
+        const response = await fetch('/api/projects', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Projects loaded:', data);
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('Error loading projects:', error);
+        return [];
+      }
     },
   });
 
   // Mock sub-items and folders for demonstration
-  const mockSubItems: SubItem[] = [
-    { id: 1, projectId: 1, name: 'Site Measurement', status: 'complete', assignedTo: 'John Doe', folderId: 1, order: 1, createdAt: new Date(), updatedAt: new Date() },
-    { id: 2, projectId: 1, name: 'Order Materials', status: 'in progress', assignedTo: 'Jane Smith', folderId: 1, order: 2, createdAt: new Date(), updatedAt: new Date() },
-    { id: 3, projectId: 1, name: 'Schedule Installation', status: 'pending', assignedTo: 'Mike Johnson', folderId: 2, order: 1, createdAt: new Date(), updatedAt: new Date() },
+  const createMockSubItems = (projectId: number): SubItem[] => [
+    { id: projectId * 100 + 1, projectId, name: 'Site Measurement', status: 'complete', assignedTo: 'John Doe', folderId: projectId * 10 + 1, order: 1, createdAt: new Date(), updatedAt: new Date() },
+    { id: projectId * 100 + 2, projectId, name: 'Order Materials', status: 'in progress', assignedTo: 'Jane Smith', folderId: projectId * 10 + 1, order: 2, createdAt: new Date(), updatedAt: new Date() },
+    { id: projectId * 100 + 3, projectId, name: 'Schedule Installation', status: 'pending', assignedTo: 'Mike Johnson', folderId: projectId * 10 + 2, order: 1, createdAt: new Date(), updatedAt: new Date() },
   ];
 
-  const mockFolders: SubItemFolder[] = [
-    { id: 1, projectId: 1, name: 'Preparation Phase', order: 1, collapsed: false, createdAt: new Date() },
-    { id: 2, projectId: 1, name: 'Installation Phase', order: 2, collapsed: false, createdAt: new Date() },
+  const createMockFolders = (projectId: number): SubItemFolder[] => [
+    { id: projectId * 10 + 1, projectId, name: 'Preparation Phase', order: 1, collapsed: false, createdAt: new Date() },
+    { id: projectId * 10 + 2, projectId, name: 'Installation Phase', order: 2, collapsed: false, createdAt: new Date() },
   ];
 
   // Group projects by status
@@ -126,14 +138,20 @@ export default function MondayBoard() {
 
     projects.forEach((project: any) => {
       const status = project.status || 'new lead';
+      const projectWithSubItems = { 
+        ...project, 
+        subItems: createMockSubItems(project.id), 
+        subItemFolders: createMockFolders(project.id) 
+      };
+      
       if (status === 'new lead') {
-        projectsByGroup['New Leads'].push({ ...project, subItems: mockSubItems, subItemFolders: mockFolders });
+        projectsByGroup['New Leads'].push(projectWithSubItems);
       } else if (['in progress', 'on order'].includes(status)) {
-        projectsByGroup['Active Projects'].push({ ...project, subItems: mockSubItems, subItemFolders: mockFolders });
+        projectsByGroup['Active Projects'].push(projectWithSubItems);
       } else if (status === 'scheduled') {
-        projectsByGroup['Scheduled Work'].push({ ...project, subItems: mockSubItems, subItemFolders: mockFolders });
+        projectsByGroup['Scheduled Work'].push(projectWithSubItems);
       } else if (status === 'complete') {
-        projectsByGroup['Completed'].push({ ...project, subItems: mockSubItems, subItemFolders: mockFolders });
+        projectsByGroup['Completed'].push(projectWithSubItems);
       }
     });
 
