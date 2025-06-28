@@ -219,45 +219,39 @@ export default function Dashboard() {
     : user;
 
   return (
-    <div className="min-h-screen bg-tron-dark tron-grid-bg relative overflow-hidden">
-      {/* Tron Circuit Animation */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="tron-circuit absolute top-1/4 left-0 w-full h-0.5 bg-tron-cyan opacity-30"></div>
-        <div className="tron-circuit absolute top-3/4 left-0 w-full h-0.5 bg-tron-blue opacity-20" style={{ animationDelay: '1s' }}></div>
-      </div>
-      
-      {/* Header - Tron Style */}
-      <header className="bg-tron-darker/80 backdrop-blur-sm border-b border-tron-cyan/30 relative z-10">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header - Mobile Optimized */}
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
         <div className="px-4 sm:px-6 lg:px-8">
           {/* Top row - Logo and User Info */}
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center min-w-0">
-              <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-tron-cyan tron-pulse flex-shrink-0" />
-              <span className="ml-2 text-lg sm:text-xl font-bold text-tron-light truncate tron-text-glow">
-                {companySettings?.companyName || "TRON SYSTEMS"}
+              <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
+              <span className="ml-2 text-lg sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
+                {companySettings?.companyName || "Windows & Doors Near Me"}
               </span>
             </div>
             
             <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="hidden sm:flex items-center space-x-2">
-                <User className="h-5 w-5 text-tron-cyan" />
-                <span className="text-sm text-tron-light font-mono">
-                  {user?.firstName} {user?.lastName} <span className="text-tron-cyan">({effectiveUser?.role})</span>
-                  {previewRole && <span className="text-tron-orange font-bold"> [PREVIEW MODE]</span>}
+                <User className="h-5 w-5 text-gray-500" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {user?.firstName} {user?.lastName} ({effectiveUser?.role})
+                  {previewRole && <span className="text-blue-600 font-medium"> (Preview Mode)</span>}
                 </span>
               </div>
 
               {/* Mobile User Dropdown */}
               <div className="sm:hidden">
                 <Select value={previewRole || user?.role} onValueChange={setPreviewRole}>
-                  <SelectTrigger className="w-32 h-8 text-xs bg-tron-darker border-tron-cyan/50 text-tron-light">
+                  <SelectTrigger className="w-32 h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-tron-darker border-tron-cyan/50">
-                    <SelectItem value="admin" className="text-tron-light hover:bg-tron-cyan/20">ADMIN</SelectItem>
-                    <SelectItem value="customer" className="text-tron-light hover:bg-tron-cyan/20">CUSTOMER</SelectItem>
-                    <SelectItem value="contractor_trial" className="text-tron-light hover:bg-tron-cyan/20">CONTRACTOR</SelectItem>
-                    <SelectItem value="contractor_paid" className="text-tron-light hover:bg-tron-cyan/20">CONTRACTOR+</SelectItem>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin (Default)</SelectItem>
+                    <SelectItem value="customer">Customer (Free)</SelectItem>
+                    <SelectItem value="contractor_trial">Contractor (Trial)</SelectItem>
+                    <SelectItem value="contractor_paid">Contractor (Paid)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -265,51 +259,49 @@ export default function Dashboard() {
               {/* Desktop Admin Role Switcher */}
               {user?.role === 'admin' && (
                 <div className="hidden sm:flex items-center space-x-2">
-                  <Eye className="h-4 w-4 text-tron-cyan tron-pulse" />
+                  <Eye className="h-4 w-4 text-gray-500" />
                   <Select value={previewRole || user.role} onValueChange={setPreviewRole}>
-                    <SelectTrigger className="w-48 bg-tron-darker border-tron-cyan/50 text-tron-light tron-glow-hover">
-                      <SelectValue placeholder="PREVIEW MODE..." />
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Preview as..." />
                     </SelectTrigger>
-                    <SelectContent className="bg-tron-darker border-tron-cyan/50">
-                      <SelectItem value="admin" className="text-tron-light hover:bg-tron-cyan/20">ADMIN [DEFAULT]</SelectItem>
-                      <SelectItem value="customer" className="text-tron-light hover:bg-tron-cyan/20">CUSTOMER [FREE]</SelectItem>
-                      <SelectItem value="contractor_trial" className="text-tron-light hover:bg-tron-cyan/20">CONTRACTOR [TRIAL]</SelectItem>
-                      <SelectItem value="contractor_paid" className="text-tron-light hover:bg-tron-cyan/20">CONTRACTOR [PAID]</SelectItem>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin (Default)</SelectItem>
+                      <SelectItem value="customer">Customer (Free)</SelectItem>
+                      <SelectItem value="contractor_trial">Contractor (30-Day Trial)</SelectItem>
+                      <SelectItem value="contractor_paid">Contractor (Paid)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               )}
               
               <Link href="/settings">
-                <Button className="hidden sm:flex h-9 min-w-[100px] tron-btn">
+                <Button variant="outline" size="sm" className="hidden sm:flex h-9 min-w-[100px]">
                   <Settings className="h-4 w-4 mr-2" />
-                  SETTINGS
+                  Settings
                 </Button>
               </Link>
               
-              <Button onClick={handleLogout} className="h-9 min-w-[80px] tron-btn border-tron-red text-tron-red hover:bg-tron-red hover:text-tron-dark">
+              <Button variant="outline" size="sm" onClick={handleLogout} className="h-9 min-w-[80px]">
                 <LogOut className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">LOGOUT</span>
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content - Tron Style */}
-      <main className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
+      {/* Main Content - Mobile Optimized */}
+      <main className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-tron-light tron-text-glow">
-            {companySettings?.companyName || 'TRON DASHBOARD'}
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            {companySettings?.companyName || 'Business Dashboard'}
           </h1>
-          <p className="text-tron-cyan mt-2 text-sm sm:text-base font-mono">
-            WELCOME BACK, {user?.firstName?.toUpperCase()}! 
-            <span className="text-tron-light">
-              {effectiveUser?.role === 'customer' ? ' [ACCESS LEVEL: WINDOW CONFIG + ORDERS]' : 
-               effectiveUser?.role === 'contractor_trial' ? ' [ACCESS LEVEL: PROJECT MANAGEMENT - TRIAL MODE]' :
-               effectiveUser?.role === 'contractor_paid' ? ' [ACCESS LEVEL: FULL CONTRACTOR FEATURES]' :
-               ' [ACCESS LEVEL: ADMIN - FULL SYSTEM ACCESS]'}
-            </span>
+          <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
+            Welcome back, {user?.firstName}! 
+            {effectiveUser?.role === 'customer' ? ' You have access to window configuration and order tracking.' : 
+             effectiveUser?.role === 'contractor_trial' ? ' You have access to project management during your 30-day trial.' :
+             effectiveUser?.role === 'contractor_paid' ? ' You have full access to all contractor features.' :
+             ' You have admin access to all system features.'}
           </p>
         </div>
 
@@ -319,16 +311,16 @@ export default function Dashboard() {
             {/* Window Configuration Tool */}
             <div className="relative group">
               <Link href="/quotes-manager">
-                <Card className="tron-glow-hover transition-all duration-300 cursor-pointer bg-tron-darker/80 backdrop-blur-sm border-tron-cyan/50">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
                   <CardContent className="p-3 sm:p-6">
                     <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                      <div className="p-2 sm:p-4 bg-tron-cyan/20 rounded-xl sm:rounded-2xl tron-glow border border-tron-cyan/50">
-                        <Building2 className="h-5 w-5 sm:h-8 sm:w-8 text-tron-cyan tron-pulse" />
+                      <div className="p-2 sm:p-4 bg-blue-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <Building2 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm sm:text-xl font-bold text-tron-light mb-1 sm:mb-2 font-mono">WINDOW CONFIG</p>
-                        <p className="text-xs sm:text-sm text-tron-cyan hidden sm:block font-mono">
-                          DESIGN.PRICE.CONFIGURE
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Window Configuration</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Design and price your windows
                         </p>
                       </div>
                     </div>
@@ -336,24 +328,24 @@ export default function Dashboard() {
                 </Card>
               </Link>
               
-              {/* Tron Three-dot menu */}
+              {/* Three-dot menu */}
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0 bg-tron-darker/90 hover:bg-tron-cyan/20 border border-tron-cyan/50 tron-glow"
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
                       onClick={(e) => e.preventDefault()}
                     >
-                      <MoreHorizontal className="h-4 w-4 text-tron-cyan" />
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-tron-darker border-tron-cyan/50">
-                    <DropdownMenuItem className="text-tron-light hover:bg-tron-cyan/20 font-mono">EDIT MODULE</DropdownMenuItem>
-                    <DropdownMenuItem className="text-tron-light hover:bg-tron-cyan/20 font-mono">ADD MODULE</DropdownMenuItem>
-                    <DropdownMenuItem className="text-tron-light hover:bg-tron-cyan/20 font-mono">DUPLICATE</DropdownMenuItem>
-                    <DropdownMenuItem className="text-tron-red hover:bg-tron-red/20 font-mono">DELETE MODULE</DropdownMenuItem>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Edit Box</DropdownMenuItem>
+                    <DropdownMenuItem>Add Box After</DropdownMenuItem>
+                    <DropdownMenuItem>Duplicate Box</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">Remove Box</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -362,16 +354,16 @@ export default function Dashboard() {
             {/* My Orders */}
             <div className="relative group">
               <Link href="/customer-orders">
-                <Card className="tron-glow-hover transition-all duration-300 cursor-pointer bg-tron-darker/80 backdrop-blur-sm border-tron-green/50">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
                   <CardContent className="p-3 sm:p-6">
                     <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                      <div className="p-2 sm:p-4 bg-tron-green/20 rounded-xl sm:rounded-2xl tron-glow border border-tron-green/50">
-                        <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-tron-green tron-pulse" />
+                      <div className="p-2 sm:p-4 bg-green-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <FileText className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm sm:text-xl font-bold text-tron-light mb-1 sm:mb-2 font-mono">ORDER TRACKING</p>
-                        <p className="text-xs sm:text-sm text-tron-green hidden sm:block font-mono">
-                          MONITOR.STATUS.DELIVERY
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">My Orders</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Track your window orders
                         </p>
                       </div>
                     </div>
