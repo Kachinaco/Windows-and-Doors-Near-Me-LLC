@@ -5,9 +5,6 @@ export default {
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -82,7 +79,6 @@ export default {
             height: "0",
           },
         },
-
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
