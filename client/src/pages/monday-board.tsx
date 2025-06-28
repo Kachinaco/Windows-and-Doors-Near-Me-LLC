@@ -85,9 +85,16 @@ export default function MondayBoard() {
   const transformedGroups = useMemo(() => {
     const statusGroups: Record<string, BoardItem[]> = {
       'New Leads': [],
-      'Active Projects': [],
-      'Scheduled Work': [],
-      'Completed': []
+      'Need Attention': [],
+      'Sent Estimate': [],
+      'Signed': [],
+      'Need Ordered': [],
+      'Ordered': [],
+      'Need Scheduled': [],
+      'Scheduled': [],
+      'In Progress': [],
+      'Complete': [],
+      'Follow Up': []
     };
 
     if (!projects || !Array.isArray(projects)) {
@@ -110,51 +117,47 @@ export default function MondayBoard() {
           timeline: project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not set',
           notes: project.description || ''
         },
-        subItems: [
-          { 
-            id: 1, 
-            projectId: project.id, 
-            name: 'Site Survey', 
-            status: 'pending', 
-            assignedTo: 'John',
-            order: 1,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          },
-          { 
-            id: 2, 
-            projectId: project.id, 
-            name: 'Material Order', 
-            status: 'completed', 
-            assignedTo: 'Sarah',
-            order: 2,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          },
-          { 
-            id: 3, 
-            projectId: project.id, 
-            name: 'Installation', 
-            status: 'in-progress', 
-            assignedTo: 'Mike',
-            order: 3,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          }
-        ]
+        subItems: project.subItems || []
       };
 
-      // Group by status
-      if (project.status === 'new lead') {
-        statusGroups['New Leads'].push(boardItem);
-      } else if (project.status === 'in progress') {
-        statusGroups['Active Projects'].push(boardItem);
-      } else if (project.status === 'scheduled') {
-        statusGroups['Scheduled Work'].push(boardItem);
-      } else if (project.status === 'complete') {
-        statusGroups['Completed'].push(boardItem);
-      } else {
-        statusGroups['New Leads'].push(boardItem);
+      // Group by status into proper 11-stage pipeline
+      switch (project.status) {
+        case 'new lead':
+          statusGroups['New Leads'].push(boardItem);
+          break;
+        case 'need attention':
+          statusGroups['Need Attention'].push(boardItem);
+          break;
+        case 'sent estimate':
+          statusGroups['Sent Estimate'].push(boardItem);
+          break;
+        case 'signed':
+          statusGroups['Signed'].push(boardItem);
+          break;
+        case 'need ordered':
+          statusGroups['Need Ordered'].push(boardItem);
+          break;
+        case 'ordered':
+          statusGroups['Ordered'].push(boardItem);
+          break;
+        case 'need scheduled':
+          statusGroups['Need Scheduled'].push(boardItem);
+          break;
+        case 'scheduled':
+          statusGroups['Scheduled'].push(boardItem);
+          break;
+        case 'in progress':
+          statusGroups['In Progress'].push(boardItem);
+          break;
+        case 'complete':
+          statusGroups['Complete'].push(boardItem);
+          break;
+        case 'follow up':
+          statusGroups['Follow Up'].push(boardItem);
+          break;
+        default:
+          statusGroups['New Leads'].push(boardItem);
+          break;
       }
     });
 
@@ -182,12 +185,28 @@ export default function MondayBoard() {
   // Add item mutation
   const addItemMutation = useMutation({
     mutationFn: async (groupName: string) => {
+      const statusMap: Record<string, string> = {
+        'New Leads': 'new lead',
+        'Need Attention': 'need attention',
+        'Sent Estimate': 'sent estimate',
+        'Signed': 'signed',
+        'Need Ordered': 'need ordered',
+        'Ordered': 'ordered',
+        'Need Scheduled': 'need scheduled',
+        'Scheduled': 'scheduled',
+        'In Progress': 'in progress',
+        'Complete': 'complete',
+        'Follow Up': 'follow up'
+      };
+      
       return apiRequest('POST', '/api/projects', {
         name: 'New Project',
-        status: groupName === 'New Leads' ? 'new lead' : 
-               groupName === 'Active Projects' ? 'in progress' :
-               groupName === 'Scheduled Work' ? 'scheduled' : 'complete',
-        assigned_to: 'Unassigned'
+        description: '',
+        status: statusMap[groupName] || 'new lead',
+        assigned_to: null,
+        project_address: null,
+        client_phone: null,
+        priority: 'medium'
       });
     },
     onSuccess: () => {
@@ -205,14 +224,37 @@ export default function MondayBoard() {
     
     switch (column.type) {
       case 'status':
+        const getStatusStyle = (status: string) => {
+          switch (status) {
+            case 'new lead':
+              return 'bg-blue-50 text-blue-700 border-blue-200';
+            case 'need attention':
+              return 'bg-red-50 text-red-700 border-red-200';
+            case 'sent estimate':
+              return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+            case 'signed':
+              return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+            case 'need ordered':
+              return 'bg-pink-50 text-pink-700 border-pink-200';
+            case 'ordered':
+              return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+            case 'need scheduled':
+              return 'bg-amber-50 text-amber-700 border-amber-200';
+            case 'scheduled':
+              return 'bg-purple-50 text-purple-700 border-purple-200';
+            case 'in progress':
+              return 'bg-orange-50 text-orange-700 border-orange-200';
+            case 'complete':
+              return 'bg-green-50 text-green-700 border-green-200';
+            case 'follow up':
+              return 'bg-violet-50 text-violet-700 border-violet-200';
+            default:
+              return 'bg-gray-50 text-gray-600 border-gray-200';
+          }
+        };
+        
         return (
-          <div className={`px-2 py-1 rounded-full text-xs font-medium border ${
-            value === 'new lead' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-            value === 'in progress' ? 'bg-orange-50 text-orange-700 border-orange-200' :
-            value === 'scheduled' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-            value === 'complete' ? 'bg-green-50 text-green-700 border-green-200' :
-            'bg-gray-50 text-gray-600 border-gray-200'
-          }`}>
+          <div className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusStyle(value)}`}>
             {value || 'Unknown'}
           </div>
         );
