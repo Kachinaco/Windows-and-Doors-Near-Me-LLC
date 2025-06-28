@@ -694,8 +694,8 @@ export const projectUpdatesRelations = relations(projectUpdates, ({ one }) => ({
     fields: [projectUpdates.projectId],
     references: [projects.id],
   }),
-  user: one(users, {
-    fields: [projectUpdates.userId],
+  author: one(users, {
+    fields: [projectUpdates.authorId],
     references: [users.id],
   }),
 }));
@@ -915,6 +915,7 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
 export const insertProjectUpdateSchema = createInsertSchema(projectUpdates).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });
 
 export const insertLeadSchema = createInsertSchema(leads).omit({

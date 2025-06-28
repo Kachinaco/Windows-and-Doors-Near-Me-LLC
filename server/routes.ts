@@ -1284,9 +1284,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Project updates routes
-  app.get("/api/project-updates", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/projects/:projectId/updates", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
-      const updates = await storage.getAllProjectUpdates();
+      const projectId = parseInt(req.params.projectId);
+      const updates = await storage.getProjectUpdates(projectId);
       res.json(updates);
     } catch (error: any) {
       console.error("Error fetching project updates:", error);
@@ -1296,15 +1297,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/project-updates", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
-      const updateData = {
+      const updateData = insertProjectUpdateSchema.parse({
         ...req.body,
-        performedBy: req.user!.id
-      };
+        authorId: req.user!.id
+      });
       const update = await storage.createProjectUpdate(updateData);
       res.status(201).json(update);
     } catch (error: any) {
-      console.error("Error creating project update:", error);
-      res.status(500).json({ message: "Failed to create project update" });
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid update data", errors: error.errors });
+      } else {
+        console.error("Error creating project update:", error);
+        res.status(500).json({ message: "Failed to create project update" });
+      }
     }
   });
 
