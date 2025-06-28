@@ -1280,12 +1280,12 @@ export default function MondayBoard() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => toggleGroup(group.name)}
-                    className="p-1 hover:bg-gray-800 rounded"
+                    className="p-1 hover:bg-gray-800 rounded transition-all duration-200"
                   >
                     {group.collapsed ? (
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                      <ChevronRight className="w-4 h-4 text-gray-400 transition-transform duration-200" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                      <ChevronDown className="w-4 h-4 text-gray-400 transition-transform duration-200" />
                     )}
                   </button>
                   <h3 className="font-medium text-sm text-gray-200">{group.name}</h3>
@@ -1428,12 +1428,12 @@ export default function MondayBoard() {
                   <div className="flex items-center gap-3 flex-1">
                     <button
                       onClick={() => toggleGroup(group.name)}
-                      className="p-1 hover:bg-gray-800 rounded"
+                      className="p-1 hover:bg-gray-800 rounded transition-all duration-200"
                     >
                       {group.collapsed ? (
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                        <ChevronRight className="w-4 h-4 text-gray-400 transition-transform duration-200" />
                       ) : (
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                        <ChevronDown className="w-4 h-4 text-gray-400 transition-transform duration-200" />
                       )}
                     </button>
                     
