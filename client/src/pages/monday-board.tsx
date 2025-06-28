@@ -1395,8 +1395,8 @@ export default function MondayBoard() {
                     }}
                   >
                     {/* Main column header */}
-                    <div className="flex items-center justify-between">
-                      <span className={`text-xs font-medium uppercase tracking-wide ${
+                    <div className="flex items-center justify-center w-full">
+                      <span className={`text-xs font-medium uppercase tracking-wide text-center ${
                         group.name === 'New Leads' ? 'text-cyan-300/80' :
                         group.name === 'Need Attention' ? 'text-yellow-300/80' :
                         group.name === 'Sent Estimate' ? 'text-purple-300/80' :
@@ -1488,8 +1488,8 @@ export default function MondayBoard() {
                         {columns.map((column, index) => (
                           <div 
                             key={`${item.id}-${column.id}`} 
-                            className={`px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 ${
-                              index === 0 ? 'sticky left-8 bg-gray-950 z-10' : ''
+                            className={`px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 flex items-center justify-center ${
+                              index === 0 ? 'sticky left-8 bg-gray-950 z-10 justify-start' : ''
                             }`}
                             style={{ 
                               width: columnWidths[column.id] || (index === 0 ? 200 : 100),
@@ -1719,8 +1719,8 @@ export default function MondayBoard() {
                                             }}
                                           >
                                             {/* Main column header aligned */}
-                                            <div className="flex items-center justify-between">
-                                              <span className="text-amber-300/60 text-xs font-medium uppercase tracking-wide opacity-50">
+                                            <div className="flex items-center justify-center w-full">
+                                              <span className="text-amber-300/60 text-xs font-medium uppercase tracking-wide opacity-50 text-center">
                                                 {column.name}
                                               </span>
                                               <div className="flex items-center gap-1">
@@ -1832,7 +1832,7 @@ export default function MondayBoard() {
                                                 {columns.slice(1).map((column) => (
                                                   <div 
                                                     key={`sub-${subItem.id}-${column.id}`}
-                                                    className="px-2 py-1.5 border-r border-blue-500/10 flex-shrink-0 bg-gradient-to-r from-blue-950/10 to-slate-900/5"
+                                                    className="px-2 py-1.5 border-r border-blue-500/10 flex-shrink-0 bg-gradient-to-r from-blue-950/10 to-slate-900/5 flex items-center justify-center"
                                                     style={{ 
                                                       width: columnWidths[column.id] || (column.id === 'item' ? 200 : 100),
                                                       minWidth: column.id === 'item' ? '150px' : '70px',
@@ -1840,7 +1840,7 @@ export default function MondayBoard() {
                                                     }}
                                                   >
                                                     {/* Render sub-item data in main project column structure */}
-                                                    <div className="text-xs text-gray-400">
+                                                    <div className="text-xs text-gray-400 text-center w-full">
                                                       {column.id === 'status' && (
                                                         <span className={`px-2 py-0.5 rounded-full text-xs ${
                                                           subItem.status === 'not_started' ? 'bg-gray-600/20 text-gray-400' :
