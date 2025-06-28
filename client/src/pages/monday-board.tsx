@@ -1603,14 +1603,8 @@ export default function MondayBoard() {
                                     <React.Fragment key={folder.id}>
                                       {/* Folder Header with Column Headers */}
                                       <div className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-950/8 border-b-2 border-blue-500/25 shadow-sm">
-                                        {/* Folder checkbox - indented for hierarchy */}
+                                        {/* Empty space where checkbox used to be */}
                                         <div className="w-12 px-2 py-2 border-r border-blue-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/15 to-slate-950/8 z-20">
-                                          <div className="w-4 h-full flex items-center justify-end">
-                                            <input 
-                                              type="checkbox" 
-                                              className="w-4 h-4 rounded border-blue-500/50 bg-blue-900/30 text-blue-400 focus:ring-blue-400 focus:ring-1 mr-1"
-                                            />
-                                          </div>
                                         </div>
                                         
                                         {/* Folder name with expand/collapse */}
@@ -1736,6 +1730,14 @@ export default function MondayBoard() {
                                             </DropdownMenu>
                                           </div>
                                         ))}
+                                        
+                                        {/* Folder checkbox positioned on the right */}
+                                        <div className="w-12 px-2 py-3 flex items-center justify-center ml-auto bg-gradient-to-r from-blue-950/10 to-slate-950/5">
+                                          <input 
+                                            type="checkbox" 
+                                            className="w-4 h-4 rounded border-blue-500/50 bg-blue-900/30 text-blue-400 focus:ring-blue-400 focus:ring-1"
+                                          />
+                                        </div>
                                       </div>
                                       
                                       {/* Sub-items in this folder */}
@@ -1964,20 +1966,6 @@ export default function MondayBoard() {
                                   />
                                 </div>
                               </div>
-                                
-                                {/* Empty cells for other columns */}
-                                {subItemColumns.map((column) => (
-                                  <div 
-                                    key={`addsub-${item.id}-${column.id}`}
-                                    className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
-                                    style={{ 
-                                      width: columnWidths[column.id] || 120,
-                                      minWidth: '80px',
-                                      maxWidth: 'none'
-                                    }}
-                                  />
-                                ))}
-                              </div>
                           </>
                         ) : (
                             // Fallback: render sub-items without folders if no folders exist
@@ -2020,7 +2008,6 @@ export default function MondayBoard() {
                               </div>
                             ))
                           )}
-
                         </>
                       )}
                     </React.Fragment>
