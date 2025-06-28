@@ -1751,43 +1751,407 @@ export default function MondayBoard() {
 
 
                       
-                      {/* Sub-Items Rows (when hovered or expanded) */}
-                      {(hoveredItem === item.id || expandedSubItems.has(item.id)) && (
-                        <>
+                      {/* Sub-Items Section (when hovered) - Clean, simple layout */}
+                      {hoveredItem === item.id && item.subItems && item.subItems.length > 0 && (
+                        <div className="w-full bg-gray-900/30 border-t border-tron-cyan/20">
+                          <div className="px-16 py-3 space-y-2">
+                            {item.subItems.map((subItem) => (
+                              <div 
+                                key={subItem.id}
+                                className="flex items-center gap-4 p-2 rounded-lg bg-gray-800/50 hover:bg-tron-cyan/10 transition-all border border-transparent hover:border-tron-cyan/40"
+                              >
+                                <div className="w-2 h-2 bg-tron-cyan rounded-full"></div>
+                                <span className="text-tron-light font-mono text-sm">{subItem.name}</span>
+                                <span className="text-tron-cyan/70 text-xs">{subItem.status}</span>
+                                {subItem.assignedTo && (
+                                  <span className="text-tron-green/70 text-xs">@{subItem.assignedTo}</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
-                          {/* Render folders and their sub-items */}
-                          {item.subItemFolders && item.subItemFolders.length > 0 ? (
-                            <>
-                              {item.subItemFolders
-                                .sort((a, b) => a.order - b.order)
-                                .map((folder) => {
-                                  const folderSubItems = item.subItems?.filter(subItem => subItem.folderId === folder.id) || [];
-                                  const isFolderExpanded = expandedFolders.has(folder.id);
-                                  const isEditingThisFolder = editingFolder === folder.id;
-                                  const currentFolderName = folderNames[folder.id] || folder.name;
-                                  
-                                  return (
-                                    <div 
-                                      key={folder.id}
-                                      onMouseEnter={() => setHoveredFolder(folder.id)}
-                                      onMouseLeave={() => setHoveredFolder(null)}
-                                      className="folder-hover-group"
-                                    >
-                                      {/* Folder Header with Column Headers */}
-                                      <div className={`group flex transition-all bg-gradient-to-r from-blue-950/15 to-slate-950/8 border-b-2 border-blue-500/25 shadow-sm ${
-                                        hoveredFolder === folder.id 
-                                          ? 'bg-tron-blue/10 shadow-lg shadow-tron-blue/30 border-l-4 border-l-tron-blue border-tron-blue/60' 
-                                          : 'hover:bg-blue-500/8'
-                                      }`}>
-                                        {/* Empty space where checkbox used to be */}
-                                        <div className="w-12 px-2 py-2 border-r border-blue-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/15 to-slate-950/8 z-20">
-                                        </div>
-                                        
-                                        {/* Folder name with expand/collapse */}
-                                        <div 
-                                          className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 sticky left-12 bg-gradient-to-r from-blue-950/15 to-slate-950/8 z-10 flex items-center"
-                                          style={{ 
-                                            width: columnWidths['item'] || 240,
+              {/* Add Item Button for each group */}
+              <div className="flex items-center gap-2 px-4 py-2 text-tron-cyan hover:text-tron-light transition-colors">
+                <Plus className="w-4 h-4" />
+                <button 
+                  onClick={() => handleAddItem(group.name)}
+                  className="text-sm font-mono hover:underline"
+                >
+                  Add Item
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bulk Actions Bar */}
+        {selectedItems.size > 0 && (
+          <div className="fixed bottom-6 left-6 right-6 bg-gray-900/95 backdrop-blur-sm border border-tron-cyan/30 rounded-xl p-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <span className="text-tron-light font-mono">
+                {selectedItems.size} item{selectedItems.size > 1 ? 's' : ''} selected
+              </span>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    bulkArchiveMutation.mutate(Array.from(selectedItems));
+                    if (!bulkArchiveMutation.isPending) {
+                      setSelectedItems(new Set());
+                    }
+                  }}
+                  disabled={bulkArchiveMutation.isPending}
+                  className="px-3 py-1 text-xs font-mono bg-tron-purple/20 text-tron-purple border border-tron-purple/40 rounded hover:bg-tron-purple/30 transition-colors disabled:opacity-50"
+                >
+                  Archive
+                </button>
+                
+                <button
+                  onClick={() => {
+                    bulkTrashMutation.mutate(Array.from(selectedItems));
+                    if (!bulkTrashMutation.isPending) {
+                      setSelectedItems(new Set());
+                    }
+                  }}
+                  disabled={bulkTrashMutation.isPending}
+                  className="px-3 py-1 text-xs font-mono bg-tron-orange/20 text-tron-orange border border-tron-orange/40 rounded hover:bg-tron-orange/30 transition-colors disabled:opacity-50"
+                >
+                  Trash
+                </button>
+                
+                <button
+                  onClick={() => {
+                    bulkDeleteMutation.mutate(Array.from(selectedItems));
+                    if (!bulkDeleteMutation.isPending) {
+                      setSelectedItems(new Set());
+                    }
+                  }}
+                  disabled={bulkDeleteMutation.isPending}
+                  className="px-3 py-1 text-xs font-mono bg-red-500/20 text-red-400 border border-red-500/40 rounded hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                >
+                  Delete
+                </button>
+                
+                <button
+                  onClick={() => setSelectedItems(new Set())}
+                  className="px-3 py-1 text-xs font-mono bg-gray-500/20 text-gray-400 border border-gray-500/40 rounded hover:bg-gray-500/30 transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Right Side Panel for Item Details */}
+        {sidePanelOpen && selectedMainItem && (
+          <div className="fixed right-0 top-0 h-full w-96 bg-gray-950/95 backdrop-blur-sm border-l border-tron-cyan/30 shadow-2xl z-50">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-mono text-tron-light">
+                  {selectedMainItem?.values?.['item'] || 'Project Details'}
+                </h3>
+                <button
+                  onClick={() => {
+                    setSidePanelOpen(false);
+                    setSelectedMainItem(null);
+                  }}
+                  className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              {/* Project Updates Feed */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-mono text-tron-cyan">Recent Updates</h4>
+                
+                {updatesLoading ? (
+                  <div className="text-gray-500 font-mono text-sm">Loading updates...</div>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {projectUpdates && projectUpdates.length > 0 ? (
+                      projectUpdates.map((update: any) => (
+                        <div key={update.id} className="p-3 bg-gray-800/50 rounded-lg border border-gray-700/50">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 bg-tron-cyan rounded-full flex items-center justify-center">
+                              <span className="text-xs font-mono text-gray-900">
+                                {user?.first_name?.charAt(0) || 'U'}
+                              </span>
+                            </div>
+                            <span className="text-sm font-mono text-tron-light">
+                              {user?.first_name} {user?.last_name}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {new Date(update.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-300">{update.content}</p>
+                          {update.image_url && (
+                            <img 
+                              src={update.image_url} 
+                              alt="Update" 
+                              className="mt-2 max-w-full h-auto rounded border border-gray-600"
+                            />
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-gray-500 font-mono text-sm">No updates yet</div>
+                    )}
+                  </div>
+                )}
+
+                {/* Add Update Form */}
+                <div className="mt-6 pt-4 border-t border-gray-700/50">
+                  <textarea
+                    value={updateContent}
+                    onChange={(e) => setUpdateContent(e.target.value)}
+                    placeholder="Add a project update..."
+                    className="w-full p-3 bg-gray-800/50 border border-gray-600/50 rounded-lg text-tron-light font-mono text-sm resize-none focus:outline-none focus:border-tron-cyan/50"
+                    rows={3}
+                    disabled={isPosting}
+                  />
+                  
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => setSelectedFiles(e.target.files)}
+                      className="hidden"
+                      id="update-files"
+                    />
+                    <label
+                      htmlFor="update-files"
+                      className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <ImageIcon className="w-4 h-4 text-gray-400" />
+                    </label>
+                    
+                    {selectedFiles && selectedFiles.length > 0 && (
+                      <div className="flex gap-1">
+                        {Array.from(selectedFiles).map((file, index) => (
+                          <span key={index} className="text-xs text-tron-cyan">
+                            {file.name}
+                          </span>
+                        ))}
+                        <button
+                          onClick={() => setSelectedFiles(prev => {
+                            if (prev) {
+                              const dt = new DataTransfer();
+                              Array.from(prev).forEach((f, i) => {
+                                if (i !== index) dt.items.add(f);
+                              });
+                              return dt.files;
+                            }
+                            return null;
+                          })}
+                          className="text-xs text-red-400 ml-1"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                    
+                    <button
+                      onClick={() => {
+                        setUpdateContent('');
+                        setSelectedFiles(null);
+                      }}
+                      disabled={isPosting}
+                      className="ml-auto px-3 py-1 text-xs font-mono bg-gray-600/20 text-gray-400 border border-gray-600/40 rounded hover:bg-gray-600/30 transition-colors disabled:opacity-50"
+                    >
+                      Clear
+                    </button>
+                    
+                    <button
+                      onClick={handlePostUpdate}
+                      disabled={!updateContent.trim() || isPosting}
+                      className="px-3 py-1 text-xs font-mono bg-tron-cyan/20 text-tron-cyan border border-tron-cyan/40 rounded hover:bg-tron-cyan/30 transition-colors disabled:opacity-50"
+                    >
+                      {isPosting ? 'Posting...' : 'Post'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-tron-light font-orbitron"
+         style={{
+           backgroundImage: `
+             radial-gradient(rgba(6, 182, 212, 0.15) 1px, transparent 1px),
+             linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+             linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px)
+           `,
+           backgroundSize: '20px 20px, 100px 100px, 100px 100px'
+         }}>
+      {/* Header */}
+      <div className="bg-gray-900/80 backdrop-blur-md border-b border-tron-cyan/30 shadow-lg">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-4">
+            <Link 
+              to="/dashboard"
+              className="flex items-center gap-2 text-tron-cyan hover:text-tron-light transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-mono text-sm">BACK TO SYSTEMS</span>
+            </Link>
+            <div className="h-6 w-px bg-tron-cyan/30"></div>
+            <h1 className="text-xl font-mono text-tron-light">
+              TRON PROJECT MATRIX
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            {onlineUsers > 0 && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-tron-green/20 border border-tron-green/40 rounded-lg">
+                <div className="w-2 h-2 bg-tron-green rounded-full animate-pulse"></div>
+                <span className="text-sm font-mono text-tron-green">
+                  {onlineUsers} ONLINE
+                </span>
+              </div>
+            )}
+            
+            {isConnected ? (
+              <div className="flex items-center gap-2 text-tron-green">
+                <div className="w-2 h-2 bg-tron-green rounded-full animate-pulse"></div>
+                <span className="text-sm font-mono">SYNC ACTIVE</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-tron-orange">
+                <div className="w-2 h-2 bg-tron-orange rounded-full"></div>
+                <span className="text-sm font-mono">RECONNECTING...</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Board Content */}
+      <div className="p-6">
+        <div className="space-y-6">
+          {boardGroups.map((group, groupIndex) => (
+            <div key={group.name} className="space-y-3">
+              {/* Group Header */}
+              <div 
+                className="flex items-center justify-between p-4 bg-gray-900/50 backdrop-blur-sm border border-tron-cyan/20 rounded-lg cursor-pointer hover:border-tron-cyan/40 transition-all"
+                onClick={() => toggleGroup(group.name)}
+              >
+                <div className="flex items-center gap-3">
+                  {group.collapsed ? (
+                    <ChevronRight className="w-4 h-4 text-tron-cyan" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-tron-cyan" />
+                  )}
+                  <h2 className="text-lg font-mono font-bold text-tron-light uppercase tracking-wide">
+                    {group.name}
+                  </h2>
+                  <div className="px-2 py-1 bg-tron-cyan/20 border border-tron-cyan/40 rounded text-xs font-mono text-tron-cyan">
+                    {group.items.length}
+                  </div>
+                </div>
+              </div>
+
+              {!group.collapsed && (
+                <div className="space-y-0 border border-tron-cyan/20 rounded-lg overflow-hidden bg-gray-900/30 backdrop-blur-sm">
+                  {/* Column Headers */}
+                  <div className="flex bg-gray-800/50 border-b border-tron-cyan/20">
+                    {columns.map((column, index) => (
+                      <div
+                        key={column.id}
+                        className="px-4 py-3 border-r border-tron-cyan/20 last:border-r-0 font-mono text-sm font-bold text-tron-cyan uppercase tracking-wide"
+                        style={{ 
+                          width: columnWidths[column.id] || (index === 0 ? 240 : 140),
+                          minWidth: index === 0 ? '180px' : '100px'
+                        }}
+                      >
+                        {column.name}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Items */}
+                  {group.items.map((item) => (
+                    <div key={item.id}>
+                      {/* Main Item Row */}
+                      <div 
+                        className={`flex border-b border-gray-800/50 hover:bg-tron-cyan/5 transition-all cursor-pointer ${
+                          hoveredItem === item.id ? 'bg-tron-cyan/10 shadow-lg shadow-tron-cyan/20' : ''
+                        }`}
+                        onMouseEnter={() => setHoveredItem(item.id)}
+                        onMouseLeave={() => setHoveredItem(null)}
+                      >
+                        {columns.map((column, index) => (
+                          <div
+                            key={column.id}
+                            className={`px-4 py-3 border-r border-gray-800/50 last:border-r-0 text-sm ${
+                              hoveredItem === item.id ? 'border-tron-cyan/20' : ''
+                            }`}
+                            style={{ 
+                              width: columnWidths[column.id] || (index === 0 ? 240 : 140),
+                              minWidth: index === 0 ? '180px' : '100px'
+                            }}
+                          >
+                            {renderCell(item, column)}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Sub-Items Section (when hovered) */}
+                      {hoveredItem === item.id && item.subItems && item.subItems.length > 0 && (
+                        <div className="bg-gray-900/30 border-t border-tron-cyan/20">
+                          <div className="px-16 py-3 space-y-2">
+                            {item.subItems.map((subItem) => (
+                              <div 
+                                key={subItem.id}
+                                className="flex items-center gap-4 p-2 rounded-lg bg-gray-800/50 hover:bg-tron-cyan/10 transition-all border border-transparent hover:border-tron-cyan/40"
+                              >
+                                <div className="w-2 h-2 bg-tron-cyan rounded-full"></div>
+                                <span className="text-tron-light font-mono text-sm">{subItem.name}</span>
+                                <span className="text-tron-cyan/70 text-xs">{subItem.status}</span>
+                                {subItem.assignedTo && (
+                                  <span className="text-tron-green/70 text-xs">@{subItem.assignedTo}</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Add Item Button */}
+              {!group.collapsed && (
+                <div className="flex items-center gap-2 px-4 py-2 text-tron-cyan hover:text-tron-light transition-colors">
+                  <Plus className="w-4 h-4" />
+                  <button 
+                    onClick={() => handleAddItem(group.name)}
+                    className="text-sm font-mono hover:underline"
+                  >
+                    Add Item
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
                                             minWidth: '180px',
                                             maxWidth: 'none'
                                           }}
@@ -2269,6 +2633,8 @@ export default function MondayBoard() {
                             ))
                           )}
                         </>
+                          </div>
+                        </div>
                       )}
                     </div>
                   ))}
