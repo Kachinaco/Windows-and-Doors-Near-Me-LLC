@@ -1281,24 +1281,24 @@ export default function MondayBoard() {
                   <Plus className="w-3 h-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-gray-900 border-gray-700 text-white">
+              <DropdownMenuContent className="bg-white border-gray-200 text-gray-900 shadow-lg">
                 <DropdownMenuItem 
                   onClick={() => addItemMutation.mutate('New Leads')}
-                  className="text-xs hover:bg-gray-800 focus:bg-gray-800"
+                  className="text-xs hover:bg-gray-50 focus:bg-gray-50"
                 >
                   <Plus className="w-3 h-3 mr-2" />
                   Add Item
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => setIsAddGroupOpen(true)}
-                  className="text-xs hover:bg-gray-800 focus:bg-gray-800"
+                  className="text-xs hover:bg-gray-50 focus:bg-gray-50"
                 >
                   <Folder className="w-3 h-3 mr-2" />
                   Add Group
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => setIsAddColumnOpen(true)}
-                  className="text-xs hover:bg-gray-800 focus:bg-gray-800"
+                  className="text-xs hover:bg-gray-50 focus:bg-gray-50"
                 >
                   <Columns className="w-3 h-3 mr-2" />
                   Add Column
@@ -1308,27 +1308,27 @@ export default function MondayBoard() {
 
             {/* Add Column Dialog */}
             <Dialog open={isAddColumnOpen} onOpenChange={setIsAddColumnOpen}>
-              <DialogContent className="bg-gray-900 text-white border-gray-700">
+              <DialogContent className="bg-white text-gray-900 border-gray-200">
                 <DialogHeader>
                   <DialogTitle>Add Column</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
                   <div>
-                    <Label className="text-xs">Name</Label>
+                    <Label className="text-xs text-gray-700">Name</Label>
                     <Input
                       value={newColumnName}
                       onChange={(e) => setNewColumnName(e.target.value)}
-                      className="bg-gray-800 border-gray-700 text-white h-8"
+                      className="bg-white border-gray-300 text-gray-900 h-8 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Column name"
                     />
                   </div>
                   <div>
-                    <Label className="text-xs">Type</Label>
+                    <Label className="text-xs text-gray-700">Type</Label>
                     <Select value={newColumnType} onValueChange={(value) => setNewColumnType(value as BoardColumn['type'])}>
-                      <SelectTrigger className="bg-gray-800 border-gray-700 text-white h-8">
+                      <SelectTrigger className="bg-white border-gray-300 text-gray-900 h-8 focus:border-blue-500 focus:ring-blue-500">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-700">
+                      <SelectContent className="bg-white border-gray-200 shadow-lg">
                         <SelectItem value="text">Text</SelectItem>
                         <SelectItem value="status">Status</SelectItem>
                         <SelectItem value="people">People</SelectItem>
@@ -1339,14 +1339,14 @@ export default function MondayBoard() {
                     </Select>
                   </div>
                   <div className="flex space-x-2">
-                    <Button onClick={addColumn} size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 h-8">
+                    <Button onClick={addColumn} size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-8 rounded-md">
                       Add
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => setIsAddColumnOpen(false)}
                       size="sm"
-                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 h-8"
+                      className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 h-8 rounded-md"
                     >
                       Cancel
                     </Button>
@@ -1392,10 +1392,10 @@ export default function MondayBoard() {
       </header>
 
       {/* Compact Board */}
-      <div className="flex-1 overflow-auto bg-gray-950">
+      <div className="flex-1 overflow-auto bg-white">
         <div className="min-w-max">
           {/* Enhanced Column Headers */}
-          <div className="sticky top-0 bg-gray-950/95 backdrop-blur-sm z-10 border-b border-gray-800/50">
+          <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-10 border-b border-gray-200">
             <div className="flex">
               {/* Selection checkbox header */}
               <div className="w-12 px-2 py-3 border-r border-gray-800/30 flex items-center justify-center sticky left-0 bg-gray-950/95 backdrop-blur-sm z-30">
@@ -1490,13 +1490,13 @@ export default function MondayBoard() {
                     'bg-gray-500'
                   }`} />
                   <span className={`text-sm font-medium ${
-                    group.name === 'New Leads' ? 'text-cyan-300' :
-                    group.name === 'Need Attention' ? 'text-yellow-300' :
-                    group.name === 'Sent Estimate' ? 'text-purple-300' :
-                    group.name === 'Signed' ? 'text-emerald-300' :
-                    group.name === 'In Progress' ? 'text-blue-300' :
-                    group.name === 'Complete' ? 'text-green-300' :
-                    'text-gray-400'
+                    group.name === 'New Leads' ? 'text-cyan-700' :
+                    group.name === 'Need Attention' ? 'text-yellow-700' :
+                    group.name === 'Sent Estimate' ? 'text-purple-700' :
+                    group.name === 'Signed' ? 'text-emerald-700' :
+                    group.name === 'In Progress' ? 'text-blue-700' :
+                    group.name === 'Complete' ? 'text-green-700' :
+                    'text-gray-700'
                   }`}>{group.name}</span>
                   <span className="text-sm text-gray-500 font-medium">({group.items.length})</span>
                 </div>
