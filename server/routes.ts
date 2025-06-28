@@ -588,55 +588,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create sample projects endpoint (for testing)
-  app.post("/api/projects/sample", async (req: AuthenticatedRequest, res) => {
-    try {
-      const sampleProjects = [
-        {
-          name: "Kitchen Window Replacement",
-          title: "Kitchen Window Replacement", 
-          status: "new lead",
-          projectAddress: "123 Main St, Gilbert, AZ",
-          clientPhone: "555-1234",
-          description: "Replace all kitchen windows with double-hung style",
-          assignedTo: "John Doe",
-          serviceType: "windows"
-        },
-        {
-          name: "Bathroom Door Installation", 
-          title: "Bathroom Door Installation",
-          status: "in progress",
-          projectAddress: "456 Oak Ave, Mesa, AZ",
-          clientPhone: "555-5678",
-          description: "Install new bathroom door with privacy glass",
-          assignedTo: "Jane Smith",
-          serviceType: "doors"
-        },
-        {
-          name: "Front Door Upgrade",
-          title: "Front Door Upgrade",
-          status: "scheduled", 
-          projectAddress: "789 Pine Rd, Chandler, AZ",
-          clientPhone: "555-9012",
-          description: "Upgrade to energy-efficient front door",
-          assignedTo: "Mike Johnson",
-          serviceType: "doors"
-        }
-      ];
-
-      const projects = [];
-      for (const projectData of sampleProjects) {
-        const project = await storage.createProject(projectData as any);
-        projects.push(project);
-      }
-
-      res.status(201).json({ message: "Sample projects created", projects });
-    } catch (error: any) {
-      console.error("Error creating sample projects:", error);
-      res.status(500).json({ message: "Failed to create sample projects" });
-    }
-  });
-
   app.get("/api/projects/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const id = parseInt(req.params.id);
