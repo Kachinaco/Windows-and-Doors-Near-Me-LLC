@@ -94,6 +94,8 @@ export default function MondayBoard() {
   // Sub-item state management
   const [editingSubItem, setEditingSubItem] = useState<number | null>(null);
   const [subItemNames, setSubItemNames] = useState<Record<number, string>>({});
+  const [subItemLocalValues, setSubItemLocalValues] = useState<Record<string, string>>({});
+  const subItemDebounceTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({
     item: 250,
     subitems: 120,
@@ -597,6 +599,60 @@ export default function MondayBoard() {
       delete debounceTimeoutRef.current[key];
     }, 500); // 500ms debounce
   }, [handleCellUpdate]);
+
+  // Handle local sub-item changes for fast typing
+  const handleSubItemLocalChange = useCallback((subItemId: number, field: string, value: string) => {
+    const key = `${subItemId}-${field}`;
+    setSubItemLocalValues(prev => ({ ...prev, [key]: value }));
+    
+    // Clear existing timeout for this field
+    if (subItemDebounceTimeoutRef.current[key]) {
+      clearTimeout(subItemDebounceTimeoutRef.current[key]);
+    }
+    
+    // Set new debounced timeout
+    subItemDebounceTimeoutRef.current[key] = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        
+        // Map sub-item column IDs to actual database field names
+        const fieldMapping: Record<string, string> = {
+          'subitem_name': 'name',
+          'subitem_status': 'status',
+          'subitem_assignedTo': 'assignedTo',
+          'subitem_priority': 'priority',
+          'subitem_dueDate': 'dueDate',
+        };
+        
+        const actualField = fieldMapping[field] || field;
+        
+        // Process the value based on field type
+        let processedValue = value;
+        if (actualField === 'dueDate' && value) {
+          processedValue = new Date(value).toISOString();
+        } else if (actualField === 'priority' && value) {
+          processedValue = parseInt(value) || 1;
+        }
+        
+        const response = await fetch(`/api/sub-items/${subItemId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ [actualField]: processedValue }),
+        });
+        
+        if (response.ok) {
+          queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+        }
+      } catch (error) {
+        console.error('Error updating sub-item:', error);
+      }
+      delete subItemDebounceTimeoutRef.current[key];
+    }, 500); // 500ms debounce
+  }, [queryClient]);
+
 
   const renderCell = (item: BoardItem, column: BoardColumn) => {
     const value = item.values[column.id] || '';
@@ -1153,43 +1209,51 @@ export default function MondayBoard() {
         );
         
       case 'people':
+        const peopleLocalKey = `${subItem.id}-${column.id}`;
+        const peopleLocalValue = subItemLocalValues[peopleLocalKey] !== undefined ? subItemLocalValues[peopleLocalKey] : value;
         return (
           <Input
-            value={value}
-            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
-            className="h-4 text-xs border-none bg-transparent text-gray-300"
-            placeholder="Assign to..."
+            value={peopleLocalValue}
+            onChange={(e) => handleSubItemLocalChange(subItem.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-tron-light font-mono hover:bg-tron-cyan/10"
+            placeholder="USER.ID"
           />
         );
         
       case 'number':
+        const numberLocalKey = `${subItem.id}-${column.id}`;
+        const numberLocalValue = subItemLocalValues[numberLocalKey] !== undefined ? subItemLocalValues[numberLocalKey] : value;
         return (
           <Input
             type="number"
-            value={value}
-            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
-            className="h-4 text-xs border-none bg-transparent text-gray-300"
-            placeholder="0"
+            value={numberLocalValue}
+            onChange={(e) => handleSubItemLocalChange(subItem.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-tron-light font-mono hover:bg-tron-cyan/10"
+            placeholder="0x0"
           />
         );
         
       case 'date':
+        const dateLocalKey = `${subItem.id}-${column.id}`;
+        const dateLocalValue = subItemLocalValues[dateLocalKey] !== undefined ? subItemLocalValues[dateLocalKey] : value;
         return (
           <Input
             type="date"
-            value={value}
-            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
-            className="h-4 text-xs border-none bg-transparent text-gray-300"
+            value={dateLocalValue}
+            onChange={(e) => handleSubItemLocalChange(subItem.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-tron-light font-mono hover:bg-tron-cyan/10"
           />
         );
         
       default:
+        const textLocalKey = `${subItem.id}-${column.id}`;
+        const textLocalValue = subItemLocalValues[textLocalKey] !== undefined ? subItemLocalValues[textLocalKey] : value;
         return (
           <Input
-            value={value}
-            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
-            className="h-4 text-xs border-none bg-transparent text-gray-300"
-            placeholder="Enter text..."
+            value={textLocalValue}
+            onChange={(e) => handleSubItemLocalChange(subItem.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-tron-light font-mono hover:bg-tron-cyan/10"
+            placeholder="DATA.INPUT"
           />
         );
     }
