@@ -1524,6 +1524,7 @@ export default function MondayBoard() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
