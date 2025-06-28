@@ -636,15 +636,15 @@ export default function MondayBoard() {
             value={value}
             onValueChange={(newValue) => handleCellUpdate(item.id, column.id, newValue)}
           >
-            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-gray-300">
-              <SelectValue placeholder="Assign" />
+            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-tron-light font-mono hover:bg-tron-cyan/10">
+              <SelectValue placeholder="USER.ID" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="unassigned">Unassigned</SelectItem>
-              <SelectItem value="John Doe">John Doe</SelectItem>
-              <SelectItem value="Jane Smith">Jane Smith</SelectItem>
-              <SelectItem value="Bob Wilson">Bob Wilson</SelectItem>
-              <SelectItem value="Alice Brown">Alice Brown</SelectItem>
+            <SelectContent className="bg-tron-darker border-tron-cyan/50">
+              <SelectItem value="unassigned" className="font-mono text-tron-light hover:bg-tron-cyan/20">UNASSIGNED</SelectItem>
+              <SelectItem value="John Doe" className="font-mono text-tron-light hover:bg-tron-cyan/20">JOHN.DOE</SelectItem>
+              <SelectItem value="Jane Smith" className="font-mono text-tron-light hover:bg-tron-cyan/20">JANE.SMITH</SelectItem>
+              <SelectItem value="Bob Wilson" className="font-mono text-tron-light hover:bg-tron-cyan/20">BOB.WILSON</SelectItem>
+              <SelectItem value="Alice Brown" className="font-mono text-tron-light hover:bg-tron-cyan/20">ALICE.BROWN</SelectItem>
             </SelectContent>
           </Select>
         );
@@ -655,7 +655,7 @@ export default function MondayBoard() {
             type="date"
             value={value}
             onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
-            className="h-4 text-xs border-none bg-transparent text-gray-300"
+            className="h-4 text-xs border-none bg-transparent text-tron-light font-mono hover:bg-tron-cyan/10"
           />
         );
       
@@ -665,8 +665,8 @@ export default function MondayBoard() {
             type="number"
             value={value}
             onChange={(e) => handleCellUpdate(item.id, column.id, parseInt(e.target.value) || 0)}
-            className="h-4 text-xs border-none bg-transparent text-gray-300"
-            placeholder="0"
+            className="h-4 text-xs border-none bg-transparent text-tron-light font-mono hover:bg-tron-cyan/10"
+            placeholder="0x0"
           />
         );
       
@@ -674,13 +674,13 @@ export default function MondayBoard() {
         return (
           <div className="flex flex-wrap gap-1">
             {Array.isArray(value) && value.map((tag: string, idx: number) => (
-              <span key={idx} className="px-1.5 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs">
-                {tag}
+              <span key={idx} className="px-1.5 py-0.5 bg-tron-purple/20 text-tron-purple border border-tron-purple/50 rounded text-xs font-mono tron-glow">
+                {tag.toUpperCase()}
               </span>
             ))}
             <Input
-              placeholder="Add tag"
-              className="h-5 text-xs border-none bg-transparent text-gray-300 flex-1 min-w-16"
+              placeholder="TAG.ADD"
+              className="h-5 text-xs border-none bg-transparent text-tron-light font-mono flex-1 min-w-16 hover:bg-tron-cyan/10"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                   const newTags = [...(Array.isArray(value) ? value : []), e.currentTarget.value.trim()];
@@ -743,8 +743,8 @@ export default function MondayBoard() {
             <Input
               value={localValue}
               onChange={(e) => handleLocalChange(item.id, column.id, e.target.value)}
-              className="h-4 text-xs border-none bg-transparent text-gray-300"
-              placeholder={column.id === 'item' ? "Enter project name" : "Enter text"}
+              className="h-4 text-xs border border-tron-cyan/50 bg-tron-dark/50 text-tron-light font-mono tron-glow"
+              placeholder={column.id === 'item' ? "PROJ.NAME" : "DATA.INPUT"}
               autoFocus
               onBlur={() => {
                 setEditingCell(null);
