@@ -825,12 +825,28 @@ export default function MondayBoard() {
     try {
       const token = localStorage.getItem('authToken') || localStorage.getItem('token');
       
-      // Process the value based on field type to handle dates properly
+      // Map sub-item column IDs to actual database field names
+      const fieldMapping: Record<string, string> = {
+        'subitem_name': 'name',
+        'subitem_status': 'status',
+        'subitem_assignedTo': 'assignedTo',
+        'subitem_priority': 'priority',
+        'subitem_dueDate': 'dueDate',
+      };
+      
+      const actualField = fieldMapping[field] || field;
+      
+      // Process the value based on field type
       let processedValue = value;
-      if (field === 'dueDate' && value) {
+      if (actualField === 'dueDate' && value) {
         // Convert date string to ISO string for database
         processedValue = new Date(value).toISOString();
+      } else if (actualField === 'priority' && value) {
+        // Ensure priority is a number
+        processedValue = parseInt(value) || 1;
       }
+      
+      console.log('Mapped field update:', { actualField, processedValue });
       
       const response = await fetch(`/api/sub-items/${subItemId}`, {
         method: 'PUT',
@@ -838,10 +854,12 @@ export default function MondayBoard() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ [field]: processedValue }),
+        body: JSON.stringify({ [actualField]: processedValue }),
       });
       
       if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Server error:', errorData);
         throw new Error('Failed to update sub-item');
       }
       
@@ -849,6 +867,10 @@ export default function MondayBoard() {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       
       console.log('Sub-item updated successfully');
+      toast({ 
+        title: "Success", 
+        description: "Sub-item updated successfully" 
+      });
     } catch (error) {
       console.error('Error updating sub-item:', error);
       toast({ 
