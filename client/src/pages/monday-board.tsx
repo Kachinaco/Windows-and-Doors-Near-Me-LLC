@@ -123,12 +123,24 @@ export default function MondayBoard() {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [selectedMainItem, setSelectedMainItem] = useState<any>(null);
   const [selectedFolder, setSelectedFolder] = useState<any>(null);
+  
+  // Update form state
+  const [updateContent, setUpdateContent] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isPosting, setIsPosting] = useState(false);
 
   // Fetch projects and transform to board items
   const { data: projects = [], isLoading, error } = useQuery({
     queryKey: ['/api/projects'],
     enabled: !!user, // Only fetch when user is available
     refetchInterval: 5000,
+  });
+
+  // Fetch project updates for selected project
+  const { data: projectUpdates = [], isLoading: updatesLoading } = useQuery({
+    queryKey: ['/api/projects', selectedMainItem?.id, 'updates'],
+    enabled: !!selectedMainItem?.id,
+    refetchInterval: 3000, // Refresh more frequently for real-time updates
   });
 
   // Transform projects to board items safely
@@ -350,6 +362,34 @@ export default function MondayBoard() {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       setSelectedItems(new Set());
       toast({ title: "Success", description: "Items updated successfully" });
+    },
+  });
+
+  // Project update mutation
+  const createUpdateMutation = useMutation({
+    mutationFn: async (updateData: { projectId: number; content: string; attachments?: any[] }) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch('/api/project-updates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updateData),
+      });
+      if (!response.ok) throw new Error('Failed to create update');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', selectedMainItem?.id, 'updates'] });
+      setUpdateContent('');
+      setSelectedFiles([]);
+      setIsPosting(false);
+      toast({ title: "Success", description: "Update posted successfully" });
+    },
+    onError: () => {
+      setIsPosting(false);
+      toast({ title: "Error", description: "Failed to post update", variant: "destructive" });
     },
   });
 
@@ -935,12 +975,12 @@ export default function MondayBoard() {
   }, [createSubItemMutation]);
 
   const handleToggleUpdates = useCallback((projectId: number) => {
-    if (selectedProjectForUpdates === projectId) {
-      setSelectedProjectForUpdates(null);
-    } else {
-      setSelectedProjectForUpdates(projectId);
+    const project = boardItems.find(item => item.id === projectId);
+    if (project) {
+      setSelectedMainItem(project);
+      setSidePanelOpen(true);
     }
-  }, [selectedProjectForUpdates]);
+  }, [boardItems]);
 
   // Handler for updating sub-item names
   const handleUpdateSubItemName = useCallback(async (subItemId: number, newName: string) => {
@@ -2106,18 +2146,21 @@ export default function MondayBoard() {
       </div>
 
       {/* Updates Side Panel */}
-      {selectedProjectForUpdates && (
+      {sidePanelOpen && selectedMainItem && (
         <div className="w-96 bg-gray-900 border-l border-gray-800 flex flex-col">
           {/* Side Panel Header */}
           <div className="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-gray-200">Project Updates</h3>
-              <p className="text-xs text-gray-400">Project #{selectedProjectForUpdates}</p>
+              <p className="text-xs text-gray-400">{selectedMainItem.values.item || `Project #${selectedMainItem.id}`}</p>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setSelectedProjectForUpdates(null)}
+              onClick={() => {
+                setSidePanelOpen(false);
+                setSelectedMainItem(null);
+              }}
               className="text-gray-400 hover:text-gray-200 p-1"
             >
               ✕
