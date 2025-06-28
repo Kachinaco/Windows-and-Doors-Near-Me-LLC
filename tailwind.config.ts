@@ -44,6 +44,18 @@ export default {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
+        // Tron-specific colors
+        tron: {
+          cyan: "var(--tron-cyan)",
+          blue: "var(--tron-blue)",
+          green: "var(--tron-green)",
+          orange: "var(--tron-orange)",
+          purple: "var(--tron-purple)",
+          red: "var(--tron-red)",
+          dark: "var(--tron-dark)",
+          darker: "var(--tron-darker)",
+          light: "var(--tron-light)",
+        },
         chart: {
           "1": "var(--chart-1)",
           "2": "var(--chart-2)",
@@ -79,10 +91,34 @@ export default {
             height: "0",
           },
         },
+        "tron-glow": {
+          "0%, 100%": { 
+            boxShadow: "0 0 5px var(--tron-cyan), 0 0 10px var(--tron-cyan), 0 0 15px var(--tron-cyan)" 
+          },
+          "50%": { 
+            boxShadow: "0 0 10px var(--tron-cyan), 0 0 20px var(--tron-cyan), 0 0 30px var(--tron-cyan)" 
+          },
+        },
+        "tron-pulse": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.7" },
+        },
+        "tron-circuit": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100vw)" },
+        },
+        "tron-scan": {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(100vh)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "tron-glow": "tron-glow 2s infinite",
+        "tron-pulse": "tron-pulse 2s infinite",
+        "tron-circuit": "tron-circuit 3s infinite",
+        "tron-scan": "tron-scan 4s infinite",
       },
     },
   },
