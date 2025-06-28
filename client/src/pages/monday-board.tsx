@@ -78,7 +78,7 @@ export default function MondayBoard() {
   const queryClient = useQueryClient();
 
   // Fetch projects data
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: projects, isLoading } = useQuery({
     queryKey: ['/api/projects'],
     staleTime: 1000 * 60 * 5,
   });
@@ -92,7 +92,14 @@ export default function MondayBoard() {
       'Completed': []
     };
 
-    if (!Array.isArray(projects)) return [];
+    if (!projects || !Array.isArray(projects)) {
+      // Return empty groups structure
+      return Object.entries(statusGroups).map(([groupName, items]) => ({
+        name: groupName,
+        items,
+        collapsed: false
+      }));
+    }
 
     projects.forEach((project: any) => {
       const boardItem: BoardItem = {
@@ -159,6 +166,11 @@ export default function MondayBoard() {
       collapsed: false
     }));
   }, [projects]);
+
+  // Update board groups when transformed groups change
+  useEffect(() => {
+    setBoardGroups(transformedGroups);
+  }, [transformedGroups]);
 
   // Toggle group collapsed state
   const toggleGroup = useCallback((groupName: string) => {
@@ -228,6 +240,34 @@ export default function MondayBoard() {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-tron-cyan font-mono">Loading TRON PROJECT MATRIX...</div>
+      </div>
+    );
+  }
+
+  // Debug logging
+  console.log('Projects data:', projects);
+  console.log('Board groups:', boardGroups);
+  console.log('Transformed groups:', transformedGroups);
+
+  // Show debug info if groups are not properly initialized
+  if (!isLoading && (!boardGroups || boardGroups.length === 0)) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-tron-light font-orbitron p-6">
+        <h1 className="text-xl font-mono text-tron-cyan mb-4">DEBUG INFO</h1>
+        <div className="space-y-2 font-mono text-sm">
+          <div>Projects loading: {isLoading ? 'true' : 'false'}</div>
+          <div>Projects data: {JSON.stringify(projects?.slice?.(0, 2), null, 2) || 'undefined'}</div>
+          <div>Projects length: {Array.isArray(projects) ? projects.length : 'not array'}</div>
+          <div>Board groups length: {boardGroups?.length || 0}</div>
+          <div>Transformed groups length: {transformedGroups?.length || 0}</div>
+        </div>
+        
+        <button 
+          onClick={() => setBoardGroups(transformedGroups)}
+          className="mt-4 px-4 py-2 bg-tron-cyan text-gray-900 rounded font-mono"
+        >
+          Force Refresh Board
+        </button>
       </div>
     );
   }
