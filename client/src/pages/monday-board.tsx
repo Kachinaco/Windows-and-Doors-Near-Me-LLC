@@ -123,6 +123,7 @@ export default function MondayBoard() {
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [bulkEditMode, setBulkEditMode] = useState(false);
   const [expandedSubItems, setExpandedSubItems] = useState<Set<number>>(new Set());
+  const [hoveredItem, setHoveredItem] = useState<number | null>(null);
   
   // Side panel drawer state
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -644,10 +645,8 @@ export default function MondayBoard() {
         });
         
         if (response.ok) {
-          // Only invalidate after a slight delay to prevent feedback loops
-          setTimeout(() => {
-            queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-          }, 100);
+          // Don't invalidate queries immediately to prevent feedback loops
+          // The local state updates will handle UI changes
         }
       } catch (error) {
         console.error('Error updating sub-item:', error);
@@ -1698,8 +1697,13 @@ export default function MondayBoard() {
               {!group.collapsed && (
                 <>
                   {group.items.map((item) => (
-                    <React.Fragment key={item.id}>
-                      {/* Main Item Row - Clickable for Updates */}
+                    <div 
+                      key={item.id}
+                      onMouseEnter={() => setHoveredItem(item.id)}
+                      onMouseLeave={() => setHoveredItem(null)}
+                      className="hover-group"
+                    >
+                      {/* Main Item Row - Hover to show sub-items */}
                       <div 
                         className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0 bg-gradient-to-r from-gray-900/5 to-transparent cursor-pointer"
                         onClick={(e) => {
@@ -1741,8 +1745,8 @@ export default function MondayBoard() {
 
 
                       
-                      {/* Sub-Items Rows (when expanded) */}
-                      {expandedSubItems.has(item.id) && (
+                      {/* Sub-Items Rows (when hovered or expanded) */}
+                      {(hoveredItem === item.id || expandedSubItems.has(item.id)) && (
                         <>
 
                           {/* Render folders and their sub-items */}
@@ -2242,7 +2246,7 @@ export default function MondayBoard() {
                           )}
                         </>
                       )}
-                    </React.Fragment>
+                    </div>
                   ))}
                   
                   {/* Add Item Button at bottom of group */}
