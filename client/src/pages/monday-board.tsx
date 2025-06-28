@@ -1464,7 +1464,7 @@ export default function MondayBoard() {
                   >
                     {/* Main column header */}
                     <div className="flex items-center justify-center w-full">
-                      <span className={`text-xs font-medium uppercase tracking-wide text-center ${
+                      <span className={`text-sm font-medium uppercase tracking-wide text-center ${
                         group.name === 'New Leads' ? 'text-cyan-300/80' :
                         group.name === 'Need Attention' ? 'text-yellow-300/80' :
                         group.name === 'Sent Estimate' ? 'text-purple-300/80' :
@@ -2074,9 +2074,9 @@ export default function MondayBoard() {
                         size="sm"
                         onClick={() => addItemMutation.mutate(group.name)}
                         disabled={addItemMutation.isPending}
-                        className="text-gray-600 hover:text-blue-400 text-xs h-5 w-full justify-start px-1"
+                        className="text-gray-500 hover:text-blue-400 text-sm h-7 w-full justify-start px-2"
                       >
-                        <Plus className="w-2.5 h-2.5 mr-1" />
+                        <Plus className="w-4 h-4 mr-2" />
                         Add item
                       </Button>
                     </div>
