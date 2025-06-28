@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { type Project } from "@shared/schema";
-import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns, Trash2 } from "lucide-react";
+import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns, Trash2, MessageCircle } from "lucide-react";
 
 interface BoardColumn {
   id: string;
@@ -1698,14 +1698,19 @@ export default function MondayBoard() {
                                             <div className="w-5 h-px bg-amber-400/50"></div>
                                             
                                             <button
-                                              onClick={() => {
-                                                setSelectedMainItem(item);
-                                                setSelectedFolder(folder);
-                                                setSidePanelOpen(true);
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setExpandedFolders(prev => 
+                                                  prev.has(folder.id) 
+                                                    ? new Set(Array.from(prev).filter(id => id !== folder.id))
+                                                    : new Set([...Array.from(prev), folder.id])
+                                                );
                                               }}
                                               className="p-1 hover:bg-amber-500/20 rounded transition-colors"
                                             >
-                                              <ChevronRight className="w-3.5 h-3.5 text-amber-300" />
+                                              <ChevronRight className={`w-3.5 h-3.5 text-amber-300 transition-transform ${
+                                                expandedFolders.has(folder.id) ? 'rotate-90' : ''
+                                              }`} />
                                             </button>
                                             
                                             <Folder className="w-4 h-4 text-amber-400 drop-shadow-sm" />
@@ -1739,6 +1744,8 @@ export default function MondayBoard() {
                                             <span className="text-amber-400/70 text-xs ml-1 font-medium">
                                               ({folderSubItems.length} items)
                                             </span>
+                                            
+
                                             
                                             {/* Delete folder button */}
                                             <button
