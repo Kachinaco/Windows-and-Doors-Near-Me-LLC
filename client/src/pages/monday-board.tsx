@@ -124,6 +124,8 @@ export default function MondayBoard() {
   const [bulkEditMode, setBulkEditMode] = useState(false);
   const [expandedSubItems, setExpandedSubItems] = useState<Set<number>>(new Set());
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
+  const [hoveredFolder, setHoveredFolder] = useState<number | null>(null);
+  const [hoveredSubItem, setHoveredSubItem] = useState<number | null>(null);
   
   // Side panel drawer state
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -1761,7 +1763,12 @@ export default function MondayBoard() {
                                   const currentFolderName = folderNames[folder.id] || folder.name;
                                   
                                   return (
-                                    <React.Fragment key={folder.id}>
+                                    <div 
+                                      key={folder.id}
+                                      onMouseEnter={() => setHoveredFolder(folder.id)}
+                                      onMouseLeave={() => setHoveredFolder(null)}
+                                      className="folder-hover-group"
+                                    >
                                       {/* Folder Header with Column Headers */}
                                       <div className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-950/8 border-b-2 border-blue-500/25 shadow-sm">
                                         {/* Empty space where checkbox used to be */}
@@ -1917,8 +1924,8 @@ export default function MondayBoard() {
                                         </div>
                                       </div>
                                       
-                                      {/* Sub-items in this folder */}
-                                      {expandedFolders.has(folder.id) && (
+                                      {/* Sub-items in this folder (when expanded or hovered) */}
+                                      {(expandedFolders.has(folder.id) || hoveredFolder === folder.id) && (
                                         <>
                                           {/* Folder content container with enhanced visual grouping */}
                                           <div className="relative ml-3">
@@ -1926,7 +1933,12 @@ export default function MondayBoard() {
                                             <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400/60 via-blue-400/40 to-blue-400/20 rounded-full"></div>
                                             
                                             {folderSubItems.map((subItem, index) => (
-                                              <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-900/10 border-b border-blue-500/10 relative ml-4">
+                                              <div 
+                                                key={`sub-${subItem.id}`} 
+                                                className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-900/10 border-b border-blue-500/10 relative ml-4"
+                                                onMouseEnter={() => setHoveredSubItem(subItem.id)}
+                                                onMouseLeave={() => setHoveredSubItem(null)}
+                                              >
                                                 {/* Enhanced connection line to folder */}
                                                 <div className="absolute -left-4 top-0 w-4 h-full flex items-center">
                                                   <div className="w-full h-px bg-gradient-to-r from-amber-400/60 to-blue-400/60"></div>
@@ -2154,7 +2166,7 @@ export default function MondayBoard() {
                                           </div>
                                         </>
                                       )}
-                                    </React.Fragment>
+                                    </div>
                                   );
                                 })}
 
