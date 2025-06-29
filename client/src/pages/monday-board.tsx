@@ -1778,68 +1778,35 @@ export default function MondayBoard() {
                                           </div>
                                         </div>
                                         
-                                        {/* Sub-item column headers with resizers - aligned with main columns */}
-                                        {subItemColumns.map((column, index) => {
-                                          // Map sub-item columns to main columns for consistent width
-                                          const correspondingMainColumn = columns.slice(1)[index]; // Skip first main column (item name)
-                                          const columnWidth = correspondingMainColumn ? 
-                                            (columnWidths[correspondingMainColumn.id] || 100) : 
-                                            (columnWidths[column.id] || 100);
+                                        {/* Column headers using exact same columns as main board for perfect alignment */}
+                                        {columns.slice(1).map((column, index) => {
+                                          // Use main board columns for perfect alignment
+                                          const columnWidth = columnWidths[column.id] || (index === 0 ? 120 : 140);
                                           
                                           return (
                                           <div 
-                                            key={`folder-subheader-${folder.id}-${column.id}`}
-                                            className={`px-4 py-3 border-r flex-shrink-0 flex items-center gap-2 relative group z-5 ${
-                                              group.name === 'New Leads' ? 'border-cyan-200 bg-white' :
-                                              group.name === 'Need Attention' ? 'border-yellow-200 bg-white' :
-                                              group.name === 'Sent Estimate' ? 'border-purple-200 bg-white' :
-                                              group.name === 'Signed' ? 'border-emerald-200 bg-white' :
-                                              group.name === 'In Progress' ? 'border-blue-200 bg-white' :
-                                              group.name === 'Complete' ? 'border-green-200 bg-white' :
-                                              'border-gray-200 bg-white'
-                                            }`}
+                                            key={`folder-header-${folder.id}-${column.id}`}
+                                            className="px-3 py-3 border-r border-gray-200 flex-shrink-0 flex items-center gap-2 relative group bg-white z-5"
                                             style={{ 
                                               width: columnWidth,
-                                              minWidth: '70px',
+                                              minWidth: index === 0 ? '80px' : '90px',
                                               maxWidth: 'none'
                                             }}
                                           >
-                                            <div className="text-blue-400/80">{getColumnIcon(column.type)}</div>
-                                            <span className="font-semibold text-sm text-blue-200">{column.name}</span>
+                                            <div className="text-gray-400">{getColumnIcon(column.type)}</div>
+                                            <span className="font-medium text-xs text-gray-500">{column.name}</span>
                                             
-                                            {/* Sub-item Column Resizer */}
-                                            <div 
-                                              className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-transparent hover:bg-blue-400/50 group-hover:bg-blue-400/30"
-                                              onPointerDown={(e) => handlePointerDown(column.id, e)}
-                                            />
-                                            
-                                            {/* Sub-item Column Three-dot Menu */}
-                                            <DropdownMenu>
-                                              <DropdownMenuTrigger className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button variant="ghost" size="sm" className="h-4 w-4 p-0 text-gray-500 hover:text-gray-300">
-                                                  <span className="text-[10px]">⋯</span>
-                                                </Button>
-                                              </DropdownMenuTrigger>
-                                              <DropdownMenuContent align="end" className="bg-gray-900 border-gray-700">
-                                                <DropdownMenuItem onClick={() => {
-                                                  // Add sub-item column to the right
-                                                  const newColumn: BoardColumn = {
-                                                    id: `subitem_new_${Date.now()}`,
-                                                    name: 'New Column',
-                                                    type: 'text',
-                                                    order: column.order + 1
-                                                  };
-                                                  setSubItemColumns(prev => [...prev, newColumn].sort((a, b) => a.order - b.order));
-                                                }} className="text-gray-300 hover:bg-gray-800">
-                                                  Add column to the right
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => {
-                                                  setSubItemColumns(prev => prev.filter(col => col.id !== column.id));
-                                                }} className="text-red-400 hover:bg-red-900/20">
-                                                  Delete column
-                                                </DropdownMenuItem>
-                                              </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            {/* Column Resizer - matches main board */}
+                                            {index < columns.slice(1).length - 1 && (
+                                              <div 
+                                                className="absolute right-0 top-0 bottom-0 w-3 cursor-col-resize flex items-center justify-center bg-transparent hover:bg-blue-500/20 transition-all group touch-none"
+                                                onPointerDown={(e) => handlePointerDown(column.id, e)}
+                                                title="Resize"
+                                                style={{ touchAction: 'none' }}
+                                              >
+                                                <div className="w-0.5 h-4 bg-gray-600 hover:bg-blue-400 rounded-full transition-all duration-200 group-hover:h-5 group-hover:bg-blue-400"></div>
+                                              </div>
+                                            )}
                                           </div>
                                           );
                                         })}
@@ -1944,29 +1911,18 @@ export default function MondayBoard() {
                                                   </div>
                                                 </div>
                                                 
-                                                {/* Sub-item cells synchronized with main column headers */}
-                                                {subItemColumns.map((column, index) => {
-                                                  // Map sub-item columns to main columns for consistent width
-                                                  const correspondingMainColumn = columns.slice(1)[index]; // Skip first main column (item name)
-                                                  const columnWidth = correspondingMainColumn ? 
-                                                    (columnWidths[correspondingMainColumn.id] || 100) : 
-                                                    (columnWidths[column.id] || 100);
+                                                {/* Sub-item cells using exact same columns as main board */}
+                                                {columns.slice(1).map((column, index) => {
+                                                  // Use main board columns for perfect alignment
+                                                  const columnWidth = columnWidths[column.id] || (index === 0 ? 120 : 140);
                                                   
                                                   return (
                                                   <div 
                                                     key={`sub-${subItem.id}-${column.id}`}
-                                                    className={`px-4 py-3 border-r flex-shrink-0 flex items-center justify-center bg-white z-5 ${
-                                                      group.name === 'New Leads' ? 'border-cyan-200' :
-                                                      group.name === 'Need Attention' ? 'border-yellow-200' :
-                                                      group.name === 'Sent Estimate' ? 'border-purple-200' :
-                                                      group.name === 'Signed' ? 'border-emerald-200' :
-                                                      group.name === 'In Progress' ? 'border-blue-200' :
-                                                      group.name === 'Complete' ? 'border-green-200' :
-                                                      'border-gray-200'
-                                                    }`}
+                                                    className={`px-4 py-3 border-r border-gray-200 flex-shrink-0 flex items-center justify-center bg-white z-5`}
                                                     style={{ 
                                                       width: columnWidth,
-                                                      minWidth: '70px',
+                                                      minWidth: index === 0 ? '80px' : '90px',
                                                       maxWidth: 'none'
                                                     }}
                                                   >
@@ -2058,29 +2014,17 @@ export default function MondayBoard() {
                                                 </Button>
                                               </div>
                                               
-                                              {/* Empty cells synchronized with sub-item columns */}
-                                              {subItemColumns.map((column, index) => {
-                                                // Use same width mapping as sub-item cells
-                                                const correspondingMainColumn = columns.slice(1)[index]; 
-                                                const columnWidth = correspondingMainColumn ? 
-                                                  (columnWidths[correspondingMainColumn.id] || 100) : 
-                                                  (columnWidths[column.id] || 100);
+                                              {/* Empty cells using exact same columns as main board */}
+                                              {columns.slice(1).map((column, index) => {
+                                                const columnWidth = columnWidths[column.id] || (index === 0 ? 120 : 140);
                                                 
                                                 return (
                                                 <div 
                                                   key={`add-sub-${folder.id}-${column.id}`}
-                                                  className={`px-4 py-3 border-r flex-shrink-0 z-5 ${
-                                                    group.name === 'New Leads' ? 'border-cyan-200 bg-cyan-50/30' :
-                                                    group.name === 'Need Attention' ? 'border-yellow-200 bg-yellow-50/30' :
-                                                    group.name === 'Sent Estimate' ? 'border-purple-200 bg-purple-50/30' :
-                                                    group.name === 'Signed' ? 'border-emerald-200 bg-emerald-50/30' :
-                                                    group.name === 'In Progress' ? 'border-blue-200 bg-blue-50/30' :
-                                                    group.name === 'Complete' ? 'border-green-200 bg-green-50/30' :
-                                                    'border-gray-200 bg-gray-50/30'
-                                                  }`}
+                                                  className="px-4 py-3 border-r border-gray-200 flex-shrink-0 bg-white z-5"
                                                   style={{ 
                                                     width: columnWidth,
-                                                    minWidth: '70px',
+                                                    minWidth: index === 0 ? '80px' : '90px',
                                                     maxWidth: 'none'
                                                   }}
                                                 />
@@ -2117,14 +2061,14 @@ export default function MondayBoard() {
                                   </Button>
                                 </div>
                                 
-                                {/* Sub-item column spaces synchronized with sub-item headers */}
-                                {subItemColumns.map((column) => (
+                                {/* Column spaces using exact same columns as main board */}
+                                {columns.slice(1).map((column, index) => (
                                   <div 
                                     key={`addfolder-${item.id}-${column.id}`}
-                                    className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0"
+                                    className="px-4 py-3 border-r border-gray-200 flex-shrink-0"
                                     style={{ 
-                                      width: columnWidths[column.id] || 140,
-                                      minWidth: '100px',
+                                      width: columnWidths[column.id] || (index === 0 ? 120 : 140),
+                                      minWidth: index === 0 ? '80px' : '90px',
                                       maxWidth: 'none'
                                     }}
                                   />
