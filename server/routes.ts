@@ -2437,6 +2437,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Temporary endpoint to create sample sub-items and folders for testing
+  app.post("/api/projects/:projectId/create-sample-subitems", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      
+      // Create sample folders
+      const folder1 = await storage.createSubItemFolder({
+        projectId,
+        name: "Preparation Phase",
+        color: "blue",
+        sortOrder: 0,
+        isCollapsed: false
+      });
+      
+      const folder2 = await storage.createSubItemFolder({
+        projectId,
+        name: "Installation Phase",
+        color: "green", 
+        sortOrder: 1,
+        isCollapsed: false
+      });
+      
+      // Create sample sub-items for folder 1
+      await storage.createSubItem({
+        parentProjectId: projectId,
+        name: "Site Survey",
+        status: "completed",
+        priority: "high",
+        folderId: folder1.id,
+        folderName: "Preparation Phase",
+        sortOrder: 0
+      });
+      
+      await storage.createSubItem({
+        parentProjectId: projectId,
+        name: "Materials Ordering",
+        status: "in_progress", 
+        priority: "medium",
+        folderId: folder1.id,
+        folderName: "Preparation Phase",
+        sortOrder: 1
+      });
+      
+      // Create sample sub-items for folder 2
+      await storage.createSubItem({
+        parentProjectId: projectId,
+        name: "Window Removal",
+        status: "not_started",
+        priority: "medium",
+        folderId: folder2.id,
+        folderName: "Installation Phase", 
+        sortOrder: 0
+      });
+      
+      await storage.createSubItem({
+        parentProjectId: projectId,
+        name: "New Window Installation",
+        status: "not_started",
+        priority: "high",
+        folderId: folder2.id,
+        folderName: "Installation Phase",
+        sortOrder: 1
+      });
+      
+      res.json({ message: "Sample sub-items and folders created successfully" });
+    } catch (error: any) {
+      console.error("Error creating sample sub-items:", error);
+      res.status(500).json({ message: "Failed to create sample sub-items" });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Set up WebSocket server for real-time collaboration
