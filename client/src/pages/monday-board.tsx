@@ -1710,6 +1710,18 @@ export default function MondayBoard() {
                                           }}
                                         >
                                           <div className="flex items-center gap-2 text-sm w-full">
+                                            {/* Delete folder button - moved to left */}
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteSubItemFolder(folder.id);
+                                              }}
+                                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded text-red-600 hover:text-red-700 transition-all flex-shrink-0"
+                                              title="Delete folder"
+                                            >
+                                              <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                            
                                             <div className="w-4 h-px bg-blue-300"></div>
                                             
                                             <button
@@ -1762,18 +1774,6 @@ export default function MondayBoard() {
                                                 ({folderSubItems.length})
                                               </span>
                                             </div>
-                                            
-                                            {/* Delete folder button */}
-                                            <button
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteSubItemFolder(folder.id);
-                                              }}
-                                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded text-red-600 hover:text-red-700 transition-all flex-shrink-0"
-                                              title="Delete folder"
-                                            >
-                                              <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
                                           </div>
                                         </div>
                                         
