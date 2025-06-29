@@ -105,6 +105,14 @@ export default function MondayBoard() {
     role: 'member',
     notes: ''
   });
+
+  // Helper function to get display name from member ID
+  const getMemberDisplayName = (memberId: string | number): string => {
+    if (!memberId || memberId === '' || memberId === 'unassigned') return 'Unassigned';
+    const member = teamMembers.find((m: any) => m.id.toString() === memberId.toString());
+    return member ? `${member.firstName} ${member.lastName}` : 'Unassigned';
+  };
+
   // Initialize column widths from localStorage or use defaults
   const getInitialColumnWidths = () => {
     try {
@@ -774,7 +782,9 @@ export default function MondayBoard() {
             }}
           >
             <SelectTrigger className="h-4 text-xs border-none bg-transparent text-gray-300 p-0 min-h-0">
-              <SelectValue placeholder="Assign" />
+              <SelectValue placeholder="Assign">
+                {value && value !== 'unassigned' ? getMemberDisplayName(value) : 'Assign'}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
               <SelectItem value="unassigned">Unassigned</SelectItem>
@@ -1250,7 +1260,9 @@ export default function MondayBoard() {
             }}
           >
             <SelectTrigger className="h-4 text-xs border-none bg-transparent text-blue-300 p-0 min-h-0">
-              <SelectValue placeholder="Assign" />
+              <SelectValue placeholder="Assign">
+                {value && value !== 'unassigned' ? getMemberDisplayName(value) : 'Assign'}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
               <SelectItem value="unassigned">Unassigned</SelectItem>
