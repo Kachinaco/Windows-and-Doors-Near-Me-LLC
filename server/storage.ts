@@ -1173,9 +1173,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateSubItem(id: number, updates: Partial<InsertSubItem>): Promise<SubItem> {
+    // Process updates to handle date fields properly
+    const processedUpdates = { ...updates };
+    
+    // Handle date fields that might come as strings
+    if (processedUpdates.dueDate && typeof processedUpdates.dueDate === 'string') {
+      processedUpdates.dueDate = new Date(processedUpdates.dueDate);
+    }
+    if (processedUpdates.completedAt && typeof processedUpdates.completedAt === 'string') {
+      processedUpdates.completedAt = new Date(processedUpdates.completedAt);
+    }
+    
     const [updatedSubItem] = await db
       .update(subItems)
-      .set({ ...updates, updatedAt: new Date() })
+      .set(processedUpdates)
       .where(eq(subItems.id, id))
       .returning();
     return updatedSubItem;
@@ -1201,7 +1212,7 @@ export class DatabaseStorage implements IStorage {
   async updateSubItemFolder(id: number, updates: Partial<InsertSubItemFolder>): Promise<SubItemFolder> {
     const [updatedFolder] = await db
       .update(subItemFolders)
-      .set({ ...updates, updatedAt: new Date() })
+      .set(updates)
       .where(eq(subItemFolders.id, id))
       .returning();
     return updatedFolder;
