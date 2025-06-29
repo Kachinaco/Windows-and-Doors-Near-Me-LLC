@@ -848,46 +848,10 @@ export default function MondayBoard() {
     }
   };
 
-  // Sub-item cell update handler
+  // Legacy sub-item cell update handler (kept for compatibility)
   const handleSubItemCellUpdate = useCallback(async (subItemId: number, field: string, value: any) => {
-    console.log('Sub-item cell update triggered:', { subItemId, field, value });
-    
-    try {
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-      
-      // Process the value based on field type to handle dates properly
-      let processedValue = value;
-      if (field === 'dueDate' && value) {
-        // Convert date string to ISO string for database
-        processedValue = new Date(value).toISOString();
-      }
-      
-      const response = await fetch(`/api/sub-items/${subItemId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ [field]: processedValue }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update sub-item');
-      }
-      
-      // Refetch projects to get updated data
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      
-      console.log('Sub-item updated successfully');
-    } catch (error) {
-      console.error('Error updating sub-item:', error);
-      toast({ 
-        title: "Error", 
-        description: "Failed to update sub-item", 
-        variant: "destructive" 
-      });
-    }
-  }, [toast, queryClient]);
+    return handleUpdateSubItem(subItemId, { [field]: value });
+  }, [handleUpdateSubItem]);
 
   // Sub-item mutations
   const createSubItemMutation = useMutation({
@@ -1964,8 +1928,25 @@ export default function MondayBoard() {
                                                           value={(subItem as any).priority || ''}
                                                           onChange={(e) => handleUpdateSubItem(subItem.id, { priority: parseInt(e.target.value) || 0 })}
                                                           placeholder="Priority"
-                                                          className="w-full bg-transparent text-gray-400 text-center border-0 outline-none hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors px-1 py-1 rounded"
+                                                          className="w-full bg-transparent text-blue-700 text-center border-0 outline-none hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors px-1 py-1 rounded font-medium"
                                                         />
+                                                      )}
+                                                      {column.type === 'tags' && (
+                                                        <input
+                                                          type="text"
+                                                          value={(subItem as any).tags ? JSON.parse(subItem.tags).join(', ') : ''}
+                                                          onChange={(e) => {
+                                                            const tagArray = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+                                                            handleUpdateSubItem(subItem.id, { tags: JSON.stringify(tagArray) });
+                                                          }}
+                                                          placeholder="Add tags..."
+                                                          className="w-full bg-transparent text-blue-700 text-center border-0 outline-none hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors px-1 py-1 rounded font-medium text-xs"
+                                                        />
+                                                      )}
+                                                      {column.type === 'subitems' && (
+                                                        <div className="text-center text-blue-600 font-medium text-xs">
+                                                          Sub Item
+                                                        </div>
                                                       )}
                                                     </div>
                                                   </div>
