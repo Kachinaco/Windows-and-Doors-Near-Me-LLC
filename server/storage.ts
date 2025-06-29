@@ -83,6 +83,13 @@ import {
   type InsertSubItem,
   type SubItemFolder,
   type InsertSubItemFolder,
+  
+  projectTeamMembers,
+  userInvitations,
+  type ProjectTeamMember,
+  type InsertProjectTeamMember,
+  type UserInvitation,
+  type InsertUserInvitation,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, desc, and, gte, lte, inArray, sql } from "drizzle-orm";
@@ -217,6 +224,18 @@ export interface IStorage {
   getAllClientMessages(): Promise<ClientMessage[]>;
   getClientMessages(clientId: number): Promise<ClientMessage[]>;
   createClientMessage(message: InsertClientMessage): Promise<ClientMessage>;
+  
+  // Project team member operations
+  getProjectTeamMembers(projectId: number): Promise<ProjectTeamMember[]>;
+  addProjectTeamMember(teamMember: InsertProjectTeamMember): Promise<ProjectTeamMember>;
+  removeProjectTeamMember(projectId: number, userId: number): Promise<void>;
+  
+  // User invitation operations
+  createUserInvitation(invitation: InsertUserInvitation): Promise<UserInvitation>;
+  getUserInvitation(token: string): Promise<UserInvitation | undefined>;
+  getProjectInvitations(projectId: number): Promise<UserInvitation[]>;
+  updateInvitationStatus(inviteToken: string, status: string, userId?: number): Promise<UserInvitation>;
+  getAvailableProjectUsers(projectId: number): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1242,6 +1261,103 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(subItemFolders)
       .where(eq(subItemFolders.id, id));
+  }
+
+  // Project team member operations
+  async getProjectTeamMembers(projectId: number): Promise<ProjectTeamMember[]> {
+    return await db
+      .select()
+      .from(projectTeamMembers)
+      .where(eq(projectTeamMembers.projectId, projectId))
+      .orderBy(projectTeamMembers.joinedAt);
+  }
+
+  async addProjectTeamMember(teamMember: InsertProjectTeamMember): Promise<ProjectTeamMember> {
+    const [newMember] = await db
+      .insert(projectTeamMembers)
+      .values(teamMember)
+      .returning();
+    return newMember;
+  }
+
+  async removeProjectTeamMember(projectId: number, userId: number): Promise<void> {
+    await db
+      .delete(projectTeamMembers)
+      .where(and(
+        eq(projectTeamMembers.projectId, projectId),
+        eq(projectTeamMembers.userId, userId)
+      ));
+  }
+
+  // User invitation operations
+  async createUserInvitation(invitation: InsertUserInvitation): Promise<UserInvitation> {
+    const [newInvitation] = await db
+      .insert(userInvitations)
+      .values(invitation)
+      .returning();
+    return newInvitation;
+  }
+
+  async getUserInvitation(token: string): Promise<UserInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(userInvitations)
+      .where(eq(userInvitations.inviteToken, token));
+    return invitation;
+  }
+
+  async getProjectInvitations(projectId: number): Promise<UserInvitation[]> {
+    return await db
+      .select()
+      .from(userInvitations)
+      .where(eq(userInvitations.projectId, projectId))
+      .orderBy(userInvitations.createdAt);
+  }
+
+  async updateInvitationStatus(inviteToken: string, status: string, userId?: number): Promise<UserInvitation> {
+    const updates: any = { status, updatedAt: new Date() };
+    if (status === 'accepted' && userId) {
+      updates.acceptedAt = new Date();
+      updates.userId = userId;
+    }
+    
+    const [updatedInvitation] = await db
+      .update(userInvitations)
+      .set(updates)
+      .where(eq(userInvitations.inviteToken, inviteToken))
+      .returning();
+    return updatedInvitation;
+  }
+
+  async getAvailableProjectUsers(projectId: number): Promise<User[]> {
+    // Get all users who are either team members or have accepted invitations for this project
+    const teamMembers = await db
+      .select({ userId: projectTeamMembers.userId })
+      .from(projectTeamMembers)
+      .where(eq(projectTeamMembers.projectId, projectId));
+    
+    const acceptedInvites = await db
+      .select({ userId: userInvitations.userId })
+      .from(userInvitations)
+      .where(and(
+        eq(userInvitations.projectId, projectId),
+        eq(userInvitations.status, 'accepted')
+      ));
+    
+    const allUserIds = [
+      ...teamMembers.map(tm => tm.userId),
+      ...acceptedInvites.map(ai => ai.userId).filter(id => id !== null)
+    ];
+    
+    if (allUserIds.length === 0) {
+      return [];
+    }
+    
+    return await db
+      .select()
+      .from(users)
+      .where(inArray(users.id, allUserIds))
+      .orderBy(users.firstName, users.lastName);
   }
 }
 

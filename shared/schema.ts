@@ -168,6 +168,40 @@ export const subItemFolders = pgTable("sub_item_folders", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Project team members - link users to specific projects
+export const projectTeamMembers = pgTable("project_team_members", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  role: text("role").default("member"), // member, lead, admin, viewer
+  invitedBy: integer("invited_by").references(() => users.id).notNull(),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  // Ensure each user can only be added once per project
+  uniqueProjectUser: unique().on(table.projectId, table.userId)
+}));
+
+// User invitations for new team members
+export const userInvitations = pgTable("user_invitations", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  email: text("email").notNull(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  phone: text("phone"),
+  role: text("role").default("member"),
+  notes: text("notes"),
+  invitedBy: integer("invited_by").references(() => users.id).notNull(),
+  inviteToken: text("invite_token").notNull().unique(), // UUID for secure invitation
+  status: text("status").default("pending"), // pending, accepted, expired, cancelled
+  expiresAt: timestamp("expires_at").notNull(), // 7 days from creation
+  acceptedAt: timestamp("accepted_at"),
+  userId: integer("user_id").references(() => users.id), // Set when invitation is accepted
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Project updates and communication
 export const projectUpdates = pgTable("project_updates", {
   id: serial("id").primaryKey(),
@@ -895,6 +929,17 @@ export const insertSubItemFolderSchema = createInsertSchema(subItemFolders).omit
   updatedAt: true,
 });
 
+export const insertProjectTeamMemberSchema = createInsertSchema(projectTeamMembers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserInvitationSchema = createInsertSchema(userInvitations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertQuoteRequestSchema = createInsertSchema(quoteRequests).omit({
   id: true,
   createdAt: true,
@@ -1112,3 +1157,9 @@ export type SubItem = typeof subItems.$inferSelect;
 export type InsertSubItem = z.infer<typeof insertSubItemSchema>;
 export type SubItemFolder = typeof subItemFolders.$inferSelect;
 export type InsertSubItemFolder = z.infer<typeof insertSubItemFolderSchema>;
+
+// Project team and invitation types
+export type ProjectTeamMember = typeof projectTeamMembers.$inferSelect;
+export type InsertProjectTeamMember = z.infer<typeof insertProjectTeamMemberSchema>;
+export type UserInvitation = typeof userInvitations.$inferSelect;
+export type InsertUserInvitation = z.infer<typeof insertUserInvitationSchema>;

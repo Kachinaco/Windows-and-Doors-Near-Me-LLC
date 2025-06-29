@@ -2437,6 +2437,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Project team member routes
+  app.get("/api/projects/:projectId/team-members", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const teamMembers = await storage.getProjectTeamMembers(projectId);
+      res.json(teamMembers);
+    } catch (error: any) {
+      console.error("Error fetching project team members:", error);
+      res.status(500).json({ message: "Failed to fetch team members" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/team-members", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const teamMemberData = {
+        ...req.body,
+        projectId,
+        invitedBy: req.user!.id
+      };
+      
+      const newMember = await storage.addProjectTeamMember(teamMemberData);
+      res.json(newMember);
+    } catch (error: any) {
+      console.error("Error adding team member:", error);
+      res.status(500).json({ message: "Failed to add team member" });
+    }
+  });
+
+  app.delete("/api/projects/:projectId/team-members/:userId", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const userId = parseInt(req.params.userId);
+      
+      await storage.removeProjectTeamMember(projectId, userId);
+      res.json({ message: "Team member removed successfully" });
+    } catch (error: any) {
+      console.error("Error removing team member:", error);
+      res.status(500).json({ message: "Failed to remove team member" });
+    }
+  });
+
+  // User invitation routes
+  app.post("/api/projects/:projectId/invitations", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const { email, firstName, lastName, phone, role, notes } = req.body;
+      
+      // Generate invite token and expiration
+      const inviteToken = `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+      
+      const invitationData = {
+        projectId,
+        email,
+        firstName,
+        lastName,
+        phone,
+        role: role || 'member',
+        notes,
+        invitedBy: req.user!.id,
+        inviteToken,
+        expiresAt
+      };
+      
+      const invitation = await storage.createUserInvitation(invitationData);
+      
+      // TODO: Send email invitation here
+      // For now, we'll just return the invitation with the token
+      res.json({ ...invitation, inviteUrl: `/invite/${inviteToken}` });
+    } catch (error: any) {
+      console.error("Error creating invitation:", error);
+      res.status(500).json({ message: "Failed to create invitation" });
+    }
+  });
+
+  app.get("/api/projects/:projectId/invitations", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const invitations = await storage.getProjectInvitations(projectId);
+      res.json(invitations);
+    } catch (error: any) {
+      console.error("Error fetching project invitations:", error);
+      res.status(500).json({ message: "Failed to fetch invitations" });
+    }
+  });
+
+  app.get("/api/projects/:projectId/available-users", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const users = await storage.getAvailableProjectUsers(projectId);
+      res.json(users);
+    } catch (error: any) {
+      console.error("Error fetching available project users:", error);
+      res.status(500).json({ message: "Failed to fetch available users" });
+    }
+  });
+
   // Temporary endpoint to create sample sub-items and folders for testing
   app.post("/api/projects/:projectId/create-sample-subitems", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
