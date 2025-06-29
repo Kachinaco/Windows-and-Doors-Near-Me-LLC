@@ -10,6 +10,7 @@ import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { storage } from "./storage";
+import sgMail from '@sendgrid/mail';
 import { googleCalendarService } from "./google-calendar";
 import { crmSync } from "./crm-sync";
 import {
@@ -56,6 +57,59 @@ interface CollaborationSession {
 
 const activeSessions = new Map<string, CollaborationSession>();
 const cellEditors = new Map<string, CollaborationSession>(); // cellKey -> session
+
+// Email invitation system
+async function sendInvitationEmail(invitation: any, inviter: any) {
+  try {
+    const settings = await storage.getCompanySettings();
+    if (!settings?.sendgridApiKey) {
+      console.warn("SendGrid API key not configured - skipping email");
+      return;
+    }
+
+    sgMail.setApiKey(settings.sendgridApiKey);
+
+    const inviteUrl = `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/invite/${invitation.inviteToken}`;
+    
+    const msg = {
+      to: invitation.email,
+      from: settings.companyEmail || 'noreply@windowsandoors.com',
+      subject: `You've been invited to join ${settings.companyName || 'the project'}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Project Invitation</h2>
+          <p>Hi ${invitation.firstName},</p>
+          <p>${inviter.firstName} ${inviter.lastName} has invited you to join the project team.</p>
+          
+          <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3>Project Details:</h3>
+            <p><strong>Role:</strong> ${invitation.role}</p>
+            ${invitation.notes ? `<p><strong>Notes:</strong> ${invitation.notes}</p>` : ''}
+          </div>
+          
+          <p>Click the button below to accept your invitation and create your profile:</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${inviteUrl}" 
+               style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Accept Invitation
+            </a>
+          </div>
+          
+          <p style="color: #666; font-size: 14px;">
+            This invitation will expire in 7 days. If you have any questions, please contact ${inviter.firstName} at ${inviter.email}.
+          </p>
+        </div>
+      `
+    };
+
+    await sgMail.send(msg);
+    console.log(`Invitation email sent to ${invitation.email}`);
+  } catch (error) {
+    console.error("Failed to send invitation email:", error);
+    throw error;
+  }
+}
 
 // WebSocket message types
 interface WSMessage {
@@ -2472,6 +2526,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error adding team member:", error);
       res.status(500).json({ message: "Failed to add team member" });
+    }
+  });
+
+  // Invitation acceptance endpoint
+  app.get("/invite/:token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      const invitation = await storage.getUserInvitation(token);
+      
+      if (!invitation) {
+        return res.status(404).send("Invitation not found or expired");
+      }
+      
+      if (invitation.status !== 'pending') {
+        return res.status(400).send("Invitation has already been processed");
+      }
+      
+      if (new Date() > invitation.expiresAt) {
+        return res.status(400).send("Invitation has expired");
+      }
+      
+      // Serve invitation acceptance page
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Project Invitation</title>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+            .card { background: #f8f9fa; padding: 30px; border-radius: 8px; border: 1px solid #dee2e6; }
+            .btn { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
+            .form-group { margin-bottom: 15px; }
+            .form-control { width: 100%; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; }
+            label { display: block; margin-bottom: 5px; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <h2>Welcome to the Team!</h2>
+            <p>Hi ${invitation.firstName},</p>
+            <p>You've been invited to join the project team. Please create your account to get started.</p>
+            
+            <form id="acceptForm" onsubmit="acceptInvitation(event)">
+              <div class="form-group">
+                <label>Email:</label>
+                <input type="email" value="${invitation.email}" readonly class="form-control" style="background: #e9ecef;">
+              </div>
+              
+              <div class="form-group">
+                <label>First Name:</label>
+                <input type="text" value="${invitation.firstName}" readonly class="form-control" style="background: #e9ecef;">
+              </div>
+              
+              <div class="form-group">
+                <label>Last Name:</label>
+                <input type="text" value="${invitation.lastName}" readonly class="form-control" style="background: #e9ecef;">
+              </div>
+              
+              <div class="form-group">
+                <label>Username:</label>
+                <input type="text" id="username" required class="form-control" placeholder="Choose a username">
+              </div>
+              
+              <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="password" required class="form-control" placeholder="Choose a password" minlength="6">
+              </div>
+              
+              <button type="submit" class="btn">Accept Invitation & Create Account</button>
+            </form>
+          </div>
+
+          <script>
+            async function acceptInvitation(event) {
+              event.preventDefault();
+              
+              const username = document.getElementById('username').value;
+              const password = document.getElementById('password').value;
+              
+              try {
+                const response = await fetch('/api/accept-invitation', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    token: '${token}',
+                    username,
+                    password
+                  })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                  alert('Account created successfully! You can now log in.');
+                  window.location.href = '/login';
+                } else {
+                  alert('Error: ' + result.message);
+                }
+              } catch (error) {
+                alert('Error accepting invitation. Please try again.');
+              }
+            }
+          </script>
+        </body>
+        </html>
+      `);
+    } catch (error: any) {
+      console.error("Error handling invitation:", error);
+      res.status(500).send("Internal server error");
+    }
+  });
+
+  // Accept invitation API endpoint
+  app.post("/api/accept-invitation", async (req: Request, res: Response) => {
+    try {
+      const { token, username, password } = req.body;
+      
+      const invitation = await storage.getUserInvitation(token);
+      if (!invitation) {
+        return res.status(404).json({ message: "Invitation not found" });
+      }
+      
+      if (invitation.status !== 'pending') {
+        return res.status(400).json({ message: "Invitation has already been processed" });
+      }
+      
+      if (new Date() > invitation.expiresAt) {
+        return res.status(400).json({ message: "Invitation has expired" });
+      }
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      // Create new user account
+      const newUser = await storage.createUser({
+        username,
+        password,
+        email: invitation.email,
+        firstName: invitation.firstName,
+        lastName: invitation.lastName,
+        phone: invitation.phone,
+        role: 'employee' // Default role for invited users
+      });
+      
+      // Update invitation status
+      await storage.updateInvitationStatus(token, 'accepted', newUser.id);
+      
+      // Add user to project team
+      await storage.addProjectTeamMember({
+        projectId: invitation.projectId,
+        userId: newUser.id,
+        role: invitation.role,
+        addedBy: invitation.invitedBy
+      });
+      
+      res.json({ message: "Invitation accepted successfully", userId: newUser.id });
+    } catch (error: any) {
+      console.error("Error accepting invitation:", error);
+      res.status(500).json({ message: "Failed to accept invitation" });
     }
   });
 
