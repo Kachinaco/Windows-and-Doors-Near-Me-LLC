@@ -1742,7 +1742,7 @@ export default function MondayBoard() {
                                             
                                             <Folder className="w-4 h-4 text-blue-600 drop-shadow-sm flex-shrink-0" />
                                             
-                                            <div className="flex items-center gap-0.5 min-w-0 flex-1">
+                                            <div className="flex items-center min-w-0 flex-1 overflow-hidden">
                                               {isEditingThisFolder ? (
                                                 <input
                                                   type="text"
@@ -1757,22 +1757,23 @@ export default function MondayBoard() {
                                                       setEditingFolder(null);
                                                     }
                                                   }}
-                                                  className="bg-blue-50 text-blue-900 text-sm font-semibold px-2 py-1 border border-blue-300 rounded focus:outline-none focus:border-blue-400 focus:bg-blue-100 flex-1 min-w-0"
+                                                  className="bg-blue-50 text-blue-900 text-sm font-semibold px-2 py-1 border border-blue-300 rounded focus:outline-none focus:border-blue-400 focus:bg-blue-100 w-full min-w-0"
                                                   autoFocus
                                                 />
                                               ) : (
-                                                <span 
-                                                  className="text-blue-900 text-sm font-semibold cursor-pointer hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-100 transition-colors truncate"
-                                                  onClick={() => setEditingFolder(folder.id)}
-                                                  title={currentFolderName}
-                                                >
-                                                  {currentFolderName}
-                                                </span>
+                                                <div className="flex items-center min-w-0 w-full">
+                                                  <span 
+                                                    className="text-blue-900 text-sm font-semibold cursor-pointer hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-100 transition-colors truncate flex-1 min-w-0"
+                                                    onClick={() => setEditingFolder(folder.id)}
+                                                    title={currentFolderName}
+                                                  >
+                                                    {currentFolderName}
+                                                  </span>
+                                                  <span className="text-blue-600 text-xs font-medium ml-1 flex-shrink-0">
+                                                    ({folderSubItems.length})
+                                                  </span>
+                                                </div>
                                               )}
-                                              
-                                              <span className="text-blue-600 text-xs font-medium whitespace-nowrap">
-                                                ({folderSubItems.length})
-                                              </span>
                                             </div>
                                           </div>
                                         </div>
