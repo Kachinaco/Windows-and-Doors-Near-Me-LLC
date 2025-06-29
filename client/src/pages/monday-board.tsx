@@ -1665,8 +1665,8 @@ export default function MondayBoard() {
                               index === 0 ? 'sticky left-12 z-20 justify-start' : 'z-5 justify-center'
                             }`}
                             style={{ 
-                              width: columnWidths[column.id] || (index === 0 ? 240 : 140),
-                              minWidth: index === 0 ? '180px' : '100px',
+                              width: columnWidths[column.id] || (index === 0 ? 120 : 140),
+                              minWidth: index === 0 ? '80px' : '100px',
                               maxWidth: 'none'
                             }}
                           >
