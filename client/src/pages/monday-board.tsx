@@ -779,7 +779,7 @@ export default function MondayBoard() {
             <SelectContent className="bg-gray-800 border-gray-700">
               <SelectItem value="unassigned">Unassigned</SelectItem>
               {teamMembers.map((member: any) => (
-                <SelectItem key={member.id} value={`${member.firstName} ${member.lastName}`}>
+                <SelectItem key={member.id} value={member.id.toString()}>
                   {member.firstName} {member.lastName}
                 </SelectItem>
               ))}
@@ -1255,7 +1255,7 @@ export default function MondayBoard() {
             <SelectContent className="bg-gray-800 border-gray-700">
               <SelectItem value="unassigned">Unassigned</SelectItem>
               {teamMembers.map((member: any) => (
-                <SelectItem key={member.id} value={`${member.firstName} ${member.lastName}`}>
+                <SelectItem key={member.id} value={member.id.toString()}>
                   {member.firstName} {member.lastName}
                 </SelectItem>
               ))}
@@ -2054,7 +2054,7 @@ export default function MondayBoard() {
                                                           <SelectContent className="bg-gray-800 border-gray-700">
                                                             <SelectItem value="unassigned">Unassigned</SelectItem>
                                                             {teamMembers.map((member: any) => (
-                                                              <SelectItem key={member.id} value={`${member.firstName} ${member.lastName}`}>
+                                                              <SelectItem key={member.id} value={member.id.toString()}>
                                                                 {member.firstName} {member.lastName}
                                                               </SelectItem>
                                                             ))}
