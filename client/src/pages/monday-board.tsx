@@ -1709,8 +1709,8 @@ export default function MondayBoard() {
                                             maxWidth: 'none'
                                           }}
                                         >
-                                          <div className="flex items-center gap-3 text-sm">
-                                            <div className="w-6 h-px bg-blue-300"></div>
+                                          <div className="flex items-center gap-2 text-sm w-full">
+                                            <div className="w-4 h-px bg-blue-300"></div>
                                             
                                             <button
                                               onClick={(e) => {
@@ -1721,44 +1721,47 @@ export default function MondayBoard() {
                                                     : new Set([...Array.from(prev), folder.id])
                                                 );
                                               }}
-                                              className="p-1 hover:bg-blue-100 rounded transition-colors"
+                                              className="p-0.5 hover:bg-blue-100 rounded transition-colors flex-shrink-0"
                                             >
-                                              <ChevronRight className={`w-4 h-4 text-blue-600 transition-transform ${
+                                              <ChevronRight className={`w-3.5 h-3.5 text-blue-600 transition-transform ${
                                                 expandedFolders.has(folder.id) ? 'rotate-90' : ''
                                               }`} />
                                             </button>
                                             
-                                            <Folder className="w-5 h-5 text-blue-600 drop-shadow-sm" />
+                                            <Folder className="w-4 h-4 text-blue-600 drop-shadow-sm flex-shrink-0" />
                                             
-                                            {isEditingThisFolder ? (
-                                              <input
-                                                type="text"
-                                                value={currentFolderName}
-                                                onChange={(e) => setFolderNames(prev => ({...prev, [folder.id]: e.target.value}))}
-                                                onBlur={() => setEditingFolder(null)}
-                                                onKeyDown={(e) => {
-                                                  if (e.key === 'Enter') {
-                                                    setEditingFolder(null);
-                                                  } else if (e.key === 'Escape') {
-                                                    setFolderNames(prev => ({...prev, [folder.id]: folder.name}));
-                                                    setEditingFolder(null);
-                                                  }
-                                                }}
-                                                className="bg-blue-50 text-blue-900 text-sm font-semibold px-3 py-1.5 border border-blue-300 rounded-md focus:outline-none focus:border-blue-400 focus:bg-blue-100 ml-1"
-                                                autoFocus
-                                              />
-                                            ) : (
-                                              <span 
-                                                className="text-blue-900 text-sm font-semibold cursor-pointer hover:text-blue-800 ml-1 px-3 py-1.5 rounded hover:bg-blue-100 transition-colors"
-                                                onClick={() => setEditingFolder(folder.id)}
-                                              >
-                                                {currentFolderName}
+                                            <div className="flex items-center gap-1 min-w-0 flex-1">
+                                              {isEditingThisFolder ? (
+                                                <input
+                                                  type="text"
+                                                  value={currentFolderName}
+                                                  onChange={(e) => setFolderNames(prev => ({...prev, [folder.id]: e.target.value}))}
+                                                  onBlur={() => setEditingFolder(null)}
+                                                  onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                      setEditingFolder(null);
+                                                    } else if (e.key === 'Escape') {
+                                                      setFolderNames(prev => ({...prev, [folder.id]: folder.name}));
+                                                      setEditingFolder(null);
+                                                    }
+                                                  }}
+                                                  className="bg-blue-50 text-blue-900 text-sm font-semibold px-2 py-1 border border-blue-300 rounded focus:outline-none focus:border-blue-400 focus:bg-blue-100 flex-1 min-w-0"
+                                                  autoFocus
+                                                />
+                                              ) : (
+                                                <span 
+                                                  className="text-blue-900 text-sm font-semibold cursor-pointer hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-100 transition-colors truncate"
+                                                  onClick={() => setEditingFolder(folder.id)}
+                                                  title={currentFolderName}
+                                                >
+                                                  {currentFolderName}
+                                                </span>
+                                              )}
+                                              
+                                              <span className="text-blue-600 text-xs font-medium whitespace-nowrap flex-shrink-0">
+                                                ({folderSubItems.length})
                                               </span>
-                                            )}
-                                            
-                                            <span className="text-blue-600 text-xs ml-2 font-medium">
-                                              ({folderSubItems.length} items)
-                                            </span>
+                                            </div>
                                             
                                             {/* Delete folder button */}
                                             <button
@@ -1766,10 +1769,10 @@ export default function MondayBoard() {
                                                 e.stopPropagation();
                                                 handleDeleteSubItemFolder(folder.id);
                                               }}
-                                              className="ml-auto opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded text-red-600 hover:text-red-700 transition-all"
+                                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded text-red-600 hover:text-red-700 transition-all flex-shrink-0"
                                               title="Delete folder"
                                             >
-                                              <Trash2 className="w-4 h-4" />
+                                              <Trash2 className="w-3.5 h-3.5" />
                                             </button>
                                           </div>
                                         </div>
