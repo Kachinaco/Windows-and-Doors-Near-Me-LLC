@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { type Project } from "@shared/schema";
-import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns, Trash2, MessageCircle } from "lucide-react";
+import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns, Trash2, MessageCircle, UserPlus, Mail, Phone } from "lucide-react";
 
 interface BoardColumn {
   id: string;
@@ -94,6 +94,17 @@ export default function MondayBoard() {
   // Sub-item state management
   const [editingSubItem, setEditingSubItem] = useState<number | null>(null);
   const [subItemNames, setSubItemNames] = useState<Record<number, string>>({});
+  
+  // Add Person modal state
+  const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
+  const [newPersonForm, setNewPersonForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    role: 'member',
+    notes: ''
+  });
   // Initialize column widths from localStorage or use defaults
   const getInitialColumnWidths = () => {
     try {
@@ -529,6 +540,54 @@ export default function MondayBoard() {
       toast({ title: "Error", description: "Failed to update sub-item", variant: "destructive" });
     }
   }, [queryClient, toast]);
+
+  // Add person to project mutation
+  const addPersonMutation = useMutation({
+    mutationFn: async (personData: typeof newPersonForm) => {
+      // Use project ID 77 as the default project for Monday board
+      const projectId = 77;
+      
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/projects/${projectId}/invitations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(personData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add person to project');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Person added to project successfully" });
+      setIsAddPersonModalOpen(false);
+      setNewPersonForm({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        role: 'member',
+        notes: ''
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message || "Failed to add person to project", variant: "destructive" });
+    }
+  });
+
+  const handleAddPerson = () => {
+    if (!newPersonForm.firstName || !newPersonForm.lastName || !newPersonForm.email) {
+      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+    addPersonMutation.mutate(newPersonForm);
+  };
 
   const handlePointerDown = (columnId: string, e: React.PointerEvent) => {
     e.preventDefault();
@@ -1296,6 +1355,13 @@ export default function MondayBoard() {
                 >
                   <Columns className="w-3 h-3 mr-2" />
                   Add Column
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setIsAddPersonModalOpen(true)}
+                  className="text-xs hover:bg-gray-50 focus:bg-gray-50"
+                >
+                  <UserPlus className="w-3 h-3 mr-2" />
+                  Add Person to Project
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
