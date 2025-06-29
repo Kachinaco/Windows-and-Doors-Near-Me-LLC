@@ -2038,13 +2038,33 @@ export default function MondayBoard() {
                                                         </select>
                                                       )}
                                                       {column.type === 'people' && (
-                                                        <input
-                                                          type="text"
-                                                          value={subItem.assignedTo || ''}
-                                                          onChange={(e) => handleUpdateSubItem(subItem.id, { assignedTo: e.target.value })}
-                                                          placeholder="Assign to..."
-                                                          className="w-full bg-transparent text-blue-300 font-medium text-center border-0 outline-none hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors px-1 py-1 rounded"
-                                                        />
+                                                        <Select
+                                                          value={subItem.assignedTo || 'unassigned'}
+                                                          onValueChange={(newValue) => {
+                                                            if (newValue === "__add_person__") {
+                                                              setIsAddPersonModalOpen(true);
+                                                            } else {
+                                                              handleUpdateSubItem(subItem.id, { assignedTo: newValue === 'unassigned' ? '' : newValue });
+                                                            }
+                                                          }}
+                                                        >
+                                                          <SelectTrigger className="h-6 text-xs border-none bg-transparent text-blue-300 hover:bg-blue-500/10 transition-colors">
+                                                            <SelectValue placeholder="Assign" />
+                                                          </SelectTrigger>
+                                                          <SelectContent className="bg-gray-800 border-gray-700">
+                                                            <SelectItem value="unassigned">Unassigned</SelectItem>
+                                                            {teamMembers.map((member: any) => (
+                                                              <SelectItem key={member.id} value={`${member.firstName} ${member.lastName}`}>
+                                                                {member.firstName} {member.lastName}
+                                                              </SelectItem>
+                                                            ))}
+                                                            <div className="border-t border-gray-700 my-1"></div>
+                                                            <SelectItem value="__add_person__" className="text-blue-400 hover:text-blue-300">
+                                                              <UserPlus className="w-3 h-3 mr-2 inline" />
+                                                              Add Person...
+                                                            </SelectItem>
+                                                          </SelectContent>
+                                                        </Select>
                                                       )}
                                                       {column.type === 'text' && (
                                                         <input
