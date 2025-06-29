@@ -1667,12 +1667,12 @@ export default function MondayBoard() {
                                       {/* Folder Header with Column Headers */}
                                       <div className="group flex hover:bg-blue-50 transition-all bg-blue-50/50 border-b-2 border-blue-200 shadow-sm">
                                         {/* Empty space where checkbox used to be */}
-                                        <div className="w-12 px-2 py-2 border-r border-blue-200 flex items-center justify-center sticky left-0 bg-blue-50/50 z-20">
+                                        <div className="w-12 px-2 py-2 border-r border-blue-200 flex items-center justify-center sticky left-0 bg-white z-30">
                                         </div>
                                         
                                         {/* Folder name with expand/collapse */}
                                         <div 
-                                          className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-blue-50/50 z-20 flex items-center"
+                                          className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-white z-20 flex items-center"
                                           style={{ 
                                             width: columnWidths['item'] || 240,
                                             minWidth: '180px',
@@ -1840,7 +1840,7 @@ export default function MondayBoard() {
                                                 </div>
                                                 
                                                 {/* Sub-item checkbox - aligned with main items */}
-                                                <div className="w-12 px-2 py-3 border-r border-blue-200 flex items-center justify-center sticky left-0 bg-blue-50/30 z-20">
+                                                <div className="w-12 px-2 py-3 border-r border-blue-200 flex items-center justify-center sticky left-0 bg-white z-30">
                                                   <input 
                                                     type="checkbox" 
                                                     className="w-4 h-4 rounded border-blue-300 bg-white text-blue-600 focus:ring-blue-400 focus:ring-1"
@@ -1849,7 +1849,7 @@ export default function MondayBoard() {
                                                 
                                                 {/* Sub-item name - aligned with main columns */}
                                                 <div 
-                                                  className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-blue-50/30 z-20 flex items-center"
+                                                  className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-white z-20 flex items-center"
                                                   style={{ 
                                                     width: (columnWidths['item'] || 240),
                                                     minWidth: '180px',
@@ -2004,9 +2004,9 @@ export default function MondayBoard() {
                                               </div>
                                               
                                               {/* Empty checkbox space with matching spacing */}
-                                              <div className="w-8 px-1 py-1.5 border-r border-blue-200 sticky left-0 bg-blue-50/30 z-30 ml-4"></div>
+                                              <div className="w-8 px-1 py-1.5 border-r border-blue-200 sticky left-0 bg-white z-30 ml-4"></div>
                                               <div 
-                                                className="px-2 py-1.5 flex-shrink-0 sticky left-12 bg-blue-50/30 z-20"
+                                                className="px-2 py-1.5 flex-shrink-0 sticky left-12 bg-white z-20"
                                                 style={{ 
                                                   width: (columnWidths['item'] || 200) - 16,
                                                   minWidth: '134px',
