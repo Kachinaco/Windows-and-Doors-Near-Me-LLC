@@ -1934,10 +1934,19 @@ export default function MondayBoard() {
                                                       {column.type === 'tags' && (
                                                         <input
                                                           type="text"
-                                                          value={(subItem as any).tags ? JSON.parse(subItem.tags).join(', ') : ''}
+                                                          value={(() => {
+                                                            try {
+                                                              const tags = (subItem as any).tags;
+                                                              if (Array.isArray(tags)) return tags.join(', ');
+                                                              if (typeof tags === 'string') return JSON.parse(tags).join(', ');
+                                                              return '';
+                                                            } catch {
+                                                              return '';
+                                                            }
+                                                          })()}
                                                           onChange={(e) => {
                                                             const tagArray = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
-                                                            handleUpdateSubItem(subItem.id, { tags: JSON.stringify(tagArray) });
+                                                            handleUpdateSubItem(subItem.id, { tags: tagArray });
                                                           }}
                                                           placeholder="Add tags..."
                                                           className="w-full bg-transparent text-blue-700 text-center border-0 outline-none hover:bg-blue-500/10 focus:bg-blue-500/20 transition-colors px-1 py-1 rounded font-medium text-xs"
