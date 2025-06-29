@@ -1661,8 +1661,8 @@ export default function MondayBoard() {
                         {columns.map((column, index) => (
                           <div 
                             key={`${item.id}-${column.id}`} 
-                            className={`px-4 py-3 border-r border-gray-200 flex-shrink-0 flex items-center ${
-                              index === 0 ? 'sticky left-12 bg-white z-20 justify-start' : 'z-5 justify-center'
+                            className={`px-4 py-3 border-r border-gray-200 flex-shrink-0 flex items-center bg-white ${
+                              index === 0 ? 'sticky left-12 z-20 justify-start' : 'z-5 justify-center'
                             }`}
                             style={{ 
                               width: columnWidths[column.id] || (index === 0 ? 240 : 140),
@@ -1695,7 +1695,7 @@ export default function MondayBoard() {
                                   return (
                                     <React.Fragment key={folder.id}>
                                       {/* Folder Header with Column Headers */}
-                                      <div className="group flex hover:bg-blue-50 transition-all bg-blue-50/50 border-b-2 border-blue-200 shadow-sm">
+                                      <div className="group flex hover:bg-gray-50 transition-all bg-white border-b-2 border-blue-200 shadow-sm">
                                         {/* Empty space where checkbox used to be */}
                                         <div className="w-12 px-2 py-2 border-r border-blue-200 flex items-center justify-center sticky left-0 bg-white z-30">
                                         </div>
@@ -1786,13 +1786,13 @@ export default function MondayBoard() {
                                           <div 
                                             key={`folder-subheader-${folder.id}-${column.id}`}
                                             className={`px-4 py-3 border-r flex-shrink-0 flex items-center gap-2 relative group z-5 ${
-                                              group.name === 'New Leads' ? 'border-cyan-200 bg-cyan-50/70' :
-                                              group.name === 'Need Attention' ? 'border-yellow-200 bg-yellow-50/70' :
-                                              group.name === 'Sent Estimate' ? 'border-purple-200 bg-purple-50/70' :
-                                              group.name === 'Signed' ? 'border-emerald-200 bg-emerald-50/70' :
-                                              group.name === 'In Progress' ? 'border-blue-200 bg-blue-50/70' :
-                                              group.name === 'Complete' ? 'border-green-200 bg-green-50/70' :
-                                              'border-gray-200 bg-gray-50/70'
+                                              group.name === 'New Leads' ? 'border-cyan-200 bg-white' :
+                                              group.name === 'Need Attention' ? 'border-yellow-200 bg-white' :
+                                              group.name === 'Sent Estimate' ? 'border-purple-200 bg-white' :
+                                              group.name === 'Signed' ? 'border-emerald-200 bg-white' :
+                                              group.name === 'In Progress' ? 'border-blue-200 bg-white' :
+                                              group.name === 'Complete' ? 'border-green-200 bg-white' :
+                                              'border-gray-200 bg-white'
                                             }`}
                                             style={{ 
                                               width: columnWidth,
@@ -1858,7 +1858,7 @@ export default function MondayBoard() {
                                             <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400/60 via-blue-400/40 to-blue-400/20 rounded-full"></div>
                                             
                                             {folderSubItems.map((subItem, index) => (
-                                              <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-50 transition-all bg-blue-50/30 border-b border-blue-200 relative ml-4">
+                                              <div key={`sub-${subItem.id}`} className="group flex hover:bg-gray-50 transition-all bg-white border-b border-blue-200 relative ml-4">
                                                 {/* Enhanced connection line to folder */}
                                                 <div className="absolute -left-4 top-0 w-4 h-full flex items-center">
                                                   <div className="w-full h-px bg-gradient-to-r from-amber-400/60 to-blue-400/60"></div>
@@ -1951,14 +1951,14 @@ export default function MondayBoard() {
                                                   return (
                                                   <div 
                                                     key={`sub-${subItem.id}-${column.id}`}
-                                                    className={`px-4 py-3 border-r flex-shrink-0 flex items-center justify-center z-5 ${
-                                                      group.name === 'New Leads' ? 'border-cyan-200 bg-cyan-50/50' :
-                                                      group.name === 'Need Attention' ? 'border-yellow-200 bg-yellow-50/50' :
-                                                      group.name === 'Sent Estimate' ? 'border-purple-200 bg-purple-50/50' :
-                                                      group.name === 'Signed' ? 'border-emerald-200 bg-emerald-50/50' :
-                                                      group.name === 'In Progress' ? 'border-blue-200 bg-blue-50/50' :
-                                                      group.name === 'Complete' ? 'border-green-200 bg-green-50/50' :
-                                                      'border-gray-200 bg-gray-50/50'
+                                                    className={`px-4 py-3 border-r flex-shrink-0 flex items-center justify-center bg-white z-5 ${
+                                                      group.name === 'New Leads' ? 'border-cyan-200' :
+                                                      group.name === 'Need Attention' ? 'border-yellow-200' :
+                                                      group.name === 'Sent Estimate' ? 'border-purple-200' :
+                                                      group.name === 'Signed' ? 'border-emerald-200' :
+                                                      group.name === 'In Progress' ? 'border-blue-200' :
+                                                      group.name === 'Complete' ? 'border-green-200' :
+                                                      'border-gray-200'
                                                     }`}
                                                     style={{ 
                                                       width: columnWidth,
