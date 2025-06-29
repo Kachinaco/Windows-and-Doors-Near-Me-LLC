@@ -1742,7 +1742,7 @@ export default function MondayBoard() {
                                             
                                             <Folder className="w-4 h-4 text-blue-600 drop-shadow-sm flex-shrink-0" />
                                             
-                                            <div className="flex items-center gap-1 min-w-0 flex-1">
+                                            <div className="flex items-center gap-0.5 min-w-0 flex-1">
                                               {isEditingThisFolder ? (
                                                 <input
                                                   type="text"
