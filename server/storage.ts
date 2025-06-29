@@ -1264,12 +1264,42 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Project team member operations
-  async getProjectTeamMembers(projectId: number): Promise<ProjectTeamMember[]> {
-    return await db
+  async getProjectTeamMembers(projectId: number): Promise<any[]> {
+    // Get actual team members
+    const teamMembers = await db
       .select()
       .from(projectTeamMembers)
       .where(eq(projectTeamMembers.projectId, projectId))
       .orderBy(projectTeamMembers.createdAt);
+
+    // Get pending invitations and format them as team members
+    const pendingInvitations = await db
+      .select()
+      .from(userInvitations)
+      .where(and(
+        eq(userInvitations.projectId, projectId),
+        eq(userInvitations.status, 'pending')
+      ))
+      .orderBy(userInvitations.createdAt);
+
+    // Format invitations as team member objects
+    const formattedInvitations = pendingInvitations.map(invitation => ({
+      id: invitation.id,
+      projectId: invitation.projectId,
+      firstName: invitation.firstName,
+      lastName: invitation.lastName,
+      email: invitation.email,
+      phone: invitation.phone,
+      role: invitation.role,
+      notes: invitation.notes,
+      status: 'invited',
+      inviteToken: invitation.inviteToken,
+      createdAt: invitation.createdAt,
+      updatedAt: invitation.updatedAt
+    }));
+
+    // Combine and return both team members and pending invitations
+    return [...teamMembers, ...formattedInvitations];
   }
 
   async addProjectTeamMember(teamMember: InsertProjectTeamMember): Promise<ProjectTeamMember> {
