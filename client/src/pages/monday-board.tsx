@@ -1425,10 +1425,10 @@ export default function MondayBoard() {
       <div className="flex-1 overflow-auto bg-white">
         <div className="min-w-max">
           {/* Enhanced Column Headers */}
-          <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-10 border-b border-gray-200">
+          <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
             <div className="flex">
               {/* Selection checkbox header */}
-              <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white/95 backdrop-blur-sm z-30">
+              <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-30">
                 <input
                   type="checkbox"
                   checked={selectedItems.size > 0 && selectedItems.size === boardItems.length}
@@ -1439,12 +1439,12 @@ export default function MondayBoard() {
               {columns.map((column, index) => (
                 <div 
                   key={column.id} 
-                  className={`px-3 py-3 border-r border-gray-200 relative group flex-shrink-0 ${
-                    index === 0 ? 'sticky left-12 bg-white/95 backdrop-blur-sm z-20' : 'z-10'
+                  className={`px-3 py-3 border-r border-gray-200 relative group flex-shrink-0 bg-white ${
+                    index === 0 ? 'sticky left-12 z-20' : 'z-10'
                   }`}
                   style={{ 
-                    width: columnWidths[column.id] || (index === 0 ? 240 : 120),
-                    minWidth: index === 0 ? '180px' : '90px',
+                    width: columnWidths[column.id] || (index === 0 ? 120 : 120),
+                    minWidth: index === 0 ? '80px' : '90px',
                     maxWidth: 'none'
                   }}
                 >
@@ -1483,7 +1483,7 @@ export default function MondayBoard() {
                 'bg-gray-50'
               }`}>
                 {/* Group Selection Checkbox */}
-                <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-inherit z-30">
+                <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-30">
                   <input
                     type="checkbox"
                     checked={isGroupSelected(group.name)}
@@ -1502,10 +1502,10 @@ export default function MondayBoard() {
                 
                 {/* Group Info in Main Item Column */}
                 <div 
-                  className="px-4 py-3 border-r border-gray-200 flex-shrink-0 flex items-center space-x-2 cursor-pointer sticky left-12 bg-inherit z-20"
+                  className="px-4 py-3 border-r border-gray-200 flex-shrink-0 flex items-center space-x-2 cursor-pointer sticky left-12 bg-white z-20"
                   style={{ 
-                    width: columnWidths['item'] || 240,
-                    minWidth: '180px',
+                    width: columnWidths['item'] || 120,
+                    minWidth: '80px',
                     maxWidth: 'none'
                   }}
                   onClick={() => toggleGroup(group.name)}
@@ -1540,14 +1540,14 @@ export default function MondayBoard() {
                 {columns.slice(1).map((column) => (
                   <div 
                     key={`group-${group.name}-${column.id}`}
-                    className={`px-2 py-1.5 border-r flex-shrink-0 z-5 ${
-                      group.name === 'New Leads' ? 'border-cyan-200 bg-cyan-50/50' :
-                      group.name === 'Need Attention' ? 'border-yellow-200 bg-yellow-50/50' :
-                      group.name === 'Sent Estimate' ? 'border-purple-200 bg-purple-50/50' :
-                      group.name === 'Signed' ? 'border-emerald-200 bg-emerald-50/50' :
-                      group.name === 'In Progress' ? 'border-blue-200 bg-blue-50/50' :
-                      group.name === 'Complete' ? 'border-green-200 bg-green-50/50' :
-                      'border-gray-200 bg-gray-50/50'
+                    className={`px-2 py-1.5 border-r flex-shrink-0 bg-white z-5 ${
+                      group.name === 'New Leads' ? 'border-cyan-200' :
+                      group.name === 'Need Attention' ? 'border-yellow-200' :
+                      group.name === 'Sent Estimate' ? 'border-purple-200' :
+                      group.name === 'Signed' ? 'border-emerald-200' :
+                      group.name === 'In Progress' ? 'border-blue-200' :
+                      group.name === 'Complete' ? 'border-green-200' :
+                      'border-gray-200'
                     }`}
                     style={{ 
                       width: columnWidths[column.id] || 100,
