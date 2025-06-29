@@ -1581,13 +1581,13 @@ export default function MondayBoard() {
                           'text-gray-500/80'
                         }`} />}
                         {column.type === 'tags' && <Tag className={`w-3 h-3 ${
-                          group.name === 'New Leads' ? 'text-cyan-400/60' :
-                          group.name === 'Need Attention' ? 'text-yellow-400/60' :
-                          group.name === 'Sent Estimate' ? 'text-purple-400/60' :
-                          group.name === 'Signed' ? 'text-emerald-400/60' :
-                          group.name === 'In Progress' ? 'text-blue-400/60' :
-                          group.name === 'Complete' ? 'text-green-400/60' :
-                          'text-gray-400/60'
+                          group.name === 'New Leads' ? 'text-cyan-500/80' :
+                          group.name === 'Need Attention' ? 'text-yellow-500/80' :
+                          group.name === 'Sent Estimate' ? 'text-purple-500/80' :
+                          group.name === 'Signed' ? 'text-emerald-500/80' :
+                          group.name === 'In Progress' ? 'text-blue-500/80' :
+                          group.name === 'Complete' ? 'text-green-500/80' :
+                          'text-gray-500/80'
                         }`} />}
                       </div>
                     </div>
@@ -1602,7 +1602,7 @@ export default function MondayBoard() {
                     <React.Fragment key={item.id}>
                       {/* Main Item Row - Clickable for Updates */}
                       <div 
-                        className="flex hover:bg-gray-900/10 transition-all border-b border-gray-800/10 last:border-b-0 bg-gradient-to-r from-gray-900/5 to-transparent cursor-pointer"
+                        className="flex hover:bg-gray-50 transition-all border-b border-gray-200 last:border-b-0 bg-white cursor-pointer"
                         onClick={(e) => {
                           // Only trigger if not clicking on a form element or checkbox
                           const target = e.target as HTMLElement;
@@ -1612,7 +1612,7 @@ export default function MondayBoard() {
                         }}
                       >
                         {/* Selection checkbox - standardized width */}
-                        <div className="w-12 px-2 py-3 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
+                        <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-20">
                           <input
                             type="checkbox"
                             checked={selectedItems.has(item.id)}
@@ -1660,14 +1660,14 @@ export default function MondayBoard() {
                                   return (
                                     <React.Fragment key={folder.id}>
                                       {/* Folder Header with Column Headers */}
-                                      <div className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-950/8 border-b-2 border-blue-500/25 shadow-sm">
+                                      <div className="group flex hover:bg-blue-50 transition-all bg-blue-50/50 border-b-2 border-blue-200 shadow-sm">
                                         {/* Empty space where checkbox used to be */}
-                                        <div className="w-12 px-2 py-2 border-r border-blue-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/15 to-slate-950/8 z-20">
+                                        <div className="w-12 px-2 py-2 border-r border-blue-200 flex items-center justify-center sticky left-0 bg-blue-50/50 z-20">
                                         </div>
                                         
                                         {/* Folder name with expand/collapse */}
                                         <div 
-                                          className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 sticky left-12 bg-gradient-to-r from-blue-950/15 to-slate-950/8 z-10 flex items-center"
+                                          className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-blue-50/50 z-10 flex items-center"
                                           style={{ 
                                             width: columnWidths['item'] || 240,
                                             minWidth: '180px',
@@ -1675,7 +1675,7 @@ export default function MondayBoard() {
                                           }}
                                         >
                                           <div className="flex items-center gap-3 text-sm">
-                                            <div className="w-6 h-px bg-blue-400/50"></div>
+                                            <div className="w-6 h-px bg-blue-300"></div>
                                             
                                             <button
                                               onClick={(e) => {
@@ -1686,14 +1686,14 @@ export default function MondayBoard() {
                                                     : new Set([...Array.from(prev), folder.id])
                                                 );
                                               }}
-                                              className="p-1 hover:bg-blue-500/20 rounded transition-colors"
+                                              className="p-1 hover:bg-blue-100 rounded transition-colors"
                                             >
-                                              <ChevronRight className={`w-4 h-4 text-blue-300 transition-transform ${
+                                              <ChevronRight className={`w-4 h-4 text-blue-600 transition-transform ${
                                                 expandedFolders.has(folder.id) ? 'rotate-90' : ''
                                               }`} />
                                             </button>
                                             
-                                            <Folder className="w-5 h-5 text-blue-400 drop-shadow-sm" />
+                                            <Folder className="w-5 h-5 text-blue-600 drop-shadow-sm" />
                                             
                                             {isEditingThisFolder ? (
                                               <input
@@ -1709,7 +1709,7 @@ export default function MondayBoard() {
                                                     setEditingFolder(null);
                                                   }
                                                 }}
-                                                className="bg-blue-900/20 text-blue-200 text-sm font-semibold px-3 py-1.5 border border-blue-400/60 rounded-md focus:outline-none focus:border-blue-300 focus:bg-blue-900/30 ml-1"
+                                                className="bg-blue-50 text-blue-900 text-sm font-semibold px-3 py-1.5 border border-blue-300 rounded-md focus:outline-none focus:border-blue-400 focus:bg-blue-100 ml-1"
                                                 autoFocus
                                               />
                                             ) : (
