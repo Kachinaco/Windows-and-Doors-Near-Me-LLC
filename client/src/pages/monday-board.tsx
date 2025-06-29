@@ -1176,10 +1176,10 @@ export default function MondayBoard() {
   // Show login prompt if not authenticated
   if (!user) {
     return (
-      <div className="h-screen bg-gray-950 text-white flex items-center justify-center">
+      <div className="h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="text-xl mb-4">Authentication Required</div>
-          <div className="text-sm text-gray-400 mb-4">Please log in to access the project board</div>
+          <div className="text-sm text-gray-600 mb-4">Please log in to access the project board</div>
           <Button 
             onClick={() => window.location.href = '/auth'}
             className="bg-blue-600 hover:bg-blue-700"
@@ -1193,7 +1193,7 @@ export default function MondayBoard() {
 
   if (isLoading) {
     return (
-      <div className="h-screen bg-gray-950 text-white flex items-center justify-center">
+      <div className="h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="text-xl mb-4">Loading Monday.com-style board...</div>
           <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
@@ -1204,10 +1204,10 @@ export default function MondayBoard() {
 
   if (error) {
     return (
-      <div className="h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-xl mb-4 text-red-400">Error loading board</div>
-          <div className="text-sm text-gray-400">Check console for details</div>
+          <div className="text-xl mb-4 text-red-600">Error loading board</div>
+          <div className="text-sm text-gray-600">Check console for details</div>
           <button 
             onClick={() => window.location.reload()} 
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -1823,7 +1823,7 @@ export default function MondayBoard() {
                                             <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400/60 via-blue-400/40 to-blue-400/20 rounded-full"></div>
                                             
                                             {folderSubItems.map((subItem, index) => (
-                                              <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-500/8 transition-all bg-gradient-to-r from-blue-950/15 to-slate-900/10 border-b border-blue-500/10 relative ml-4">
+                                              <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-50 transition-all bg-blue-50/30 border-b border-blue-200 relative ml-4">
                                                 {/* Enhanced connection line to folder */}
                                                 <div className="absolute -left-4 top-0 w-4 h-full flex items-center">
                                                   <div className="w-full h-px bg-gradient-to-r from-amber-400/60 to-blue-400/60"></div>
@@ -1835,16 +1835,16 @@ export default function MondayBoard() {
                                                 </div>
                                                 
                                                 {/* Sub-item checkbox - aligned with main items */}
-                                                <div className="w-12 px-2 py-3 border-r border-blue-500/20 flex items-center justify-center sticky left-0 bg-gradient-to-r from-blue-950/20 to-slate-900/15 z-20">
+                                                <div className="w-12 px-2 py-3 border-r border-blue-200 flex items-center justify-center sticky left-0 bg-blue-50/30 z-20">
                                                   <input 
                                                     type="checkbox" 
-                                                    className="w-4 h-4 rounded border-blue-400/60 bg-blue-900/40 text-blue-400 focus:ring-blue-400 focus:ring-1"
+                                                    className="w-4 h-4 rounded border-blue-300 bg-white text-blue-600 focus:ring-blue-400 focus:ring-1"
                                                     />
                                                 </div>
                                                 
                                                 {/* Sub-item name - aligned with main columns */}
                                                 <div 
-                                                  className="px-4 py-3 border-r border-blue-500/20 flex-shrink-0 sticky left-12 bg-gradient-to-r from-blue-950/20 to-slate-900/15 z-10 flex items-center"
+                                                  className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-blue-50/30 z-10 flex items-center"
                                                   style={{ 
                                                     width: (columnWidths['item'] || 240),
                                                     minWidth: '180px',
@@ -1917,13 +1917,13 @@ export default function MondayBoard() {
                                                   <div 
                                                     key={`sub-${subItem.id}-${column.id}`}
                                                     className={`px-4 py-3 border-r flex-shrink-0 flex items-center justify-center ${
-                                                      group.name === 'New Leads' ? 'border-cyan-500/20 bg-gradient-to-r from-cyan-950/10 to-slate-900/5' :
-                                                      group.name === 'Need Attention' ? 'border-yellow-500/20 bg-gradient-to-r from-yellow-950/10 to-slate-900/5' :
-                                                      group.name === 'Sent Estimate' ? 'border-purple-500/20 bg-gradient-to-r from-purple-950/10 to-slate-900/5' :
-                                                      group.name === 'Signed' ? 'border-emerald-500/20 bg-gradient-to-r from-emerald-950/10 to-slate-900/5' :
-                                                      group.name === 'In Progress' ? 'border-blue-500/20 bg-gradient-to-r from-blue-950/10 to-slate-900/5' :
-                                                      group.name === 'Complete' ? 'border-green-500/20 bg-gradient-to-r from-green-950/10 to-slate-900/5' :
-                                                      'border-gray-500/20 bg-gradient-to-r from-gray-950/10 to-slate-900/5'
+                                                      group.name === 'New Leads' ? 'border-cyan-200 bg-cyan-50/50' :
+                                                      group.name === 'Need Attention' ? 'border-yellow-200 bg-yellow-50/50' :
+                                                      group.name === 'Sent Estimate' ? 'border-purple-200 bg-purple-50/50' :
+                                                      group.name === 'Signed' ? 'border-emerald-200 bg-emerald-50/50' :
+                                                      group.name === 'In Progress' ? 'border-blue-200 bg-blue-50/50' :
+                                                      group.name === 'Complete' ? 'border-green-200 bg-green-50/50' :
+                                                      'border-gray-200 bg-gray-50/50'
                                                     }`}
                                                     style={{ 
                                                       width: columnWidth,
@@ -1932,7 +1932,7 @@ export default function MondayBoard() {
                                                     }}
                                                   >
                                                     {/* Render editable sub-item data based on column types */}
-                                                    <div className="text-xs text-gray-300 text-center w-full">
+                                                    <div className="text-xs text-gray-700 text-center w-full">
                                                       {column.type === 'status' && (
                                                         <select
                                                           value={subItem.status || 'not_started'}
