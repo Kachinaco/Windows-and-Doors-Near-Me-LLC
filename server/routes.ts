@@ -2529,6 +2529,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Resend invitation email
+  app.post("/api/projects/:projectId/team-members/:memberId/resend-invitation", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const memberId = parseInt(req.params.memberId);
+      
+      // Get the team member/invitation details
+      const teamMembers = await storage.getProjectTeamMembers(projectId);
+      const member = teamMembers.find(m => m.id === memberId && m.status === 'invited');
+      
+      if (!member) {
+        return res.status(404).json({ message: "Invited team member not found" });
+      }
+      
+      // Resend the invitation email
+      try {
+        await sendInvitationEmail(member, req.user!);
+        res.json({ message: "Invitation email sent successfully" });
+      } catch (emailError) {
+        console.error("Failed to resend invitation email:", emailError);
+        res.status(500).json({ message: "Failed to send invitation email" });
+      }
+    } catch (error: any) {
+      console.error("Error resending invitation:", error);
+      res.status(500).json({ message: "Failed to resend invitation" });
+    }
+  });
+
   // Invitation acceptance endpoint
   app.get("/invite/:token", async (req: Request, res: Response) => {
     try {
