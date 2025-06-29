@@ -2459,6 +2459,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const newMember = await storage.addProjectTeamMember(teamMemberData);
+      
+      // Send invitation email
+      try {
+        await sendInvitationEmail(newMember, req.user!);
+      } catch (emailError) {
+        console.error("Failed to send invitation email:", emailError);
+        // Don't fail the request if email fails - invitation is still created
+      }
+      
       res.json(newMember);
     } catch (error: any) {
       console.error("Error adding team member:", error);
