@@ -94,23 +94,47 @@ export default function MondayBoard() {
   // Sub-item state management
   const [editingSubItem, setEditingSubItem] = useState<number | null>(null);
   const [subItemNames, setSubItemNames] = useState<Record<number, string>>({});
-  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({
-    item: 250,
-    subitems: 120,
-    status: 120,
-    assignedTo: 150,
-    location: 200,
-    phone: 140,
-    dueDate: 120,
-    priority: 100,
-    tags: 120,
-    // Sub-item column widths
-    subitem_name: 180,
-    subitem_status: 100,
-    subitem_assignedTo: 120,
-    subitem_priority: 80,
-    subitem_dueDate: 100
-  });
+  // Initialize column widths from localStorage or use defaults
+  const getInitialColumnWidths = () => {
+    try {
+      const saved = localStorage.getItem('mondayBoard_columnWidths');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.warn('Failed to load saved column widths:', error);
+    }
+    
+    // Default widths - main item starts very small
+    return {
+      item: 120, // Much smaller default
+      subitems: 120,
+      status: 120,
+      assignedTo: 150,
+      location: 200,
+      phone: 140,
+      dueDate: 120,
+      priority: 100,
+      tags: 120,
+      // Sub-item column widths
+      subitem_name: 180,
+      subitem_status: 100,
+      subitem_assignedTo: 120,
+      subitem_priority: 80,
+      subitem_dueDate: 100
+    };
+  };
+
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(getInitialColumnWidths);
+  
+  // Save column widths to localStorage
+  const saveColumnWidths = (widths: Record<string, number>) => {
+    try {
+      localStorage.setItem('mondayBoard_columnWidths', JSON.stringify(widths));
+    } catch (error) {
+      console.warn('Failed to save column widths:', error);
+    }
+  };
   const [isResizing, setIsResizing] = useState<string | null>(null);
   const [editingCell, setEditingCell] = useState<{projectId: number, field: string} | null>(null);
   const [newlyCreatedItem, setNewlyCreatedItem] = useState<number | null>(null);
@@ -523,6 +547,12 @@ export default function MondayBoard() {
     const handlePointerUp = (e: PointerEvent) => {
       e.preventDefault();
       setIsResizing(null);
+      // Save current column widths to localStorage
+      setColumnWidths(prev => {
+        const newWidths = { ...prev };
+        saveColumnWidths(newWidths);
+        return newWidths;
+      });
       document.removeEventListener('pointermove', handlePointerMove);
       document.removeEventListener('pointerup', handlePointerUp);
       document.removeEventListener('pointercancel', handlePointerUp);
@@ -1674,8 +1704,8 @@ export default function MondayBoard() {
                                         <div 
                                           className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-white z-20 flex items-center"
                                           style={{ 
-                                            width: columnWidths['item'] || 240,
-                                            minWidth: '180px',
+                                            width: columnWidths['item'] || 120,
+                                            minWidth: '80px',
                                             maxWidth: 'none'
                                           }}
                                         >
@@ -1851,8 +1881,8 @@ export default function MondayBoard() {
                                                 <div 
                                                   className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-white z-20 flex items-center"
                                                   style={{ 
-                                                    width: (columnWidths['item'] || 240),
-                                                    minWidth: '180px',
+                                                    width: (columnWidths['item'] || 120),
+                                                    minWidth: '80px',
                                                     maxWidth: 'none'
                                                   }}
                                                 >
