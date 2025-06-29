@@ -1398,7 +1398,7 @@ export default function MondayBoard() {
           <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-10 border-b border-gray-200">
             <div className="flex">
               {/* Selection checkbox header */}
-              <div className="w-12 px-2 py-3 border-r border-gray-800/30 flex items-center justify-center sticky left-0 bg-gray-950/95 backdrop-blur-sm z-30">
+              <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white/95 backdrop-blur-sm z-30">
                 <input
                   type="checkbox"
                   checked={selectedItems.size > 0 && selectedItems.size === boardItems.length}
@@ -2118,8 +2118,8 @@ export default function MondayBoard() {
                                     maxWidth: 'none'
                                   }}
                                 >
-                                  <div className="flex items-center gap-1 text-xs text-gray-400">
-                                    <div className="w-3 h-px bg-gray-600 mr-1"></div>
+                                  <div className="flex items-center gap-1 text-xs text-gray-700">
+                                    <div className="w-3 h-px bg-gray-400 mr-1"></div>
                                     <span>{subItem.name}</span>
                                   </div>
                                 </div>
@@ -2128,7 +2128,7 @@ export default function MondayBoard() {
                                 {subItemColumns.map((column) => (
                                   <div 
                                     key={`sub-${subItem.id}-${column.id}`}
-                                    className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0"
+                                    className="px-2 py-0.5 border-r border-gray-200 flex-shrink-0"
                                     style={{ 
                                       width: columnWidths[column.id] || 120,
                                       minWidth: '80px',
@@ -2147,11 +2147,11 @@ export default function MondayBoard() {
                   ))}
                   
                   {/* Add Item Button at bottom of group */}
-                  <div className="flex hover:bg-gray-900/10 transition-all">
+                  <div className="flex hover:bg-gray-50 transition-all">
                     {/* Empty checkbox space */}
-                    <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 sticky left-0 bg-gray-950 z-20"></div>
+                    <div className="w-8 px-1 py-0.5 border-r border-gray-200 sticky left-0 bg-white z-20"></div>
                     <div 
-                      className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-gray-950 z-10"
+                      className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-white z-10"
                       style={{ 
                         width: columnWidths['item'] || 200,
                         minWidth: '150px',
@@ -2163,7 +2163,7 @@ export default function MondayBoard() {
                         size="sm"
                         onClick={() => addItemMutation.mutate(group.name)}
                         disabled={addItemMutation.isPending}
-                        className="text-gray-500 hover:text-blue-400 text-sm h-7 w-full justify-start px-2"
+                        className="text-gray-600 hover:text-blue-600 text-sm h-7 w-full justify-start px-2"
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         Add item
@@ -2172,7 +2172,7 @@ export default function MondayBoard() {
                     {columns.slice(1).map((column) => (
                       <div 
                         key={column.id} 
-                        className="px-2 py-1.5 border-r border-gray-800/10 flex-shrink-0"
+                        className="px-2 py-1.5 border-r border-gray-200 flex-shrink-0"
                         style={{ 
                           width: columnWidths[column.id] || 100,
                           minWidth: '70px',
