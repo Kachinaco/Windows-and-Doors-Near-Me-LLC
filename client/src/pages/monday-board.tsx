@@ -1770,7 +1770,7 @@ export default function MondayBoard() {
                                                 </span>
                                               )}
                                               
-                                              <span className="text-blue-600 text-xs font-medium whitespace-nowrap flex-shrink-0">
+                                              <span className="text-blue-600 text-xs font-medium whitespace-nowrap">
                                                 ({folderSubItems.length})
                                               </span>
                                             </div>
