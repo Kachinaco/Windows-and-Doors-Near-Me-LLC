@@ -2223,7 +2223,7 @@ export default function MondayBoard() {
                   size="sm"
                   onClick={() => bulkArchiveMutation.mutate(Array.from(selectedItems))}
                   disabled={bulkArchiveMutation.isPending}
-                  className="text-xs h-7 px-3 text-gray-300 hover:text-white hover:bg-gray-800"
+                  className="text-xs h-7 px-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 >
                   Archive
                 </Button>
@@ -2232,7 +2232,7 @@ export default function MondayBoard() {
                   size="sm"
                   onClick={() => bulkTrashMutation.mutate(Array.from(selectedItems))}
                   disabled={bulkTrashMutation.isPending}
-                  className="text-xs h-7 px-3 text-gray-300 hover:text-white hover:bg-gray-800"
+                  className="text-xs h-7 px-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 >
                   Trash
                 </Button>
@@ -2263,12 +2263,12 @@ export default function MondayBoard() {
 
       {/* Updates Side Panel */}
       {sidePanelOpen && selectedMainItem && (
-        <div className="w-96 bg-gray-900 border-l border-gray-800 flex flex-col">
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
           {/* Side Panel Header */}
-          <div className="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-medium text-gray-200">Project Updates</h3>
-              <p className="text-xs text-gray-400">{selectedMainItem.values.item || `Project #${selectedMainItem.id}`}</p>
+              <h3 className="text-sm font-medium text-gray-900">Project Updates</h3>
+              <p className="text-xs text-gray-600">{selectedMainItem.values.item || `Project #${selectedMainItem.id}`}</p>
             </div>
             <Button
               variant="ghost"
@@ -2277,7 +2277,7 @@ export default function MondayBoard() {
                 setSidePanelOpen(false);
                 setSelectedMainItem(null);
               }}
-              className="text-gray-400 hover:text-gray-200 p-1"
+              className="text-gray-600 hover:text-gray-900 p-1"
             >
               ✕
             </Button>
@@ -2298,11 +2298,11 @@ export default function MondayBoard() {
                       {user?.username?.[0]?.toUpperCase() || 'U'}
                     </div>
                     <div className="flex-1">
-                      <div className="text-xs text-gray-400 mb-1">
-                        <span className="text-gray-300 font-medium">{user?.username || 'User'}</span> · {new Date(update.createdAt).toLocaleDateString()}
+                      <div className="text-xs text-gray-600 mb-1">
+                        <span className="text-gray-900 font-medium">{user?.username || 'User'}</span> · {new Date(update.createdAt).toLocaleDateString()}
                       </div>
-                      <div className="bg-gray-800 rounded-lg p-3">
-                        <p className="text-sm text-gray-300">{update.content}</p>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-sm text-gray-800">{update.content}</p>
                         {update.attachments && update.attachments.length > 0 && (
                           <div className="mt-2 space-y-1">
                             {update.attachments.map((file: any, index: number) => (
@@ -2317,16 +2317,16 @@ export default function MondayBoard() {
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-400 text-sm">
+                <div className="text-center py-8 text-gray-600 text-sm">
                   No updates yet. Be the first to add an update for this project.
                 </div>
               )}
             </div>
 
             {/* Add Update Form */}
-            <div className="border-t border-gray-700 pt-4">
+            <div className="border-t border-gray-200 pt-4">
               <div className="flex space-x-3">
-                <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs text-white font-medium">
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white font-medium">
                   {user?.username?.[0]?.toUpperCase() || 'U'}
                 </div>
                 <div className="flex-1">
@@ -2334,7 +2334,7 @@ export default function MondayBoard() {
                     value={updateContent}
                     onChange={(e) => setUpdateContent(e.target.value)}
                     placeholder="Add an update or comment..."
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     rows={3}
                     disabled={isPosting}
                   />
