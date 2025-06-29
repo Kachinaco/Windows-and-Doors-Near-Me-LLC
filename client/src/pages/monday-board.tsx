@@ -2058,9 +2058,9 @@ export default function MondayBoard() {
                               {/* Add Folder Section - positioned after all folders */}
                               <div className="flex hover:bg-blue-500/5 transition-all border-b border-blue-500/10">
                                 {/* Empty checkbox space - moved to right */}
-                                <div className="w-12 px-2 py-2 border-r border-blue-500/20 sticky left-0 bg-gray-950 z-20"></div>
+                                <div className="w-12 px-2 py-2 border-r border-blue-500/20 sticky left-0 bg-white z-20"></div>
                                 <div 
-                                  className="px-4 py-2 flex-shrink-0 sticky left-12 bg-gray-950 z-10"
+                                  className="px-4 py-2 flex-shrink-0 sticky left-12 bg-white z-10"
                                   style={{ 
                                     width: columnWidths['item'] || 240,
                                     minWidth: '180px',
@@ -2071,7 +2071,7 @@ export default function MondayBoard() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => handleAddSubItemFolder(item.id)}
-                                    className="text-blue-400/80 hover:text-blue-300 hover:bg-blue-500/10 text-sm h-8 px-3 flex items-center gap-2 font-medium border border-blue-500/20 hover:border-blue-400/40 rounded-md transition-all"
+                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm h-8 px-3 flex items-center gap-2 font-medium border border-blue-300 hover:border-blue-400 rounded-md transition-all"
                                   >
                                     <Folder className="w-4 h-4" />
                                     Add Folder
