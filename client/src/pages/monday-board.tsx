@@ -174,6 +174,23 @@ export default function MondayBoard() {
     refetchInterval: 5000,
   });
 
+  // Query for project team members (for "Assigned To" dropdowns)
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['/api/projects/77/team-members'],
+    enabled: !!user,
+    queryFn: async () => {
+      const response = await fetch('/api/projects/77/team-members', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch team members');
+      }
+      return response.json();
+    },
+  });
+
   // Fetch project updates for selected project
   const { data: projectUpdates = [], isLoading: updatesLoading } = useQuery<any[]>({
     queryKey: ['/api/projects', selectedMainItem?.id, 'updates'],
@@ -2423,6 +2440,102 @@ export default function MondayBoard() {
           </div>
         </div>
       )}
+
+      {/* Add Person to Project Modal */}
+      <Dialog open={isAddPersonModalOpen} onOpenChange={setIsAddPersonModalOpen}>
+        <DialogContent className="bg-white text-gray-900 border-gray-200 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">Add Person to Project</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm text-gray-700 font-medium">First Name *</Label>
+                <Input
+                  value={newPersonForm.firstName}
+                  onChange={(e) => setNewPersonForm(prev => ({ ...prev, firstName: e.target.value }))}
+                  className="bg-white border-gray-300 text-gray-900 h-9 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="First name"
+                />
+              </div>
+              <div>
+                <Label className="text-sm text-gray-700 font-medium">Last Name *</Label>
+                <Input
+                  value={newPersonForm.lastName}
+                  onChange={(e) => setNewPersonForm(prev => ({ ...prev, lastName: e.target.value }))}
+                  className="bg-white border-gray-300 text-gray-900 h-9 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="Last name"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label className="text-sm text-gray-700 font-medium">Email *</Label>
+              <Input
+                type="email"
+                value={newPersonForm.email}
+                onChange={(e) => setNewPersonForm(prev => ({ ...prev, email: e.target.value }))}
+                className="bg-white border-gray-300 text-gray-900 h-9 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="email@example.com"
+              />
+            </div>
+            
+            <div>
+              <Label className="text-sm text-gray-700 font-medium">Phone</Label>
+              <Input
+                type="tel"
+                value={newPersonForm.phone}
+                onChange={(e) => setNewPersonForm(prev => ({ ...prev, phone: e.target.value }))}
+                className="bg-white border-gray-300 text-gray-900 h-9 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="(555) 123-4567"
+              />
+            </div>
+            
+            <div>
+              <Label className="text-sm text-gray-700 font-medium">Role</Label>
+              <Select value={newPersonForm.role} onValueChange={(value) => setNewPersonForm(prev => ({ ...prev, role: value }))}>
+                <SelectTrigger className="bg-white border-gray-300 text-gray-900 h-9 focus:border-blue-500 focus:ring-blue-500">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-gray-200 shadow-lg">
+                  <SelectItem value="member">Team Member</SelectItem>
+                  <SelectItem value="lead">Project Lead</SelectItem>
+                  <SelectItem value="client">Client</SelectItem>
+                  <SelectItem value="contractor">Contractor</SelectItem>
+                  <SelectItem value="observer">Observer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label className="text-sm text-gray-700 font-medium">Notes</Label>
+              <Input
+                value={newPersonForm.notes}
+                onChange={(e) => setNewPersonForm(prev => ({ ...prev, notes: e.target.value }))}
+                className="bg-white border-gray-300 text-gray-900 h-9 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Additional notes (optional)"
+              />
+            </div>
+            
+            <div className="flex space-x-3 pt-2">
+              <Button 
+                onClick={handleAddPerson} 
+                disabled={addPersonMutation.isPending}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-9 rounded-md"
+              >
+                {addPersonMutation.isPending ? 'Adding...' : 'Add Person'}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsAddPersonModalOpen(false)}
+                className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 h-9 rounded-md"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
