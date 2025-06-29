@@ -2097,8 +2097,8 @@ export default function MondayBoard() {
                                 <div 
                                   className="px-4 py-2 flex-shrink-0 sticky left-12 bg-white z-10"
                                   style={{ 
-                                    width: columnWidths['item'] || 240,
-                                    minWidth: '180px',
+                                    width: columnWidths['item'] || 120,
+                                    minWidth: '80px',
                                     maxWidth: 'none'
                                   }}
                                 >
