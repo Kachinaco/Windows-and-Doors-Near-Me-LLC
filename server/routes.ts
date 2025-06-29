@@ -68,9 +68,9 @@ async function sendInvitationEmail(invitation: any, inviter: any) {
     const inviteUrl = `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/invite/${invitation.inviteToken}`;
     
     const { data, error } = await resend.emails.send({
-      from: settings.companyEmail || 'onboarding@resend.dev',
+      from: 'onboarding@resend.dev', // Use default Resend address for testing
       to: [invitation.email],
-      subject: `You've been invited to join ${settings.companyName || 'the project'}`,
+      subject: `You've been invited to join ${settings?.companyName || 'the project'}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Project Invitation</h2>
