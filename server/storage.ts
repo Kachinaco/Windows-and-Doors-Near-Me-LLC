@@ -1269,7 +1269,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(projectTeamMembers)
       .where(eq(projectTeamMembers.projectId, projectId))
-      .orderBy(projectTeamMembers.joinedAt);
+      .orderBy(projectTeamMembers.createdAt);
   }
 
   async addProjectTeamMember(teamMember: InsertProjectTeamMember): Promise<ProjectTeamMember> {
