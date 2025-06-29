@@ -773,7 +773,7 @@ export default function MondayBoard() {
               }
             }}
           >
-            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-gray-300">
+            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-gray-300 p-0 min-h-0">
               <SelectValue placeholder="Assign" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
@@ -1249,7 +1249,7 @@ export default function MondayBoard() {
               }
             }}
           >
-            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-blue-300">
+            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-blue-300 p-0 min-h-0">
               <SelectValue placeholder="Assign" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
@@ -2048,7 +2048,7 @@ export default function MondayBoard() {
                                                             }
                                                           }}
                                                         >
-                                                          <SelectTrigger className="h-6 text-xs border-none bg-transparent text-blue-300 hover:bg-blue-500/10 transition-colors">
+                                                          <SelectTrigger className="h-6 text-xs border-none bg-transparent text-blue-300 hover:bg-blue-500/10 transition-colors p-0 min-h-0">
                                                             <SelectValue placeholder="Assign" />
                                                           </SelectTrigger>
                                                           <SelectContent className="bg-gray-800 border-gray-700">
