@@ -1235,3 +1235,79 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
+
+// Initialize sample sub-items and folders for testing (project ID 77)
+(async () => {
+  try {
+    // Check if project 77 exists and doesn't already have sub-items
+    const existingSubItems = await storage.getSubItemsByProject(77);
+    const existingFolders = await storage.getSubItemFoldersByProject(77);
+    
+    if (existingSubItems.length === 0 && existingFolders.length === 0) {
+      console.log("Creating sample sub-items and folders for project 77...");
+      
+      // Create sample folders
+      const folder1 = await storage.createSubItemFolder({
+        projectId: 77,
+        name: "Preparation Phase",
+        color: "blue",
+        sortOrder: 0,
+        isCollapsed: false
+      });
+      
+      const folder2 = await storage.createSubItemFolder({
+        projectId: 77,
+        name: "Installation Phase",
+        color: "green",
+        sortOrder: 1,
+        isCollapsed: false
+      });
+      
+      // Create sample sub-items for folder 1
+      await storage.createSubItem({
+        parentProjectId: 77,
+        name: "Site Survey",
+        status: "completed",
+        priority: "high",
+        folderId: folder1.id,
+        folderName: "Preparation Phase",
+        sortOrder: 0
+      });
+      
+      await storage.createSubItem({
+        parentProjectId: 77,
+        name: "Materials Ordering",
+        status: "in_progress",
+        priority: "medium",
+        folderId: folder1.id,
+        folderName: "Preparation Phase",
+        sortOrder: 1
+      });
+      
+      // Create sample sub-items for folder 2
+      await storage.createSubItem({
+        parentProjectId: 77,
+        name: "Window Removal",
+        status: "not_started",
+        priority: "medium",
+        folderId: folder2.id,
+        folderName: "Installation Phase",
+        sortOrder: 0
+      });
+      
+      await storage.createSubItem({
+        parentProjectId: 77,
+        name: "New Window Installation",
+        status: "not_started",
+        priority: "high",
+        folderId: folder2.id,
+        folderName: "Installation Phase",
+        sortOrder: 1
+      });
+      
+      console.log("Sample sub-items and folders created successfully!");
+    }
+  } catch (error) {
+    console.log("Note: Sample data creation skipped (expected during initial DB setup):", error.message);
+  }
+})();
