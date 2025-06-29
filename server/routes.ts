@@ -10,7 +10,7 @@ import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { storage } from "./storage";
-import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 import { googleCalendarService } from "./google-calendar";
 import { crmSync } from "./crm-sync";
 import {
@@ -58,22 +58,18 @@ interface CollaborationSession {
 const activeSessions = new Map<string, CollaborationSession>();
 const cellEditors = new Map<string, CollaborationSession>(); // cellKey -> session
 
-// Email invitation system
+// Email invitation system with Resend
+const resend = new Resend('re_G66u7VPW_F94GkjgKU6wTJ7uhNASS5aJQ');
+
 async function sendInvitationEmail(invitation: any, inviter: any) {
   try {
     const settings = await storage.getCompanySettings();
-    if (!settings?.sendgridApiKey) {
-      console.warn("SendGrid API key not configured - skipping email");
-      return;
-    }
-
-    sgMail.setApiKey(settings.sendgridApiKey);
-
+    
     const inviteUrl = `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/invite/${invitation.inviteToken}`;
     
-    const msg = {
-      to: invitation.email,
-      from: settings.companyEmail || 'noreply@windowsandoors.com',
+    const { data, error } = await resend.emails.send({
+      from: settings.companyEmail || 'onboarding@resend.dev',
+      to: [invitation.email],
       subject: `You've been invited to join ${settings.companyName || 'the project'}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -101,10 +97,14 @@ async function sendInvitationEmail(invitation: any, inviter: any) {
           </p>
         </div>
       `
-    };
+    });
 
-    await sgMail.send(msg);
-    console.log(`Invitation email sent to ${invitation.email}`);
+    if (error) {
+      console.error("Resend email error:", error);
+      throw error;
+    }
+
+    console.log(`Invitation email sent to ${invitation.email} (ID: ${data?.id})`);
   } catch (error) {
     console.error("Failed to send invitation email:", error);
     throw error;
