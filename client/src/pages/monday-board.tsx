@@ -1410,7 +1410,7 @@ export default function MondayBoard() {
                 <div 
                   key={column.id} 
                   className={`px-3 py-3 border-r border-gray-200 relative group flex-shrink-0 ${
-                    index === 0 ? 'sticky left-12 bg-white/95 backdrop-blur-sm z-20' : ''
+                    index === 0 ? 'sticky left-12 bg-white/95 backdrop-blur-sm z-20' : 'z-10'
                   }`}
                   style={{ 
                     width: columnWidths[column.id] || (index === 0 ? 240 : 120),
@@ -1627,7 +1627,7 @@ export default function MondayBoard() {
                           <div 
                             key={`${item.id}-${column.id}`} 
                             className={`px-4 py-3 border-r border-gray-200 flex-shrink-0 flex items-center ${
-                              index === 0 ? 'sticky left-12 bg-white z-10 justify-start' : 'justify-center'
+                              index === 0 ? 'sticky left-12 bg-white z-20 justify-start' : 'z-5 justify-center'
                             }`}
                             style={{ 
                               width: columnWidths[column.id] || (index === 0 ? 240 : 140),
@@ -1667,7 +1667,7 @@ export default function MondayBoard() {
                                         
                                         {/* Folder name with expand/collapse */}
                                         <div 
-                                          className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-blue-50/50 z-10 flex items-center"
+                                          className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-blue-50/50 z-20 flex items-center"
                                           style={{ 
                                             width: columnWidths['item'] || 240,
                                             minWidth: '180px',
@@ -1844,7 +1844,7 @@ export default function MondayBoard() {
                                                 
                                                 {/* Sub-item name - aligned with main columns */}
                                                 <div 
-                                                  className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-blue-50/30 z-10 flex items-center"
+                                                  className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-blue-50/30 z-20 flex items-center"
                                                   style={{ 
                                                     width: (columnWidths['item'] || 240),
                                                     minWidth: '180px',
