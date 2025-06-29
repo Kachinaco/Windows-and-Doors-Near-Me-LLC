@@ -1714,14 +1714,14 @@ export default function MondayBoard() {
                                               />
                                             ) : (
                                               <span 
-                                                className="text-blue-200 text-sm font-semibold cursor-pointer hover:text-blue-100 ml-1 px-3 py-1.5 rounded hover:bg-blue-500/10 transition-colors"
+                                                className="text-blue-900 text-sm font-semibold cursor-pointer hover:text-blue-800 ml-1 px-3 py-1.5 rounded hover:bg-blue-100 transition-colors"
                                                 onClick={() => setEditingFolder(folder.id)}
                                               >
                                                 {currentFolderName}
                                               </span>
                                             )}
                                             
-                                            <span className="text-blue-400/70 text-xs ml-2 font-medium">
+                                            <span className="text-blue-600 text-xs ml-2 font-medium">
                                               ({folderSubItems.length} items)
                                             </span>
                                             
@@ -1731,7 +1731,7 @@ export default function MondayBoard() {
                                                 e.stopPropagation();
                                                 handleDeleteSubItemFolder(folder.id);
                                               }}
-                                              className="ml-auto opacity-0 group-hover:opacity-100 p-1 hover:bg-red-600/20 rounded text-red-400 hover:text-red-300 transition-all"
+                                              className="ml-auto opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded text-red-600 hover:text-red-700 transition-all"
                                               title="Delete folder"
                                             >
                                               <Trash2 className="w-4 h-4" />
@@ -2189,7 +2189,7 @@ export default function MondayBoard() {
       </div>
 
       {/* Compact Status Bar */}
-      <div className="bg-gray-900/50 border-t border-gray-800 px-4 py-1.5 flex items-center justify-between text-xs text-gray-500 flex-shrink-0">
+      <div className="bg-gray-50 border-t border-gray-200 px-4 py-1.5 flex items-center justify-between text-xs text-gray-600 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <span>{boardItems.length} items</span>
           <span>•</span>
