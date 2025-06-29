@@ -457,4 +457,28 @@
       padding: 0.75rem;
     }
   }
+
+  /* Monday Board Grid Alignment - Fix Select component alignment */
+  .monday-board-select [data-radix-select-trigger] {
+    height: 24px !important;
+    min-height: 24px !important;
+    padding: 0 4px !important;
+    line-height: 24px !important;
+    border: none !important;
+    background: transparent !important;
+    font-size: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .monday-board-select [data-radix-select-trigger]:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .monday-board-select [data-radix-select-value] {
+    font-size: 12px !important;
+    line-height: 1 !important;
+  }
 }
