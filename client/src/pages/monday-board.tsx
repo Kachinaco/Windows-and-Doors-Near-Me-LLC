@@ -1442,8 +1442,8 @@ export default function MondayBoard() {
           {/* Groups and Items */}
           {boardGroups.map((group) => (
             <div key={group.name} className="border-b border-gray-200 last:border-b-0">
-              {/* Enhanced Group Header */}
-              <div className={`px-3 py-3 border-b border-gray-200 flex items-center space-x-2 hover:bg-gray-50 transition-all ${
+              {/* Enhanced Group Header with proper column structure */}
+              <div className={`flex border-b border-gray-200 hover:bg-gray-50 transition-all ${
                 group.name === 'New Leads' ? 'bg-cyan-50' :
                 group.name === 'Need Attention' ? 'bg-yellow-50' :
                 group.name === 'Sent Estimate' ? 'bg-purple-50' :
@@ -1453,7 +1453,7 @@ export default function MondayBoard() {
                 'bg-gray-50'
               }`}>
                 {/* Group Selection Checkbox */}
-                <div className="w-8 px-1 flex items-center justify-center">
+                <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-inherit z-30">
                   <input
                     type="checkbox"
                     checked={isGroupSelected(group.name)}
@@ -1466,21 +1466,26 @@ export default function MondayBoard() {
                       e.stopPropagation();
                       handleSelectGroup(group.name);
                     }}
-                    className="w-3 h-3 rounded border-gray-400 bg-white text-blue-500 focus:ring-blue-500 focus:ring-1"
+                    className="w-4 h-4 rounded border-gray-400 bg-white text-blue-500 focus:ring-blue-500 focus:ring-1"
                   />
                 </div>
                 
-                {/* Group Toggle and Info */}
+                {/* Group Info in Main Item Column */}
                 <div 
-                  className="flex-1 flex items-center space-x-1.5 cursor-pointer"
+                  className="px-4 py-3 border-r border-gray-200 flex-shrink-0 flex items-center space-x-2 cursor-pointer sticky left-12 bg-inherit z-20"
+                  style={{ 
+                    width: columnWidths['item'] || 240,
+                    minWidth: '180px',
+                    maxWidth: 'none'
+                  }}
                   onClick={() => toggleGroup(group.name)}
                 >
                   {group.collapsed ? (
-                    <ChevronRight className="w-2.5 h-2.5 text-gray-500" />
+                    <ChevronRight className="w-3 h-3 text-gray-500" />
                   ) : (
-                    <ChevronDown className="w-2.5 h-2.5 text-gray-500" />
+                    <ChevronDown className="w-3 h-3 text-gray-500" />
                   )}
-                  <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                  <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
                     group.name === 'New Leads' ? 'bg-cyan-500' :
                     group.name === 'Need Attention' ? 'bg-yellow-500' :
                     group.name === 'Sent Estimate' ? 'bg-purple-500' :
@@ -1505,7 +1510,7 @@ export default function MondayBoard() {
                 {columns.slice(1).map((column) => (
                   <div 
                     key={`group-${group.name}-${column.id}`}
-                    className={`px-2 py-1.5 border-r flex-shrink-0 ${
+                    className={`px-2 py-1.5 border-r flex-shrink-0 z-5 ${
                       group.name === 'New Leads' ? 'border-cyan-200 bg-cyan-50/50' :
                       group.name === 'Need Attention' ? 'border-yellow-200 bg-yellow-50/50' :
                       group.name === 'Sent Estimate' ? 'border-purple-200 bg-purple-50/50' :
