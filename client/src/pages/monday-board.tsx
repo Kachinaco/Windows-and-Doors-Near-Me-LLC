@@ -591,7 +591,9 @@ export default function MondayBoard() {
         role: 'member',
         notes: ''
       });
+      // Invalidate both projects and team members queries to refresh dropdowns
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects/77/team-members'] });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message || "Failed to add person to project", variant: "destructive" });
@@ -599,10 +601,33 @@ export default function MondayBoard() {
   });
 
   const handleAddPerson = () => {
-    if (!newPersonForm.firstName || !newPersonForm.lastName || !newPersonForm.email) {
-      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
+    // Validation
+    if (!newPersonForm.firstName.trim()) {
+      toast({ title: "Validation Error", description: "First name is required", variant: "destructive" });
       return;
     }
+    if (!newPersonForm.lastName.trim()) {
+      toast({ title: "Validation Error", description: "Last name is required", variant: "destructive" });
+      return;
+    }
+    if (!newPersonForm.email.trim()) {
+      toast({ title: "Validation Error", description: "Email is required", variant: "destructive" });
+      return;
+    }
+    
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newPersonForm.email)) {
+      toast({ title: "Validation Error", description: "Please enter a valid email address", variant: "destructive" });
+      return;
+    }
+    
+    // Phone format validation (if provided)
+    if (newPersonForm.phone && newPersonForm.phone.length > 0 && newPersonForm.phone.length < 10) {
+      toast({ title: "Validation Error", description: "Please enter a valid phone number", variant: "destructive" });
+      return;
+    }
+    
     addPersonMutation.mutate(newPersonForm);
   };
 
@@ -740,17 +765,29 @@ export default function MondayBoard() {
         return (
           <Select
             value={value}
-            onValueChange={(newValue) => handleCellUpdate(item.id, column.id, newValue)}
+            onValueChange={(newValue) => {
+              if (newValue === "__add_person__") {
+                setIsAddPersonModalOpen(true);
+              } else {
+                handleCellUpdate(item.id, column.id, newValue);
+              }
+            }}
           >
             <SelectTrigger className="h-4 text-xs border-none bg-transparent text-gray-300">
               <SelectValue placeholder="Assign" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
               <SelectItem value="unassigned">Unassigned</SelectItem>
-              <SelectItem value="John Doe">John Doe</SelectItem>
-              <SelectItem value="Jane Smith">Jane Smith</SelectItem>
-              <SelectItem value="Bob Wilson">Bob Wilson</SelectItem>
-              <SelectItem value="Alice Brown">Alice Brown</SelectItem>
+              {teamMembers.map((member: any) => (
+                <SelectItem key={member.id} value={`${member.firstName} ${member.lastName}`}>
+                  {member.firstName} {member.lastName}
+                </SelectItem>
+              ))}
+              <div className="border-t border-gray-700 my-1"></div>
+              <SelectItem value="__add_person__" className="text-blue-400 hover:text-blue-300">
+                <UserPlus className="w-3 h-3 mr-2 inline" />
+                Add Person...
+              </SelectItem>
             </SelectContent>
           </Select>
         );
@@ -1202,12 +1239,33 @@ export default function MondayBoard() {
         
       case 'people':
         return (
-          <Input
+          <Select
             value={value}
-            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
-            className="h-4 text-xs border-none bg-transparent text-gray-300"
-            placeholder="Assign to..."
-          />
+            onValueChange={(newValue) => {
+              if (newValue === "__add_person__") {
+                setIsAddPersonModalOpen(true);
+              } else {
+                handleSubItemCellUpdate(subItem.id, column.id, newValue);
+              }
+            }}
+          >
+            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-blue-300">
+              <SelectValue placeholder="Assign" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700">
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+              {teamMembers.map((member: any) => (
+                <SelectItem key={member.id} value={`${member.firstName} ${member.lastName}`}>
+                  {member.firstName} {member.lastName}
+                </SelectItem>
+              ))}
+              <div className="border-t border-gray-700 my-1"></div>
+              <SelectItem value="__add_person__" className="text-blue-400 hover:text-blue-300">
+                <UserPlus className="w-3 h-3 mr-2 inline" />
+                Add Person...
+              </SelectItem>
+            </SelectContent>
+          </Select>
         );
         
       case 'number':
