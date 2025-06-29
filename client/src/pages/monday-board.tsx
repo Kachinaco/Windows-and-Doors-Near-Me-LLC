@@ -793,10 +793,10 @@ export default function MondayBoard() {
         
         return (
           <div
-            className={`h-4 text-xs cursor-text hover:bg-gray-800/50 flex items-center px-1 rounded transition-colors ${
+            className={`h-4 text-xs cursor-text hover:bg-gray-50 flex items-center px-1 rounded transition-colors ${
               column.id === 'item' 
-                ? 'text-gray-100 font-medium flex items-center gap-1.5' 
-                : 'text-gray-300'
+                ? 'text-gray-900 font-medium flex items-center gap-1.5' 
+                : 'text-gray-700'
             }`}
             onClick={() => setEditingCell({ projectId: item.id, field: column.id })}
             title="Click to edit"
@@ -812,7 +812,7 @@ export default function MondayBoard() {
                 'bg-gray-500'
               }`} />
             )}
-            {value || <span className="text-gray-500">{column.id === 'item' ? 'Untitled Project' : 'Click to add...'}</span>}
+            {value || <span className="text-gray-400">{column.id === 'item' ? 'Untitled Project' : 'Click to add...'}</span>}
           </div>
         );
     }
