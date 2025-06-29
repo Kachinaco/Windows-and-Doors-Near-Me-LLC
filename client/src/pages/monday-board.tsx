@@ -1403,14 +1403,14 @@ export default function MondayBoard() {
                   type="checkbox"
                   checked={selectedItems.size > 0 && selectedItems.size === boardItems.length}
                   onChange={selectedItems.size === boardItems.length ? handleSelectNone : handleSelectAll}
-                  className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+                  className="w-4 h-4 rounded border-gray-400 bg-white text-blue-500 focus:ring-blue-500 focus:ring-1"
                 />
               </div>
               {columns.map((column, index) => (
                 <div 
                   key={column.id} 
-                  className={`px-3 py-3 border-r border-gray-800/30 relative group flex-shrink-0 ${
-                    index === 0 ? 'sticky left-12 bg-gray-950/95 backdrop-blur-sm z-20' : ''
+                  className={`px-3 py-3 border-r border-gray-200 relative group flex-shrink-0 ${
+                    index === 0 ? 'sticky left-12 bg-white/95 backdrop-blur-sm z-20' : ''
                   }`}
                   style={{ 
                     width: columnWidths[column.id] || (index === 0 ? 240 : 120),
@@ -1441,16 +1441,16 @@ export default function MondayBoard() {
 
           {/* Groups and Items */}
           {boardGroups.map((group) => (
-            <div key={group.name} className="border-b border-gray-800/50 last:border-b-0">
+            <div key={group.name} className="border-b border-gray-200 last:border-b-0">
               {/* Enhanced Group Header */}
-              <div className={`px-3 py-3 border-b border-gray-800/20 flex items-center space-x-2 hover:bg-gray-900/40 transition-all ${
-                group.name === 'New Leads' ? 'bg-gradient-to-r from-cyan-900/20 to-gray-900/20' :
-                group.name === 'Need Attention' ? 'bg-gradient-to-r from-yellow-900/20 to-gray-900/20' :
-                group.name === 'Sent Estimate' ? 'bg-gradient-to-r from-purple-900/20 to-gray-900/20' :
-                group.name === 'Signed' ? 'bg-gradient-to-r from-emerald-900/20 to-gray-900/20' :
-                group.name === 'In Progress' ? 'bg-gradient-to-r from-blue-900/20 to-gray-900/20' :
-                group.name === 'Complete' ? 'bg-gradient-to-r from-green-900/20 to-gray-900/20' :
-                'bg-gray-900/20'
+              <div className={`px-3 py-3 border-b border-gray-200 flex items-center space-x-2 hover:bg-gray-50 transition-all ${
+                group.name === 'New Leads' ? 'bg-cyan-50' :
+                group.name === 'Need Attention' ? 'bg-yellow-50' :
+                group.name === 'Sent Estimate' ? 'bg-purple-50' :
+                group.name === 'Signed' ? 'bg-emerald-50' :
+                group.name === 'In Progress' ? 'bg-blue-50' :
+                group.name === 'Complete' ? 'bg-green-50' :
+                'bg-gray-50'
               }`}>
                 {/* Group Selection Checkbox */}
                 <div className="w-8 px-1 flex items-center justify-center">
@@ -1466,7 +1466,7 @@ export default function MondayBoard() {
                       e.stopPropagation();
                       handleSelectGroup(group.name);
                     }}
-                    className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+                    className="w-3 h-3 rounded border-gray-400 bg-white text-blue-500 focus:ring-blue-500 focus:ring-1"
                   />
                 </div>
                 
@@ -1620,14 +1620,14 @@ export default function MondayBoard() {
                               e.stopPropagation();
                               handleToggleSelect(item.id);
                             }}
-                            className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+                            className="w-4 h-4 rounded border-gray-400 bg-white text-blue-500 focus:ring-blue-500 focus:ring-1"
                           />
                         </div>
                         {columns.map((column, index) => (
                           <div 
                             key={`${item.id}-${column.id}`} 
-                            className={`px-4 py-3 border-r border-gray-800/10 flex-shrink-0 flex items-center ${
-                              index === 0 ? 'sticky left-12 bg-gray-950 z-10 justify-start' : 'justify-center'
+                            className={`px-4 py-3 border-r border-gray-200 flex-shrink-0 flex items-center ${
+                              index === 0 ? 'sticky left-12 bg-white z-10 justify-start' : 'justify-center'
                             }`}
                             style={{ 
                               width: columnWidths[column.id] || (index === 0 ? 240 : 140),
@@ -2103,15 +2103,15 @@ export default function MondayBoard() {
                         ) : (
                             // Fallback: render sub-items without folders if no folders exist
                             item.subItems?.map((subItem) => (
-                              <div key={`sub-${subItem.id}`} className="flex hover:bg-gray-900/20 transition-all bg-gray-900/5 border-b border-gray-800/5">
+                              <div key={`sub-${subItem.id}`} className="flex hover:bg-gray-50 transition-all bg-white border-b border-gray-200">
                                 {/* Empty checkbox space for sub-items */}
-                                <div className="w-8 px-1 py-0.5 border-r border-gray-800/10 flex items-center justify-center sticky left-0 bg-gray-950 z-20">
-                                  <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                <div className="w-8 px-1 py-0.5 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-20">
+                                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                                 </div>
                                 
                                 {/* Sub-item name (first column) */}
                                 <div 
-                                  className="px-2 py-0.5 border-r border-gray-800/10 flex-shrink-0 sticky left-8 bg-gray-950 z-10 flex items-center"
+                                  className="px-2 py-0.5 border-r border-gray-200 flex-shrink-0 sticky left-8 bg-white z-10 flex items-center"
                                   style={{ 
                                     width: columnWidths['item'] || 200,
                                     minWidth: '150px',
