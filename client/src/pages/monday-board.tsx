@@ -1827,27 +1827,30 @@ export default function MondayBoard() {
                                           <div className="relative">
                                             
                                             {folderSubItems.map((subItem, index) => (
-                                              <div key={`sub-${subItem.id}`} className="group flex hover:bg-gray-50 transition-all bg-white border-b border-gray-200 relative">
-                                                {/* Sub-item checkbox - perfectly aligned with main items */}
-                                                <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-30">
+                                              <div key={`sub-${subItem.id}`} className="group flex hover:bg-blue-50/50 transition-all bg-blue-50/20 border-b border-blue-200/60 relative">
+                                                {/* Sub-item checkbox - visually distinct */}
+                                                <div className="w-12 px-2 py-3 border-r border-blue-200 flex items-center justify-center sticky left-0 bg-blue-50/30 z-30">
                                                   <input 
                                                     type="checkbox" 
-                                                    className="w-4 h-4 rounded border-gray-400 bg-white text-blue-500 focus:ring-blue-500 focus:ring-1"
+                                                    className="w-3.5 h-3.5 rounded border-blue-400 bg-white text-blue-600 focus:ring-blue-500 focus:ring-1"
                                                     />
                                                 </div>
                                                 
-                                                {/* Sub-item name - perfectly aligned with main column */}
+                                                {/* Sub-item name - visually distinct as nested item */}
                                                 <div 
-                                                  className="px-4 py-3 border-r border-gray-200 flex-shrink-0 sticky left-12 bg-white z-20 flex items-center"
+                                                  className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-blue-50/30 z-20 flex items-center"
                                                   style={{ 
                                                     width: (columnWidths['item'] || 120),
                                                     minWidth: '80px',
                                                     maxWidth: 'none'
                                                   }}
                                                 >
-                                                  <div className="flex items-center gap-2 text-sm w-full">
-                                                    {/* Simple hierarchy indicator */}
-                                                    <div className="w-2 h-2 rounded-full bg-blue-500/60 flex-shrink-0"></div>
+                                                  <div className="flex items-center gap-3 text-sm w-full">
+                                                    {/* Enhanced hierarchy indicator */}
+                                                    <div className="flex items-center gap-1.5">
+                                                      <div className="w-4 h-px bg-blue-400/60"></div>
+                                                      <div className="w-2 h-2 rounded-full bg-blue-600 border border-blue-400 flex-shrink-0"></div>
+                                                    </div>
                                                     
                                                     {editingSubItem === subItem.id ? (
                                                       <input
@@ -1872,7 +1875,7 @@ export default function MondayBoard() {
                                                       />
                                                     ) : (
                                                       <span 
-                                                        className="cursor-pointer hover:text-gray-600 text-gray-700 text-sm flex-1"
+                                                        className="cursor-pointer hover:text-blue-700 text-blue-800 text-sm font-medium flex-1"
                                                         onClick={() => {
                                                           setEditingSubItem(subItem.id);
                                                           setSubItemNames(prev => ({...prev, [subItem.id]: subItem.name}));
@@ -1904,7 +1907,7 @@ export default function MondayBoard() {
                                                   return (
                                                   <div 
                                                     key={`sub-${subItem.id}-${column.id}`}
-                                                    className={`px-4 py-3 border-r border-gray-200 flex-shrink-0 flex items-center justify-center bg-white z-5`}
+                                                    className={`px-4 py-3 border-r border-blue-200 flex-shrink-0 flex items-center justify-center bg-blue-50/30 z-5`}
                                                     style={{ 
                                                       width: columnWidth,
                                                       minWidth: index === 0 ? '80px' : '90px',
@@ -1912,7 +1915,7 @@ export default function MondayBoard() {
                                                     }}
                                                   >
                                                     {/* Render editable sub-item data based on column types */}
-                                                    <div className="text-xs text-gray-700 text-center w-full">
+                                                    <div className="text-xs text-blue-800 text-center w-full font-medium">
                                                       {column.type === 'status' && (
                                                         <select
                                                           value={subItem.status || 'not_started'}
@@ -1971,12 +1974,12 @@ export default function MondayBoard() {
                                               </div>
                                             ))}
                                             
-                                            {/* Add Sub Item button - perfectly aligned */}
-                                            <div className="flex hover:bg-gray-50 transition-all border-b border-gray-200 relative">
+                                            {/* Add Sub Item button - blue theme */}
+                                            <div className="flex hover:bg-blue-100/50 transition-all border-b border-blue-200 bg-blue-50/10 relative">
                                               {/* Empty checkbox space */}
-                                              <div className="w-12 px-2 py-2 border-r border-gray-200 sticky left-0 bg-white z-30"></div>
+                                              <div className="w-12 px-2 py-2 border-r border-blue-200 sticky left-0 bg-blue-50/20 z-30"></div>
                                               <div 
-                                                className="px-4 py-2 flex-shrink-0 sticky left-12 bg-white z-20"
+                                                className="px-4 py-2 flex-shrink-0 sticky left-12 bg-blue-50/20 z-20"
                                                 style={{ 
                                                   width: (columnWidths['item'] || 120),
                                                   minWidth: '80px',
@@ -1987,7 +1990,7 @@ export default function MondayBoard() {
                                                   variant="ghost"
                                                   size="sm"
                                                   onClick={() => handleAddSubItemToFolder(item.id, folder.id)}
-                                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm h-8 px-3 flex items-center gap-2 border border-blue-300 hover:border-blue-400 rounded-md transition-all"
+                                                  className="text-blue-700 hover:text-blue-800 hover:bg-blue-100 text-sm h-8 px-3 flex items-center gap-2 border border-blue-400 hover:border-blue-500 rounded-md transition-all font-medium"
                                                 >
                                                   <Plus className="w-4 h-4" />
                                                   Add Sub Item
