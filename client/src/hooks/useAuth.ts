@@ -15,10 +15,8 @@ export function useAuth() {
         const response = await apiRequest("GET", "/api/auth/me");
         return response.json();
       } catch (err: any) {
-        console.log("Authentication check failed:", err);
         // If authentication fails, clear the invalid token
-        if (err.message?.includes("401") || err.message?.includes("403") || err.message?.includes("Invalid token")) {
-          console.log("Clearing invalid token");
+        if (err.message?.includes("401") || err.message?.includes("403")) {
           localStorage.removeItem("authToken");
           queryClient.setQueryData(["/api/auth/me"], null);
         }

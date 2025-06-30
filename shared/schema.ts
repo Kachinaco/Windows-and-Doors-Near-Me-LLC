@@ -133,31 +133,6 @@ export const projects = pgTable("projects", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Project columns for dynamic Monday.com-style board structure
-export const projectColumns = pgTable("project_columns", {
-  id: text("id").primaryKey(), // Using text ID for compatibility with frontend
-  projectId: integer("project_id").references(() => projects.id),
-  name: text("name").notNull(),
-  type: text("type").notNull(), // status, text, people, date, number, formula, etc.
-  settings: jsonb("settings"), // Column-specific configuration (options, formulas, etc.)
-  order: integer("order").notNull().default(0),
-  isVisible: boolean("is_visible").default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-// Column values for storing cell data
-export const columnValues = pgTable("column_values", {
-  id: serial("id").primaryKey(),
-  projectId: integer("project_id").references(() => projects.id),
-  columnId: text("column_id").references(() => projectColumns.id),
-  itemId: integer("item_id"), // References the project or sub-item
-  itemType: text("item_type").notNull().default("project"), // project, subitem
-  value: text("value"), // Stored as text, parsed by frontend based on column type
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
 // Sub-items for hierarchical project structure
 export const subItems = pgTable("sub_items", {
   id: serial("id").primaryKey(),
@@ -948,17 +923,6 @@ export const insertSubItemSchema = createInsertSchema(subItems).omit({
   updatedAt: true,
 });
 
-export const insertProjectColumnSchema = createInsertSchema(projectColumns).omit({
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertColumnValueSchema = createInsertSchema(columnValues).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
 export const insertSubItemFolderSchema = createInsertSchema(subItemFolders).omit({
   id: true,
   createdAt: true,
@@ -1191,12 +1155,6 @@ export type InsertProposalTemplate = z.infer<typeof insertProposalTemplateSchema
 // Sub-items types
 export type SubItem = typeof subItems.$inferSelect;
 export type InsertSubItem = z.infer<typeof insertSubItemSchema>;
-
-export type ProjectColumn = typeof projectColumns.$inferSelect;
-export type InsertProjectColumn = z.infer<typeof insertProjectColumnSchema>;
-
-export type ColumnValue = typeof columnValues.$inferSelect;
-export type InsertColumnValue = z.infer<typeof insertColumnValueSchema>;
 export type SubItemFolder = typeof subItemFolders.$inferSelect;
 export type InsertSubItemFolder = z.infer<typeof insertSubItemFolderSchema>;
 
