@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -60,6 +61,8 @@ export default function MondayBoard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { boardId } = useParams();
+  const [, setLocation] = useLocation();
   
   // Default board columns - Main Item Columns + Sub Items
   const [columns, setColumns] = useState<BoardColumn[]>([
@@ -111,6 +114,20 @@ export default function MondayBoard() {
     if (!memberId || memberId === '' || memberId === 'unassigned') return 'Unassigned';
     const member = teamMembers.find((m: any) => m.id.toString() === memberId.toString());
     return member ? `${member.firstName} ${member.lastName}` : 'Unassigned';
+  };
+
+  // Helper function to get board name from boardId
+  const getBoardName = (): string => {
+    const boardNames: Record<string, string> = {
+      '1': 'Inventory',
+      '2': 'Full Calendar', 
+      '3': 'Kachina_Projects',
+      '4': 'Osman Portillo',
+      '5': 'Corys Schedule 25',
+      '6': 'Dustin Crocker 25',
+      '7': 'Nate and Jarred 25'
+    };
+    return boardNames[boardId || ''] || 'Project Board';
   };
 
   // Initialize column widths from localStorage or use defaults
@@ -1377,18 +1394,18 @@ export default function MondayBoard() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => window.location.href = '/dashboard'}
+              onClick={() => setLocation('/workspaces')}
               className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 text-sm px-3 py-2 h-8 rounded-md"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              Workspaces
             </Button>
             <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
               <div className="w-3 h-3 bg-white rounded-sm" />
             </div>
-            <h1 className="text-lg font-medium">Project Board</h1>
+            <h1 className="text-lg font-medium">{getBoardName()}</h1>
             <div className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md text-sm font-medium border border-blue-200">
-              Project Board
+              {getBoardName()}
             </div>
           </div>
           

@@ -505,7 +505,7 @@ export default function Dashboard() {
 
             {/* Project Management */}
             <div>
-              <Link href="/projects">
+              <Link href="/workspaces">
                 <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-800">
                   <CardContent className="p-3 sm:p-6">
                     <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
