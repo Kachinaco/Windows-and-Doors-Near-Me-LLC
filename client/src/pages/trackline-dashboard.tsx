@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnifiedProject, UnifiedProjectProvider } from "@/contexts/UnifiedProjectContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { type Project } from "@shared/schema";
+import { UnifiedTask } from "@/hooks/useUnifiedProjectData";
 import { 
   Home,
   Users,
@@ -29,18 +31,6 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 
-// Mock data for timeline tasks (replace with real data from your API)
-interface TimelineTask {
-  id: number;
-  title: string;
-  startTime: string;
-  endTime: string;
-  assignees: string[];
-  status: 'ongoing' | 'under_review' | 'completed';
-  color: string;
-  projectId: number;
-}
-
 interface ProjectSummary {
   id: number;
   name: string;
@@ -49,11 +39,22 @@ interface ProjectSummary {
   color: string;
 }
 
-export default function TracklineDashboard() {
+function TracklineDashboardContent() {
   const { user } = useAuth();
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Get unified project data
+  const {
+    processedTasks,
+    taskStats,
+    isLoading: unifiedLoading,
+    updateTask,
+    createTask,
+    updateFilters,
+    filters
+  } = useUnifiedProject();
 
   // Update current time every minute
   useEffect(() => {
@@ -62,60 +63,61 @@ export default function TracklineDashboard() {
   }, []);
 
   // Fetch projects from your existing API
-  const { data: projects = [], isLoading } = useQuery<Project[]>({
+  const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
-  // Mock timeline tasks (replace with real API call)
-  const timelineTasks: TimelineTask[] = [
-    {
-      id: 1,
-      title: "Site Preparation",
-      startTime: "08:00",
-      endTime: "10:30",
-      assignees: ["John D.", "Mike S."],
-      status: "completed",
-      color: "#22c55e",
-      projectId: 1,
-    },
-    {
-      id: 2,
-      title: "Window Installation",
-      startTime: "10:30",
-      endTime: "14:00",
-      assignees: ["Sarah M.", "Tom R."],
-      status: "ongoing",
-      color: "#3b82f6",
-      projectId: 1,
-    },
-    {
-      id: 3,
-      title: "Quality Check",
-      startTime: "14:00",
-      endTime: "15:30",
-      assignees: ["Lisa K."],
-      status: "under_review",
-      color: "#f59e0b",
-      projectId: 1,
-    },
-  ];
+  const isLoading = unifiedLoading || projectsLoading;
 
-  // Calculate task statistics
-  const taskStats = {
-    total: timelineTasks.length,
-    ongoing: timelineTasks.filter(t => t.status === 'ongoing').length,
-    underReview: timelineTasks.filter(t => t.status === 'under_review').length,
-    completed: timelineTasks.filter(t => t.status === 'completed').length,
+  // Helper function for status colors
+  const getStatusColor = (status: string) => {
+    const colors = {
+      'complete': '#22c55e',
+      'in_progress': '#3b82f6',
+      'under_review': '#f59e0b',
+      'new_lead': '#8b5cf6',
+      'on_order': '#ec4899',
+      'scheduled': '#10b981',
+      'not_started': '#6b7280'
+    };
+    return colors[status as keyof typeof colors] || '#6b7280';
   };
 
-  // Mock project summaries (generate from your projects data)
-  const projectSummaries: ProjectSummary[] = projects.slice(0, 5).map((project, index) => ({
-    id: project.id,
-    name: project.name,
-    icon: "🏠",
-    tasksCount: Math.floor(Math.random() * 12) + 3,
-    color: ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444"][index % 5],
-  }));
+  // Convert unified tasks to timeline format
+  const timelineTasks = processedTasks
+    .filter(task => task.timeline?.start && task.timeline?.end)
+    .map(task => ({
+      id: task.id,
+      title: task.title,
+      startTime: new Date(task.timeline!.start).toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: false 
+      }),
+      endTime: new Date(task.timeline!.end).toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        hour12: false 
+      }),
+      assignees: task.assignedUser ? [`${task.assignedUser.firstName} ${task.assignedUser.lastName}`] : [],
+      status: task.status === 'complete' ? 'completed' as const : 
+             task.status === 'in_progress' ? 'ongoing' as const : 'under_review' as const,
+      color: getStatusColor(task.status),
+      projectId: task.projectId,
+      task: task // Include full task data
+    }));
+
+  // Project summaries from real data
+  const projectSummaries: ProjectSummary[] = projects.slice(0, 5).map((project, index) => {
+    const projectTasks = processedTasks.filter(task => task.projectId === project.id);
+    return {
+      id: project.id,
+      name: project.name,
+      icon: "🏠",
+      tasksCount: projectTasks.length,
+      color: ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444"][index % 5],
+    };
+  });
 
   // Generate time slots for timeline
   const generateTimeSlots = () => {
@@ -129,7 +131,7 @@ export default function TracklineDashboard() {
   const timeSlots = generateTimeSlots();
 
   // Calculate task position and width for timeline
-  const getTaskStyle = (task: TimelineTask) => {
+  const getTaskStyle = (task: any) => {
     const startHour = parseInt(task.startTime.split(':')[0]);
     const startMinute = parseInt(task.startTime.split(':')[1]);
     const endHour = parseInt(task.endTime.split(':')[0]);
@@ -321,7 +323,7 @@ export default function TracklineDashboard() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600">Ongoing</p>
-                      <p className="text-2xl font-bold text-blue-600">{taskStats.ongoing}</p>
+                      <p className="text-2xl font-bold text-blue-600">{taskStats.inProgress}</p>
                     </div>
                     <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
                       <Activity className="w-6 h-6 text-blue-600" />
