@@ -3279,13 +3279,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Column name and type are required" });
       }
 
-      const newColumn = await storage.createProjectColumn({
+      const columnId = `column_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      console.log('Creating column with data:', { columnId, projectId, name, type, settings });
+
+      const columnData = {
+        id: columnId,
         projectId,
         name,
         type,
         settings,
         order: await storage.getNextColumnOrder(projectId)
-      });
+      };
+
+      console.log('Final column data:', columnData);
+      const newColumn = await storage.createProjectColumn(columnData);
 
       res.json(newColumn);
     } catch (error: any) {
