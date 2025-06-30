@@ -1588,10 +1588,10 @@ export default function MondayBoard() {
                   <span className="text-sm font-medium text-gray-900">Status</span>
                 </div>
                 <div className="px-4 py-3 border-r border-gray-200 w-40 flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-900">People</span>
+                  <span className="text-sm font-medium text-gray-900">Assigned To</span>
                 </div>
                 <div className="px-4 py-3 border-r border-gray-200 w-32 flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-900">Date</span>
+                  <span className="text-sm font-medium text-gray-900">Due Date</span>
                 </div>
                 <div className="px-4 py-3 w-24 flex items-center justify-center">
                   <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
