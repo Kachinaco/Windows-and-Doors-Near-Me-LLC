@@ -1572,55 +1572,110 @@ export default function MondayBoard() {
 
       {/* Compact Board */}
       <div className="flex-1 overflow-auto bg-white">
-        {isNewBoard() ? (
-          /* New Board Template */
-          <div className="min-w-max">
-            {/* Template Column Headers */}
-            <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
-              <div className="flex">
-                <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-30">
-                  <input type="checkbox" className="w-4 h-4 rounded border-gray-400" disabled />
-                </div>
-                <div className="px-4 py-3 border-r border-gray-200 flex-shrink-0 sticky left-12 bg-white z-20 w-60">
-                  <span className="text-sm font-medium text-gray-900">Item</span>
-                </div>
-                <div className="px-4 py-3 border-r border-gray-200 w-32 flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-900">Status</span>
-                </div>
-                <div className="px-4 py-3 border-r border-gray-200 w-40 flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-900">Assigned To</span>
-                </div>
-                <div className="px-4 py-3 border-r border-gray-200 w-32 flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-900">Due Date</span>
-                </div>
-                <div className="px-4 py-3 w-24 flex items-center justify-center">
-                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
-                    <Plus className="w-4 h-4 mr-1" />
-                    Column
-                  </Button>
-                </div>
+        <div className="min-w-max">
+          {/* Enhanced Column Headers */}
+          <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
+            <div className="flex">
+              {/* Selection checkbox header */}
+              <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-30">
+                <input
+                  type="checkbox"
+                  checked={selectedItems.size > 0 && selectedItems.size === boardItems.length}
+                  onChange={selectedItems.size === boardItems.length ? handleSelectNone : handleSelectAll}
+                  className="w-4 h-4 rounded border-gray-400 bg-white text-blue-500 focus:ring-blue-500 focus:ring-1"
+                />
               </div>
+              {columns.map((column, index) => (
+                <div 
+                  key={column.id} 
+                  className={`px-3 py-3 border-r border-gray-200 relative group flex-shrink-0 bg-white ${
+                    index === 0 ? 'sticky left-12 z-20' : 'z-10'
+                  }`}
+                  style={{ 
+                    width: columnWidths[column.id] || (index === 0 ? 120 : 120),
+                    minWidth: index === 0 ? '80px' : '90px',
+                    maxWidth: 'none'
+                  }}
+                >
+                  <div className="flex items-center space-x-2">
+                    {getColumnIcon(column.type)}
+                    <span className="font-medium text-sm text-gray-300">{column.name}</span>
+                  </div>
+                  {index < columns.length - 1 && (
+                    <div 
+                      className="absolute right-0 top-0 bottom-0 w-3 cursor-col-resize flex items-center justify-center bg-transparent hover:bg-blue-500/20 transition-all group touch-none"
+                      onPointerDown={(e) => handlePointerDown(column.id, e)}
+                      title="Resize"
+                      style={{ touchAction: 'none' }}
+                    >
+                      <div className="w-0.5 h-4 bg-gray-600 hover:bg-blue-400 rounded-full transition-all duration-200 group-hover:h-5 group-hover:bg-blue-400"></div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
+          </div>
 
-            {/* Template Groups with Sample Items */}
-            <div className="bg-white">
-              {/* Group 1: New Leads */}
-              <div className="border-b border-gray-200 hover:bg-gray-50 transition-all bg-blue-50">
-                <div className="flex">
-                  <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-blue-50 z-30">
-                    <input type="checkbox" className="w-4 h-4 rounded border-gray-400" />
-                  </div>
-                  <div className="px-4 py-3 border-r border-gray-200 flex-shrink-0 sticky left-12 bg-blue-50 z-20 w-60 flex items-center">
-                    <ChevronDown className="w-4 h-4 mr-2 text-gray-600" />
-                    <span className="font-medium text-gray-900">New Leads</span>
-                    <span className="ml-2 text-xs text-gray-500">(1)</span>
-                  </div>
-                  <div className="px-4 py-3 border-r border-gray-200 w-32"></div>
-                  <div className="px-4 py-3 border-r border-gray-200 w-40"></div>
-                  <div className="px-4 py-3 border-r border-gray-200 w-32"></div>
-                  <div className="px-4 py-3 w-24"></div>
+          {/* Enhanced Compact Board Groups */}
+          <div className="bg-white">
+            {boardGroups.map((group) => (
+              <div key={group.name}>
+                {/* Group Header */}
+                <div className={`flex border-b transition-all ${
+                  group.collapsed ? 'border-gray-300' : 'border-gray-200'
+                } ${
+                  group.name === 'New Leads' ? 'bg-cyan-50 hover:bg-cyan-100' :
+                  group.name === 'Need Attention' ? 'bg-yellow-50 hover:bg-yellow-100' :
+                  group.name === 'Sent Estimate' ? 'bg-purple-50 hover:bg-purple-100' :
+                  group.name === 'Signed' ? 'bg-emerald-50 hover:bg-emerald-100' :
+                  group.name === 'In Progress' ? 'bg-blue-50 hover:bg-blue-100' :
+                  group.name === 'Complete' ? 'bg-green-50 hover:bg-green-100' :
+                  'bg-gray-50 hover:bg-gray-100'
+                }`}>
+                <div className="w-12 px-2 py-2 border-r border-gray-200 flex items-center justify-center sticky left-0 z-30 bg-inherit">
+                  <input
+                    type="checkbox"
+                    checked={group.items.every(item => selectedItems.has(item.id)) && group.items.length > 0}
+                    onChange={() => handleSelectGroup(group)}
+                    className="w-4 h-4 rounded border-gray-400"
+                  />
                 </div>
-              </div>
+                <div 
+                  className="px-3 py-2 border-r border-gray-200 flex-shrink-0 sticky left-12 z-20 cursor-pointer bg-inherit"
+                  style={{ 
+                    width: columnWidths[columns[0]?.id] || 150,
+                    minWidth: '100px',
+                    maxWidth: 'none'
+                  }}
+                  onClick={() => toggleGroup(group.name)}
+                >
+                  <div className="flex items-center space-x-2">
+                    {group.collapsed ? (
+                      <ChevronRight className="w-4 h-4 text-gray-600" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-gray-600" />
+                    )}
+                    <div className={`w-3 h-3 rounded-full ${
+                      group.name === 'New Leads' ? 'bg-cyan-500' :
+                      group.name === 'Need Attention' ? 'bg-yellow-500' :
+                      group.name === 'Sent Estimate' ? 'bg-purple-500' :
+                      group.name === 'Signed' ? 'bg-emerald-500' :
+                      group.name === 'In Progress' ? 'bg-blue-500' :
+                      group.name === 'Complete' ? 'bg-green-500' :
+                      'bg-gray-500'
+                    }`} />
+                    <span className={`text-sm font-medium ${
+                      group.name === 'New Leads' ? 'text-cyan-700' :
+                      group.name === 'Need Attention' ? 'text-yellow-700' :
+                      group.name === 'Sent Estimate' ? 'text-purple-700' :
+                      group.name === 'Signed' ? 'text-emerald-700' :
+                      group.name === 'In Progress' ? 'text-blue-700' :
+                      group.name === 'Complete' ? 'text-green-700' :
+                      'text-gray-700'
+                    }`}>{group.name}</span>
+                    <span className="text-sm text-gray-500 font-medium">({group.items.length})</span>
+                  </div>
+                </div>
               
               {/* Sample Item 1 */}
               <div className="flex border-b border-gray-100 hover:bg-gray-50">
