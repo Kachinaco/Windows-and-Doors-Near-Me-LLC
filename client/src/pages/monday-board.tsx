@@ -944,7 +944,7 @@ export default function MondayBoard() {
           <div className="flex items-center justify-center">
             <input
               type="checkbox"
-              checked={value === true || value === 'true'}
+              checked={value === 'true' || (value as any) === true}
               onChange={(e) => handleCellUpdate(item.id, column.id, e.target.checked)}
               className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
             />
@@ -986,14 +986,13 @@ export default function MondayBoard() {
 
       case 'timeline':
         return (
-          <div className="text-xs text-gray-400">
-            <Input
-              type="date"
-              value={value?.split('T')[0] || ''}
-              onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
-              className="h-4 text-xs border-none bg-transparent text-gray-300"
-            />
-          </div>
+          <Input
+            type="date"
+            value={value?.split ? value.split('T')[0] : value || ''}
+            onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
+            placeholder="Select date"
+          />
         );
 
       case 'formula':
@@ -1683,7 +1682,7 @@ export default function MondayBoard() {
           <div className="flex items-center justify-center">
             <input
               type="checkbox"
-              checked={value === 'true' || value === true}
+              checked={value === 'true' || (value as any) === true}
               onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.checked.toString())}
               className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
             />
