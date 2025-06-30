@@ -1,0 +1,107 @@
+Hi team,
+
+I need you to fully merge the project management board with the new dashboard interface so that everything is connected, works in real time, and stays mobile-friendly. This should not be a visual layer — it needs to be a seamless integration where the project board powers the dashboard and vice versa.
+
+⸻
+
+🔗 Objective
+
+Unify the interactive project board (Main Items, Sub Items, columns, formulas, folders) with the dashboard UI (like the Trackline design) into a single, real-time system where everything reflects live task data across:
+	•	Status charts
+	•	Task breakdown widgets
+	•	Timeline views
+	•	Assigned user summaries
+	•	Calendar events
+	•	Sub Item hierarchy
+
+⸻
+
+🧩 System Structure
+
+1. Single Data Model for Everything
+
+All components — board view, timeline, dashboard counters, user widgets — must read from and write to a shared, centralized data model (likely JSON, a database, or synced Replit state).
+	•	Tasks (Main Items)
+	•	Sub Items (child tasks)
+	•	Columns (Status, People, Dates, Progress, etc.)
+	•	Folders (visual grouping or metadata flag)
+	•	Task metadata (created date, last updated, formula values)
+	•	Timeline data (start and end time)
+
+All data changes (UI or backend) must update this shared structure. No duplicated arrays or local-only state.
+
+⸻
+
+2. Dashboard Widgets = Real-Time Board Insights
+
+Each dashboard widget needs to be powered directly by the board’s task data:
+
+Example:
+
+Tasks Widget
+	•	“Ongoing,” “Under Review,” and “Finished” sections read from [Status] column values in Main Items and Sub Items
+	•	Count total items with matching tags
+	•	Update instantly when a user changes a row status
+
+People Widget
+	•	Reads [People] column assignments
+	•	Groups and counts how many tasks are assigned to each person
+	•	Shows avatar and role if available
+
+Progress Bars
+	•	Uses Progress column from board (can be manually set or formula-driven from sub-items)
+	•	Updates visually across dashboard, timeline, and user summaries
+
+Calendar / Timeline
+	•	Uses [Due Date], [Start Time], or custom [Timeline] column
+	•	Each task becomes a bar or block, styled by status or assignee
+
+⸻
+
+📱 Mobile Integration
+	•	On mobile, collapse the board into stacked cards or swipeable rows
+	•	Timeline becomes a vertical list of tasks grouped by time or date
+	•	Sidebar becomes a bottom nav bar: Dashboard, Calendar, My Tasks, Settings
+	•	Any action performed (editing a task, changing a status, adding sub items) must reflect instantly in both the board and dashboard views
+
+⸻
+
+🔄 Interactivity Expectations
+	•	Add Task / Sub Item in the dashboard should reflect in the board immediately
+	•	Changing columns in board view (like Due Date or People) updates calendar, timeline, and assignment widgets in real time
+	•	Adding a folder in board view should show a project group in the dashboard
+	•	Clicking a task in dashboard opens its detail view or expands its board row
+	•	All dashboard sections must respect filters and group views from the board (e.g. filtered by person, group, or status)
+
+⸻
+
+⚙️ Technical Integration Notes
+	•	Consider wrapping board state in a centralized global store (React context, Redux, or your custom state manager)
+	•	Use useEffect() hooks or watchers to update dashboard when task data changes
+	•	Normalize task schema:
+	•	id
+	•	title
+	•	parentId (for sub-items)
+	•	status
+	•	assignees
+	•	dueDate
+	•	progress
+	•	timeline { start, end }
+	•	folder or groupId
+	•	Timeline and Gantt bars should resolve from [Start] and [Due Date]
+	•	Consider formula columns as computed fields — they must re-evaluate anytime a referenced column changes
+
+⸻
+
+✅ Acceptance Criteria
+	•	✅ Changes made in either board or dashboard reflect immediately across the system
+	•	✅ Sub Items, Folders, and Main Items are rendered consistently in both views
+	•	✅ Adding a Sub Item or Folder works from either view
+	•	✅ Timeline shows real tasks from board, not static examples
+	•	✅ Dashboard widgets (task counts, assignee summaries, statuses) auto-update on task changes
+	•	✅ Mobile users can navigate both board and dashboard fluidly without visual or data breakdowns
+	•	✅ No duplicated task state in separate components — single source of truth
+
+⸻
+
+Let me know when this is implemented or if you want me to define the exact data structure or API endpoints for syncing tasks between views. This dashboard must not be a wrapper — it must be driven by the board engine itself
