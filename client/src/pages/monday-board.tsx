@@ -2981,15 +2981,6 @@ export default function MondayBoard() {
                                     <Folder className="w-4 h-4" />
                                     Add Folder
                                   </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleAddSubItemFolder(item.id)}
-                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm h-8 px-3 flex items-center gap-2 font-medium border border-blue-300 hover:border-blue-400 rounded-md transition-all"
-                                  >
-                                    <Folder className="w-4 h-4" />
-                                    Add Folder
-                                  </Button>
                                 </div>
                                 
                                 {/* Column spaces using exact same columns as main board */}
