@@ -176,14 +176,14 @@ export default function MondayBoard() {
   const [isPosting, setIsPosting] = useState(false);
 
   // Fetch projects and transform to board items
-  const { data: projects = [], isLoading, error } = useQuery({
+  const { data: projects = [], isLoading, error } = useQuery<any[]>({
     queryKey: ['/api/projects'],
     enabled: !!user, // Only fetch when user is available
     refetchInterval: 5000,
   });
 
   // Debug logging
-  console.log('MondayBoard state:', { user: !!user, isLoading, projects: projects.length, error });
+  console.log('MondayBoard state:', { user: !!user, isLoading, projects: projects?.length || 0, error });
 
   // Query for project team members (for "Assigned To" dropdowns)
   const { data: teamMembers = [] } = useQuery({
@@ -1338,7 +1338,7 @@ export default function MondayBoard() {
     );
   }
 
-  if (isLoading && !projects.length) {
+  if (isLoading && (!projects || (Array.isArray(projects) && projects.length === 0))) {
     return (
       <div className="h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="text-center">
