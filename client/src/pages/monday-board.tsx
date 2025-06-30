@@ -75,10 +75,18 @@ export default function MondayBoard() {
   const queryClient = useQueryClient();
   const [location] = useLocation();
   
-  // Extract projectId from URL - either /projects (show all) or /projects/:id (show specific project board)
-  const projectId = location.startsWith('/projects/') 
+  // Extract projectId from URL - for column management, use first available project if viewing all projects
+  const urlProjectId = location.startsWith('/projects/') 
     ? parseInt(location.split('/')[2]) || null 
     : null;
+  
+  // Load projects to get default project ID if none specified in URL
+  const { data: availableProjects = [], isLoading: projectsLoading } = useQuery({
+    queryKey: ['/api/projects'],
+  });
+  
+  // Use URL projectId if available, otherwise use first project for column management
+  const projectId = urlProjectId || (availableProjects.length > 0 ? availableProjects[0]?.id : null);
   
   // Load columns from database
   const { data: projectColumns = [], isLoading: columnsLoading } = useQuery({
@@ -127,38 +135,68 @@ export default function MondayBoard() {
         { id: 'progress', name: 'Progress', type: 'progress', order: 7 },
       ];
 
-  // Add column mutation
+  // Quick column creation mutation
   const addColumnMutation = useMutation({
-    mutationFn: async ({ name, type, settings }: { name: string; type: string; settings?: any }) => {
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-      const response = await fetch(`/api/projects/${projectId}/columns`, {
+    mutationFn: async (columnType: BoardColumn['type']) => {
+      if (!projectId) return;
+      
+      const defaultNames = {
+        formula: 'Formula',
+        checkbox: 'Checkbox', 
+        number: 'Number',
+        date: 'Date',
+        text: 'Text',
+        status: 'Status',
+        people: 'People',
+        timeline: 'Timeline',
+        tags: 'Tags',
+        subitems: 'Subitems',
+        auto_number: 'Auto Number',
+        item_id: 'Item ID',
+        progress: 'Progress',
+        week: 'Week',
+        world_clock: 'World Clock',
+        email: 'Email',
+        phone: 'Phone',
+        location: 'Location',
+        link: 'Link',
+        custom_url: 'Custom URL',
+        team: 'Team',
+        vote: 'Vote',
+        color_picker: 'Color Picker',
+        files: 'Files',
+        creation_log: 'Creation Log',
+        last_updated: 'Last Updated',
+        time_tracking: 'Time Tracking',
+        api_action: 'API Action',
+        country: 'Country'
+      };
+      
+      return apiRequest(`/api/projects/${projectId}/columns`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
         body: JSON.stringify({
-          id: `column_${Date.now()}`, // Generate unique ID
-          name,
-          type,
-          settings: settings || {}
-        }),
+          name: defaultNames[columnType] || 'New Column',
+          type: columnType,
+          settings: columnType === 'formula' ? { formula: '' } : {}
+        })
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to create column');
-      }
-      
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId, 'columns'] });
-      toast({ title: "Column added successfully!" });
+      setIsQuickColumnMenuOpen(false);
+      toast({
+        title: "Column Added",
+        description: "Click the column title to rename it"
+      });
     },
     onError: (error) => {
       console.error('Add column error:', error);
-      toast({ title: "Failed to add column", variant: "destructive" });
-    },
+      toast({
+        title: "Error",
+        description: "Failed to add column",
+        variant: "destructive"
+      });
+    }
   });
 
   // Sub-item specific columns
@@ -170,9 +208,7 @@ export default function MondayBoard() {
     { id: 'subitem_dueDate', name: 'Due', type: 'date', order: 5 },
   ]);
 
-  const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
-  const [newColumnName, setNewColumnName] = useState('');
-  const [newColumnType, setNewColumnType] = useState<BoardColumn['type']>('text');
+  const [isQuickColumnMenuOpen, setIsQuickColumnMenuOpen] = useState(false);
   const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [undoStack, setUndoStack] = useState<Array<{action: string, data: any, timestamp: number}>>([]);
