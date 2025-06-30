@@ -3,6 +3,42 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
+// Workspace Management Tables
+export const workspaces = pgTable("workspaces", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  ownerId: integer("owner_id").references(() => users.id).notNull(),
+  isDefault: boolean("is_default").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const folders = pgTable("folders", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  workspaceId: integer("workspace_id").references(() => workspaces.id).notNull(),
+  color: text("color").default("#6b7280"), // gray-500 as default
+  isCollapsed: boolean("is_collapsed").default(false),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const boards = pgTable("boards", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  folderId: integer("folder_id").references(() => folders.id),
+  workspaceId: integer("workspace_id").references(() => workspaces.id).notNull(),
+  icon: text("icon").default("📋"), // emoji icon
+  color: text("color").default("#3b82f6"), // blue-500 as default
+  isStarred: boolean("is_starred").default(false),
+  lastModified: timestamp("last_modified").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Enhanced users table with subscription tiers
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -114,6 +150,7 @@ export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
+  boardId: integer("board_id").references(() => boards.id).notNull(), // Which board this project belongs to
   status: text("status").notNull().default("planning"), // planning, active, on_hold, completed, cancelled
   priority: text("priority").default("medium"), // low, medium, high, urgent
   startDate: timestamp("start_date"),
@@ -874,7 +911,56 @@ export const customerInteractionsRelations = relations(customerInteractions, ({ 
   }),
 }));
 
+// Workspace Relations
+export const workspaceRelations = relations(workspaces, ({ many, one }) => ({
+  owner: one(users, {
+    fields: [workspaces.ownerId],
+    references: [users.id],
+  }),
+  folders: many(folders),
+  boards: many(boards),
+}));
+
+export const folderRelations = relations(folders, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [folders.workspaceId],
+    references: [workspaces.id],
+  }),
+  boards: many(boards),
+}));
+
+export const boardRelations = relations(boards, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [boards.workspaceId],
+    references: [workspaces.id],
+  }),
+  folder: one(folders, {
+    fields: [boards.folderId],
+    references: [folders.id],
+  }),
+  projects: many(projects),
+}));
+
 // ===== VALIDATION SCHEMAS =====
+
+// Workspace Schemas
+export const insertWorkspaceSchema = createInsertSchema(workspaces).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFolderSchema = createInsertSchema(folders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBoardSchema = createInsertSchema(boards).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -1065,6 +1151,14 @@ export const insertProposalTemplateSchema = createInsertSchema(proposalTemplates
 });
 
 // ===== TYPE EXPORTS =====
+
+// Workspace Types
+export type Workspace = typeof workspaces.$inferSelect;
+export type InsertWorkspace = z.infer<typeof insertWorkspaceSchema>;
+export type Folder = typeof folders.$inferSelect;
+export type InsertFolder = z.infer<typeof insertFolderSchema>;
+export type Board = typeof boards.$inferSelect;
+export type InsertBoard = z.infer<typeof insertBoardSchema>;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
