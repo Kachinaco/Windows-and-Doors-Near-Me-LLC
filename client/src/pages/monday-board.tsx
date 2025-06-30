@@ -182,6 +182,9 @@ export default function MondayBoard() {
     refetchInterval: 5000,
   });
 
+  // Debug logging
+  console.log('MondayBoard state:', { user: !!user, isLoading, projects: projects.length, error });
+
   // Query for project team members (for "Assigned To" dropdowns)
   const { data: teamMembers = [] } = useQuery({
     queryKey: ['/api/projects/77/team-members'],
@@ -238,7 +241,11 @@ export default function MondayBoard() {
   }) : [];
 
   // Define fixed group order to match project pipeline exactly
-  const groupOrder = ['New Leads', 'Need Attention', 'Sent Estimate', 'Signed', 'In Progress', 'Complete'];
+  // Initialize group order state with localStorage support
+  const [groupOrder, setGroupOrder] = useState<string[]>(() => {
+    const saved = localStorage.getItem('customGroups');
+    return saved ? JSON.parse(saved) : ['New Leads', 'Need Attention', 'Sent Estimate', 'Signed', 'In Progress', 'Complete'];
+  });
 
   // Group items by group name
   const groupedItems = boardItems.reduce((groups: Record<string, BoardItem[]>, item) => {
@@ -693,6 +700,7 @@ export default function MondayBoard() {
     
     // Add the new group to the group order
     const newGroupOrder = [...groupOrder, newGroupName];
+    setGroupOrder(newGroupOrder);
     
     // Update local storage to persist custom groups
     localStorage.setItem('customGroups', JSON.stringify(newGroupOrder));
@@ -1330,7 +1338,7 @@ export default function MondayBoard() {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !projects.length) {
     return (
       <div className="h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="text-center">
