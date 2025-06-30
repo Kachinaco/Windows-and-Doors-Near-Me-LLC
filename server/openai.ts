@@ -10,6 +10,73 @@ Follow these instructions when using this blueprint:
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// Function to clean up AI-generated formulas
+function cleanFormula(formula: string): string {
+  // Remove common prefixes and explanatory text
+  let cleaned = formula.trim();
+  
+  // Remove explanatory text before the formula
+  const formulaMatch = cleaned.match(/=[\s\S]*$/);
+  if (formulaMatch) {
+    cleaned = formulaMatch[0];
+  }
+  
+  // Remove markdown code blocks
+  cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
+  cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
+  
+  // Remove leading text before equals sign
+  const equalsIndex = cleaned.lastIndexOf('=');
+  if (equalsIndex > 0) {
+    cleaned = cleaned.substring(equalsIndex);
+  }
+  
+  // Remove trailing explanations
+  const lines = cleaned.split('\n');
+  cleaned = lines[0].trim();
+  
+  return cleaned;
+}
+
+// Function to validate formulas
+function validateFormula(formula: string, columnNames: string[]): { isValid: boolean; error?: string } {
+  if (!formula || !formula.startsWith('=')) {
+    return { isValid: false, error: 'Formula must start with =' };
+  }
+  
+  // Check for column references in square brackets
+  const columnRefs = formula.match(/\[([^\]]+)\]/g);
+  if (columnRefs) {
+    for (const ref of columnRefs) {
+      const columnName = ref.slice(1, -1); // Remove brackets
+      if (!columnNames.includes(columnName)) {
+        return { isValid: false, error: `Column '${columnName}' does not exist` };
+      }
+    }
+  }
+  
+  // Basic syntax validation
+  const invalidChars = /[^=\+\-\*\/\%\^\(\)\[\]"'\w\s\.,<>!&|]/;
+  if (invalidChars.test(formula)) {
+    return { isValid: false, error: 'Formula contains invalid characters' };
+  }
+  
+  // Check for balanced parentheses
+  let openParens = 0;
+  for (const char of formula) {
+    if (char === '(') openParens++;
+    if (char === ')') openParens--;
+    if (openParens < 0) {
+      return { isValid: false, error: 'Unbalanced parentheses' };
+    }
+  }
+  if (openParens !== 0) {
+    return { isValid: false, error: 'Unbalanced parentheses' };
+  }
+  
+  return { isValid: true };
+}
+
 export async function generateFormulaFromPrompt(promptText: string, columnNames: string[]): Promise<string> {
   try {
     // Validate OpenAI API key exists
@@ -23,19 +90,24 @@ export async function generateFormulaFromPrompt(promptText: string, columnNames:
       throw new Error("Invalid OpenAI API key format. Please check your API key.");
     }
 
-    const formattedColumnNames = columnNames.map(name => `"${name}"`).join(", ");
-    const systemPrompt = `You are a formula generator for a spreadsheet application. Generate formulas using column references in square brackets like [Column Name]. 
-Available columns: ${formattedColumnNames}
+    // Format column names for the AI prompt
+    const formattedColumns = columnNames.map(name => `[${name}]`).join(', ');
+    
+    const systemPrompt = `You are a formula generator for a spreadsheet app. Only return formulas using the exact column names provided. Do not include explanations or text around the formula.
+
+Available columns: ${formattedColumns}
+
 Rules:
+- Use only the column names provided above
+- Column references must be in square brackets: [Column Name]
 - Use mathematical operators: +, -, *, /, %, ^
 - Use functions: SUM(), AVG(), COUNT(), MIN(), MAX(), IF(), AND(), OR()
-- Use comparison operators: =, !=, <, >, <=, >=
-- Column references must be in square brackets: [Column Name]
-- For text conditions, use quotes: IF([Status] = "Complete", "Done", "In Progress")
-- For calculations, use parentheses for order of operations
-- Return only the formula, no explanations`;
+- For percentage calculations, multiply by the decimal (e.g., 65% = * 1.65)
+- Return ONLY the formula, no explanations, no additional text`;
 
-    const userPrompt = `Create a formula to: ${promptText}`;
+    const userPrompt = `Based on the available columns: ${formattedColumns}
+Write a formula to: ${promptText}
+Output only the formula.`;
 
     // Create a new OpenAI instance with cleaned API key
     const cleanOpenAI = new OpenAI({ apiKey });
@@ -46,12 +118,22 @@ Rules:
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
       ],
-      temperature: 0.2,
-      max_tokens: 200,
+      temperature: 0.1, // Lower temperature for more consistent output
+      max_tokens: 150,
     });
 
-    const formula = response.choices[0]?.message?.content?.trim();
-    return formula || "Unable to generate formula";
+    let formula = response.choices[0]?.message?.content?.trim() || "";
+    
+    // Clean up the formula - remove any explanatory text
+    formula = cleanFormula(formula);
+    
+    // Validate the formula before returning
+    const validationResult = validateFormula(formula, columnNames);
+    if (!validationResult.isValid) {
+      throw new Error(`Generated formula is invalid: ${validationResult.error}`);
+    }
+    
+    return formula;
   } catch (error: any) {
     console.error("OpenAI API error:", error);
     
@@ -93,9 +175,9 @@ Explain formulas in simple, clear terms that non-technical users can understand.
     });
 
     const explanation = response.choices[0]?.message?.content?.trim();
-    return explanation || "Unable to explain formula";
-  } catch (error) {
+    return explanation || "Unable to explain this formula";
+  } catch (error: any) {
     console.error("OpenAI API error:", error);
-    throw new Error("Failed to explain formula. Please try again.");
+    return "Formula explanation not available";
   }
 }
