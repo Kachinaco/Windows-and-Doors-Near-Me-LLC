@@ -150,7 +150,7 @@ export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  boardId: integer("board_id").references(() => boards.id).notNull(), // Which board this project belongs to
+  boardId: integer("board_id").references(() => boards.id), // Which board this project belongs to (optional during migration)
   status: text("status").notNull().default("planning"), // planning, active, on_hold, completed, cancelled
   priority: text("priority").default("medium"), // low, medium, high, urgent
   startDate: timestamp("start_date"),
