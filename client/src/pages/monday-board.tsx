@@ -2963,18 +2963,36 @@ export default function MondayBoard() {
                                   );
                                 })}
 
-                              {/* Add Folder Section - positioned after all folders */}
-                              <div className="flex hover:bg-blue-500/5 transition-all border-b border-blue-500/10">
-                                {/* Empty checkbox space - moved to right */}
-                                <div className="w-12 px-2 py-2 border-r border-blue-500/20 sticky left-0 bg-white z-20"></div>
+                              {/* Consolidated Action Buttons Section */}
+                              <div className="flex hover:bg-blue-500/5 transition-all border-b border-blue-500/10 bg-blue-50/20">
+                                {/* Empty checkbox space */}
+                                <div className="w-12 px-2 py-2 border-r border-blue-500/20 sticky left-0 bg-blue-50/20 z-20"></div>
                                 <div 
-                                  className="px-4 py-2 flex-shrink-0 sticky left-12 bg-white z-10"
+                                  className="px-4 py-2 flex-shrink-0 sticky left-12 bg-blue-50/20 z-10 flex items-center gap-2"
                                   style={{ 
                                     width: columnWidths['item'] || 120,
-                                    minWidth: '80px',
+                                    minWidth: '160px',
                                     maxWidth: 'none'
                                   }}
                                 >
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleAddSubItem(item.id)}
+                                    className="text-blue-700 hover:text-blue-800 hover:bg-blue-100 text-sm h-8 px-3 flex items-center gap-2 border border-blue-400 hover:border-blue-500 rounded-md transition-all font-medium"
+                                  >
+                                    <Plus className="w-4 h-4" />
+                                    Add Sub Item
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleAddSubItemFolder(item.id)}
+                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm h-8 px-3 flex items-center gap-2 font-medium border border-blue-300 hover:border-blue-400 rounded-md transition-all"
+                                  >
+                                    <Folder className="w-4 h-4" />
+                                    Add Folder
+                                  </Button>
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -2989,8 +3007,8 @@ export default function MondayBoard() {
                                 {/* Column spaces using exact same columns as main board */}
                                 {columns.slice(1).map((column, index) => (
                                   <div 
-                                    key={`addfolder-${item.id}-${column.id}`}
-                                    className="px-4 py-3 border-r border-gray-200 flex-shrink-0"
+                                    key={`actions-${item.id}-${column.id}`}
+                                    className="px-4 py-3 border-r border-gray-200 flex-shrink-0 bg-blue-50/20"
                                     style={{ 
                                       width: getColumnWidth(column.id, index + 1), // +1 because we slice(1)
                                       minWidth: index === 0 ? '80px' : '90px',
@@ -2998,19 +3016,12 @@ export default function MondayBoard() {
                                     }}
                                   />
                                 ))}
-                                
-                                {/* Checkbox positioned on the right */}
-                                <div className="w-12 px-2 py-2 flex items-center justify-center ml-auto">
-                                  <input 
-                                    type="checkbox" 
-                                    className="w-4 h-4 rounded border-blue-500/50 bg-blue-900/30 text-blue-400 focus:ring-blue-400 focus:ring-1"
-                                  />
-                                </div>
                               </div>
                           </>
                         ) : (
-                            // Fallback: render sub-items without folders if no folders exist
-                            item.subItems?.map((subItem) => (
+                            <>
+                            {/* Fallback: render sub-items without folders if no folders exist */}
+                            {item.subItems?.map((subItem) => (
                               <div key={`sub-${subItem.id}`} className="flex hover:bg-gray-50 transition-all bg-white border-b border-gray-200">
                                 {/* Empty checkbox space for sub-items */}
                                 <div className="w-8 px-1 py-0.5 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-20">
@@ -3047,7 +3058,54 @@ export default function MondayBoard() {
                                   </div>
                                 ))}
                               </div>
-                            ))
+                            ))}
+                            
+                            {/* Action Buttons for non-folder Sub Items */}
+                            <div className="flex hover:bg-blue-500/5 transition-all border-b border-blue-500/10 bg-blue-50/20">
+                              {/* Empty checkbox space */}
+                              <div className="w-8 px-1 py-0.5 border-r border-blue-500/20 sticky left-0 bg-blue-50/20 z-20"></div>
+                              <div 
+                                className="px-2 py-0.5 flex-shrink-0 sticky left-8 bg-blue-50/20 z-10 flex items-center gap-2"
+                                style={{ 
+                                  width: columnWidths['item'] || 200,
+                                  minWidth: '160px',
+                                  maxWidth: 'none'
+                                }}
+                              >
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleAddSubItem(item.id)}
+                                  className="text-blue-700 hover:text-blue-800 hover:bg-blue-100 text-sm h-8 px-3 flex items-center gap-2 border border-blue-400 hover:border-blue-500 rounded-md transition-all font-medium"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                  Add Sub Item
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleAddSubItemFolder(item.id)}
+                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm h-8 px-3 flex items-center gap-2 font-medium border border-blue-300 hover:border-blue-400 rounded-md transition-all"
+                                >
+                                  <Folder className="w-4 h-4" />
+                                  Add Folder
+                                </Button>
+                              </div>
+                              
+                              {/* Column spaces using exact same columns as main board */}
+                              {subItemColumns.map((column, index) => (
+                                <div 
+                                  key={`actions-nf-${item.id}-${column.id}`}
+                                  className="px-2 py-0.5 border-r border-gray-200 flex-shrink-0 bg-blue-50/20"
+                                  style={{ 
+                                    width: columnWidths[column.id] || 120,
+                                    minWidth: '80px',
+                                    maxWidth: 'none'
+                                  }}
+                                />
+                              ))}
+                            </div>
+                            </>
                           )}
                         </>
                       )}
