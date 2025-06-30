@@ -1662,7 +1662,12 @@ export default function MondayBoard() {
                     className="w-full h-8 border-none outline-none bg-transparent text-gray-900"
                   />
                 </div>
-                <div className="px-4 py-3 w-24"></div>
+                <div className="px-4 py-3 w-24 flex items-center justify-center">
+                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 h-6 text-xs">
+                    <Plus className="w-3 h-3 mr-1" />
+                    Sub-item
+                  </Button>
+                </div>
               </div>
 
               {/* Group 2: Active Projects */}
@@ -1792,6 +1797,16 @@ export default function MondayBoard() {
                   </div>
                   <div className="px-4 py-2 w-24"></div>
                 </div>
+
+                {/* Add Sub-item Button for Initial Contact Folder */}
+                <div className="ml-6 bg-blue-50 hover:bg-blue-100 transition-all border-l-2 border-blue-400">
+                  <div className="flex items-center py-2 px-4">
+                    <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 h-6 text-xs">
+                      <Plus className="w-3 h-3 mr-1" />
+                      Add Sub-item to Initial Contact
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               {/* Group 3: Completed */}
@@ -1856,6 +1871,24 @@ export default function MondayBoard() {
                   <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 h-6 text-xs">
                     <Plus className="w-3 h-3 mr-1" />
                     Sub-item
+                  </Button>
+                </div>
+              </div>
+
+              {/* Add Folder Button */}
+              <div className="ml-8 bg-blue-50 hover:bg-blue-100 transition-all border border-blue-200 rounded-md mx-4 my-2">
+                <div className="flex items-center justify-between py-2 px-4">
+                  <div className="flex items-center">
+                    <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 h-6 text-xs">
+                      <Folder className="w-3 h-3 mr-2" />
+                      <Plus className="w-3 h-3 mr-1" />
+                      Add Folder
+                    </Button>
+                    <span className="ml-2 text-xs text-gray-600">Organize your sub-items</span>
+                  </div>
+                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 h-6 text-xs">
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add Direct Sub-item
                   </Button>
                 </div>
               </div>
