@@ -4,6 +4,9 @@ import { ChevronDown, ChevronRight, Plus, Search, Star, StarOff, MoreVertical, C
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +40,14 @@ interface Workspace {
 export default function WorkspacesPage() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isCreateBoardModalOpen, setIsCreateBoardModalOpen] = useState(false);
+  const [newBoardForm, setNewBoardForm] = useState({
+    name: '',
+    description: '',
+    folderId: '',
+    icon: '📋',
+    color: '#3b82f6'
+  });
   
   // Mock data matching your screenshot
   const [workspaces, setWorkspaces] = useState<Workspace[]>([
@@ -168,6 +179,49 @@ export default function WorkspacesPage() {
           }
         : workspace
     ));
+  };
+
+  const createBoard = () => {
+    if (!newBoardForm.name.trim()) return;
+    
+    // Find the folder to add the board to
+    const workspaceId = 1; // Default to first workspace
+    const folderId = parseInt(newBoardForm.folderId) || 1; // Default to first folder
+    
+    const newBoard: Board = {
+      id: Date.now(), // Simple ID generation for now
+      name: newBoardForm.name,
+      icon: newBoardForm.icon,
+      lastModified: 'just now',
+      isStarred: false,
+      path: `/monday-board/${Date.now()}`
+    };
+
+    setWorkspaces(prev => prev.map(workspace => 
+      workspace.id === workspaceId 
+        ? {
+            ...workspace,
+            folders: workspace.folders.map(folder =>
+              folder.id === folderId
+                ? {
+                    ...folder,
+                    boards: [...folder.boards, newBoard]
+                  }
+                : folder
+            )
+          }
+        : workspace
+    ));
+
+    // Reset form and close modal
+    setNewBoardForm({
+      name: '',
+      description: '',
+      folderId: '',
+      icon: '📋',
+      color: '#3b82f6'
+    });
+    setIsCreateBoardModalOpen(false);
   };
 
   const filteredWorkspaces = workspaces.map(workspace => ({
@@ -316,12 +370,88 @@ export default function WorkspacesPage() {
       {/* Floating Action Button */}
       <Button
         className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg"
-        onClick={() => {
-          // TODO: Open create board/folder modal
-        }}
+        onClick={() => setIsCreateBoardModalOpen(true)}
       >
         <Plus className="w-6 h-6" />
       </Button>
+
+      {/* Create Board Modal */}
+      <Dialog open={isCreateBoardModalOpen} onOpenChange={setIsCreateBoardModalOpen}>
+        <DialogContent className="bg-gray-900 border-gray-700 text-white">
+          <DialogHeader>
+            <DialogTitle>Create New Board</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm text-gray-300">Board Name *</Label>
+              <Input
+                value={newBoardForm.name}
+                onChange={(e) => setNewBoardForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter board name"
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
+            
+            <div>
+              <Label className="text-sm text-gray-300">Description</Label>
+              <Input
+                value={newBoardForm.description}
+                onChange={(e) => setNewBoardForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Board description (optional)"
+                className="bg-gray-800 border-gray-600 text-white"
+              />
+            </div>
+
+            <div>
+              <Label className="text-sm text-gray-300">Folder</Label>
+              <Select value={newBoardForm.folderId} onValueChange={(value) => setNewBoardForm(prev => ({ ...prev, folderId: value }))}>
+                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                  <SelectValue placeholder="Select a folder" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  <SelectItem value="1" className="text-white">Kachina 2025</SelectItem>
+                  <SelectItem value="2" className="text-white">Installers/Employees</SelectItem>
+                  <SelectItem value="3" className="text-white">W&D</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-sm text-gray-300">Icon</Label>
+              <div className="flex gap-2 flex-wrap">
+                {['📋', '📦', '📅', '👤', '🗓️', '🔧', '👥', '📊', '💼', '🎯'].map((icon) => (
+                  <Button
+                    key={icon}
+                    variant={newBoardForm.icon === icon ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setNewBoardForm(prev => ({ ...prev, icon }))}
+                    className={`w-10 h-10 ${newBoardForm.icon === icon ? 'bg-blue-600' : 'bg-gray-800 border-gray-600'}`}
+                  >
+                    {icon}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button 
+                onClick={createBoard}
+                disabled={!newBoardForm.name.trim()}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                Create Board
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsCreateBoardModalOpen(false)}
+                className="border-gray-600 text-gray-300 hover:bg-gray-800"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
