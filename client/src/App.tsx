@@ -43,6 +43,7 @@ import CustomerDeliveryPage from "@/pages/customer-delivery";
 import CustomerSettingsPage from "@/pages/customer-settings";
 import ContractsPage from "@/pages/contracts";
 import ProposalClientPage from "@/pages/proposal-client";
+import TracklineDashboard from "@/pages/trackline-dashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -90,6 +91,7 @@ function Router() {
       {isAuthenticated ? (
         <>
           <Route path="/dashboard" component={Dashboard} />
+          <Route path="/trackline" component={TracklineDashboard} />
           <Route path="/catalog" component={CatalogPage} />
           <Route path="/quotes-manager" component={QuoteDashboard} />
           <Route path="/quote" component={QuotePage} />
