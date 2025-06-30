@@ -524,6 +524,27 @@ export default function Dashboard() {
               </Link>
             </div>
 
+            {/* Trackline Timeline Dashboard */}
+            <div>
+              <Link href="/trackline">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border-teal-200 dark:border-teal-800">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-teal-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <Clock className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Trackline Timeline</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Visual timeline management
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+
             {/* Calendar */}
             <div>
               <Link href="/calendar">
