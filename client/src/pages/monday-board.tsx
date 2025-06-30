@@ -252,12 +252,11 @@ export default function MondayBoard() {
   // Create board groups with collapse state
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   
-  // Create groups in fixed order, only including groups that have items
+  // Create groups in fixed order, including empty groups
   const boardGroups: BoardGroup[] = groupOrder
-    .filter(groupName => groupedItems[groupName] && groupedItems[groupName].length > 0)
     .map(groupName => ({
       name: groupName,
-      items: groupedItems[groupName],
+      items: groupedItems[groupName] || [],
       collapsed: collapsedGroups[groupName] || false
     }));
 
