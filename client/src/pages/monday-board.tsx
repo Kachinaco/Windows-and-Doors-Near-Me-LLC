@@ -214,6 +214,34 @@ export default function MondayBoard() {
   });
   const [emailError, setEmailError] = useState<string>('');
 
+  // Formula AI Assistant state
+  const [formulaModal, setFormulaModal] = useState<{
+    isOpen: boolean;
+    itemId: number | null;
+    columnId: string | null;
+    currentValue: string;
+    isSubItem: boolean;
+  }>({
+    isOpen: false,
+    itemId: null,
+    columnId: null,
+    currentValue: '',
+    isSubItem: false
+  });
+  const [formulaData, setFormulaData] = useState<{
+    formula: string;
+    aiPrompt: string;
+    suggestedFormula: string;
+    explanation: string;
+  }>({
+    formula: '',
+    aiPrompt: '',
+    suggestedFormula: '',
+    explanation: ''
+  });
+  const [formulaError, setFormulaError] = useState<string>('');
+  const [isGeneratingFormula, setIsGeneratingFormula] = useState(false);
+
   // Helper function for consistent column width calculation
   const getColumnWidth = (columnId: string, index: number) => {
     return columnWidths[columnId] || (index === 0 ? 120 : 140);
@@ -298,6 +326,112 @@ export default function MondayBoard() {
     }
 
     closeEmailModal();
+  };
+
+  // Formula AI Assistant functions
+  const openFormulaModal = (itemId: number, columnId: string, currentValue: string, isSubItem: boolean = false) => {
+    setFormulaData({
+      formula: currentValue || '',
+      aiPrompt: '',
+      suggestedFormula: '',
+      explanation: ''
+    });
+    setFormulaModal({
+      isOpen: true,
+      itemId,
+      columnId,
+      currentValue,
+      isSubItem
+    });
+    setFormulaError('');
+  };
+
+  const closeFormulaModal = () => {
+    setFormulaModal({
+      isOpen: false,
+      itemId: null,
+      columnId: null,
+      currentValue: '',
+      isSubItem: false
+    });
+    setFormulaData({
+      formula: '',
+      aiPrompt: '',
+      suggestedFormula: '',
+      explanation: ''
+    });
+    setFormulaError('');
+    setIsGeneratingFormula(false);
+  };
+
+  const generateFormula = async () => {
+    if (!formulaData.aiPrompt.trim()) {
+      setFormulaError('Please describe what you want to calculate');
+      return;
+    }
+
+    setIsGeneratingFormula(true);
+    setFormulaError('');
+
+    try {
+      const columnNames = columns.map(col => col.name);
+      
+      const response = await fetch('/api/ai/generate-formula', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          prompt: formulaData.aiPrompt,
+          columnNames
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to generate formula');
+      }
+
+      setFormulaData(prev => ({
+        ...prev,
+        suggestedFormula: data.formula,
+        explanation: data.explanation || ''
+      }));
+
+    } catch (error: any) {
+      setFormulaError(error.message || 'Failed to generate formula. Please try again.');
+    } finally {
+      setIsGeneratingFormula(false);
+    }
+  };
+
+  const useGeneratedFormula = () => {
+    setFormulaData(prev => ({
+      ...prev,
+      formula: prev.suggestedFormula
+    }));
+  };
+
+  const saveFormula = () => {
+    const { formula } = formulaData;
+    
+    if (!formula.trim()) {
+      setFormulaError('Formula cannot be empty');
+      return;
+    }
+
+    // Update the cell
+    if (formulaModal.itemId && formulaModal.columnId) {
+      if (formulaModal.isSubItem) {
+        handleSubItemCellUpdate(formulaModal.itemId, formulaModal.columnId, formula);
+      } else {
+        handleCellUpdate(formulaModal.itemId, formulaModal.columnId, formula);
+      }
+    }
+
+    closeFormulaModal();
   };
 
   // Fetch projects and transform to board items
@@ -1215,11 +1349,15 @@ export default function MondayBoard() {
         );
 
       case 'formula':
-        // Simple formula evaluation (in real app, would be more sophisticated)
-        const formulaResult = column.settings?.formula ? 'Calc' : value;
         return (
-          <div className="text-xs text-purple-400 font-mono">
-            {formulaResult || '=SUM()'}
+          <div 
+            className="flex items-center gap-1 cursor-pointer hover:bg-gray-700/50 px-1 py-0.5 rounded group"
+            onClick={() => openFormulaModal(item.id, column.id, value || '', false)}
+          >
+            <Calculator className="w-3 h-3 text-purple-400" />
+            <span className="text-xs text-purple-400 font-mono flex-1 truncate">
+              {value || 'Click to add formula'}
+            </span>
           </div>
         );
 
@@ -2042,6 +2180,19 @@ export default function MondayBoard() {
           <div className="flex items-center gap-1">
             <Timer className="w-2.5 h-2.5 text-blue-400" />
             <span className="text-xs text-gray-300">{timeValue}</span>
+          </div>
+        );
+
+      case 'formula':
+        return (
+          <div 
+            className="flex items-center gap-1 cursor-pointer hover:bg-gray-700/50 px-1 py-0.5 rounded group"
+            onClick={() => openFormulaModal(subItem.id, column.id, value || '', true)}
+          >
+            <Calculator className="w-2.5 h-2.5 text-purple-400" />
+            <span className="text-xs text-purple-400 font-mono flex-1 truncate">
+              {value || 'Click to add formula'}
+            </span>
           </div>
         );
         
@@ -3459,6 +3610,128 @@ export default function MondayBoard() {
               <Button 
                 variant="outline" 
                 onClick={closeEmailModal}
+                className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 h-10 rounded-md"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Formula Assistant Modal */}
+      <Dialog open={formulaModal.isOpen} onOpenChange={closeFormulaModal}>
+        <DialogContent className="bg-white border border-gray-200 shadow-xl rounded-lg max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-purple-500" />
+              Formula Editor
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 pt-2">
+            {/* Manual Formula Input */}
+            <div>
+              <Label className="text-sm text-gray-700 font-medium">Formula</Label>
+              <Input
+                value={formulaData.formula}
+                onChange={(e) => setFormulaData(prev => ({ ...prev, formula: e.target.value }))}
+                className="bg-white border-gray-300 text-gray-900 h-10 focus:border-purple-500 focus:ring-purple-500 font-mono"
+                placeholder="=SUM([Column A], [Column B]) or click AI assistance below"
+              />
+              {formulaError && (
+                <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <span>⚠️</span>
+                  {formulaError}
+                </div>
+              )}
+            </div>
+
+            {/* AI Assistant Section */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                  💬
+                </div>
+                <h3 className="text-sm font-semibold text-gray-800">Need Help? Ask AI to Build Your Formula</h3>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs text-gray-600">Describe what you want to calculate</Label>
+                  <Input
+                    value={formulaData.aiPrompt}
+                    onChange={(e) => setFormulaData(prev => ({ ...prev, aiPrompt: e.target.value }))}
+                    className="bg-white border-gray-300 text-gray-900 h-9 text-sm focus:border-purple-500 focus:ring-purple-500"
+                    placeholder="e.g., Calculate total profit after labor and material cost"
+                  />
+                </div>
+                
+                <Button 
+                  onClick={generateFormula}
+                  disabled={isGeneratingFormula || !formulaData.aiPrompt.trim()}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white h-9 rounded-md text-sm"
+                >
+                  {isGeneratingFormula ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Generating Formula...
+                    </>
+                  ) : (
+                    'Generate Formula'
+                  )}
+                </Button>
+              </div>
+
+              {/* AI Generated Formula Result */}
+              {formulaData.suggestedFormula && (
+                <div className="mt-4 p-3 bg-white border border-purple-200 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-xs text-purple-700 font-medium">AI Suggested Formula:</Label>
+                  </div>
+                  <div className="bg-purple-50 p-2 rounded font-mono text-sm text-purple-800 mb-3">
+                    {formulaData.suggestedFormula}
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <Button 
+                      onClick={useGeneratedFormula}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 rounded text-xs"
+                    >
+                      ✅ Use Formula
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => setFormulaData(prev => ({ ...prev, formula: prev.suggestedFormula }))}
+                      className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50 h-8 rounded text-xs"
+                    >
+                      ✏️ Edit Formula
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={generateFormula}
+                      disabled={isGeneratingFormula}
+                      className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 h-8 rounded text-xs"
+                    >
+                      ♻️ Regenerate
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex space-x-3 pt-2">
+              <Button 
+                onClick={saveFormula}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white h-10 rounded-md flex items-center justify-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Save Formula
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={closeFormulaModal}
                 className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 h-10 rounded-md"
               >
                 Cancel
