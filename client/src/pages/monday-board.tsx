@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { type Project } from "@shared/schema";
-import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns, Trash2, MessageCircle, UserPlus, Mail, Phone, Check, Clock, BarChart3, Calculator, Globe, MapPin, Link, UserCheck, ThumbsUp, Palette, FileUp, History, Timer, Zap, Flag } from "lucide-react";
+import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns, Trash2, MessageCircle, UserPlus, Mail, Phone, Check, Clock, BarChart3, Calculator, Globe, MapPin, Link, UserCheck, ThumbsUp, Palette, FileUp, History, Timer, Zap, Flag, Save } from "lucide-react";
 
 interface BoardColumn {
   id: string;
@@ -191,9 +191,113 @@ export default function MondayBoard() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isPosting, setIsPosting] = useState(false);
 
+  // Email modal state
+  const [emailModal, setEmailModal] = useState<{
+    isOpen: boolean;
+    itemId: number | null;
+    columnId: string | null;
+    currentValue: string;
+    isSubItem: boolean;
+  }>({
+    isOpen: false,
+    itemId: null,
+    columnId: null,
+    currentValue: '',
+    isSubItem: false
+  });
+  const [emailData, setEmailData] = useState<{
+    address: string;
+    displayText: string;
+  }>({
+    address: '',
+    displayText: ''
+  });
+  const [emailError, setEmailError] = useState<string>('');
+
   // Helper function for consistent column width calculation
   const getColumnWidth = (columnId: string, index: number) => {
     return columnWidths[columnId] || (index === 0 ? 120 : 140);
+  };
+
+  // Email validation function
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Open email modal
+  const openEmailModal = (itemId: number, columnId: string, currentValue: string, isSubItem: boolean = false) => {
+    // Parse current value if it contains both email and display text
+    let address = '';
+    let displayText = '';
+    
+    if (currentValue) {
+      // Check if value contains display text and email (format: "Display Text <email@domain.com>")
+      const match = currentValue.match(/^(.+?)\s*<(.+)>$/);
+      if (match) {
+        displayText = match[1].trim();
+        address = match[2].trim();
+      } else {
+        // Just email address
+        address = currentValue;
+      }
+    }
+
+    setEmailData({ address, displayText });
+    setEmailModal({
+      isOpen: true,
+      itemId,
+      columnId,
+      currentValue,
+      isSubItem
+    });
+    setEmailError('');
+  };
+
+  // Close email modal
+  const closeEmailModal = () => {
+    setEmailModal({
+      isOpen: false,
+      itemId: null,
+      columnId: null,
+      currentValue: '',
+      isSubItem: false
+    });
+    setEmailData({ address: '', displayText: '' });
+    setEmailError('');
+  };
+
+  // Save email data
+  const saveEmailData = () => {
+    const { address, displayText } = emailData;
+    
+    // Validate email address
+    if (!address.trim()) {
+      setEmailError('Email address is required');
+      return;
+    }
+    
+    if (!validateEmail(address)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    // Format the value
+    let formattedValue = address;
+    if (displayText.trim()) {
+      formattedValue = `${displayText.trim()} <${address}>`;
+    }
+
+    // Update the cell
+    if (emailModal.itemId && emailModal.columnId) {
+      if (emailModal.isSubItem) {
+        handleSubItemCellUpdate(emailModal.itemId, emailModal.columnId, formattedValue);
+      } else {
+        handleCellUpdate(emailModal.itemId, emailModal.columnId, formattedValue);
+      }
+    }
+
+    closeEmailModal();
   };
 
   // Fetch projects and transform to board items
@@ -287,7 +391,7 @@ export default function MondayBoard() {
 
   // Update local board items when projects data changes
   useEffect(() => {
-    if (Array.isArray(projects)) {
+    if (Array.isArray(projects) && projects.length > 0) {
       const transformedItems = projects.map((project: any) => {
         // Map project status to pipeline groups
         let groupName = 'New Leads';
@@ -336,7 +440,14 @@ export default function MondayBoard() {
           subItemFolders: project.subItemFolders || []
         };
       });
-      setBoardItems(transformedItems);
+      
+      // Only update if the data has actually changed
+      setBoardItems(prevItems => {
+        if (JSON.stringify(prevItems.map(item => item.id)) !== JSON.stringify(transformedItems.map(item => item.id))) {
+          return transformedItems;
+        }
+        return prevItems;
+      });
     }
   }, [projects]);
 
@@ -1135,16 +1246,48 @@ export default function MondayBoard() {
 
       // Communication + Team Columns
       case 'email':
+        // Parse display value for showing in cell
+        const emailDisplayValue = (() => {
+          if (!value) return '';
+          
+          // Check if value contains display text and email
+          const match = value.match(/^(.+?)\s*<(.+)>$/);
+          if (match) {
+            return match[1].trim(); // Show display text
+          }
+          return value; // Show email address
+        })();
+
+        // Extract email address for mailto link
+        const emailAddress = (() => {
+          if (!value) return '';
+          
+          const match = value.match(/^(.+?)\s*<(.+)>$/);
+          if (match) {
+            return match[2].trim(); // Extract email from format
+          }
+          return value; // Use as email address
+        })();
+
         return (
-          <div className="flex items-center gap-1">
+          <div 
+            className="flex items-center gap-1 cursor-pointer hover:bg-gray-700/50 px-1 py-0.5 rounded group"
+            onClick={() => openEmailModal(item.id, column.id, value || '', false)}
+          >
             <Mail className="w-3 h-3 text-blue-400" />
-            <Input
-              type="email"
-              value={value}
-              onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
-              className="h-4 text-xs border-none bg-transparent text-gray-300 flex-1"
-              placeholder="email@example.com"
-            />
+            {emailAddress && validateEmail(emailAddress) ? (
+              <a
+                href={`mailto:${emailAddress}`}
+                className="text-xs text-blue-400 hover:text-blue-300 hover:underline flex-1 truncate"
+                onClick={(e) => e.stopPropagation()} // Prevent modal from opening when clicking link
+              >
+                {emailDisplayValue || emailAddress}
+              </a>
+            ) : (
+              <span className="text-xs text-gray-500 flex-1">
+                {emailDisplayValue || 'Click to add email'}
+              </span>
+            )}
           </div>
         );
 
@@ -1820,16 +1963,48 @@ export default function MondayBoard() {
         );
 
       case 'email':
+        // Parse display value for showing in cell
+        const subEmailDisplayValue = (() => {
+          if (!value) return '';
+          
+          // Check if value contains display text and email
+          const match = value.match(/^(.+?)\s*<(.+)>$/);
+          if (match) {
+            return match[1].trim(); // Show display text
+          }
+          return value; // Show email address
+        })();
+
+        // Extract email address for mailto link
+        const subEmailAddress = (() => {
+          if (!value) return '';
+          
+          const match = value.match(/^(.+?)\s*<(.+)>$/);
+          if (match) {
+            return match[2].trim(); // Extract email from format
+          }
+          return value; // Use as email address
+        })();
+
         return (
-          <div className="flex items-center gap-1">
+          <div 
+            className="flex items-center gap-1 cursor-pointer hover:bg-gray-700/50 px-1 py-0.5 rounded group"
+            onClick={() => openEmailModal(subItem.id, column.id, value || '', true)}
+          >
             <Mail className="w-2.5 h-2.5 text-blue-400" />
-            <Input
-              type="email"
-              value={value}
-              onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
-              className="h-4 text-xs border-none bg-transparent text-gray-300 flex-1"
-              placeholder="email@example.com"
-            />
+            {subEmailAddress && validateEmail(subEmailAddress) ? (
+              <a
+                href={`mailto:${subEmailAddress}`}
+                className="text-xs text-blue-400 hover:text-blue-300 hover:underline flex-1 truncate"
+                onClick={(e) => e.stopPropagation()} // Prevent modal from opening when clicking link
+              >
+                {subEmailDisplayValue || subEmailAddress}
+              </a>
+            ) : (
+              <span className="text-xs text-gray-500 flex-1">
+                {subEmailDisplayValue || 'Click to add email'}
+              </span>
+            )}
           </div>
         );
 
