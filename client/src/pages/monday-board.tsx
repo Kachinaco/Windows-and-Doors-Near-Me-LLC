@@ -191,6 +191,11 @@ export default function MondayBoard() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isPosting, setIsPosting] = useState(false);
 
+  // Helper function for consistent column width calculation
+  const getColumnWidth = (columnId: string, index: number) => {
+    return columnWidths[columnId] || (index === 0 ? 120 : 140);
+  };
+
   // Fetch projects and transform to board items
   const { data: projects = [], isLoading, error } = useQuery<any[]>({
     queryKey: ['/api/projects'],
@@ -2103,7 +2108,7 @@ export default function MondayBoard() {
                     index === 0 ? 'sticky left-12 z-20' : 'z-10'
                   }`}
                   style={{ 
-                    width: columnWidths[column.id] || (index === 0 ? 120 : 120),
+                    width: getColumnWidth(column.id, index),
                     minWidth: index === 0 ? '80px' : '90px',
                     maxWidth: 'none'
                   }}
@@ -2210,8 +2215,8 @@ export default function MondayBoard() {
                       'border-gray-200'
                     }`}
                     style={{ 
-                      width: columnWidths[column.id] || 100,
-                      minWidth: '70px',
+                      width: getColumnWidth(column.id, columns.indexOf(column)),
+                      minWidth: '90px',
                       maxWidth: 'none'
                     }}
                   >
@@ -2325,8 +2330,8 @@ export default function MondayBoard() {
                               index === 0 ? 'sticky left-12 z-20 justify-start' : 'z-5 justify-center'
                             }`}
                             style={{ 
-                              width: columnWidths[column.id] || (index === 0 ? 120 : 140),
-                              minWidth: index === 0 ? '80px' : '100px',
+                              width: getColumnWidth(column.id, index),
+                              minWidth: index === 0 ? '80px' : '90px',
                               maxWidth: 'none'
                             }}
                           >
@@ -2441,7 +2446,7 @@ export default function MondayBoard() {
                                         {/* Column headers using exact same columns as main board for perfect alignment */}
                                         {columns.slice(1).map((column, index) => {
                                           // Use main board columns for perfect alignment
-                                          const columnWidth = columnWidths[column.id] || (index === 0 ? 120 : 140);
+                                          const columnWidth = getColumnWidth(column.id, index + 1); // +1 because we slice(1)
                                           
                                           return (
                                           <div 
@@ -2562,7 +2567,7 @@ export default function MondayBoard() {
                                                 {/* Sub-item cells using exact same columns as main board */}
                                                 {columns.slice(1).map((column, index) => {
                                                   // Use main board columns for perfect alignment
-                                                  const columnWidth = columnWidths[column.id] || (index === 0 ? 120 : 140);
+                                                  const columnWidth = getColumnWidth(column.id, index + 1); // +1 because we slice(1)
                                                   
                                                   return (
                                                   <div 
@@ -2671,6 +2676,12 @@ export default function MondayBoard() {
                                                       {column.type === 'subitems' && (
                                                         <div className="text-center text-blue-600 font-medium text-xs">
                                                           Sub Item
+                                                        </div>
+                                                      )}
+                                                      {/* Add support for all new column types for grid alignment */}
+                                                      {!['status', 'people', 'text', 'date', 'number', 'tags', 'subitems'].includes(column.type) && (
+                                                        <div className="text-center text-blue-600/70 font-medium text-xs">
+                                                          -
                                                         </div>
                                                       )}
                                                     </div>
