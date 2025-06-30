@@ -5,6 +5,8 @@ import {
   orders,
   contactSubmissions,
   projects,
+  projectColumns,
+  columnValues,
   quoteRequests,
   quoteActivities,
   blogPosts,
@@ -83,6 +85,10 @@ import {
   type InsertSubItem,
   type SubItemFolder,
   type InsertSubItemFolder,
+  type ProjectColumn,
+  type InsertProjectColumn,
+  type ColumnValue,
+  type InsertColumnValue,
   
   projectTeamMembers,
   userInvitations,
@@ -176,6 +182,18 @@ export interface IStorage {
   updateSubItemFolder(id: number, updates: Partial<InsertSubItemFolder>): Promise<SubItemFolder>;
   getSubItemFoldersByProject(projectId: number): Promise<SubItemFolder[]>;
   deleteSubItemFolder(id: number): Promise<void>;
+
+  // Column management operations
+  getProjectColumns(projectId: number): Promise<ProjectColumn[]>;
+  createProjectColumn(column: InsertProjectColumn): Promise<ProjectColumn>;
+  updateProjectColumn(id: string, updates: Partial<InsertProjectColumn>): Promise<ProjectColumn>;
+  deleteProjectColumn(id: string): Promise<void>;
+  getNextColumnOrder(projectId: number): Promise<number>;
+  
+  // Column value operations
+  getColumnValue(projectId: number, columnId: string, itemId: number, itemType: string): Promise<ColumnValue | undefined>;
+  setColumnValue(value: InsertColumnValue): Promise<ColumnValue>;
+  updateColumnValue(id: number, updates: Partial<InsertColumnValue>): Promise<ColumnValue>;
 
   // Contract management operations
   getAllContracts(): Promise<Contract[]>;
@@ -1388,6 +1406,86 @@ export class DatabaseStorage implements IStorage {
       .from(users)
       .where(inArray(users.id, allUserIds))
       .orderBy(users.firstName, users.lastName);
+  }
+  // Column management operations
+  async getProjectColumns(projectId: number): Promise<ProjectColumn[]> {
+    return await db.select().from(projectColumns)
+      .where(eq(projectColumns.projectId, projectId))
+      .orderBy(projectColumns.order);
+  }
+
+  async createProjectColumn(column: InsertProjectColumn): Promise<ProjectColumn> {
+    const [newColumn] = await db.insert(projectColumns)
+      .values(column)
+      .returning();
+    return newColumn;
+  }
+
+  async updateProjectColumn(id: string, updates: Partial<InsertProjectColumn>): Promise<ProjectColumn> {
+    const [updatedColumn] = await db.update(projectColumns)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(projectColumns.id, id))
+      .returning();
+    return updatedColumn;
+  }
+
+  async deleteProjectColumn(id: string): Promise<void> {
+    // Delete all column values first
+    await db.delete(columnValues)
+      .where(eq(columnValues.columnId, id));
+    
+    // Then delete the column
+    await db.delete(projectColumns)
+      .where(eq(projectColumns.id, id));
+  }
+
+  async getNextColumnOrder(projectId: number): Promise<number> {
+    const result = await db.select({ maxOrder: sql<number>`MAX(${projectColumns.order})` })
+      .from(projectColumns)
+      .where(eq(projectColumns.projectId, projectId));
+    
+    return (result[0]?.maxOrder || 0) + 1;
+  }
+
+  // Column value operations
+  async getColumnValue(projectId: number, columnId: string, itemId: number, itemType: string): Promise<ColumnValue | undefined> {
+    const [value] = await db.select().from(columnValues)
+      .where(and(
+        eq(columnValues.projectId, projectId),
+        eq(columnValues.columnId, columnId),
+        eq(columnValues.itemId, itemId),
+        eq(columnValues.itemType, itemType)
+      ));
+    return value || undefined;
+  }
+
+  async setColumnValue(value: InsertColumnValue): Promise<ColumnValue> {
+    // First try to find existing value
+    const existing = await this.getColumnValue(
+      value.projectId, 
+      value.columnId, 
+      value.itemId, 
+      value.itemType
+    );
+
+    if (existing) {
+      // Update existing value
+      return await this.updateColumnValue(existing.id, { value: value.value });
+    } else {
+      // Create new value
+      const [newValue] = await db.insert(columnValues)
+        .values(value)
+        .returning();
+      return newValue;
+    }
+  }
+
+  async updateColumnValue(id: number, updates: Partial<InsertColumnValue>): Promise<ColumnValue> {
+    const [updatedValue] = await db.update(columnValues)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(columnValues.id, id))
+      .returning();
+    return updatedValue;
   }
 }
 
