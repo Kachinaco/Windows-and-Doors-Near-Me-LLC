@@ -21,7 +21,6 @@ import ProjectsPage from "@/pages/projects";
 import ProjectTablePage from "@/pages/project-table";
 import SimpleExcelManager from "@/pages/simple-excel-manager";
 import MondayBoard from "@/pages/monday-board";
-import WorkspacesPage from "@/pages/workspaces";
 import PipelinePage from "@/pages/pipeline";
 import LeadsPage from "@/pages/leads";
 import SchedulingPage from "@/pages/scheduling";
@@ -62,7 +61,7 @@ function Router() {
   return (
     <Switch>
       {/* Public marketing website routes */}
-      <Route path="/" component={isAuthenticated ? WorkspacesPage : AuthPage} />
+      <Route path="/" component={isAuthenticated ? MondayBoard : AuthPage} />
       <Route path="/gilbert-windows-doors" component={GilbertWindowsDoors} />
       <Route path="/mesa-windows-doors" component={MesaWindowsDoors} />
       <Route path="/chandler-windows-doors" component={ChandlerWindowsDoors} />
@@ -83,11 +82,9 @@ function Router() {
       <Route path="/quote" component={QuotePage} />
       <Route path="/quote/:id" component={QuoteDashboard} />
       
-      {/* Workspace and board routes */}
-      <Route path="/workspaces" component={WorkspacesPage} />
+      {/* Direct access to Monday.com board for testing */}
       <Route path="/board" component={MondayBoard} />
       <Route path="/monday-board" component={MondayBoard} />
-      <Route path="/monday-board/:boardId" component={MondayBoard} />
       
       {/* Protected user routes */}
       {isAuthenticated ? (
