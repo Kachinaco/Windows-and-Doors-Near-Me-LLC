@@ -3257,6 +3257,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('WebSocket error:', error);
     });
   });
+
+  // Column Management API Endpoints
+  app.get("/api/projects/:projectId/columns", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const columns = await storage.getProjectColumns(projectId);
+      res.json(columns);
+    } catch (error: any) {
+      console.error("Error fetching project columns:", error);
+      res.status(500).json({ message: "Failed to fetch columns" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/columns", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const { name, type, settings = {} } = req.body;
+      
+      if (!name || !type) {
+        return res.status(400).json({ message: "Column name and type are required" });
+      }
+
+      const newColumn = await storage.createProjectColumn({
+        projectId,
+        name,
+        type,
+        settings,
+        order: await storage.getNextColumnOrder(projectId)
+      });
+
+      res.json(newColumn);
+    } catch (error: any) {
+      console.error("Error creating column:", error);
+      res.status(500).json({ message: "Failed to create column" });
+    }
+  });
+
+  app.put("/api/projects/:projectId/columns/:columnId", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const columnId = req.params.columnId;
+      const { name, type, settings } = req.body;
+      
+      const updatedColumn = await storage.updateProjectColumn(columnId, {
+        name,
+        type,
+        settings
+      });
+
+      res.json(updatedColumn);
+    } catch (error: any) {
+      console.error("Error updating column:", error);
+      res.status(500).json({ message: "Failed to update column" });
+    }
+  });
+
+  app.delete("/api/projects/:projectId/columns/:columnId", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const columnId = req.params.columnId;
+      
+      await storage.deleteProjectColumn(columnId);
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error deleting column:", error);
+      res.status(500).json({ message: "Failed to delete column" });
+    }
+  });
   
   return httpServer;
 }
