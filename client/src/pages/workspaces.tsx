@@ -188,14 +188,18 @@ export default function WorkspacesPage() {
     const workspaceId = 1; // Default to first workspace
     const folderId = parseInt(newBoardForm.folderId) || 1; // Default to first folder
     
+    const boardId = Date.now();
     const newBoard: Board = {
-      id: Date.now(), // Simple ID generation for now
+      id: boardId,
       name: newBoardForm.name,
       icon: newBoardForm.icon,
       lastModified: 'just now',
       isStarred: false,
-      path: `/monday-board/${Date.now()}`
+      path: `/monday-board/${boardId}`
     };
+
+    // Store board name in localStorage for the Monday board to access
+    localStorage.setItem(`board_${boardId}_name`, newBoardForm.name);
 
     setWorkspaces(prev => prev.map(workspace => 
       workspace.id === workspaceId 
