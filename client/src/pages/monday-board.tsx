@@ -73,20 +73,86 @@ export default function MondayBoard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Default board columns - Main Item Columns + Sub Items with enhanced column types
-  const [columns, setColumns] = useState<BoardColumn[]>([
-    { id: 'item', name: 'Main Item', type: 'text', order: 1 },
-    { id: 'subitems', name: 'Sub Items', type: 'subitems', order: 2 },
-    { id: 'status', name: 'Status', type: 'status', order: 3, settings: { 
-        options: ['new lead', 'in progress', 'on order', 'scheduled', 'complete'],
-        colors: { 'new lead': '#3b82f6', 'in progress': '#f59e0b', 'on order': '#8b5cf6', 'scheduled': '#10b981', 'complete': '#22c55e' }
+  // Load columns from database
+  const { data: projectColumns = [], isLoading: columnsLoading } = useQuery({
+    queryKey: ['/api/projects', projectId, 'columns'],
+    queryFn: async () => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/projects/${projectId}/columns`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          // No columns yet, return default columns
+          return [];
+        }
+        throw new Error('Failed to load columns');
       }
+      
+      return response.json();
     },
-    { id: 'assignedTo', name: 'People', type: 'people', order: 4 },
-    { id: 'dueDate', name: 'Due Date', type: 'date', order: 5 },
-    { id: 'checkbox', name: 'Done', type: 'checkbox', order: 6 },
-    { id: 'progress', name: 'Progress', type: 'progress', order: 7 },
-  ]);
+    enabled: !!projectId,
+  });
+
+  // Convert database columns to BoardColumn format or use defaults
+  const columns: BoardColumn[] = projectColumns.length > 0 
+    ? projectColumns.map((col: any) => ({
+        id: col.id,
+        name: col.name,
+        type: col.type as BoardColumn['type'],
+        order: col.order,
+        settings: col.settings || {}
+      }))
+    : [
+        { id: 'item', name: 'Main Item', type: 'text', order: 1 },
+        { id: 'subitems', name: 'Sub Items', type: 'subitems', order: 2 },
+        { id: 'status', name: 'Status', type: 'status', order: 3, settings: { 
+            options: ['new lead', 'in progress', 'on order', 'scheduled', 'complete'],
+            colors: { 'new lead': '#3b82f6', 'in progress': '#f59e0b', 'on order': '#8b5cf6', 'scheduled': '#10b981', 'complete': '#22c55e' }
+          }
+        },
+        { id: 'assignedTo', name: 'People', type: 'people', order: 4 },
+        { id: 'dueDate', name: 'Due Date', type: 'date', order: 5 },
+        { id: 'checkbox', name: 'Done', type: 'checkbox', order: 6 },
+        { id: 'progress', name: 'Progress', type: 'progress', order: 7 },
+      ];
+
+  // Add column mutation
+  const addColumnMutation = useMutation({
+    mutationFn: async ({ name, type, settings }: { name: string; type: string; settings?: any }) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/projects/${projectId}/columns`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          id: `column_${Date.now()}`, // Generate unique ID
+          name,
+          type,
+          settings: settings || {}
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create column');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId, 'columns'] });
+      toast({ title: "Column added successfully!" });
+    },
+    onError: (error) => {
+      console.error('Add column error:', error);
+      toast({ title: "Failed to add column", variant: "destructive" });
+    },
+  });
 
   // Sub-item specific columns
   const [subItemColumns, setSubItemColumns] = useState<BoardColumn[]>([
@@ -1050,18 +1116,35 @@ export default function MondayBoard() {
   const addColumn = () => {
     if (!newColumnName.trim()) return;
     
-    const newColumn: BoardColumn = {
-      id: `custom_${Date.now()}`,
+    // Use the API mutation to add column to database
+    addColumnMutation.mutate({
       name: newColumnName,
       type: newColumnType,
-      order: columns.length + 1,
-    };
+      settings: getDefaultSettingsForType(newColumnType)
+    });
     
-    setColumns([...columns, newColumn]);
     setIsAddColumnOpen(false);
     setNewColumnName('');
     setNewColumnType('text');
-    toast({ title: "Column added" });
+  };
+
+  // Helper function to get default settings for different column types
+  const getDefaultSettingsForType = (type: string) => {
+    switch (type) {
+      case 'status':
+        return {
+          options: ['New', 'In Progress', 'Complete'],
+          colors: { 'New': '#3b82f6', 'In Progress': '#f59e0b', 'Complete': '#22c55e' }
+        };
+      case 'formula':
+        return { formula: '' };
+      case 'progress':
+        return { min: 0, max: 100 };
+      case 'world_clock':
+        return { timezone: 'UTC' };
+      default:
+        return {};
+    }
   };
 
   const addGroup = () => {
