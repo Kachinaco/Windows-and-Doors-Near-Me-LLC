@@ -305,10 +305,25 @@ export default function MondayBoard() {
     queryKey: ['/api/projects'],
     enabled: !!user, // Only fetch when user is available
     refetchInterval: 5000,
+    staleTime: 0, // Force fresh data on every query
   });
 
   // Debug logging
-  console.log('MondayBoard state:', { user: !!user, isLoading, projects: projects?.length || 0, error });
+  console.log('MondayBoard state:', { user: !!user, isLoading, projects: Array.isArray(projects) ? projects.length : 0, error });
+  
+  // Debug sub-items and folders
+  if (Array.isArray(projects) && projects.length > 0) {
+    projects.forEach((project: any) => {
+      if (project.subItems?.length > 0 || project.subItemFolders?.length > 0) {
+        console.log(`Project ${project.id} has:`, {
+          subItems: project.subItems?.length || 0,
+          subItemFolders: project.subItemFolders?.length || 0,
+          subItemsData: project.subItems,
+          foldersData: project.subItemFolders
+        });
+      }
+    });
+  }
 
   // Query for project team members (for "Assigned To" dropdowns)
   const { data: teamMembers = [] } = useQuery({
