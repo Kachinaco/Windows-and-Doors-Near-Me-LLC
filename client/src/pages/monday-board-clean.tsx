@@ -1,0 +1,1574 @@
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { useParams, useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { type Project } from "@shared/schema";
+import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns, Trash2, MessageCircle, UserPlus, Mail, Phone } from "lucide-react";
+
+interface BoardColumn {
+  id: string;
+  name: string;
+  type: 'status' | 'text' | 'date' | 'people' | 'number' | 'tags' | 'subitems';
+  order: number;
+}
+
+interface SubItem {
+  id: number;
+  projectId: number;
+  name: string;
+  status: string;
+  assignedTo?: string;
+  folderId?: number;
+  order: number;
+  notes?: string;
+  dueDate?: string;
+  priority?: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface SubItemFolder {
+  id: number;
+  projectId: number;
+  name: string;
+  order: number;
+  collapsed: boolean;
+  createdAt: Date;
+}
+
+interface BoardItem {
+  id: number;
+  groupName: string;
+  values: Record<string, any>;
+  subItems?: SubItem[];
+  subItemFolders?: SubItemFolder[];
+}
+
+interface BoardGroup {
+  name: string;
+  items: BoardItem[];
+  collapsed: boolean;
+}
+
+export default function MondayBoard() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { boardId } = useParams();
+  const [, setLocation] = useLocation();
+  
+  // Default board columns - Main Item Columns + Sub Items
+  const [columns, setColumns] = useState<BoardColumn[]>([
+    { id: 'item', name: 'Main Item', type: 'text', order: 1 },
+    { id: 'subitems', name: 'Sub Items', type: 'subitems', order: 2 },
+    { id: 'status', name: 'Status', type: 'status', order: 3 },
+    { id: 'assignedTo', name: 'People', type: 'people', order: 4 },
+    { id: 'dueDate', name: 'Due Date', type: 'date', order: 5 },
+    { id: 'priority', name: 'Priority', type: 'number', order: 6 },
+    { id: 'tags', name: 'Tags', type: 'tags', order: 7 },
+  ]);
+
+  // Sub-item specific columns
+  const [subItemColumns, setSubItemColumns] = useState<BoardColumn[]>([
+    { id: 'subitem_name', name: 'Task', type: 'text', order: 1 },
+    { id: 'subitem_status', name: 'Status', type: 'status', order: 2 },
+    { id: 'subitem_assignedTo', name: 'Owner', type: 'people', order: 3 },
+    { id: 'subitem_priority', name: 'Priority', type: 'number', order: 4 },
+    { id: 'subitem_dueDate', name: 'Due', type: 'date', order: 5 },
+  ]);
+
+  const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
+  const [newColumnName, setNewColumnName] = useState('');
+  const [newColumnType, setNewColumnType] = useState<BoardColumn['type']>('text');
+  const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [undoStack, setUndoStack] = useState<Array<{action: string, data: any, timestamp: number}>>([]);
+  const [expandedFolders, setExpandedFolders] = useState<Set<number>>(new Set());
+  const [editingFolder, setEditingFolder] = useState<number | null>(null);
+  const [folderNames, setFolderNames] = useState<Record<number, string>>({});
+  
+  // Sub-item state management
+  const [editingSubItem, setEditingSubItem] = useState<number | null>(null);
+  const [subItemNames, setSubItemNames] = useState<Record<number, string>>({});
+  
+  // Add Person modal state
+  const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
+  const [newPersonForm, setNewPersonForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    role: 'member',
+    notes: ''
+  });
+
+  // Helper function to get display name from member ID
+  const getMemberDisplayName = (memberId: string | number): string => {
+    if (!memberId || memberId === '' || memberId === 'unassigned') return 'Unassigned';
+    const member = teamMembers.find((m: any) => m.id.toString() === memberId.toString());
+    return member ? `${member.firstName} ${member.lastName}` : 'Unassigned';
+  };
+
+  // Helper function to get board name from boardId
+  const getBoardName = (): string => {
+    const boardNames: Record<string, string> = {
+      '1': 'Inventory',
+      '2': 'Full Calendar', 
+      '3': 'Kachina_Projects',
+      '4': 'Osman Portillo',
+      '5': 'Corys Schedule 25',
+      '6': 'Dustin Crocker 25',
+      '7': 'Nate and Jarred 25'
+    };
+    
+    // For new boards created with timestamp IDs, get name from localStorage or URL params
+    if (boardId && !boardNames[boardId]) {
+      const storedName = localStorage.getItem(`board_${boardId}_name`);
+      if (storedName) return storedName;
+      return 'New Board';
+    }
+    
+    return boardNames[boardId || ''] || 'Project Board';
+  };
+
+  // Check if this is a new/blank board (no existing data)
+  const isNewBoard = (): boolean => {
+    if (!boardId) return false;
+    // Boards with timestamp IDs (created dynamically) are new blank boards
+    return !['1', '2', '3', '4', '5', '6', '7'].includes(boardId);
+  };
+
+  // Initialize column widths from localStorage or use defaults
+  const getInitialColumnWidths = () => {
+    try {
+      const saved = localStorage.getItem('mondayBoard_columnWidths');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.warn('Failed to load saved column widths:', error);
+    }
+    
+    // Default widths - main item starts very small
+    return {
+      item: 120, // Much smaller default
+      subitems: 120,
+      status: 120,
+      assignedTo: 150,
+      location: 200,
+      phone: 140,
+      dueDate: 120,
+      priority: 100,
+      tags: 120,
+      // Sub-item column widths
+      subitem_name: 180,
+      subitem_status: 100,
+      subitem_assignedTo: 120,
+      subitem_priority: 80,
+      subitem_dueDate: 100
+    };
+  };
+
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(getInitialColumnWidths);
+  
+  // Save column widths to localStorage
+  const saveColumnWidths = (widths: Record<string, number>) => {
+    try {
+      localStorage.setItem('mondayBoard_columnWidths', JSON.stringify(widths));
+    } catch (error) {
+      console.warn('Failed to save column widths:', error);
+    }
+  };
+  const [isResizing, setIsResizing] = useState<string | null>(null);
+  const [editingCell, setEditingCell] = useState<{projectId: number, field: string} | null>(null);
+  const [newlyCreatedItem, setNewlyCreatedItem] = useState<number | null>(null);
+  const [openUpdates, setOpenUpdates] = useState<Set<number>>(new Set());
+  const [selectedProjectForUpdates, setSelectedProjectForUpdates] = useState<number | null>(null);
+  const [localValues, setLocalValues] = useState<Record<string, string>>({});
+  const debounceTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [bulkEditMode, setBulkEditMode] = useState(false);
+  const [expandedSubItems, setExpandedSubItems] = useState<Set<number>>(new Set());
+  
+  // Side panel drawer state
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
+  const [selectedMainItem, setSelectedMainItem] = useState<any>(null);
+  const [selectedFolder, setSelectedFolder] = useState<any>(null);
+  
+  // Update form state
+  const [updateContent, setUpdateContent] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isPosting, setIsPosting] = useState(false);
+
+  // Fetch projects and transform to board items
+  const { data: projects = [], isLoading, error } = useQuery({
+    queryKey: ['/api/projects'],
+    enabled: !!user && !isNewBoard(), // Only fetch when user is available and not a new board
+    refetchInterval: isNewBoard() ? false : 5000, // Don't refetch for new boards
+  });
+
+  // Query for project team members (for "Assigned To" dropdowns)
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['/api/projects/77/team-members'],
+    enabled: !!user && !isNewBoard(), // Don't fetch team members for new boards
+    queryFn: async () => {
+      const response = await fetch('/api/projects/77/team-members', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch team members');
+      }
+      return response.json();
+    },
+  });
+
+  // Fetch project updates for selected project
+  const { data: projectUpdates = [], isLoading: updatesLoading } = useQuery<any[]>({
+    queryKey: ['/api/projects', selectedMainItem?.id, 'updates'],
+    enabled: !!selectedMainItem?.id,
+    refetchInterval: 3000, // Refresh more frequently for real-time updates
+  });
+
+  // Transform projects to board items safely
+  const boardItems: BoardItem[] = Array.isArray(projects) ? projects.map((project: any) => {
+    // Map project status to pipeline groups
+    let groupName = 'New Leads';
+    if (project.status === 'new lead') groupName = 'New Leads';
+    else if (project.status === 'need attention') groupName = 'Need Attention';
+    else if (project.status === 'sent estimate') groupName = 'Sent Estimate';
+    else if (project.status === 'signed') groupName = 'Signed';
+    else if (project.status === 'in progress') groupName = 'In Progress';
+    else if (project.status === 'complete') groupName = 'Complete';
+    
+
+
+    return {
+      id: project.id || 0,
+      groupName,
+      values: {
+        item: project.name || '',
+        status: project.status || 'new lead',
+        assignedTo: project.assignedTo || '',
+        dueDate: project.endDate || '',
+        priority: 3,
+        tags: [],
+        location: project.projectAddress || '',
+        phone: project.clientPhone || '',
+      },
+      subItems: project.subItems || [],
+      subItemFolders: project.subItemFolders || []
+    };
+  }) : [];
+
+  // Define fixed group order to match project pipeline exactly
+  const groupOrder = ['New Leads', 'Need Attention', 'Sent Estimate', 'Signed', 'In Progress', 'Complete'];
+
+  // Group items by group name
+  const groupedItems = boardItems.reduce((groups: Record<string, BoardItem[]>, item) => {
+    if (!groups[item.groupName]) {
+      groups[item.groupName] = [];
+    }
+    groups[item.groupName].push(item);
+    return groups;
+  }, {});
+
+  // Create board groups with collapse state
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  
+  // Create groups in fixed order, only including groups that have items
+  const boardGroups: BoardGroup[] = groupOrder
+    .filter(groupName => groupedItems[groupName] && groupedItems[groupName].length > 0)
+    .map(groupName => ({
+      name: groupName,
+      items: groupedItems[groupName],
+      collapsed: collapsedGroups[groupName] || false
+    }));
+
+  // Update cell mutation with proper auth
+  const updateCellMutation = useMutation({
+    mutationFn: async ({ projectId, field, value }: { projectId: number; field: string; value: any }) => {
+      console.log('Updating cell:', { projectId, field, value });
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ [field]: value }),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Update failed:', errorText);
+        throw new Error('Failed to update cell');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      console.log('Update successful:', data);
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+    },
+    onError: (error) => {
+      console.error('Update mutation error:', error);
+    },
+  });
+
+  // Add new item mutation with proper auth
+  const addItemMutation = useMutation({
+    mutationFn: async (groupName: string = 'New Leads') => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const status = groupName === 'New Leads' ? 'new lead' : 
+                    groupName === 'Need Attention' ? 'need attention' :
+                    groupName === 'Sent Estimate' ? 'sent estimate' :
+                    groupName === 'Signed' ? 'signed' :
+                    groupName === 'In Progress' ? 'in progress' : 
+                    groupName === 'Complete' ? 'complete' : 'new lead';
+      
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: '',
+          status: status,
+          description: '',
+          projectAddress: '',
+          clientPhone: '',
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add item');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (newProjectData) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      
+      // Set the newly created item for auto-editing
+      setNewlyCreatedItem(newProjectData.id);
+      setEditingCell({ projectId: newProjectData.id, field: 'item' });
+      
+      // Save to undo stack
+      setUndoStack(prev => [
+        ...prev.slice(-9),
+        {
+          action: 'create_project',
+          data: { projectData: newProjectData },
+          timestamp: Date.now()
+        }
+      ]);
+    },
+  });
+
+  // Bulk operations mutations
+  const bulkArchiveMutation = useMutation({
+    mutationFn: async (projectIds: number[]) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch('/api/projects/bulk/archive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ projectIds }),
+      });
+      if (!response.ok) throw new Error('Failed to archive items');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      setSelectedItems(new Set());
+      toast({ title: "Success", description: "Items archived successfully" });
+    },
+  });
+
+  const bulkTrashMutation = useMutation({
+    mutationFn: async (projectIds: number[]) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch('/api/projects/bulk/trash', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ projectIds }),
+      });
+      if (!response.ok) throw new Error('Failed to trash items');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      setSelectedItems(new Set());
+      toast({ title: "Success", description: "Items moved to trash successfully" });
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (projectIds: number[]) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch('/api/projects/bulk/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ projectIds }),
+      });
+      if (!response.ok) throw new Error('Failed to delete items');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      setSelectedItems(new Set());
+      toast({ title: "Success", description: "Items deleted permanently" });
+    },
+  });
+
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ projectIds, updates }: { projectIds: number[]; updates: any }) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch('/api/projects/bulk/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ projectIds, updates }),
+      });
+      if (!response.ok) throw new Error('Failed to update items');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      setSelectedItems(new Set());
+      toast({ title: "Success", description: "Items updated successfully" });
+    },
+  });
+
+  // Project update mutation
+  const createUpdateMutation = useMutation({
+    mutationFn: async (updateData: { projectId: number; content: string; attachments?: any[] }) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch('/api/project-updates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updateData),
+      });
+      if (!response.ok) throw new Error('Failed to create update');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', selectedMainItem?.id, 'updates'] });
+      setUpdateContent('');
+      setSelectedFiles([]);
+      setIsPosting(false);
+      toast({ title: "Success", description: "Update posted successfully" });
+    },
+    onError: () => {
+      setIsPosting(false);
+      toast({ title: "Error", description: "Failed to post update", variant: "destructive" });
+    },
+  });
+
+  const handleCellUpdate = useCallback((projectId: number, field: string, value: any) => {
+    console.log('handleCellUpdate called:', { projectId, field, value });
+    
+    // Save current value to undo stack before updating
+    const project = (projects as any)?.find((p: any) => p.id === projectId);
+    if (project) {
+      setUndoStack(prev => [
+        ...prev.slice(-9),
+        {
+          action: 'update_cell',
+          data: { projectId, field, previousValue: project[field as keyof Project], newValue: value },
+          timestamp: Date.now()
+        }
+      ]);
+    }
+
+    // Map board fields to project fields
+    const fieldMapping: Record<string, string> = {
+      item: 'name',
+      assignedTo: 'assignedTo',
+      status: 'status',
+      location: 'projectAddress',
+      phone: 'clientPhone',
+    };
+
+    const actualField = fieldMapping[field] || field;
+    console.log('Field mapping:', { field, actualField });
+    updateCellMutation.mutate({ projectId, field: actualField, value });
+  }, [updateCellMutation, projects]);
+
+  // Bulk operations helpers
+  const handleSelectAll = useCallback(() => {
+    const allIds = new Set(boardItems.map(item => item.id));
+    setSelectedItems(allIds);
+  }, [boardItems]);
+
+  const handleSelectNone = useCallback(() => {
+    setSelectedItems(new Set());
+  }, []);
+
+  const handleToggleSelect = useCallback((id: number) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const handleSelectGroup = useCallback((groupName: string) => {
+    const group = boardGroups.find(g => g.name === groupName);
+    if (!group) return;
+    
+    const groupItemIds = group.items.map(item => item.id);
+    const allGroupItemsSelected = groupItemIds.every(id => selectedItems.has(id));
+    
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (allGroupItemsSelected) {
+        // Deselect all items in this group
+        groupItemIds.forEach(id => newSet.delete(id));
+      } else {
+        // Select all items in this group
+        groupItemIds.forEach(id => newSet.add(id));
+      }
+      return newSet;
+    });
+  }, [boardGroups, selectedItems]);
+
+  const isGroupSelected = useCallback((groupName: string) => {
+    const group = boardGroups.find(g => g.name === groupName);
+    if (!group || group.items.length === 0) return false;
+    return group.items.every(item => selectedItems.has(item.id));
+  }, [boardGroups, selectedItems]);
+
+  const isGroupPartiallySelected = useCallback((groupName: string) => {
+    const group = boardGroups.find(g => g.name === groupName);
+    if (!group || group.items.length === 0) return false;
+    const selectedInGroup = group.items.filter(item => selectedItems.has(item.id));
+    return selectedInGroup.length > 0 && selectedInGroup.length < group.items.length;
+  }, [boardGroups, selectedItems]);
+
+  // Handle updating sub-item properties
+  const handleUpdateSubItem = useCallback(async (subItemId: number, updates: Record<string, any>) => {
+    try {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/sub-items/${subItemId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates)
+      });
+
+      if (response.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+        toast({ title: "Success", description: "Sub-item updated successfully" });
+      } else {
+        throw new Error('Failed to update sub-item');
+      }
+    } catch (error) {
+      console.error('Error updating sub-item:', error);
+      toast({ title: "Error", description: "Failed to update sub-item", variant: "destructive" });
+    }
+  }, [queryClient, toast]);
+
+  // Add person to project mutation
+  const addPersonMutation = useMutation({
+    mutationFn: async (personData: typeof newPersonForm) => {
+      // Use project ID 77 as the default project for Monday board
+      const projectId = 77;
+      
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/projects/${projectId}/invitations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(personData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add person to project');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Person added to project successfully" });
+      setIsAddPersonModalOpen(false);
+      setNewPersonForm({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        role: 'member',
+        notes: ''
+      });
+      // Invalidate both projects and team members queries to refresh dropdowns
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects/77/team-members'] });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message || "Failed to add person to project", variant: "destructive" });
+    }
+  });
+
+  const handleAddPerson = () => {
+    // Validation
+    if (!newPersonForm.firstName.trim()) {
+      toast({ title: "Validation Error", description: "First name is required", variant: "destructive" });
+      return;
+    }
+    if (!newPersonForm.lastName.trim()) {
+      toast({ title: "Validation Error", description: "Last name is required", variant: "destructive" });
+      return;
+    }
+    if (!newPersonForm.email.trim()) {
+      toast({ title: "Validation Error", description: "Email is required", variant: "destructive" });
+      return;
+    }
+    
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newPersonForm.email)) {
+      toast({ title: "Validation Error", description: "Please enter a valid email address", variant: "destructive" });
+      return;
+    }
+    
+    // Phone format validation (if provided)
+    if (newPersonForm.phone && newPersonForm.phone.length > 0 && newPersonForm.phone.length < 10) {
+      toast({ title: "Validation Error", description: "Please enter a valid phone number", variant: "destructive" });
+      return;
+    }
+    
+    addPersonMutation.mutate(newPersonForm);
+  };
+
+  const handlePointerDown = (columnId: string, e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(columnId);
+    
+    const startX = e.clientX;
+    const startWidth = columnWidths[columnId] || 120;
+    
+    const handlePointerMove = (e: PointerEvent) => {
+      e.preventDefault();
+      const newWidth = Math.max(80, startWidth + (e.clientX - startX)); // No maximum limit
+      setColumnWidths(prev => ({ ...prev, [columnId]: newWidth }));
+    };
+    
+    const handlePointerUp = (e: PointerEvent) => {
+      e.preventDefault();
+      setIsResizing(null);
+      // Save current column widths to localStorage
+      setColumnWidths(prev => {
+        const newWidths = { ...prev };
+        saveColumnWidths(newWidths);
+        return newWidths;
+      });
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
+    };
+    
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
+    document.addEventListener('pointercancel', handlePointerUp);
+  };
+
+  const addColumn = () => {
+    if (!newColumnName.trim()) return;
+    
+    const newColumn: BoardColumn = {
+      id: `custom_${Date.now()}`,
+      name: newColumnName,
+      type: newColumnType,
+      order: columns.length + 1,
+    };
+    
+    setColumns([...columns, newColumn]);
+    setIsAddColumnOpen(false);
+    setNewColumnName('');
+    setNewColumnType('text');
+    toast({ title: "Column added" });
+  };
+
+  const addGroup = () => {
+    if (!newGroupName.trim()) return;
+    
+    // Add the new group to the group order
+    const newGroupOrder = [...groupOrder, newGroupName];
+    
+    // Update local storage to persist custom groups
+    localStorage.setItem('customGroups', JSON.stringify(newGroupOrder));
+    
+    setIsAddGroupOpen(false);
+    setNewGroupName('');
+    toast({ 
+      title: "Group added", 
+      description: `New group "${newGroupName}" has been added to the pipeline.` 
+    });
+    
+    // Note: In a full implementation, this would also update the backend
+    // For now, custom groups will be session-based
+  };
+
+  const getColumnIcon = (type: BoardColumn['type']) => {
+    switch (type) {
+      case 'status': return <div className="w-2 h-2 rounded-full bg-emerald-500" />;
+      case 'people': return <User className="w-2.5 h-2.5 text-purple-400" />;
+      case 'date': return <Calendar className="w-2.5 h-2.5 text-orange-400" />;
+      case 'number': return <Hash className="w-2.5 h-2.5 text-yellow-400" />;
+      case 'tags': return <Tag className="w-2.5 h-2.5 text-red-400" />;
+      default: return <Type className="w-2.5 h-2.5 text-gray-400" />;
+    }
+  };
+
+  // Handle local state changes for fast typing
+  const handleLocalChange = useCallback((projectId: number, field: string, value: string) => {
+    const key = `${projectId}-${field}`;
+    setLocalValues(prev => ({ ...prev, [key]: value }));
+    
+    // Clear existing timeout for this field
+    if (debounceTimeoutRef.current[key]) {
+      clearTimeout(debounceTimeoutRef.current[key]);
+    }
+    
+    // Set new debounced timeout
+    debounceTimeoutRef.current[key] = setTimeout(() => {
+      handleCellUpdate(projectId, field, value);
+      delete debounceTimeoutRef.current[key];
+    }, 500); // 500ms debounce
+  }, [handleCellUpdate]);
+
+  const renderCell = (item: BoardItem, column: BoardColumn) => {
+    const value = item.values[column.id] || '';
+    
+    switch (column.type) {
+      case 'status':
+        return (
+          <Select
+            value={value}
+            onValueChange={(newValue) => handleCellUpdate(item.id, column.id, newValue)}
+          >
+            <SelectTrigger className={`h-4 text-xs font-medium rounded-full px-1.5 border-none ${
+              value === 'complete' ? 'bg-green-500/20 text-green-400' :
+              value === 'in progress' ? 'bg-blue-500/20 text-blue-400' :
+              value === 'signed' ? 'bg-emerald-500/20 text-emerald-400' :
+              value === 'sent estimate' ? 'bg-purple-500/20 text-purple-400' :
+              value === 'need attention' ? 'bg-yellow-500/20 text-yellow-400' :
+              value === 'new lead' ? 'bg-cyan-500/20 text-cyan-400' :
+              'bg-gray-500/20 text-gray-400'
+            }`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700">
+              <SelectItem value="new lead">New Leads</SelectItem>
+              <SelectItem value="need attention">Need Attention</SelectItem>
+              <SelectItem value="sent estimate">Sent Estimate</SelectItem>
+              <SelectItem value="signed">Signed</SelectItem>
+              <SelectItem value="in progress">In Progress</SelectItem>
+              <SelectItem value="complete">Complete</SelectItem>
+            </SelectContent>
+          </Select>
+        );
+      
+      case 'people':
+        return (
+          <Select
+            value={value}
+            onValueChange={(newValue) => {
+              if (newValue === "__add_person__") {
+                setIsAddPersonModalOpen(true);
+              } else {
+                handleCellUpdate(item.id, column.id, newValue);
+              }
+            }}
+          >
+            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-gray-300 p-0 min-h-0">
+              <SelectValue placeholder="Assign">
+                {value && value !== 'unassigned' ? getMemberDisplayName(value) : 'Assign'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700">
+              <SelectItem value="unassigned" className="text-white hover:text-gray-200">Unassigned</SelectItem>
+              {teamMembers.map((member: any) => (
+                <SelectItem key={member.id} value={member.id.toString()} className="text-white hover:text-gray-200">
+                  {member.firstName} {member.lastName}
+                </SelectItem>
+              ))}
+              <div className="border-t border-gray-700 my-1"></div>
+              <SelectItem value="__add_person__" className="text-blue-400 hover:text-blue-300">
+                <UserPlus className="w-3 h-3 mr-2 inline" />
+                Add Person...
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        );
+      
+      case 'date':
+        return (
+          <Input
+            type="date"
+            value={value}
+            onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
+          />
+        );
+      
+      case 'number':
+        return (
+          <Input
+            type="number"
+            value={value}
+            onChange={(e) => handleCellUpdate(item.id, column.id, parseInt(e.target.value) || 0)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
+            placeholder="0"
+          />
+        );
+      
+      case 'tags':
+        return (
+          <div className="flex flex-wrap gap-1">
+            {Array.isArray(value) && value.map((tag: string, idx: number) => (
+              <span key={idx} className="px-1.5 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs">
+                {tag}
+              </span>
+            ))}
+            <Input
+              placeholder="Add tag"
+              className="h-5 text-xs border-none bg-transparent text-gray-300 flex-1 min-w-16"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                  const newTags = [...(Array.isArray(value) ? value : []), e.currentTarget.value.trim()];
+                  handleCellUpdate(item.id, column.id, newTags);
+                  e.currentTarget.value = '';
+                }
+              }}
+            />
+          </div>
+        );
+
+      case 'subitems':
+        const isExpanded = expandedSubItems.has(item.id);
+        const subItemCount = item.subItems?.length || 0;
+        
+        return (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpandedSubItems(prev => {
+                  const newSet = new Set(prev);
+                  if (newSet.has(item.id)) {
+                    newSet.delete(item.id);
+                  } else {
+                    newSet.add(item.id);
+                  }
+                  return newSet;
+                });
+              }}
+              className="flex items-center gap-1 hover:bg-gray-800/50 px-1 py-0.5 rounded text-xs text-gray-400 hover:text-gray-300"
+            >
+              {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              <Folder className="w-3 h-3" />
+              <span>{subItemCount} items</span>
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // TODO: Implement add sub-item functionality
+                toast({ title: "Add Sub-item", description: "Sub-item creation coming soon!" });
+              }}
+              className="text-xs text-gray-500 hover:text-gray-300 px-1"
+              title="Add sub-item"
+            >
+              +
+            </button>
+          </div>
+        );
+      
+      default:
+        const isNewItem = newlyCreatedItem === item.id && editingCell?.projectId === item.id && editingCell?.field === column.id;
+        const isEditing = editingCell?.projectId === item.id && editingCell?.field === column.id;
+        
+        if (isEditing || isNewItem) {
+          const localKey = `${item.id}-${column.id}`;
+          const localValue = localValues[localKey] !== undefined ? localValues[localKey] : value;
+          
+          return (
+            <Input
+              value={localValue}
+              onChange={(e) => handleLocalChange(item.id, column.id, e.target.value)}
+              className="h-4 text-xs border-none bg-transparent text-gray-300"
+              placeholder={column.id === 'item' ? "Enter project name" : "Enter text"}
+              autoFocus
+              onBlur={() => {
+                setEditingCell(null);
+                if (isNewItem) {
+                  setNewlyCreatedItem(null);
+                }
+                // Clear local value when exiting edit mode
+                const key = `${item.id}-${column.id}`;
+                setLocalValues(prev => {
+                  const newValues = { ...prev };
+                  delete newValues[key];
+                  return newValues;
+                });
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setEditingCell(null);
+                  if (isNewItem) {
+                    setNewlyCreatedItem(null);
+                  }
+                  // Clear local value when exiting edit mode
+                  const key = `${item.id}-${column.id}`;
+                  setLocalValues(prev => {
+                    const newValues = { ...prev };
+                    delete newValues[key];
+                    return newValues;
+                  });
+                }
+                if (e.key === 'Escape') {
+                  setEditingCell(null);
+                  if (isNewItem) {
+                    setNewlyCreatedItem(null);
+                  }
+                  // Clear local value when escaping
+                  const key = `${item.id}-${column.id}`;
+                  setLocalValues(prev => {
+                    const newValues = { ...prev };
+                    delete newValues[key];
+                    return newValues;
+                  });
+                }
+              }}
+            />
+          );
+        }
+        
+        return (
+          <div
+            className={`h-4 text-xs cursor-text hover:bg-gray-50 flex items-center px-1 rounded transition-colors ${
+              column.id === 'item' 
+                ? 'text-gray-900 font-medium flex items-center gap-1.5' 
+                : 'text-gray-700'
+            }`}
+            onClick={() => setEditingCell({ projectId: item.id, field: column.id })}
+            title="Click to edit"
+          >
+            {column.id === 'item' && (
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                item.values['status'] === 'complete' ? 'bg-green-500' :
+                item.values['status'] === 'in progress' ? 'bg-blue-500' :
+                item.values['status'] === 'signed' ? 'bg-emerald-500' :
+                item.values['status'] === 'sent estimate' ? 'bg-purple-500' :
+                item.values['status'] === 'need attention' ? 'bg-yellow-500' :
+                item.values['status'] === 'new lead' ? 'bg-cyan-500' :
+                'bg-gray-500'
+              }`} />
+            )}
+            {value || <span className="text-gray-400">{column.id === 'item' ? 'Untitled Project' : 'Click to add...'}</span>}
+          </div>
+        );
+    }
+  };
+
+  // Legacy sub-item cell update handler (kept for compatibility)
+  const handleSubItemCellUpdate = useCallback(async (subItemId: number, field: string, value: any) => {
+    return handleUpdateSubItem(subItemId, { [field]: value });
+  }, [handleUpdateSubItem]);
+
+  // Sub-item mutations
+  const createSubItemMutation = useMutation({
+    mutationFn: async ({ projectId, name, folderId }: { projectId: number; name: string; folderId?: number }) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/projects/${projectId}/sub-items`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name, folderId }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create sub-item');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Sub-item created", description: "New sub-item has been added successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create sub-item", variant: "destructive" });
+    }
+  });
+
+  const createSubItemFolderMutation = useMutation({
+    mutationFn: async ({ projectId, name }: { projectId: number; name: string }) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/projects/${projectId}/sub-item-folders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create sub-item folder');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Folder created", description: "New sub-item folder has been added successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create sub-item folder", variant: "destructive" });
+    }
+  });
+
+  // Delete mutations
+  const deleteSubItemMutation = useMutation({
+    mutationFn: async (subItemId: number) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/sub-items/${subItemId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete sub-item');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Sub-item deleted", description: "Sub-item has been deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete sub-item", variant: "destructive" });
+    }
+  });
+
+  const deleteSubItemFolderMutation = useMutation({
+    mutationFn: async (folderId: number) => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/sub-item-folders/${folderId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete sub-item folder');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Folder deleted", description: "Folder and all its sub-items have been deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete folder", variant: "destructive" });
+    }
+  });
+
+  // Handler functions for sub-item operations
+  const handleAddSubItem = useCallback((projectId: number) => {
+    createSubItemMutation.mutate({ 
+      projectId, 
+      name: "" // Create with empty name
+    }, {
+      onSuccess: (newSubItem) => {
+        console.log('Sub-item created successfully:', newSubItem);
+        // Automatically start editing the new sub-item name
+        setTimeout(() => {
+          setEditingSubItem(newSubItem.id);
+          setSubItemNames(prev => ({...prev, [newSubItem.id]: ""})); // Start with empty name
+          console.log('Starting to edit sub-item:', newSubItem.id);
+        }, 100);
+      }
+    });
+  }, [createSubItemMutation]);
+
+  const handleAddSubItemFolder = useCallback((projectId: number) => {
+    createSubItemFolderMutation.mutate({ 
+      projectId, 
+      name: "" // Create with empty name
+    }, {
+      onSuccess: (newFolder) => {
+        console.log('Folder created successfully:', newFolder);
+        // Automatically expand the new folder and start editing its name
+        setTimeout(() => {
+          setExpandedFolders(prev => {
+            const newExpanded = new Set(prev);
+            newExpanded.add(newFolder.id);
+            return newExpanded;
+          });
+          setEditingFolder(newFolder.id);
+          setFolderNames(prev => ({...prev, [newFolder.id]: ""})); // Start with empty name
+          console.log('Starting to edit folder:', newFolder.id);
+        }, 100);
+      }
+    });
+  }, [createSubItemFolderMutation]);
+
+  const handleDeleteSubItem = useCallback((subItemId: number) => {
+    deleteSubItemMutation.mutate(subItemId);
+  }, [deleteSubItemMutation]);
+
+  const handleDeleteSubItemFolder = useCallback((folderId: number) => {
+    deleteSubItemFolderMutation.mutate(folderId);
+  }, [deleteSubItemFolderMutation]);
+
+  // Handler for adding sub-items to specific folders
+  const handleAddSubItemToFolder = useCallback((projectId: number, folderId: number) => {
+    createSubItemMutation.mutate({ 
+      projectId, 
+      name: "", // Create with empty name
+      folderId 
+    }, {
+      onSuccess: (newSubItem) => {
+        console.log('Sub-item created successfully:', newSubItem);
+        // Automatically start editing the new sub-item name
+        setTimeout(() => {
+          setEditingSubItem(newSubItem.id);
+          setSubItemNames(prev => ({...prev, [newSubItem.id]: ""})); // Start with empty name
+          console.log('Starting to edit sub-item:', newSubItem.id);
+        }, 100);
+      }
+    });
+  }, [createSubItemMutation]);
+
+  const handleToggleUpdates = useCallback((projectId: number) => {
+    const project = boardItems.find(item => item.id === projectId);
+    if (project) {
+      setSelectedMainItem(project);
+      setSidePanelOpen(true);
+    }
+  }, [boardItems]);
+
+  // Handle posting new update
+  const handlePostUpdate = useCallback(() => {
+    if (!updateContent.trim() || !selectedMainItem?.id) return;
+    
+    setIsPosting(true);
+    createUpdateMutation.mutate({
+      projectId: selectedMainItem.id,
+      content: updateContent.trim(),
+      attachments: selectedFiles.length > 0 ? selectedFiles.map(file => ({
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      })) : undefined
+    });
+  }, [updateContent, selectedMainItem?.id, selectedFiles, createUpdateMutation]);
+
+  // Handler for updating sub-item names
+  const handleUpdateSubItemName = useCallback(async (subItemId: number, newName: string) => {
+    try {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const response = await fetch(`/api/sub-items/${subItemId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: newName }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update sub-item name');
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Sub-item updated", description: "Sub-item name has been updated successfully" });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update sub-item name", variant: "destructive" });
+    }
+  }, [queryClient, toast]);
+
+  // Render sub-item cells with dedicated column types
+  const renderSubItemCell = (subItem: SubItem, column: BoardColumn, projectId: number) => {
+    // Map sub-item data to column values
+    let value = '';
+    switch (column.id) {
+      case 'subitem_name':
+        value = subItem.name;
+        break;
+      case 'subitem_status':
+        value = subItem.status;
+        break;
+      case 'subitem_assignedTo':
+        value = subItem.assignedTo || '';
+        break;
+      case 'subitem_priority':
+        value = '3'; // Default priority
+        break;
+      case 'subitem_dueDate':
+        value = ''; // No due date in current schema
+        break;
+      default:
+        value = '';
+    }
+    
+    switch (column.type) {
+      case 'status':
+        return (
+          <Select
+            value={value}
+            onValueChange={(newValue) => handleSubItemCellUpdate(subItem.id, column.id, newValue)}
+          >
+            <SelectTrigger className={`h-4 text-xs font-medium rounded-full px-1.5 border-none ${
+              value === 'complete' ? 'bg-green-500/20 text-green-400' :
+              value === 'in progress' ? 'bg-blue-500/20 text-blue-400' :
+              value === 'signed' ? 'bg-emerald-500/20 text-emerald-400' :
+              value === 'sent estimate' ? 'bg-purple-500/20 text-purple-400' :
+              value === 'need attention' ? 'bg-yellow-500/20 text-yellow-400' :
+              value === 'new lead' ? 'bg-cyan-500/20 text-cyan-400' :
+              'bg-gray-500/20 text-gray-400'
+            }`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700">
+              <SelectItem value="new lead">New</SelectItem>
+              <SelectItem value="in progress">In Progress</SelectItem>
+              <SelectItem value="complete">Complete</SelectItem>
+            </SelectContent>
+          </Select>
+        );
+        
+      case 'people':
+        return (
+          <Select
+            value={value}
+            onValueChange={(newValue) => {
+              if (newValue === "__add_person__") {
+                setIsAddPersonModalOpen(true);
+              } else {
+                handleSubItemCellUpdate(subItem.id, column.id, newValue);
+              }
+            }}
+          >
+            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-blue-300 p-0 min-h-0">
+              <SelectValue placeholder="Assign">
+                {value && value !== 'unassigned' ? getMemberDisplayName(value) : 'Assign'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700">
+              <SelectItem value="unassigned" className="text-white hover:text-gray-200">Unassigned</SelectItem>
+              {teamMembers.map((member: any) => (
+                <SelectItem key={member.id} value={member.id.toString()} className="text-white hover:text-gray-200">
+                  {member.firstName} {member.lastName}
+                </SelectItem>
+              ))}
+              <div className="border-t border-gray-700 my-1"></div>
+              <SelectItem value="__add_person__" className="text-blue-400 hover:text-blue-300">
+                <UserPlus className="w-3 h-3 mr-2 inline" />
+                Add Person...
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        );
+        
+      case 'number':
+        return (
+          <Input
+            type="number"
+            value={value}
+            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
+            placeholder="0"
+          />
+        );
+        
+      case 'date':
+        return (
+          <Input
+            type="date"
+            value={value}
+            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
+          />
+        );
+        
+      default:
+        return (
+          <Input
+            value={value}
+            onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
+            placeholder="Enter text..."
+          />
+        );
+    }
+  };
+
+  // Show login prompt if not authenticated
+  if (!user) {
+    return (
+      <div className="h-screen bg-white text-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl mb-4">Authentication Required</div>
+          <div className="text-sm text-gray-600 mb-4">Please log in to access the project board</div>
+          <Button 
+            onClick={() => window.location.href = '/auth'}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Go to Login
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-white text-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl mb-4">Loading Monday.com-style board...</div>
+          <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen bg-white text-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl mb-4 text-red-600">Error loading board</div>
+          <div className="text-sm text-gray-600">Check console for details</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const toggleGroup = (groupName: string) => {
+    setCollapsedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
+  };
+
+  return (
+    <div className="h-screen bg-white text-gray-900 flex overflow-hidden">
+      {/* Main Board Container */}
+      <div className={`flex flex-col transition-all duration-300 ${selectedProjectForUpdates ? 'flex-1' : 'w-full'}`}>
+        {/* Enhanced Header */}
+        <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-3 flex-shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocation('/workspaces')}
+              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 text-sm px-3 py-2 h-8 rounded-md"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Workspaces
+            </Button>
+            <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
+              <div className="w-3 h-3 bg-white rounded-sm" />
+            </div>
+            <h1 className="text-lg font-medium">{getBoardName()}</h1>
+            <div className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md text-sm font-medium border border-blue-200">
+              {getBoardName()}
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-1">
+            {undoStack.length > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  const lastAction = undoStack[undoStack.length - 1];
+                  if (lastAction && lastAction.action === 'update_cell') {
+                    const { projectId, field, previousValue } = lastAction.data;
+                    updateCellMutation.mutate({ projectId, field, value: previousValue });
+                    setUndoStack(prev => prev.slice(0, -1));
+                  }
+                }}
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 text-xs px-1.5 py-1 h-6 rounded-md"
+              >
+                <Undo2 className="w-3 h-3" />
+              </Button>
+            )}
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 text-xs px-1.5 py-1 h-6 rounded-md"
+                >
+                  <Plus className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-white border-gray-200 text-gray-900 shadow-lg">
+                <DropdownMenuItem 
+                  onClick={() => addItemMutation.mutate('New Leads')}
+                  className="text-xs hover:bg-gray-50 focus:bg-gray-50"
+                >
+                  <Plus className="w-3 h-3 mr-2" />
+                  Add Item
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setIsAddGroupOpen(true)}
+                  className="text-xs hover:bg-gray-50 focus:bg-gray-50"
+                >
+                  <Folder className="w-3 h-3 mr-2" />
+                  Add Group
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setIsAddColumnOpen(true)}
+                  className="text-xs hover:bg-gray-50 focus:bg-gray-50"
+                >
+                  <Columns className="w-3 h-3 mr-2" />
+                  Add Column
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setIsAddPersonModalOpen(true)}
+                  className="text-xs hover:bg-gray-50 focus:bg-gray-50"
+                >
+                  <UserPlus className="w-3 h-3 mr-2" />
+                  Add Person to Project
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Add Column Dialog */}
+            <Dialog open={isAddColumnOpen} onOpenChange={setIsAddColumnOpen}>
+              <DialogContent className="bg-white text-gray-900 border-gray-200">
+                <DialogHeader>
+                  <DialogTitle>Add Column</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs text-gray-700">Name</Label>
+                    <Input
+                      value={newColumnName}
+                      onChange={(e) => setNewColumnName(e.target.value)}
+                      className="bg-white border-gray-300 text-gray-900 h-8 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Column name"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-700">Type</Label>
+                    <Select value={newColumnType} onValueChange={(value) => setNewColumnType(value as BoardColumn['type'])}>
+                      <SelectTrigger className="bg-white border-gray-300 text-gray-900 h-8 focus:border-blue-500 focus:ring-blue-500">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-gray-200 shadow-lg">
+                        <SelectItem value="text">Text</SelectItem>
+                        <SelectItem value="status">Status</SelectItem>
+                        <SelectItem value="people">People</SelectItem>
+                        <SelectItem value="date">Date</SelectItem>
+                        <SelectItem value="number">Number</SelectItem>
+                        <SelectItem value="tags">Tags</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={addColumn} size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-8 rounded-md">
+                      Add
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsAddColumnOpen(false)}
+                      size="sm"
+                      className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 h-8 rounded-md"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Add Group Dialog */}
+            <Dialog open={isAddGroupOpen} onOpenChange={setIsAddGroupOpen}>
+              <DialogContent className="bg-gray-900 text-white border-gray-700">
+                <DialogHeader>
+                  <DialogTitle>Add Group</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs">Group Name</Label>
+                    <Input
+                      value={newGroupName}
+                      onChange={(e) => setNewGroupName(e.target.value)}
+                      className="bg-gray-800 border-gray-700 text-white h-8"
+                      placeholder="Enter group name"
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={addGroup} size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 h-8">
+                      Add Group
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsAddGroupOpen(false)} 
+                      size="sm" 
+                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 h-8"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </header>
+
+      {/* Compact Board */}
+      <div className="flex-1 overflow-auto bg-white">
