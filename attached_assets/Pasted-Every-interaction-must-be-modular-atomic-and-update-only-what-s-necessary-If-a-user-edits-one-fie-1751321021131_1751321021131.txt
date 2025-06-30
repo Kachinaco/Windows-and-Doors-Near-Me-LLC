@@ -1,0 +1,38 @@
+Every interaction must be modular, atomic, and update only what’s necessary. If a user edits one field in one row, only that piece of data should be patched to storage — no full overwrites of task blocks unless restructuring is intentional. This is especially important for mobile users, where bandwidth and stability may vary. When someone changes a sub item’s due date or marks it complete, it should update the backend instantly, re-render the parent task’s formula (if dependent), update all dashboard metrics (task count, progress, etc.), and flag the visual status in the timeline or card view without needing a full reload.
+
+The merged interface should maintain task-level granularity and project-level context at the same time. That means I can work in one task, see its sub items, scroll the timeline, and immediately understand where it fits in the entire project scope. I should be able to view:
+	•	all tasks across all projects (global dashboard view)
+	•	one project’s board with columns
+	•	a detailed page for a single task
+and never break context.
+
+The navigation structure must reflect this flexibility. On desktop, this may mean a collapsible left sidebar with tabs for “Board,” “Dashboard,” “Calendar,” “Tasks,” “People,” and “Files.” On mobile, this should shift to a bottom nav bar with 4-5 key icons, and a floating “+” button for quick task creation. Clicking that plus button should open a task composer that lets me choose where the task goes: which project, folder, and whether it’s a sub item or a standalone row.
+
+Each task and sub item should carry persistent metadata like “Created by,” “Created at,” “Last edited by,” “Last updated at,” “Assigned team,” “Estimated hours,” and “Actual hours.” These fields should be optional to show in the board, but always accessible via the task detail view. This gives structure for future reporting, filtering, and billing logic.
+
+There needs to be full support for recurring tasks in the future. For now, each created task should have a unique ID and a parent ID if it’s a sub item. You can build logic later to clone task templates and auto-assign deadlines. But the structure needs to be future-proofed for that now.
+
+The merged UI should also account for role-based controls. Admins can add columns, edit formulas, and delete folders. Editors can add and modify tasks. Viewers can only comment or mark tasks complete. These permissions need to be respected across all views. If I don’t have access to formulas, I shouldn’t see the formula builder, and if I can’t assign users, the assignee dropdown should be locked or hidden.
+
+If a formula breaks (invalid syntax or deleted reference), it should show a visual warning — both in the board and anywhere it’s displayed in the dashboard. No broken formulas should go unnoticed. Ideally, you add a formula validator during input and display feedback before allowing save.
+
+Any component that shows counts, sums, or percentages — like “5 of 12 tasks complete” or “80% done” — must be tied to actual board data. These numbers should never be hardcoded. They must calculate based on the current filtered view. If I filter by assignee or folder, the dashboard and progress bars must respect that.
+
+Sorting, filtering, and grouping logic must be universal across the board and dashboard. If I sort the board by due date, I expect the timeline to reflect the same order. If I group the board by assignee, I should be able to toggle a similar group view in the dashboard (i.e., grouped timeline rows by user).
+
+For performance, use client-side caching or memory-state for rendering open folders and expanded sub items. Don’t reload every sub task tree every time I collapse and reopen a parent. But always sync task data to backend as a priority.
+
+The dashboard widgets (like project progress, task load per user, top overdue items) should always reflect the live state of the board. Never duplicate logic or run separate calculations — let these dashboard metrics pull directly from the task structure using computed views. Ideally, you treat dashboard components as “smart visual filters” on top of the board model.
+
+You should also plan for scalability. If I have 5,000 tasks across 50 projects, the UI still needs to remain fast. Use pagination, lazy loading, and offscreen rendering where necessary — especially for timelines and folders. Keep only a portion of visible rows in memory at once, and recycle views intelligently.
+
+Notifications or alert logic should be unified as well. If someone assigns me to a task or updates a status to “Ready for review,” I should be notified in-app and eventually via email. But don’t separate board and dashboard logic for this. Tie all events to the same task state — any trigger should work regardless of where it was changed.
+
+Let me know when you have a working prototype of this merged system that lets me:
+	•	See my board and dashboard with the same data
+	•	Make changes in either view and see those changes instantly reflected
+	•	View all task statuses, assignees, folders, and progress in mobile and desktop
+	•	Interact with sub items, columns, and formulas in one seamless, saved structure
+	•	Switch between board logic and visual dashboard intelligence without losing state
+
+I want this entire system to feel like one brain with two views — board view (structured table with logic) and dashboard view (summarized insights and timelines) — with both powered by the same living data. Keep going until there’s no separation between them.
