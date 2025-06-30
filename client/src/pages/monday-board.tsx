@@ -2943,46 +2943,7 @@ export default function MondayBoard() {
                                               </div>
                                             ))}
                                             
-                                            {/* Add Sub Item button - blue theme */}
-                                            <div className="flex hover:bg-blue-100/50 transition-all border-b border-blue-200 bg-blue-50/10 relative">
-                                              {/* Empty checkbox space */}
-                                              <div className="w-12 px-2 py-2 border-r border-blue-200 sticky left-0 bg-blue-50/20 z-30"></div>
-                                              <div 
-                                                className="px-4 py-2 flex-shrink-0 sticky left-12 bg-blue-50/20 z-20"
-                                                style={{ 
-                                                  width: (columnWidths['item'] || 120),
-                                                  minWidth: '80px',
-                                                  maxWidth: 'none'
-                                                }}
-                                              >
-                                                <Button
-                                                  variant="ghost"
-                                                  size="sm"
-                                                  onClick={() => handleAddSubItemToFolder(item.id, folder.id)}
-                                                  className="text-blue-700 hover:text-blue-800 hover:bg-blue-100 text-sm h-8 px-3 flex items-center gap-2 border border-blue-400 hover:border-blue-500 rounded-md transition-all font-medium"
-                                                >
-                                                  <Plus className="w-4 h-4" />
-                                                  Add Sub Item
-                                                </Button>
-                                              </div>
-                                              
-                                              {/* Empty cells using exact same columns as main board */}
-                                              {columns.slice(1).map((column, index) => {
-                                                const columnWidth = getColumnWidth(column.id, index + 1); // +1 because we slice(1)
-                                                
-                                                return (
-                                                <div 
-                                                  key={`add-sub-${folder.id}-${column.id}`}
-                                                  className="px-4 py-3 border-r border-gray-200 flex-shrink-0 bg-white z-5"
-                                                  style={{ 
-                                                    width: columnWidth,
-                                                    minWidth: index === 0 ? '80px' : '90px',
-                                                    maxWidth: 'none'
-                                                  }}
-                                                />
-                                                )
-                                              })}
-                                            </div>
+
                                           </div>
                                         </>
                                       )}
