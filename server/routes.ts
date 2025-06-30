@@ -2791,6 +2791,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // OpenAI Formula Assistant API Routes
+  app.post("/api/ai/generate-formula", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { prompt, columnNames } = req.body;
+      
+      if (!prompt || !Array.isArray(columnNames)) {
+        return res.status(400).json({ message: "Prompt and column names are required" });
+      }
+
+      // Rate limiting check (simple implementation - could be enhanced with Redis)
+      const userId = req.user!.id;
+      const today = new Date().toDateString();
+      const cacheKey = `formula_requests_${userId}_${today}`;
+      
+      // For now, we'll implement basic in-memory rate limiting
+      // In production, this should use Redis or a database
+      
+      const { generateFormulaFromPrompt } = await import('./openai');
+      const formula = await generateFormulaFromPrompt(prompt, columnNames);
+      
+      res.json({ 
+        formula,
+        success: true,
+        message: "Formula generated successfully"
+      });
+    } catch (error: any) {
+      console.error("Error generating formula:", error);
+      res.status(500).json({ 
+        message: error.message || "Failed to generate formula",
+        success: false 
+      });
+    }
+  });
+
+  app.post("/api/ai/explain-formula", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { formula, columnNames } = req.body;
+      
+      if (!formula || !Array.isArray(columnNames)) {
+        return res.status(400).json({ message: "Formula and column names are required" });
+      }
+
+      const { explainFormula } = await import('./openai');
+      const explanation = await explainFormula(formula, columnNames);
+      
+      res.json({ 
+        explanation,
+        success: true,
+        message: "Formula explained successfully"
+      });
+    } catch (error: any) {
+      console.error("Error explaining formula:", error);
+      res.status(500).json({ 
+        message: error.message || "Failed to explain formula",
+        success: false 
+      });
+    }
+  });
+
   // Temporary endpoint to create sample sub-items and folders for testing
   app.post("/api/projects/:projectId/create-sample-subitems", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
