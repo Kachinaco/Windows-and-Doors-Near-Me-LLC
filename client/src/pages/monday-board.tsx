@@ -787,9 +787,9 @@ export default function MondayBoard() {
               </SelectValue>
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="unassigned">Unassigned</SelectItem>
+              <SelectItem value="unassigned" className="text-white hover:text-gray-200">Unassigned</SelectItem>
               {teamMembers.map((member: any) => (
-                <SelectItem key={member.id} value={member.id.toString()}>
+                <SelectItem key={member.id} value={member.id.toString()} className="text-white hover:text-gray-200">
                   {member.firstName} {member.lastName}
                 </SelectItem>
               ))}
@@ -1265,9 +1265,9 @@ export default function MondayBoard() {
               </SelectValue>
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="unassigned">Unassigned</SelectItem>
+              <SelectItem value="unassigned" className="text-white hover:text-gray-200">Unassigned</SelectItem>
               {teamMembers.map((member: any) => (
-                <SelectItem key={member.id} value={member.id.toString()}>
+                <SelectItem key={member.id} value={member.id.toString()} className="text-white hover:text-gray-200">
                   {member.firstName} {member.lastName}
                 </SelectItem>
               ))}
@@ -2064,9 +2064,9 @@ export default function MondayBoard() {
                                                             <SelectValue placeholder="Assign" />
                                                           </SelectTrigger>
                                                           <SelectContent className="bg-gray-800 border-gray-700">
-                                                            <SelectItem value="unassigned">Unassigned</SelectItem>
+                                                            <SelectItem value="unassigned" className="text-white hover:text-gray-200">Unassigned</SelectItem>
                                                             {teamMembers.map((member: any) => (
-                                                              <SelectItem key={member.id} value={member.id.toString()}>
+                                                              <SelectItem key={member.id} value={member.id.toString()} className="text-white hover:text-gray-200">
                                                                 {member.firstName} {member.lastName}
                                                               </SelectItem>
                                                             ))}
