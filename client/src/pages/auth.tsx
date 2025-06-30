@@ -15,12 +15,17 @@ export default function AuthPage() {
   useEffect(() => {
     const autoLogin = async () => {
       try {
-        await login({ username: "ADMIN", password: "TEST" });
+        console.log("Attempting auto-login...");
+        const result = await login({ username: "ADMIN", password: "TEST" });
+        console.log("Auto-login successful:", result);
       } catch (error) {
-        console.log("Auto-login failed, showing login form");
+        console.log("Auto-login failed:", error);
+        // Clear any invalid token
+        localStorage.removeItem("authToken");
       }
     };
 
+    // Only auto-login if not authenticated and no token stored
     if (!isAuthenticated && !localStorage.getItem("authToken")) {
       autoLogin();
     }
