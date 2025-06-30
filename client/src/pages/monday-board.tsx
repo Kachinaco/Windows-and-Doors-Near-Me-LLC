@@ -1687,6 +1687,13 @@ export default function MondayBoard() {
 
   // Handler functions for sub-item operations
   const handleAddSubItem = useCallback((projectId: number) => {
+    // First expand the sub-items view for this project
+    setExpandedSubItems(prev => {
+      const newSet = new Set(prev);
+      newSet.add(projectId);
+      return newSet;
+    });
+
     createSubItemMutation.mutate({ 
       projectId, 
       name: "" // Create with empty name
@@ -1704,6 +1711,13 @@ export default function MondayBoard() {
   }, [createSubItemMutation]);
 
   const handleAddSubItemFolder = useCallback((projectId: number) => {
+    // First expand the sub-items view for this project
+    setExpandedSubItems(prev => {
+      const newSet = new Set(prev);
+      newSet.add(projectId);
+      return newSet;
+    });
+
     createSubItemFolderMutation.mutate({ 
       projectId, 
       name: "" // Create with empty name
@@ -1735,6 +1749,19 @@ export default function MondayBoard() {
 
   // Handler for adding sub-items to specific folders
   const handleAddSubItemToFolder = useCallback((projectId: number, folderId: number) => {
+    // First expand the sub-items view and the specific folder
+    setExpandedSubItems(prev => {
+      const newSet = new Set(prev);
+      newSet.add(projectId);
+      return newSet;
+    });
+    
+    setExpandedFolders(prev => {
+      const newSet = new Set(prev);
+      newSet.add(folderId);
+      return newSet;
+    });
+
     createSubItemMutation.mutate({ 
       projectId, 
       name: "", // Create with empty name
