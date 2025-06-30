@@ -84,6 +84,48 @@ export interface UnifiedProjectData {
   sortOrder?: 'asc' | 'desc';
 }
 
+// Helper functions (moved to top level to avoid hoisting issues)
+const flattenTasks = (tasks: UnifiedTask[]): UnifiedTask[] => {
+  const result: UnifiedTask[] = [];
+  tasks.forEach(task => {
+    result.push(task);
+    if (task.children?.length) {
+      result.push(...flattenTasks(task.children));
+    }
+  });
+  return result;
+};
+
+const groupTasksByAssignee = (tasks: UnifiedTask[]) => {
+  const groups: Record<string, UnifiedTask[]> = {};
+  tasks.forEach(task => {
+    const key = task.assignedUser ? `${task.assignedUser.firstName} ${task.assignedUser.lastName}` : 'Unassigned';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(task);
+  });
+  return groups;
+};
+
+const groupTasksByStatus = (tasks: UnifiedTask[]) => {
+  const groups: Record<string, UnifiedTask[]> = {};
+  tasks.forEach(task => {
+    if (!groups[task.status]) groups[task.status] = [];
+    groups[task.status].push(task);
+  });
+  return groups;
+};
+
+const getDefaultColumns = (): UnifiedColumn[] => [
+  { id: 'title', name: 'Task', type: 'text', order: 1 },
+  { id: 'status', name: 'Status', type: 'status', order: 2, settings: { 
+    options: ['not_started', 'in_progress', 'under_review', 'complete'],
+    colors: { 'not_started': '#gray', 'in_progress': '#blue', 'under_review': '#yellow', 'complete': '#green' }
+  }},
+  { id: 'assignee', name: 'Assignee', type: 'people', order: 3 },
+  { id: 'dueDate', name: 'Due Date', type: 'date', order: 4 },
+  { id: 'progress', name: 'Progress', type: 'progress', order: 5 }
+];
+
 export function useUnifiedProjectData(projectId?: number) {
   const queryClient = useQueryClient();
   const [localFilters, setLocalFilters] = useState<UnifiedProjectData['filters']>({});
@@ -334,47 +376,7 @@ export function useUnifiedProjectData(projectId?: number) {
     },
   });
 
-  // Helper functions
-  const flattenTasks = (tasks: UnifiedTask[]): UnifiedTask[] => {
-    const result: UnifiedTask[] = [];
-    tasks.forEach(task => {
-      result.push(task);
-      if (task.children?.length) {
-        result.push(...flattenTasks(task.children));
-      }
-    });
-    return result;
-  };
 
-  const groupTasksByAssignee = (tasks: UnifiedTask[]) => {
-    const groups: Record<string, UnifiedTask[]> = {};
-    tasks.forEach(task => {
-      const key = task.assignedUser ? `${task.assignedUser.firstName} ${task.assignedUser.lastName}` : 'Unassigned';
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(task);
-    });
-    return groups;
-  };
-
-  const groupTasksByStatus = (tasks: UnifiedTask[]) => {
-    const groups: Record<string, UnifiedTask[]> = {};
-    tasks.forEach(task => {
-      if (!groups[task.status]) groups[task.status] = [];
-      groups[task.status].push(task);
-    });
-    return groups;
-  };
-
-  const getDefaultColumns = (): UnifiedColumn[] => [
-    { id: 'title', name: 'Task', type: 'text', order: 1 },
-    { id: 'status', name: 'Status', type: 'status', order: 2, settings: { 
-      options: ['not_started', 'in_progress', 'under_review', 'complete'],
-      colors: { 'not_started': '#gray', 'in_progress': '#blue', 'under_review': '#yellow', 'complete': '#green' }
-    }},
-    { id: 'assignee', name: 'Assignee', type: 'people', order: 3 },
-    { id: 'dueDate', name: 'Due Date', type: 'date', order: 4 },
-    { id: 'progress', name: 'Progress', type: 'progress', order: 5 }
-  ];
 
   // API functions
   const updateTask = useCallback((taskId: number, updates: Partial<UnifiedTask>) => {
