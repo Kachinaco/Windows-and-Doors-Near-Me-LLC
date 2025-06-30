@@ -287,8 +287,58 @@ export default function MondayBoard() {
 
   // Update local board items when projects data changes
   useEffect(() => {
-    setBoardItems(initialBoardItems);
-  }, [initialBoardItems]);
+    if (Array.isArray(projects)) {
+      const transformedItems = projects.map((project: any) => {
+        // Map project status to pipeline groups
+        let groupName = 'New Leads';
+        if (project.status === 'new lead') groupName = 'New Leads';
+        else if (project.status === 'need attention') groupName = 'Need Attention';
+        else if (project.status === 'sent estimate') groupName = 'Sent Estimate';
+        else if (project.status === 'signed') groupName = 'Signed';
+        else if (project.status === 'in progress') groupName = 'In Progress';
+        else if (project.status === 'complete') groupName = 'Complete';
+
+        return {
+          id: project.id || 0,
+          groupName,
+          values: {
+            item: project.name || '',
+            status: project.status || 'new lead',
+            assignedTo: project.assignedTo || '',
+            dueDate: project.endDate || '',
+            priority: 3,
+            tags: [],
+            location: project.projectAddress || '',
+            phone: project.clientPhone || '',
+            // Initialize all new column types with default values
+            checkbox: false,
+            progress: 0,
+            auto_number: project.id,
+            item_id: `ID-${project.id}`,
+            timeline: project.startDate || '',
+            formula: '',
+            week: '',
+            world_clock: new Date().toISOString(),
+            email: project.clientEmail || '',
+            link: '',
+            custom_url: '',
+            team: '',
+            vote: 0,
+            color_picker: '#3b82f6',
+            files: [],
+            creation_log: `Created by Admin on ${new Date().toLocaleDateString()}`,
+            last_updated: new Date().toLocaleDateString(),
+            time_tracking: '0:00',
+            api_action: '',
+            country: '',
+          },
+          subItems: project.subItems || [],
+          subItemFolders: project.subItemFolders || []
+        };
+      });
+      setBoardItems(transformedItems);
+    }
+  }, [projects]);
 
   // Define fixed group order to match project pipeline exactly
   // Initialize group order state with localStorage support
@@ -2716,7 +2766,7 @@ export default function MondayBoard() {
                                               
                                               {/* Empty cells using exact same columns as main board */}
                                               {columns.slice(1).map((column, index) => {
-                                                const columnWidth = columnWidths[column.id] || (index === 0 ? 120 : 140);
+                                                const columnWidth = getColumnWidth(column.id, index + 1); // +1 because we slice(1)
                                                 
                                                 return (
                                                 <div 
@@ -2767,7 +2817,7 @@ export default function MondayBoard() {
                                     key={`addfolder-${item.id}-${column.id}`}
                                     className="px-4 py-3 border-r border-gray-200 flex-shrink-0"
                                     style={{ 
-                                      width: columnWidths[column.id] || (index === 0 ? 120 : 140),
+                                      width: getColumnWidth(column.id, index + 1), // +1 because we slice(1)
                                       minWidth: index === 0 ? '80px' : '90px',
                                       maxWidth: 'none'
                                     }}
