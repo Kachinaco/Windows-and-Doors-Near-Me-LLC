@@ -127,7 +127,22 @@ export default function MondayBoard() {
       '6': 'Dustin Crocker 25',
       '7': 'Nate and Jarred 25'
     };
+    
+    // For new boards created with timestamp IDs, get name from localStorage or URL params
+    if (boardId && !boardNames[boardId]) {
+      const storedName = localStorage.getItem(`board_${boardId}_name`);
+      if (storedName) return storedName;
+      return 'New Board';
+    }
+    
     return boardNames[boardId || ''] || 'Project Board';
+  };
+
+  // Check if this is a new/blank board (no existing data)
+  const isNewBoard = (): boolean => {
+    if (!boardId) return false;
+    // Boards with timestamp IDs (created dynamically) are new blank boards
+    return !['1', '2', '3', '4', '5', '6', '7'].includes(boardId);
   };
 
   // Initialize column widths from localStorage or use defaults
@@ -195,14 +210,14 @@ export default function MondayBoard() {
   // Fetch projects and transform to board items
   const { data: projects = [], isLoading, error } = useQuery({
     queryKey: ['/api/projects'],
-    enabled: !!user, // Only fetch when user is available
-    refetchInterval: 5000,
+    enabled: !!user && !isNewBoard(), // Only fetch when user is available and not a new board
+    refetchInterval: isNewBoard() ? false : 5000, // Don't refetch for new boards
   });
 
   // Query for project team members (for "Assigned To" dropdowns)
   const { data: teamMembers = [] } = useQuery({
     queryKey: ['/api/projects/77/team-members'],
-    enabled: !!user,
+    enabled: !!user && !isNewBoard(), // Don't fetch team members for new boards
     queryFn: async () => {
       const response = await fetch('/api/projects/77/team-members', {
         headers: {
@@ -1557,6 +1572,68 @@ export default function MondayBoard() {
 
       {/* Compact Board */}
       <div className="flex-1 overflow-auto bg-white">
+        {isNewBoard() ? (
+          /* Blank Board State */
+          <div className="flex flex-col items-center justify-center h-full text-center p-8">
+            <div className="max-w-md mx-auto">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-8 h-8 bg-gray-300 rounded-sm" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{getBoardName()}</h3>
+              <p className="text-gray-600 mb-6">This is a blank board. Start building by adding your first column.</p>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Your First Column
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-white border border-gray-300">
+                  <DialogHeader>
+                    <DialogTitle>Add Column</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-gray-700">Name</Label>
+                      <Input
+                        value={newColumnName}
+                        onChange={(e) => setNewColumnName(e.target.value)}
+                        className="bg-white border-gray-300 text-gray-900 h-8 focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="Column name"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-700">Type</Label>
+                      <Select value={newColumnType} onValueChange={(value: any) => setNewColumnType(value)}>
+                        <SelectTrigger className="bg-white border-gray-300 text-gray-900 h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border-gray-300">
+                          <SelectItem value="text">Text</SelectItem>
+                          <SelectItem value="status">Status</SelectItem>
+                          <SelectItem value="people">People</SelectItem>
+                          <SelectItem value="date">Date</SelectItem>
+                          <SelectItem value="number">Number</SelectItem>
+                          <SelectItem value="tags">Tags</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Button onClick={addColumn} className="flex-1 bg-blue-600 hover:bg-blue-700 h-8">
+                        Add Column
+                      </Button>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 h-8">
+                          Cancel
+                        </Button>
+                      </DialogTrigger>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        ) : (
         <div className="min-w-max">
           {/* Enhanced Column Headers */}
           <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
@@ -2332,6 +2409,7 @@ export default function MondayBoard() {
             </div>
           ))}
         </div>
+        )}
       </div>
 
       {/* Compact Status Bar */}
