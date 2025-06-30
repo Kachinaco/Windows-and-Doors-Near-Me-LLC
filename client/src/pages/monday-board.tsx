@@ -1723,7 +1723,75 @@ export default function MondayBoard() {
                     className="w-full h-8 border-none outline-none bg-transparent text-gray-900"
                   />
                 </div>
-                <div className="px-4 py-3 w-24"></div>
+                <div className="px-4 py-3 w-24 flex items-center justify-center">
+                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 h-6 text-xs">
+                    <Plus className="w-3 h-3 mr-1" />
+                    Sub-item
+                  </Button>
+                </div>
+              </div>
+
+              {/* Sub-items for In Progress Group */}
+              <div className="ml-12">
+                <div className="group flex hover:bg-gray-50 transition-all bg-white border-b-2 border-orange-200 shadow-sm">
+                  <div className="w-12 px-2 py-2 border-r border-orange-200 flex items-center justify-center sticky left-0 bg-white z-30"></div>
+                  <div className="px-4 py-3 border-r border-orange-200 flex-shrink-0 sticky left-12 bg-white z-20 flex items-center w-60">
+                    <ChevronDown className="w-3 h-3 mr-2 text-gray-600" />
+                    <Folder className="w-3 h-3 mr-2 text-orange-500" />
+                    <input 
+                      type="text" 
+                      defaultValue="Development Tasks"
+                      className="font-medium text-sm text-gray-900 bg-transparent border-none outline-none cursor-pointer"
+                    />
+                    <span className="ml-2 text-xs text-gray-500">(1)</span>
+                  </div>
+                  <div className="px-4 py-3 border-r border-orange-200 w-32 text-xs font-medium text-gray-700">Status</div>
+                  <div className="px-4 py-3 border-r border-orange-200 w-40 text-xs font-medium text-gray-700">Person</div>
+                  <div className="px-4 py-3 border-r border-orange-200 w-32 text-xs font-medium text-gray-700">Due Date</div>
+                  <div className="px-4 py-3 w-24"></div>
+                </div>
+
+                <div className="flex hover:bg-gray-50 border-b border-gray-100">
+                  <div className="w-12 px-2 py-2 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-30">
+                    <input type="checkbox" className="w-3 h-3 rounded border-gray-400" />
+                  </div>
+                  <div className="px-6 py-2 border-r border-gray-200 flex-shrink-0 sticky left-12 bg-white z-20 w-60">
+                    <input 
+                      type="text" 
+                      placeholder="Add sub-item..."
+                      className="w-full text-sm border-none outline-none bg-transparent text-gray-800 placeholder-gray-400"
+                    />
+                  </div>
+                  <div className="px-4 py-2 border-r border-gray-200 w-32">
+                    <Select>
+                      <SelectTrigger className="w-full h-6 border-none bg-transparent text-xs">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="not-started">Not Started</SelectItem>
+                        <SelectItem value="working">Working</SelectItem>
+                        <SelectItem value="done">Done</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="px-4 py-2 border-r border-gray-200 w-40">
+                    <Select>
+                      <SelectTrigger className="w-full h-6 border-none bg-transparent text-xs">
+                        <SelectValue placeholder="Assign" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="px-4 py-2 border-r border-gray-200 w-32">
+                    <input 
+                      type="date" 
+                      className="w-full h-6 border-none outline-none bg-transparent text-gray-800 text-xs"
+                    />
+                  </div>
+                  <div className="px-4 py-2 w-24"></div>
+                </div>
               </div>
 
               {/* Group 3: Done */}
@@ -1784,7 +1852,188 @@ export default function MondayBoard() {
                     className="w-full h-8 border-none outline-none bg-transparent text-gray-900"
                   />
                 </div>
-                <div className="px-4 py-3 w-24"></div>
+                <div className="px-4 py-3 w-24 flex items-center justify-center">
+                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 h-6 text-xs">
+                    <Plus className="w-3 h-3 mr-1" />
+                    Sub-item
+                  </Button>
+                </div>
+              </div>
+
+              {/* Sample Sub-items for Template */}
+              <div className="ml-12">
+                {/* Sub-item Folder */}
+                <div className="group flex hover:bg-gray-50 transition-all bg-white border-b-2 border-blue-200 shadow-sm">
+                  <div className="w-12 px-2 py-2 border-r border-blue-200 flex items-center justify-center sticky left-0 bg-white z-30"></div>
+                  <div className="px-4 py-3 border-r border-blue-200 flex-shrink-0 sticky left-12 bg-white z-20 flex items-center w-60">
+                    <ChevronDown className="w-3 h-3 mr-2 text-gray-600" />
+                    <Folder className="w-3 h-3 mr-2 text-blue-500" />
+                    <input 
+                      type="text" 
+                      defaultValue="Task Details"
+                      className="font-medium text-sm text-gray-900 bg-transparent border-none outline-none cursor-pointer"
+                    />
+                    <span className="ml-2 text-xs text-gray-500">(2)</span>
+                  </div>
+                  <div className="px-4 py-3 border-r border-blue-200 w-32 text-xs font-medium text-gray-700">Status</div>
+                  <div className="px-4 py-3 border-r border-blue-200 w-40 text-xs font-medium text-gray-700">Person</div>
+                  <div className="px-4 py-3 border-r border-blue-200 w-32 text-xs font-medium text-gray-700">Due Date</div>
+                  <div className="px-4 py-3 w-24"></div>
+                </div>
+
+                {/* Sub-item 1 */}
+                <div className="flex hover:bg-gray-50 border-b border-gray-100">
+                  <div className="w-12 px-2 py-2 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-30">
+                    <input type="checkbox" className="w-3 h-3 rounded border-gray-400" />
+                  </div>
+                  <div className="px-6 py-2 border-r border-gray-200 flex-shrink-0 sticky left-12 bg-white z-20 w-60">
+                    <input 
+                      type="text" 
+                      placeholder="Add sub-item..."
+                      className="w-full text-sm border-none outline-none bg-transparent text-gray-800 placeholder-gray-400"
+                    />
+                  </div>
+                  <div className="px-4 py-2 border-r border-gray-200 w-32">
+                    <Select>
+                      <SelectTrigger className="w-full h-6 border-none bg-transparent text-xs">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="not-started">Not Started</SelectItem>
+                        <SelectItem value="working">Working</SelectItem>
+                        <SelectItem value="done">Done</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="px-4 py-2 border-r border-gray-200 w-40">
+                    <Select>
+                      <SelectTrigger className="w-full h-6 border-none bg-transparent text-xs">
+                        <SelectValue placeholder="Assign" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="px-4 py-2 border-r border-gray-200 w-32">
+                    <input 
+                      type="date" 
+                      className="w-full h-6 border-none outline-none bg-transparent text-gray-800 text-xs"
+                    />
+                  </div>
+                  <div className="px-4 py-2 w-24"></div>
+                </div>
+
+                {/* Sub-item 2 */}
+                <div className="flex hover:bg-gray-50 border-b border-gray-100">
+                  <div className="w-12 px-2 py-2 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-30">
+                    <input type="checkbox" className="w-3 h-3 rounded border-gray-400" />
+                  </div>
+                  <div className="px-6 py-2 border-r border-gray-200 flex-shrink-0 sticky left-12 bg-white z-20 w-60">
+                    <input 
+                      type="text" 
+                      placeholder="Add sub-item..."
+                      className="w-full text-sm border-none outline-none bg-transparent text-gray-800 placeholder-gray-400"
+                    />
+                  </div>
+                  <div className="px-4 py-2 border-r border-gray-200 w-32">
+                    <Select>
+                      <SelectTrigger className="w-full h-6 border-none bg-transparent text-xs">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="not-started">Not Started</SelectItem>
+                        <SelectItem value="working">Working</SelectItem>
+                        <SelectItem value="done">Done</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="px-4 py-2 border-r border-gray-200 w-40">
+                    <Select>
+                      <SelectTrigger className="w-full h-6 border-none bg-transparent text-xs">
+                        <SelectValue placeholder="Assign" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="px-4 py-2 border-r border-gray-200 w-32">
+                    <input 
+                      type="date" 
+                      className="w-full h-6 border-none outline-none bg-transparent text-gray-800 text-xs"
+                    />
+                  </div>
+                  <div className="px-4 py-2 w-24 flex items-center justify-center">
+                    <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 h-6 text-xs">
+                      <Plus className="w-3 h-3 mr-1" />
+                      Sub-item
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Sub-items for Done Group */}
+                <div className="ml-12">
+                  <div className="group flex hover:bg-gray-50 transition-all bg-white border-b-2 border-green-200 shadow-sm">
+                    <div className="w-12 px-2 py-2 border-r border-green-200 flex items-center justify-center sticky left-0 bg-white z-30"></div>
+                    <div className="px-4 py-3 border-r border-green-200 flex-shrink-0 sticky left-12 bg-white z-20 flex items-center w-60">
+                      <ChevronDown className="w-3 h-3 mr-2 text-gray-600" />
+                      <Folder className="w-3 h-3 mr-2 text-green-500" />
+                      <input 
+                        type="text" 
+                        defaultValue="Completed Items"
+                        className="font-medium text-sm text-gray-900 bg-transparent border-none outline-none cursor-pointer"
+                      />
+                      <span className="ml-2 text-xs text-gray-500">(1)</span>
+                    </div>
+                    <div className="px-4 py-3 border-r border-green-200 w-32 text-xs font-medium text-gray-700">Status</div>
+                    <div className="px-4 py-3 border-r border-green-200 w-40 text-xs font-medium text-gray-700">Person</div>
+                    <div className="px-4 py-3 border-r border-green-200 w-32 text-xs font-medium text-gray-700">Due Date</div>
+                    <div className="px-4 py-3 w-24"></div>
+                  </div>
+
+                  <div className="flex hover:bg-gray-50 border-b border-gray-100">
+                    <div className="w-12 px-2 py-2 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-white z-30">
+                      <input type="checkbox" className="w-3 h-3 rounded border-gray-400" />
+                    </div>
+                    <div className="px-6 py-2 border-r border-gray-200 flex-shrink-0 sticky left-12 bg-white z-20 w-60">
+                      <input 
+                        type="text" 
+                        placeholder="Add sub-item..."
+                        className="w-full text-sm border-none outline-none bg-transparent text-gray-800 placeholder-gray-400"
+                      />
+                    </div>
+                    <div className="px-4 py-2 border-r border-gray-200 w-32">
+                      <Select>
+                        <SelectTrigger className="w-full h-6 border-none bg-transparent text-xs">
+                          <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="not-started">Not Started</SelectItem>
+                          <SelectItem value="working">Working</SelectItem>
+                          <SelectItem value="done">Done</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="px-4 py-2 border-r border-gray-200 w-40">
+                      <Select>
+                        <SelectTrigger className="w-full h-6 border-none bg-transparent text-xs">
+                          <SelectValue placeholder="Assign" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="px-4 py-2 border-r border-gray-200 w-32">
+                      <input 
+                        type="date" 
+                        className="w-full h-6 border-none outline-none bg-transparent text-gray-800 text-xs"
+                      />
+                    </div>
+                    <div className="px-4 py-2 w-24"></div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1793,12 +2042,16 @@ export default function MondayBoard() {
               <div className="flex items-center space-x-3">
                 <span>3 items</span>
                 <span>•</span>
+                <span>6 sub-items</span>
+                <span>•</span>
+                <span>3 folders</span>
+                <span>•</span>
                 <span>4 columns</span>
                 <span>•</span>
-                <span>Template Board</span>
+                <span className="text-blue-600 font-medium">Template Board</span>
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-green-600">Ready to customize</span>
+                <span className="text-green-600">✓ Ready to customize</span>
               </div>
             </div>
           </div>
