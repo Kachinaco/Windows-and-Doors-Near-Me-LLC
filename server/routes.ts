@@ -2800,30 +2800,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Prompt and column names are required" });
       }
 
-      // Rate limiting check (simple implementation - could be enhanced with Redis)
-      const userId = req.user!.id;
-      const today = new Date().toDateString();
-      const cacheKey = `formula_requests_${userId}_${today}`;
+      let formula: string;
+      let explanation: string;
+
+      try {
+        // Try OpenAI first
+        const { generateFormulaFromPrompt } = await import('./openai');
+        formula = await generateFormulaFromPrompt(prompt, columnNames);
+        explanation = `AI generated formula for: ${prompt}`;
+      } catch (openaiError: any) {
+        // Fallback to pattern-based formula generation
+        console.log("OpenAI unavailable, using fallback formula generation");
+        
+        const result = generateBasicFormula(prompt.toLowerCase(), columnNames);
+        formula = result.formula;
+        explanation = result.explanation;
+      }
       
-      // For now, we'll implement basic in-memory rate limiting
-      // In production, this should use Redis or a database
-      
-      const { generateFormulaFromPrompt } = await import('./openai');
-      const formula = await generateFormulaFromPrompt(prompt, columnNames);
-      
-      res.json({ 
-        formula,
-        success: true,
-        message: "Formula generated successfully"
-      });
+      res.json({ formula, explanation });
     } catch (error: any) {
       console.error("Error generating formula:", error);
-      res.status(500).json({ 
-        message: error.message || "Failed to generate formula",
-        success: false 
-      });
+      res.status(500).json({ message: error.message || "Failed to generate formula" });
     }
   });
+
+  // Fallback formula generation function
+  function generateBasicFormula(prompt: string, columnNames: string[]): { formula: string; explanation: string } {
+    // Pattern matching for common formula requests
+    if (prompt.includes('sum') || prompt.includes('total') || prompt.includes('add')) {
+      const numericColumns = columnNames.filter(name => 
+        name.toLowerCase().includes('price') || 
+        name.toLowerCase().includes('cost') || 
+        name.toLowerCase().includes('amount') ||
+        name.toLowerCase().includes('value') ||
+        name.toLowerCase().includes('number')
+      );
+      
+      if (numericColumns.length > 0) {
+        const formula = `=SUM(${numericColumns.map(col => `[${col}]`).join(', ')})`;
+        return {
+          formula,
+          explanation: `Sum of ${numericColumns.join(', ')} columns`
+        };
+      }
+    }
+    
+    if (prompt.includes('average') || prompt.includes('avg') || prompt.includes('mean')) {
+      const numericColumns = columnNames.filter(name => 
+        name.toLowerCase().includes('price') || 
+        name.toLowerCase().includes('cost') || 
+        name.toLowerCase().includes('amount') ||
+        name.toLowerCase().includes('rating') ||
+        name.toLowerCase().includes('score')
+      );
+      
+      if (numericColumns.length > 0) {
+        const formula = `=AVG(${numericColumns.map(col => `[${col}]`).join(', ')})`;
+        return {
+          formula,
+          explanation: `Average of ${numericColumns.join(', ')} columns`
+        };
+      }
+    }
+    
+    if (prompt.includes('count') || prompt.includes('how many')) {
+      const statusColumn = columnNames.find(name => 
+        name.toLowerCase().includes('status') || 
+        name.toLowerCase().includes('state')
+      );
+      
+      if (statusColumn) {
+        const formula = `=COUNT([${statusColumn}])`;
+        return {
+          formula,
+          explanation: `Count of items in ${statusColumn} column`
+        };
+      }
+    }
+    
+    if (prompt.includes('if') || prompt.includes('condition') || prompt.includes('when')) {
+      const statusColumn = columnNames.find(name => 
+        name.toLowerCase().includes('status') || 
+        name.toLowerCase().includes('state')
+      );
+      
+      if (statusColumn) {
+        const formula = `=IF([${statusColumn}] = "Complete", "Done", "In Progress")`;
+        return {
+          formula,
+          explanation: `Conditional formula based on ${statusColumn} column`
+        };
+      }
+    }
+    
+    if (prompt.includes('multiply') || prompt.includes('times') || prompt.includes('*')) {
+      const numericColumns = columnNames.filter(name => 
+        name.toLowerCase().includes('price') || 
+        name.toLowerCase().includes('cost') || 
+        name.toLowerCase().includes('quantity') ||
+        name.toLowerCase().includes('amount')
+      );
+      
+      if (numericColumns.length >= 2) {
+        const formula = `=[${numericColumns[0]}] * [${numericColumns[1]}]`;
+        return {
+          formula,
+          explanation: `Multiply ${numericColumns[0]} by ${numericColumns[1]}`
+        };
+      }
+    }
+    
+    // Generic fallback
+    const firstNumericColumn = columnNames.find(name => 
+      name.toLowerCase().includes('price') || 
+      name.toLowerCase().includes('cost') || 
+      name.toLowerCase().includes('amount') ||
+      name.toLowerCase().includes('value') ||
+      name.toLowerCase().includes('number')
+    );
+    
+    if (firstNumericColumn) {
+      return {
+        formula: `=[${firstNumericColumn}]`,
+        explanation: `Basic formula using ${firstNumericColumn} column. For AI-powered formulas, please add your OpenAI API key.`
+      };
+    }
+    
+    return {
+      formula: "=SUM()",
+      explanation: "Basic SUM formula. Please add your OpenAI API key for AI-powered formula generation."
+    };
+  }
 
   app.post("/api/ai/explain-formula", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {

@@ -12,6 +12,17 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function generateFormulaFromPrompt(promptText: string, columnNames: string[]): Promise<string> {
   try {
+    // Validate OpenAI API key exists
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OpenAI API key not configured. Please add your API key to use the Formula Assistant.");
+    }
+
+    // Clean and validate the API key
+    const apiKey = process.env.OPENAI_API_KEY.trim();
+    if (!apiKey.startsWith('sk-') || apiKey.length < 20) {
+      throw new Error("Invalid OpenAI API key format. Please check your API key.");
+    }
+
     const formattedColumnNames = columnNames.map(name => `"${name}"`).join(", ");
     const systemPrompt = `You are a formula generator for a spreadsheet application. Generate formulas using column references in square brackets like [Column Name]. 
 Available columns: ${formattedColumnNames}
@@ -26,7 +37,10 @@ Rules:
 
     const userPrompt = `Create a formula to: ${promptText}`;
 
-    const response = await openai.chat.completions.create({
+    // Create a new OpenAI instance with cleaned API key
+    const cleanOpenAI = new OpenAI({ apiKey });
+
+    const response = await cleanOpenAI.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
       messages: [
         { role: "system", content: systemPrompt },
@@ -38,8 +52,23 @@ Rules:
 
     const formula = response.choices[0]?.message?.content?.trim();
     return formula || "Unable to generate formula";
-  } catch (error) {
+  } catch (error: any) {
     console.error("OpenAI API error:", error);
+    
+    // Provide more specific error messages
+    if (error.message?.includes('API key')) {
+      throw new Error("Invalid OpenAI API key. Please check your API key configuration.");
+    }
+    if (error.message?.includes('quota') || error.message?.includes('billing')) {
+      throw new Error("OpenAI API quota exceeded. Please check your billing settings.");
+    }
+    if (error.message?.includes('rate limit')) {
+      throw new Error("Too many requests. Please wait a moment and try again.");
+    }
+    if (error.message?.includes('ByteString')) {
+      throw new Error("API key encoding issue. Please provide a fresh API key.");
+    }
+    
     throw new Error("Failed to generate formula. Please try again.");
   }
 }
