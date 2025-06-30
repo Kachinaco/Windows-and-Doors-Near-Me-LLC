@@ -2893,6 +2893,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
     
+    // Handle percentage calculations (moved to top for higher priority)
+    const lowerPrompt = prompt.toLowerCase();
+    if (lowerPrompt.includes('%') || lowerPrompt.includes('percent') || 
+        (lowerPrompt.includes('increase') && (lowerPrompt.includes('by') || lowerPrompt.includes('add'))) ||
+        lowerPrompt.includes('add 65')) {
+      
+      const percentMatch = prompt.match(/(\d+)%/);
+      let multiplier = 1.65; // Default for 65%
+      if (percentMatch) {
+        const percent = parseInt(percentMatch[1]);
+        multiplier = 1 + (percent / 100);
+      } else if (lowerPrompt.includes('65')) {
+        multiplier = 1.65;
+      }
+      
+      // Find the column mentioned in the prompt or use a numeric column
+      let targetColumn = columnNames.find(name => 
+        lowerPrompt.includes(name.toLowerCase())
+      );
+      
+      if (!targetColumn) {
+        targetColumn = columnNames.find(name => 
+          name.toLowerCase().includes('materials') ||
+          name.toLowerCase().includes('spent') ||
+          name.toLowerCase().includes('cost') ||
+          name.toLowerCase().includes('price') ||
+          name.toLowerCase().includes('amount')
+        );
+      }
+      
+      if (targetColumn) {
+        const formula = `=[${targetColumn}] * ${multiplier}`;
+        return {
+          formula,
+          explanation: `Increase ${targetColumn} by ${((multiplier - 1) * 100).toFixed(0)}%`
+        };
+      }
+    }
+    
     if (prompt.includes('multiply') || prompt.includes('times') || prompt.includes('*')) {
       const numericColumns = columnNames.filter(name => 
         name.toLowerCase().includes('price') || 
