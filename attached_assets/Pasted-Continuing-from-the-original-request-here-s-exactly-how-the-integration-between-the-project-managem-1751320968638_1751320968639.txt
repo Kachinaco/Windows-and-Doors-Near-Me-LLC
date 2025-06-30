@@ -1,0 +1,27 @@
+Continuing from the original request, here’s exactly how the integration between the project management board and dashboard should behave, down to structure, syncing logic, mobile usability, backend needs, and advanced behavior.
+
+All functionality must remain consistent across both interfaces with one source of truth for task data.
+
+⸻
+
+Sub Items and folders must stay fully functional across views. Sub Items should appear inside the dashboard as nested tasks when a parent task is expanded or selected. They must be editable and follow the same logic as their parent: status, progress, due date, assigned user, and calculated formulas. Folders must group tasks logically, with visual grouping in both board view and dashboard. On mobile, folders can collapse into vertical tabs or sections.
+
+Formulas need to be fully supported across all views. When a user inputs a formula on the board (for example, Total Price minus Material Cost), that same formula must evaluate and display properly in any part of the dashboard that shows that task. This includes status summaries, assignee widgets, and progress bars. If a formula depends on a sub item, changes in that sub item must recalculate the parent task’s value immediately.
+
+All board and dashboard data must save automatically and persist without needing to manually refresh or re-input. There must be a unified state structure — no disconnected arrays, local-only states, or duplicated task objects. Any change made to a task (status update, due date, assignee change, formula result, sub item addition) must instantly reflect in every place that task appears — whether on a board row, a dashboard summary, or the timeline.
+
+For example, if I change the status of a task from “Ongoing” to “Completed” in the board, it should instantly disappear from the “Ongoing” counter in the dashboard and appear under “Completed.” If I add a sub item in the dashboard, that same sub item must be visible in the board row’s folder dropdown and editable there too.
+
+For mobile responsiveness, the dashboard and board must both shift layout properly. Board rows should become vertical cards. Timeline should switch to a vertical view where each day or time slot stacks. Sidebars become bottom nav or collapsible menus. Any column actions (like editing status, date, or assigning a person) must be tappable with large enough targets. Mobile must never break or hide data, and performance must be optimized for low memory devices.
+
+All tasks, folders, sub items, and their relationships should be stored in a structured JSON-like schema. Each task should include an ID, parent ID (if it’s a sub item), folder ID (if grouped), a column object (status, people, date, time tracking, formula, etc.), and UI metadata like sort order and visibility. This schema must drive everything — no hardcoded task displays or custom logic by view.
+
+Every change should trigger a data save, a UI render, and if applicable, a recalculation (for formulas). On desktop, use drag-and-drop or click-to-edit. On mobile, use tap, swipe, and long-press actions. Timeline views should be scrollable horizontally on desktop and vertically on mobile, with day/week filtering. Assigned user icons, project tags, and task progress should all render visually and update in real time.
+
+Filters applied in one view should affect the other. For example, if I filter the board to show only tasks assigned to “John,” the dashboard should only show John’s tasks in all widgets and timeline blocks. This must be a shared filtering system.
+
+The system should handle real-time collaboration (if multi-user support exists), with locks or indicators to show when two users are editing the same task. Ideally, implement socket or polling-based updates to avoid data lag.
+
+All updates should autosave and persist on reload. No work should be lost due to navigating away. If a column is added in the board, it should appear immediately in any dashboard views that support columns (like formula displays, status tags, or time bars). If a task is deleted, it should be removed cleanly across the entire system.
+
+Let me know once the integration is complete and behaving like one continuous product — not a board with a separate dashboard view, but a unified app with multiple views on the same live data. I’m happy to help define exact sync triggers, mobile behavior, or UI structure if needed.
