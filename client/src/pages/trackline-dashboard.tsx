@@ -374,7 +374,7 @@ function TracklineDashboardContent() {
                 />
                 <div 
                   className="bg-blue-500 h-full" 
-                  style={{ width: `${(taskStats.ongoing / taskStats.total) * 100}%` }}
+                  style={{ width: `${(taskStats.inProgress / taskStats.total) * 100}%` }}
                 />
                 <div 
                   className="bg-yellow-500 h-full" 
@@ -518,7 +518,7 @@ function TracklineDashboardContent() {
                 <CardContent className="p-3">
                   <div className="text-center">
                     <p className="text-xs text-gray-600">Ongoing</p>
-                    <p className="text-lg font-bold text-blue-600">{taskStats.ongoing}</p>
+                    <p className="text-lg font-bold text-blue-600">{taskStats.inProgress}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -553,7 +553,7 @@ function TracklineDashboardContent() {
                 />
                 <div 
                   className="bg-blue-500 h-full" 
-                  style={{ width: `${(taskStats.ongoing / taskStats.total) * 100}%` }}
+                  style={{ width: `${(taskStats.inProgress / taskStats.total) * 100}%` }}
                 />
                 <div 
                   className="bg-yellow-500 h-full" 
@@ -652,5 +652,14 @@ function TracklineDashboardContent() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main export with provider wrapper
+export default function TracklineDashboard() {
+  return (
+    <UnifiedProjectProvider>
+      <TracklineDashboardContent />
+    </UnifiedProjectProvider>
   );
 }

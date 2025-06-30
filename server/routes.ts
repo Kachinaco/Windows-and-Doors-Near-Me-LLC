@@ -714,6 +714,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Unified project data endpoint for dashboard/board integration
+  app.get("/api/projects/:id/tasks-unified", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      
+      // Get all sub-items (tasks) for the project
+      const subItems = await storage.getSubItems(projectId);
+      
+      // Transform sub-items to unified task format
+      const unifiedTasks = subItems.map(item => ({
+        id: item.id,
+        parentId: item.parentProjectId || projectId,
+        projectId: projectId,
+        folderId: item.folderId,
+        title: item.name || 'Untitled Task',
+        description: item.description,
+        status: item.status || 'not_started',
+        priority: item.priority || 'medium',
+        assignedTo: item.assignedTo,
+        dueDate: item.dueDate,
+        startDate: item.createdAt,
+        timeline: item.dueDate ? {
+          start: item.createdAt,
+          end: item.dueDate
+        } : undefined,
+        progress: 0, // Default, can be calculated based on status
+        estimatedHours: item.estimatedHours,
+        actualHours: item.actualHours,
+        tags: item.tags ? (typeof item.tags === 'string' ? JSON.parse(item.tags) : item.tags) : [],
+        metadata: item.metadata ? (typeof item.metadata === 'string' ? JSON.parse(item.metadata) : item.metadata) : {},
+        sortOrder: item.sortOrder || 0,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        children: [] // Will be populated in a second pass if needed
+      }));
+
+      res.json(unifiedTasks);
+    } catch (error: any) {
+      console.error("Error fetching unified tasks:", error);
+      res.status(500).json({ message: "Failed to fetch unified task data" });
+    }
+  });
+
+  // Task management endpoints for unified system
+  app.post("/api/tasks", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const taskData = req.body;
+      // Create a sub-item as a task
+      const subItem = await storage.createSubItem({
+        parentProjectId: taskData.projectId,
+        name: taskData.title,
+        description: taskData.description,
+        status: taskData.status || 'not_started',
+        priority: taskData.priority || 'medium',
+        assignedTo: taskData.assignedTo,
+        dueDate: taskData.dueDate,
+        folderId: taskData.folderId,
+        estimatedHours: taskData.estimatedHours,
+        actualHours: taskData.actualHours,
+        tags: taskData.tags ? JSON.stringify(taskData.tags) : null,
+        metadata: taskData.metadata ? JSON.stringify(taskData.metadata) : null,
+        sortOrder: taskData.sortOrder || 0
+      });
+      res.json(subItem);
+    } catch (error: any) {
+      console.error("Error creating task:", error);
+      res.status(500).json({ message: "Failed to create task" });
+    }
+  });
+
+  app.patch("/api/tasks/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      // Transform unified updates to sub-item format
+      const subItemUpdates: any = {};
+      if (updates.title) subItemUpdates.name = updates.title;
+      if (updates.description !== undefined) subItemUpdates.description = updates.description;
+      if (updates.status) subItemUpdates.status = updates.status;
+      if (updates.priority) subItemUpdates.priority = updates.priority;
+      if (updates.assignedTo !== undefined) subItemUpdates.assignedTo = updates.assignedTo;
+      if (updates.dueDate !== undefined) subItemUpdates.dueDate = updates.dueDate;
+      if (updates.folderId !== undefined) subItemUpdates.folderId = updates.folderId;
+      if (updates.estimatedHours !== undefined) subItemUpdates.estimatedHours = updates.estimatedHours;
+      if (updates.actualHours !== undefined) subItemUpdates.actualHours = updates.actualHours;
+      if (updates.tags) subItemUpdates.tags = JSON.stringify(updates.tags);
+      if (updates.metadata) subItemUpdates.metadata = JSON.stringify(updates.metadata);
+      if (updates.sortOrder !== undefined) subItemUpdates.sortOrder = updates.sortOrder;
+
+      const updatedSubItem = await storage.updateSubItem(taskId, subItemUpdates);
+      res.json(updatedSubItem);
+    } catch (error: any) {
+      console.error("Error updating task:", error);
+      res.status(500).json({ message: "Failed to update task" });
+    }
+  });
+
+  app.delete("/api/tasks/:id", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      await storage.deleteSubItem(taskId);
+      res.status(204).send();
+    } catch (error: any) {
+      console.error("Error deleting task:", error);
+      res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
   // Bulk operations for projects
   app.post("/api/projects/bulk/archive", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
