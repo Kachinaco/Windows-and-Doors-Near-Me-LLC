@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -1156,20 +1157,7 @@ export default function MondayBoard() {
     document.addEventListener('pointercancel', handlePointerUp);
   };
 
-  const addColumn = () => {
-    if (!newColumnName.trim()) return;
-    
-    // Use the API mutation to add column to database
-    addColumnMutation.mutate({
-      name: newColumnName,
-      type: newColumnType,
-      settings: getDefaultSettingsForType(newColumnType)
-    });
-    
-    setIsAddColumnOpen(false);
-    setNewColumnName('');
-    setNewColumnType('text');
-  };
+
 
   // Helper function to get default settings for different column types
   const getDefaultSettingsForType = (type: string) => {
@@ -2458,7 +2446,7 @@ export default function MondayBoard() {
                   Add Group
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => setIsAddColumnOpen(true)}
+                  onClick={() => setIsQuickColumnMenuOpen(!isQuickColumnMenuOpen)}
                   className="text-xs hover:bg-gray-50 focus:bg-gray-50"
                 >
                   <Columns className="w-3 h-3 mr-2" />
@@ -2474,83 +2462,85 @@ export default function MondayBoard() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Add Column Dialog */}
-            <Dialog open={isAddColumnOpen} onOpenChange={setIsAddColumnOpen}>
-              <DialogContent className="bg-white text-gray-900 border-gray-200">
-                <DialogHeader>
-                  <DialogTitle>Add Column</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-xs text-gray-700">Name</Label>
-                    <Input
-                      value={newColumnName}
-                      onChange={(e) => setNewColumnName(e.target.value)}
-                      className="bg-white border-gray-300 text-gray-900 h-8 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Column name"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-700">Type</Label>
-                    <Select value={newColumnType} onValueChange={(value) => setNewColumnType(value as BoardColumn['type'])}>
-                      <SelectTrigger className="bg-white border-gray-300 text-gray-900 h-8 focus:border-blue-500 focus:ring-blue-500">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-gray-200 shadow-lg max-h-96 overflow-y-auto">
-                        {/* Basic Types */}
-                        <SelectItem value="text">📝 Text</SelectItem>
-                        <SelectItem value="status">🚦 Status</SelectItem>
-                        <SelectItem value="people">👤 People</SelectItem>
-                        <SelectItem value="date">📅 Date</SelectItem>
-                        <SelectItem value="number">🔢 Number</SelectItem>
-                        <SelectItem value="tags">🏷️ Tags</SelectItem>
-                        
-                        {/* General Tracking */}
-                        <SelectItem value="checkbox">✅ Checkbox</SelectItem>
-                        <SelectItem value="auto_number">🔢 Auto Number</SelectItem>
-                        <SelectItem value="item_id">🆔 Item ID</SelectItem>
-                        <SelectItem value="timeline">🕒 Timeline</SelectItem>
-                        <SelectItem value="progress">📊 Progress Tracking</SelectItem>
-                        <SelectItem value="formula">🧮 Formula</SelectItem>
-                        <SelectItem value="week">📅 Week</SelectItem>
-                        <SelectItem value="world_clock">🌍 World Clock</SelectItem>
-                        
-                        {/* Communication + Team */}
-                        <SelectItem value="email">📧 Email</SelectItem>
-                        <SelectItem value="phone">📞 Phone</SelectItem>
-                        <SelectItem value="location">📍 Location</SelectItem>
-                        <SelectItem value="link">🔗 Link</SelectItem>
-                        <SelectItem value="custom_url">🌐 Custom URL</SelectItem>
-                        <SelectItem value="team">👥 Team</SelectItem>
-                        <SelectItem value="vote">🗳️ Vote</SelectItem>
-                        <SelectItem value="color_picker">🎨 Color Picker</SelectItem>
-                        
-                        {/* Workflow + System */}
-                        <SelectItem value="files">🗂️ Files</SelectItem>
-                        <SelectItem value="creation_log">📝 Creation Log</SelectItem>
-                        <SelectItem value="last_updated">🔄 Last Updated</SelectItem>
-                        <SelectItem value="time_tracking">⏱️ Time Tracking</SelectItem>
-                        <SelectItem value="api_action">🔌 API Action</SelectItem>
-                        <SelectItem value="country">🌐 Country</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button onClick={addColumn} size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-8 rounded-md">
-                      Add
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setIsAddColumnOpen(false)}
-                      size="sm"
-                      className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 h-8 rounded-md"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            {/* Quick Column Creation Menu */}
+            {isQuickColumnMenuOpen && (
+              <div className="absolute top-12 right-0 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 grid grid-cols-4 gap-2 min-w-[320px]">
+                <button
+                  onClick={() => addColumnMutation.mutate('formula')}
+                  className="flex flex-col items-center gap-1 p-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  title="Formula Column"
+                  disabled={addColumnMutation.isPending}
+                >
+                  <span className="text-xl">🧮</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Formula</span>
+                </button>
+                <button
+                  onClick={() => addColumnMutation.mutate('checkbox')}
+                  className="flex flex-col items-center gap-1 p-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  title="Checkbox Column"
+                  disabled={addColumnMutation.isPending}
+                >
+                  <span className="text-xl">✅</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Checkbox</span>
+                </button>
+                <button
+                  onClick={() => addColumnMutation.mutate('number')}
+                  className="flex flex-col items-center gap-1 p-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  title="Number Column"
+                  disabled={addColumnMutation.isPending}
+                >
+                  <span className="text-xl">🔢</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Number</span>
+                </button>
+                <button
+                  onClick={() => addColumnMutation.mutate('date')}
+                  className="flex flex-col items-center gap-1 p-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  title="Date Column"
+                  disabled={addColumnMutation.isPending}
+                >
+                  <span className="text-xl">📅</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Date</span>
+                </button>
+                <button
+                  onClick={() => addColumnMutation.mutate('status')}
+                  className="flex flex-col items-center gap-1 p-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  title="Status Column"
+                  disabled={addColumnMutation.isPending}
+                >
+                  <span className="text-xl">📊</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Status</span>
+                </button>
+                <button
+                  onClick={() => addColumnMutation.mutate('people')}
+                  className="flex flex-col items-center gap-1 p-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  title="People Column"
+                  disabled={addColumnMutation.isPending}
+                >
+                  <span className="text-xl">👥</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">People</span>
+                </button>
+                <button
+                  onClick={() => addColumnMutation.mutate('text')}
+                  className="flex flex-col items-center gap-1 p-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  title="Text Column"
+                  disabled={addColumnMutation.isPending}
+                >
+                  <span className="text-xl">📝</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Text</span>
+                </button>
+                <button
+                  onClick={() => addColumnMutation.mutate('tags')}
+                  className="flex flex-col items-center gap-1 p-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  title="Tags Column"
+                  disabled={addColumnMutation.isPending}
+                >
+                  <span className="text-xl">🏷️</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Tags</span>
+                </button>
+              </div>
+            )}
+
+
 
             {/* Add Group Dialog */}
             <Dialog open={isAddGroupOpen} onOpenChange={setIsAddGroupOpen}>
