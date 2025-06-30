@@ -3663,8 +3663,26 @@ export default function MondayBoard() {
                     value={formulaData.aiPrompt}
                     onChange={(e) => setFormulaData(prev => ({ ...prev, aiPrompt: e.target.value }))}
                     className="bg-white border-gray-300 text-gray-900 h-9 text-sm focus:border-purple-500 focus:ring-purple-500"
-                    placeholder="e.g., Calculate total profit after labor and material cost"
+                    placeholder="e.g., When materials spent is a number, add 65%"
                   />
+                  
+                  {/* Available Columns Display */}
+                  <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+                    <div className="text-xs text-blue-700 font-medium mb-1">Available columns:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {columns.map((col, index) => (
+                        <span 
+                          key={col.id}
+                          className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800 border border-blue-200"
+                        >
+                          [{col.name}]
+                        </span>
+                      ))}
+                    </div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      💡 Tip: Reference columns exactly as shown above in square brackets
+                    </div>
+                  </div>
                 </div>
                 
                 <Button 
