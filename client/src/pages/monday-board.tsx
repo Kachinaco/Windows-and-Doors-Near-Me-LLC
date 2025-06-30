@@ -937,6 +937,305 @@ export default function MondayBoard() {
             </button>
           </div>
         );
+
+      // General Tracking Columns
+      case 'checkbox':
+        return (
+          <div className="flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={value === true || value === 'true'}
+              onChange={(e) => handleCellUpdate(item.id, column.id, e.target.checked)}
+              className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+            />
+          </div>
+        );
+
+      case 'auto_number':
+        // Auto-generated sequential number based on item position
+        const autoNumber = (columns.findIndex(col => col.id === column.id)) * 1000 + item.id;
+        return (
+          <div className="text-xs text-gray-400 font-mono">
+            #{autoNumber.toString().padStart(4, '0')}
+          </div>
+        );
+
+      case 'item_id':
+        return (
+          <Input
+            value={value || `ID-${item.id}`}
+            onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300 font-mono"
+            placeholder={`ID-${item.id}`}
+          />
+        );
+
+      case 'progress':
+        const progressValue = parseInt(value) || 0;
+        return (
+          <div className="flex items-center gap-2 w-full">
+            <div className="flex-1 bg-gray-700 rounded-full h-2">
+              <div 
+                className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${Math.min(100, Math.max(0, progressValue))}%` }}
+              />
+            </div>
+            <span className="text-xs text-gray-400 w-8">{progressValue}%</span>
+          </div>
+        );
+
+      case 'timeline':
+        return (
+          <div className="text-xs text-gray-400">
+            <Input
+              type="date"
+              value={value?.split('T')[0] || ''}
+              onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+              className="h-4 text-xs border-none bg-transparent text-gray-300"
+            />
+          </div>
+        );
+
+      case 'formula':
+        // Simple formula evaluation (in real app, would be more sophisticated)
+        const formulaResult = column.settings?.formula ? 'Calc' : value;
+        return (
+          <div className="text-xs text-purple-400 font-mono">
+            {formulaResult || '=SUM()'}
+          </div>
+        );
+
+      case 'week':
+        return (
+          <Input
+            type="week"
+            value={value}
+            onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+            className="h-4 text-xs border-none bg-transparent text-gray-300"
+          />
+        );
+
+      case 'world_clock':
+        const currentTime = new Date().toLocaleTimeString('en-US', { 
+          timeZone: column.settings?.timezone || 'UTC',
+          hour12: false 
+        });
+        return (
+          <div className="text-xs text-cyan-400">
+            {currentTime}
+          </div>
+        );
+
+      // Communication + Team Columns
+      case 'email':
+        return (
+          <div className="flex items-center gap-1">
+            <Mail className="w-3 h-3 text-blue-400" />
+            <Input
+              type="email"
+              value={value}
+              onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+              className="h-4 text-xs border-none bg-transparent text-gray-300 flex-1"
+              placeholder="email@example.com"
+            />
+          </div>
+        );
+
+      case 'phone':
+        return (
+          <div className="flex items-center gap-1">
+            <Phone className="w-3 h-3 text-green-400" />
+            <Input
+              type="tel"
+              value={value}
+              onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+              className="h-4 text-xs border-none bg-transparent text-gray-300 flex-1"
+              placeholder="(555) 123-4567"
+            />
+          </div>
+        );
+
+      case 'location':
+        return (
+          <div className="flex items-center gap-1">
+            <MapPin className="w-3 h-3 text-red-400" />
+            <Input
+              value={value}
+              onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+              className="h-4 text-xs border-none bg-transparent text-gray-300 flex-1"
+              placeholder="Address or coordinates"
+            />
+          </div>
+        );
+
+      case 'link':
+        return (
+          <div className="flex items-center gap-1">
+            <Link className="w-3 h-3 text-blue-400" />
+            {value ? (
+              <a
+                href={value.startsWith('http') ? value : `https://${value}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-400 hover:text-blue-300 underline truncate flex-1"
+              >
+                {value}
+              </a>
+            ) : (
+              <Input
+                value={value}
+                onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+                className="h-4 text-xs border-none bg-transparent text-gray-300 flex-1"
+                placeholder="https://example.com"
+              />
+            )}
+          </div>
+        );
+
+      case 'custom_url':
+        const customUrl = value ? value.replace('{{item.id}}', item.id.toString()) : '';
+        return (
+          <div className="flex items-center gap-1">
+            <Link className="w-3 h-3 text-purple-400" />
+            {customUrl ? (
+              <a
+                href={customUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-purple-400 hover:text-purple-300 underline truncate flex-1"
+              >
+                View Item
+              </a>
+            ) : (
+              <Input
+                value={value}
+                onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+                className="h-4 text-xs border-none bg-transparent text-gray-300 flex-1"
+                placeholder="https://domain.com/{{item.id}}"
+              />
+            )}
+          </div>
+        );
+
+      case 'team':
+        return (
+          <Select
+            value={value}
+            onValueChange={(newValue) => handleCellUpdate(item.id, column.id, newValue)}
+          >
+            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-gray-300 p-0 min-h-0">
+              <SelectValue placeholder="Select team">
+                {value || 'Select team'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700">
+              <SelectItem value="frontend" className="text-white hover:text-gray-200">Frontend Team</SelectItem>
+              <SelectItem value="backend" className="text-white hover:text-gray-200">Backend Team</SelectItem>
+              <SelectItem value="design" className="text-white hover:text-gray-200">Design Team</SelectItem>
+              <SelectItem value="qa" className="text-white hover:text-gray-200">QA Team</SelectItem>
+            </SelectContent>
+          </Select>
+        );
+
+      case 'vote':
+        const voteCount = parseInt(value) || 0;
+        return (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleCellUpdate(item.id, column.id, voteCount + 1)}
+              className="flex items-center gap-1 hover:bg-gray-700 px-1 py-0.5 rounded text-xs"
+            >
+              <ThumbsUp className="w-3 h-3 text-green-400" />
+              <span className="text-gray-300">{voteCount}</span>
+            </button>
+          </div>
+        );
+
+      case 'color_picker':
+        return (
+          <div className="flex items-center gap-1">
+            <input
+              type="color"
+              value={value || '#3b82f6'}
+              onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
+              className="w-4 h-4 rounded cursor-pointer"
+            />
+            <span className="text-xs text-gray-400">{value || '#3b82f6'}</span>
+          </div>
+        );
+
+      // Workflow + System Columns
+      case 'files':
+        return (
+          <div className="flex items-center gap-1">
+            <FileUp className="w-3 h-3 text-gray-400" />
+            <span className="text-xs text-gray-400">
+              {value ? `${Array.isArray(value) ? value.length : 1} file(s)` : 'No files'}
+            </span>
+          </div>
+        );
+
+      case 'creation_log':
+        return (
+          <div className="text-xs text-gray-400">
+            Created by Admin
+          </div>
+        );
+
+      case 'last_updated':
+        return (
+          <div className="text-xs text-gray-400">
+            {new Date().toLocaleDateString()}
+          </div>
+        );
+
+      case 'time_tracking':
+        const timeValue = value || '0:00';
+        return (
+          <div className="flex items-center gap-1">
+            <Timer className="w-3 h-3 text-blue-400" />
+            <span className="text-xs text-gray-300">{timeValue}</span>
+            <button className="text-xs text-green-400 hover:text-green-300 ml-1">▶</button>
+          </div>
+        );
+
+      case 'api_action':
+        return (
+          <button
+            onClick={() => {
+              if (column.settings?.webhookUrl) {
+                // In real app, would trigger webhook
+                toast({ title: "API Action", description: "Webhook triggered!" });
+              }
+            }}
+            className="flex items-center gap-1 text-xs text-yellow-400 hover:text-yellow-300 px-1 py-0.5 rounded hover:bg-gray-700"
+          >
+            <Zap className="w-3 h-3" />
+            Trigger
+          </button>
+        );
+
+      case 'country':
+        return (
+          <Select
+            value={value}
+            onValueChange={(newValue) => handleCellUpdate(item.id, column.id, newValue)}
+          >
+            <SelectTrigger className="h-4 text-xs border-none bg-transparent text-gray-300 p-0 min-h-0">
+              <SelectValue placeholder="Select country">
+                {value || 'Select'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700 max-h-48 overflow-y-auto">
+              <SelectItem value="US" className="text-white hover:text-gray-200">🇺🇸 United States</SelectItem>
+              <SelectItem value="CA" className="text-white hover:text-gray-200">🇨🇦 Canada</SelectItem>
+              <SelectItem value="GB" className="text-white hover:text-gray-200">🇬🇧 United Kingdom</SelectItem>
+              <SelectItem value="DE" className="text-white hover:text-gray-200">🇩🇪 Germany</SelectItem>
+              <SelectItem value="FR" className="text-white hover:text-gray-200">🇫🇷 France</SelectItem>
+              <SelectItem value="JP" className="text-white hover:text-gray-200">🇯🇵 Japan</SelectItem>
+            </SelectContent>
+          </Select>
+        );
       
       default:
         const isNewItem = newlyCreatedItem === item.id && editingCell?.projectId === item.id && editingCell?.field === column.id;
@@ -1253,26 +1552,49 @@ export default function MondayBoard() {
 
   // Render sub-item cells with dedicated column types
   const renderSubItemCell = (subItem: SubItem, column: BoardColumn, projectId: number) => {
-    // Map sub-item data to column values
+    // Map sub-item data to column values based on column type
     let value = '';
-    switch (column.id) {
-      case 'subitem_name':
-        value = subItem.name;
-        break;
-      case 'subitem_status':
-        value = subItem.status;
-        break;
-      case 'subitem_assignedTo':
-        value = subItem.assignedTo || '';
-        break;
-      case 'subitem_priority':
-        value = '3'; // Default priority
-        break;
-      case 'subitem_dueDate':
-        value = ''; // No due date in current schema
-        break;
-      default:
-        value = '';
+    
+    // For sub-item specific columns, map to sub-item properties
+    if (column.id.startsWith('subitem_')) {
+      switch (column.id) {
+        case 'subitem_name':
+          value = subItem.name;
+          break;
+        case 'subitem_status':
+          value = subItem.status;
+          break;
+        case 'subitem_assignedTo':
+          value = subItem.assignedTo || '';
+          break;
+        case 'subitem_priority':
+          value = subItem.priority?.toString() || '3';
+          break;
+        case 'subitem_dueDate':
+          value = subItem.dueDate || '';
+          break;
+        default:
+          value = '';
+      }
+    } else {
+      // For regular columns added to sub-items, use default values or sub-item properties
+      switch (column.type) {
+        case 'checkbox':
+          value = 'false';
+          break;
+        case 'progress':
+          value = '0';
+          break;
+        case 'email':
+        case 'phone':
+        case 'location':
+        case 'link':
+        case 'custom_url':
+          value = '';
+          break;
+        default:
+          value = '';
+      }
     }
     
     switch (column.type) {
@@ -1353,6 +1675,92 @@ export default function MondayBoard() {
             onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
             className="h-4 text-xs border-none bg-transparent text-gray-300"
           />
+        );
+
+      // All new column types for sub-items (same as main items)
+      case 'checkbox':
+        return (
+          <div className="flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={value === 'true' || value === true}
+              onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.checked.toString())}
+              className="w-3 h-3 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-1"
+            />
+          </div>
+        );
+
+      case 'auto_number':
+        const autoNumber = 5000 + subItem.id;
+        return (
+          <div className="text-xs text-gray-400 font-mono">
+            #{autoNumber.toString().padStart(4, '0')}
+          </div>
+        );
+
+      case 'progress':
+        const progressValue = parseInt(value) || 0;
+        return (
+          <div className="flex items-center gap-2 w-full">
+            <div className="flex-1 bg-gray-700 rounded-full h-1.5">
+              <div 
+                className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${Math.min(100, Math.max(0, progressValue))}%` }}
+              />
+            </div>
+            <span className="text-xs text-gray-400 w-6">{progressValue}%</span>
+          </div>
+        );
+
+      case 'email':
+        return (
+          <div className="flex items-center gap-1">
+            <Mail className="w-2.5 h-2.5 text-blue-400" />
+            <Input
+              type="email"
+              value={value}
+              onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
+              className="h-4 text-xs border-none bg-transparent text-gray-300 flex-1"
+              placeholder="email@example.com"
+            />
+          </div>
+        );
+
+      case 'phone':
+        return (
+          <div className="flex items-center gap-1">
+            <Phone className="w-2.5 h-2.5 text-green-400" />
+            <Input
+              type="tel"
+              value={value}
+              onChange={(e) => handleSubItemCellUpdate(subItem.id, column.id, e.target.value)}
+              className="h-4 text-xs border-none bg-transparent text-gray-300 flex-1"
+              placeholder="(555) 123-4567"
+            />
+          </div>
+        );
+
+      case 'vote':
+        const voteCount = parseInt(value) || 0;
+        return (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleSubItemCellUpdate(subItem.id, column.id, voteCount + 1)}
+              className="flex items-center gap-1 hover:bg-gray-700 px-1 py-0.5 rounded text-xs"
+            >
+              <ThumbsUp className="w-2.5 h-2.5 text-green-400" />
+              <span className="text-gray-300">{voteCount}</span>
+            </button>
+          </div>
+        );
+
+      case 'time_tracking':
+        const timeValue = value || '0:00';
+        return (
+          <div className="flex items-center gap-1">
+            <Timer className="w-2.5 h-2.5 text-blue-400" />
+            <span className="text-xs text-gray-300">{timeValue}</span>
+          </div>
         );
         
       default:
