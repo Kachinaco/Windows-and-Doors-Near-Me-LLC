@@ -3405,6 +3405,68 @@ export default function MondayBoard() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Email Input Modal */}
+      <Dialog open={emailModal.isOpen} onOpenChange={closeEmailModal}>
+        <DialogContent className="bg-white border border-gray-200 shadow-xl rounded-lg max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Mail className="w-5 h-5 text-blue-500" />
+              Email Input
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label className="text-sm text-gray-700 font-medium">Email Address*</Label>
+              <Input
+                type="email"
+                value={emailData.address}
+                onChange={(e) => setEmailData(prev => ({ ...prev, address: e.target.value }))}
+                className="bg-white border-gray-300 text-gray-900 h-10 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="example@domain.com"
+                autoFocus
+              />
+              {emailError && (
+                <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <span>⚠️</span>
+                  {emailError}
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <Label className="text-sm text-gray-700 font-medium">Text to display (optional)</Label>
+              <Input
+                value={emailData.displayText}
+                onChange={(e) => setEmailData(prev => ({ ...prev, displayText: e.target.value }))}
+                className="bg-white border-gray-300 text-gray-900 h-10 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Custom display name (e.g., 'Email Ron')"
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                Leave blank to show email address in cell
+              </div>
+            </div>
+            
+            <div className="flex space-x-3 pt-2">
+              <Button 
+                onClick={saveEmailData}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-10 rounded-md flex items-center justify-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Save
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={closeEmailModal}
+                className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 h-10 rounded-md"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
