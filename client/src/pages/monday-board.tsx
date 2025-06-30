@@ -1604,7 +1604,7 @@ export default function MondayBoard() {
 
             {/* Template Groups with Sample Items */}
             <div className="bg-white">
-              {/* Group 1: To Do */}
+              {/* Group 1: New Leads */}
               <div className="border-b border-gray-200 hover:bg-gray-50 transition-all bg-blue-50">
                 <div className="flex">
                   <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-blue-50 z-30">
@@ -1612,7 +1612,7 @@ export default function MondayBoard() {
                   </div>
                   <div className="px-4 py-3 border-r border-gray-200 flex-shrink-0 sticky left-12 bg-blue-50 z-20 w-60 flex items-center">
                     <ChevronDown className="w-4 h-4 mr-2 text-gray-600" />
-                    <span className="font-medium text-gray-900">To Do</span>
+                    <span className="font-medium text-gray-900">New Leads</span>
                     <span className="ml-2 text-xs text-gray-500">(1)</span>
                   </div>
                   <div className="px-4 py-3 border-r border-gray-200 w-32"></div>
@@ -1665,7 +1665,7 @@ export default function MondayBoard() {
                 <div className="px-4 py-3 w-24"></div>
               </div>
 
-              {/* Group 2: In Progress */}
+              {/* Group 2: Active Projects */}
               <div className="border-b border-gray-200 hover:bg-gray-50 transition-all bg-orange-50">
                 <div className="flex">
                   <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-orange-50 z-30">
@@ -1673,7 +1673,7 @@ export default function MondayBoard() {
                   </div>
                   <div className="px-4 py-3 border-r border-gray-200 flex-shrink-0 sticky left-12 bg-orange-50 z-20 w-60 flex items-center">
                     <ChevronDown className="w-4 h-4 mr-2 text-gray-600" />
-                    <span className="font-medium text-gray-900">In Progress</span>
+                    <span className="font-medium text-gray-900">Active Projects</span>
                     <span className="ml-2 text-xs text-gray-500">(1)</span>
                   </div>
                   <div className="px-4 py-3 border-r border-gray-200 w-32"></div>
@@ -1740,7 +1740,7 @@ export default function MondayBoard() {
                     <Folder className="w-3 h-3 mr-2 text-orange-500" />
                     <input 
                       type="text" 
-                      defaultValue="Development Tasks"
+                      defaultValue="Installation Phase"
                       className="font-medium text-sm text-gray-900 bg-transparent border-none outline-none cursor-pointer"
                     />
                     <span className="ml-2 text-xs text-gray-500">(1)</span>
@@ -1794,7 +1794,7 @@ export default function MondayBoard() {
                 </div>
               </div>
 
-              {/* Group 3: Done */}
+              {/* Group 3: Completed */}
               <div className="border-b border-gray-200 hover:bg-gray-50 transition-all bg-green-50">
                 <div className="flex">
                   <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center sticky left-0 bg-green-50 z-30">
@@ -1802,7 +1802,7 @@ export default function MondayBoard() {
                   </div>
                   <div className="px-4 py-3 border-r border-gray-200 flex-shrink-0 sticky left-12 bg-green-50 z-20 w-60 flex items-center">
                     <ChevronDown className="w-4 h-4 mr-2 text-gray-600" />
-                    <span className="font-medium text-gray-900">Done</span>
+                    <span className="font-medium text-gray-900">Completed</span>
                     <span className="ml-2 text-xs text-gray-500">(1)</span>
                   </div>
                   <div className="px-4 py-3 border-r border-gray-200 w-32"></div>
@@ -1870,7 +1870,7 @@ export default function MondayBoard() {
                     <Folder className="w-3 h-3 mr-2 text-blue-500" />
                     <input 
                       type="text" 
-                      defaultValue="Task Details"
+                      defaultValue="Initial Contact"
                       className="font-medium text-sm text-gray-900 bg-transparent border-none outline-none cursor-pointer"
                     />
                     <span className="ml-2 text-xs text-gray-500">(2)</span>
@@ -1981,7 +1981,7 @@ export default function MondayBoard() {
                       <Folder className="w-3 h-3 mr-2 text-green-500" />
                       <input 
                         type="text" 
-                        defaultValue="Completed Items"
+                        defaultValue="Project Wrap-up"
                         className="font-medium text-sm text-gray-900 bg-transparent border-none outline-none cursor-pointer"
                       />
                       <span className="ml-2 text-xs text-gray-500">(1)</span>
