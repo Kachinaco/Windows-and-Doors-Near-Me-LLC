@@ -173,13 +173,10 @@ export default function MondayBoard() {
         country: 'Country'
       };
       
-      return apiRequest(`/api/projects/${projectId}/columns`, {
-        method: 'POST',
-        body: JSON.stringify({
-          name: defaultNames[columnType] || 'New Column',
-          type: columnType,
-          settings: columnType === 'formula' ? { formula: '' } : {}
-        })
+      return apiRequest('POST', `/api/projects/${projectId}/columns`, {
+        name: defaultNames[columnType] || 'New Column',
+        type: columnType,
+        settings: columnType === 'formula' ? { formula: '' } : {}
       });
     },
     onSuccess: () => {
@@ -190,11 +187,20 @@ export default function MondayBoard() {
         description: "Click the column title to rename it"
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Add column error:', error);
+      const errorMessage = error?.message || error?.response?.data?.message || error?.toString() || "Unknown error occurred";
+      console.error('Detailed error:', {
+        error,
+        message: errorMessage,
+        projectId,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText
+      });
+      
       toast({
-        title: "Error",
-        description: "Failed to add column",
+        title: "Failed to add column",
+        description: `Error: ${errorMessage}`,
         variant: "destructive"
       });
     }
