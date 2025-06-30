@@ -9,13 +9,25 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { type Project } from "@shared/schema";
-import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns, Trash2, MessageCircle, UserPlus, Mail, Phone } from "lucide-react";
+import { Plus, Settings, Calendar, Users, Hash, Tag, User, Type, ChevronDown, ChevronRight, ArrowLeft, Undo2, Folder, Columns, Trash2, MessageCircle, UserPlus, Mail, Phone, Check, Clock, BarChart3, Calculator, Globe, MapPin, Link, UserCheck, ThumbsUp, Palette, FileUp, History, Timer, Zap, Flag } from "lucide-react";
 
 interface BoardColumn {
   id: string;
   name: string;
-  type: 'status' | 'text' | 'date' | 'people' | 'number' | 'tags' | 'subitems';
+  type: 'status' | 'text' | 'date' | 'people' | 'number' | 'tags' | 'subitems' | 
+        'checkbox' | 'auto_number' | 'item_id' | 'timeline' | 'progress' | 'formula' | 
+        'week' | 'world_clock' | 'email' | 'phone' | 'location' | 'link' | 'custom_url' | 
+        'team' | 'vote' | 'color_picker' | 'files' | 'creation_log' | 'last_updated' | 
+        'time_tracking' | 'api_action' | 'country';
   order: number;
+  settings?: {
+    options?: string[]; // For status, team, country dropdowns
+    colors?: Record<string, string>; // For status color mapping
+    formula?: string; // For formula columns
+    timezone?: string; // For world clock
+    webhookUrl?: string; // For API action
+    defaultValue?: any; // Default values for new items
+  };
 }
 
 interface SubItem {
@@ -61,15 +73,19 @@ export default function MondayBoard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Default board columns - Main Item Columns + Sub Items
+  // Default board columns - Main Item Columns + Sub Items with enhanced column types
   const [columns, setColumns] = useState<BoardColumn[]>([
     { id: 'item', name: 'Main Item', type: 'text', order: 1 },
     { id: 'subitems', name: 'Sub Items', type: 'subitems', order: 2 },
-    { id: 'status', name: 'Status', type: 'status', order: 3 },
+    { id: 'status', name: 'Status', type: 'status', order: 3, settings: { 
+        options: ['new lead', 'in progress', 'on order', 'scheduled', 'complete'],
+        colors: { 'new lead': '#3b82f6', 'in progress': '#f59e0b', 'on order': '#8b5cf6', 'scheduled': '#10b981', 'complete': '#22c55e' }
+      }
+    },
     { id: 'assignedTo', name: 'People', type: 'people', order: 4 },
     { id: 'dueDate', name: 'Due Date', type: 'date', order: 5 },
-    { id: 'priority', name: 'Priority', type: 'number', order: 6 },
-    { id: 'tags', name: 'Tags', type: 'tags', order: 7 },
+    { id: 'checkbox', name: 'Done', type: 'checkbox', order: 6 },
+    { id: 'progress', name: 'Progress', type: 'progress', order: 7 },
   ]);
 
   // Sub-item specific columns
@@ -718,11 +734,42 @@ export default function MondayBoard() {
 
   const getColumnIcon = (type: BoardColumn['type']) => {
     switch (type) {
+      // Existing types
       case 'status': return <div className="w-2 h-2 rounded-full bg-emerald-500" />;
       case 'people': return <User className="w-2.5 h-2.5 text-purple-400" />;
       case 'date': return <Calendar className="w-2.5 h-2.5 text-orange-400" />;
       case 'number': return <Hash className="w-2.5 h-2.5 text-yellow-400" />;
       case 'tags': return <Tag className="w-2.5 h-2.5 text-red-400" />;
+      case 'subitems': return <Folder className="w-2.5 h-2.5 text-blue-400" />;
+      
+      // General Tracking Columns
+      case 'checkbox': return <Check className="w-2.5 h-2.5 text-green-400" />;
+      case 'auto_number': return <Hash className="w-2.5 h-2.5 text-blue-400" />;
+      case 'item_id': return <Tag className="w-2.5 h-2.5 text-gray-400" />;
+      case 'timeline': return <BarChart3 className="w-2.5 h-2.5 text-indigo-400" />;
+      case 'progress': return <BarChart3 className="w-2.5 h-2.5 text-green-400" />;
+      case 'formula': return <Calculator className="w-2.5 h-2.5 text-purple-400" />;
+      case 'week': return <Calendar className="w-2.5 h-2.5 text-blue-400" />;
+      case 'world_clock': return <Globe className="w-2.5 h-2.5 text-cyan-400" />;
+      
+      // Communication + Team
+      case 'email': return <Mail className="w-2.5 h-2.5 text-blue-400" />;
+      case 'phone': return <Phone className="w-2.5 h-2.5 text-green-400" />;
+      case 'location': return <MapPin className="w-2.5 h-2.5 text-red-400" />;
+      case 'link': return <Link className="w-2.5 h-2.5 text-blue-400" />;
+      case 'custom_url': return <Link className="w-2.5 h-2.5 text-purple-400" />;
+      case 'team': return <Users className="w-2.5 h-2.5 text-orange-400" />;
+      case 'vote': return <ThumbsUp className="w-2.5 h-2.5 text-green-400" />;
+      case 'color_picker': return <Palette className="w-2.5 h-2.5 text-pink-400" />;
+      
+      // Workflow + System
+      case 'files': return <FileUp className="w-2.5 h-2.5 text-gray-400" />;
+      case 'creation_log': return <History className="w-2.5 h-2.5 text-gray-400" />;
+      case 'last_updated': return <Clock className="w-2.5 h-2.5 text-gray-400" />;
+      case 'time_tracking': return <Timer className="w-2.5 h-2.5 text-blue-400" />;
+      case 'api_action': return <Zap className="w-2.5 h-2.5 text-yellow-400" />;
+      case 'country': return <Flag className="w-2.5 h-2.5 text-red-400" />;
+      
       default: return <Type className="w-2.5 h-2.5 text-gray-400" />;
     }
   };
@@ -1482,13 +1529,42 @@ export default function MondayBoard() {
                       <SelectTrigger className="bg-white border-gray-300 text-gray-900 h-8 focus:border-blue-500 focus:ring-blue-500">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-gray-200 shadow-lg">
-                        <SelectItem value="text">Text</SelectItem>
-                        <SelectItem value="status">Status</SelectItem>
-                        <SelectItem value="people">People</SelectItem>
-                        <SelectItem value="date">Date</SelectItem>
-                        <SelectItem value="number">Number</SelectItem>
-                        <SelectItem value="tags">Tags</SelectItem>
+                      <SelectContent className="bg-white border-gray-200 shadow-lg max-h-96 overflow-y-auto">
+                        {/* Basic Types */}
+                        <SelectItem value="text">📝 Text</SelectItem>
+                        <SelectItem value="status">🚦 Status</SelectItem>
+                        <SelectItem value="people">👤 People</SelectItem>
+                        <SelectItem value="date">📅 Date</SelectItem>
+                        <SelectItem value="number">🔢 Number</SelectItem>
+                        <SelectItem value="tags">🏷️ Tags</SelectItem>
+                        
+                        {/* General Tracking */}
+                        <SelectItem value="checkbox">✅ Checkbox</SelectItem>
+                        <SelectItem value="auto_number">🔢 Auto Number</SelectItem>
+                        <SelectItem value="item_id">🆔 Item ID</SelectItem>
+                        <SelectItem value="timeline">🕒 Timeline</SelectItem>
+                        <SelectItem value="progress">📊 Progress Tracking</SelectItem>
+                        <SelectItem value="formula">🧮 Formula</SelectItem>
+                        <SelectItem value="week">📅 Week</SelectItem>
+                        <SelectItem value="world_clock">🌍 World Clock</SelectItem>
+                        
+                        {/* Communication + Team */}
+                        <SelectItem value="email">📧 Email</SelectItem>
+                        <SelectItem value="phone">📞 Phone</SelectItem>
+                        <SelectItem value="location">📍 Location</SelectItem>
+                        <SelectItem value="link">🔗 Link</SelectItem>
+                        <SelectItem value="custom_url">🌐 Custom URL</SelectItem>
+                        <SelectItem value="team">👥 Team</SelectItem>
+                        <SelectItem value="vote">🗳️ Vote</SelectItem>
+                        <SelectItem value="color_picker">🎨 Color Picker</SelectItem>
+                        
+                        {/* Workflow + System */}
+                        <SelectItem value="files">🗂️ Files</SelectItem>
+                        <SelectItem value="creation_log">📝 Creation Log</SelectItem>
+                        <SelectItem value="last_updated">🔄 Last Updated</SelectItem>
+                        <SelectItem value="time_tracking">⏱️ Time Tracking</SelectItem>
+                        <SelectItem value="api_action">🔌 API Action</SelectItem>
+                        <SelectItem value="country">🌐 Country</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

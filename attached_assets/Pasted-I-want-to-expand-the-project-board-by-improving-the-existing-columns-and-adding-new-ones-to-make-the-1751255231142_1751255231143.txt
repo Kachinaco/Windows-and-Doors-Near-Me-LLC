@@ -1,0 +1,52 @@
+I want to expand the project board by improving the existing columns and adding new ones to make the system more functional and dynamic.
+
+⸻
+
+🔧 Improve Existing Columns
+
+(These are already in place, but I’d like them to be more flexible or feature-rich — please optimize them):
+	•	Main Item
+	•	Status
+	•	Assigned To
+	•	Date-Time
+
+Please make sure:
+	•	Status supports color-coded tags and customizable options
+	•	Assigned To pulls from project team members
+	•	Date-Time supports full calendar view and timezone sync
+
+⸻
+
+➕ Add These Columns:
+
+General Tracking Columns
+	•	✅ Checkbox – for marking done/incomplete tasks
+	•	🔢 Auto Number – for automatically generating unique ID per row
+	•	🆔 Item ID – custom ID field, editable or view-only
+	•	🕒 Timeline – visual timeline bar view across dates
+	•	📊 Progress Tracking – bar that fills based on sub-item or task completion
+	•	🧮 Formula – calculates values based on other column inputs
+	•	📅 Week – week-of-year or week-range picker
+	•	🌍 World Clock – set per user/time zone reference
+
+Communication + Team
+	•	📧 Email – formatted input, auto-links to mailto:
+	•	📞 Phone – formatted input for US/international numbers
+	•	📍 Location – address or lat/long, optional Google Maps preview
+	•	🔗 Link – live clickable URL with custom text
+	•	🌐 Custom URL – a dynamic link using project variables (e.g., https://mydomain.com/job/{{item.id}})
+	•	👥 Team – drop-down to assign to a team, not just a person
+	•	🗳️ Vote – allow users to vote on a row/task
+	•	🎨 Color Picker – select custom color for tagging or visual categories
+
+Workflow + System
+	•	🗂️ Files – upload files (PDF, images, docs, etc.)
+	•	📝 Creation Log – shows who created the item and when
+	•	🔄 Last Updated – shows who last edited and when
+	•	⏱️ Time Tracking – start/stop timers or manual time entry per item
+	•	🔌 API Action – trigger an API webhook from a row
+	•	🌐 Country – dropdown of countries, searchable
+
+⸻
+
+Let me know if any of these need to be broken down or designed differently in the UI. I’d like all of these to be addable from the “+ Add Column” dropdown and usable on both Main Items and Sub Items
