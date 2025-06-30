@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -72,6 +73,12 @@ export default function MondayBoard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [location] = useLocation();
+  
+  // Extract projectId from URL - either /projects (show all) or /projects/:id (show specific project board)
+  const projectId = location.startsWith('/projects/') 
+    ? parseInt(location.split('/')[2]) || null 
+    : null;
   
   // Load columns from database
   const { data: projectColumns = [], isLoading: columnsLoading } = useQuery({
