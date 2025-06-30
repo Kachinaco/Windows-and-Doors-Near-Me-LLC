@@ -1191,6 +1191,12 @@ export type InsertProposalTemplate = z.infer<typeof insertProposalTemplateSchema
 // Sub-items types
 export type SubItem = typeof subItems.$inferSelect;
 export type InsertSubItem = z.infer<typeof insertSubItemSchema>;
+
+export type ProjectColumn = typeof projectColumns.$inferSelect;
+export type InsertProjectColumn = z.infer<typeof insertProjectColumnSchema>;
+
+export type ColumnValue = typeof columnValues.$inferSelect;
+export type InsertColumnValue = z.infer<typeof insertColumnValueSchema>;
 export type SubItemFolder = typeof subItemFolders.$inferSelect;
 export type InsertSubItemFolder = z.infer<typeof insertSubItemFolderSchema>;
 
