@@ -225,8 +225,8 @@ export default function MondayBoard() {
     refetchInterval: 3000, // Refresh more frequently for real-time updates
   });
 
-  // Transform projects to board items safely
-  const boardItems: BoardItem[] = Array.isArray(projects) ? projects.map((project: any) => {
+  // Transform projects to board items safely and manage in state
+  const initialBoardItems: BoardItem[] = Array.isArray(projects) ? projects.map((project: any) => {
     // Map project status to pipeline groups
     let groupName = 'New Leads';
     if (project.status === 'new lead') groupName = 'New Leads';
@@ -250,11 +250,40 @@ export default function MondayBoard() {
         tags: [],
         location: project.projectAddress || '',
         phone: project.clientPhone || '',
+        // Initialize all new column types with default values
+        checkbox: false,
+        progress: 0,
+        auto_number: project.id,
+        item_id: `ID-${project.id}`,
+        timeline: project.startDate || '',
+        formula: '',
+        week: '',
+        world_clock: new Date().toISOString(),
+        email: project.clientEmail || '',
+        link: '',
+        custom_url: '',
+        team: '',
+        vote: 0,
+        color_picker: '#3b82f6',
+        files: [],
+        creation_log: `Created by Admin on ${new Date().toLocaleDateString()}`,
+        last_updated: new Date().toLocaleDateString(),
+        time_tracking: '0:00',
+        api_action: '',
+        country: '',
       },
       subItems: project.subItems || [],
       subItemFolders: project.subItemFolders || []
     };
   }) : [];
+
+  // State for managing board items locally for real-time updates
+  const [boardItems, setBoardItems] = useState<BoardItem[]>(initialBoardItems);
+
+  // Update local board items when projects data changes
+  useEffect(() => {
+    setBoardItems(initialBoardItems);
+  }, [initialBoardItems]);
 
   // Define fixed group order to match project pipeline exactly
   // Initialize group order state with localStorage support
@@ -494,23 +523,47 @@ export default function MondayBoard() {
       ]);
     }
 
-    // Map board fields to project fields
+    // Update local board items immediately for responsive UI
+    setBoardItems((prev: BoardItem[]) => 
+      prev.map((item: BoardItem) => 
+        item.id === projectId 
+          ? { ...item, values: { ...item.values, [field]: value } }
+          : item
+      )
+    );
+
+    // Map board fields to project fields for database persistence
     const fieldMapping: Record<string, string> = {
       item: 'name',
       assignedTo: 'assignedTo',
       status: 'status',
       location: 'projectAddress',
       phone: 'clientPhone',
+      email: 'clientEmail',
+      dueDate: 'endDate',
+      timeline: 'startDate',
     };
 
-    const actualField = fieldMapping[field] || field;
-    console.log('Field mapping:', { field, actualField });
-    updateCellMutation.mutate({ projectId, field: actualField, value });
+    // Only persist fields that map to actual database columns
+    const actualField = fieldMapping[field];
+    if (actualField) {
+      console.log('Field mapping:', { field, actualField, value });
+      updateCellMutation.mutate({ projectId, field: actualField, value });
+    } else {
+      // For custom columns that don't map to database fields, 
+      // store in local state only (in real app would use separate storage)
+      console.log('Custom field updated locally:', { field, value });
+      toast({ 
+        title: "Updated", 
+        description: `${field} updated to: ${value}`,
+        duration: 1000 
+      });
+    }
   }, [updateCellMutation, projects]);
 
   // Bulk operations helpers
   const handleSelectAll = useCallback(() => {
-    const allIds = new Set(boardItems.map(item => item.id));
+    const allIds = new Set(boardItems.map((item: BoardItem) => item.id));
     setSelectedItems(allIds);
   }, [boardItems]);
 
