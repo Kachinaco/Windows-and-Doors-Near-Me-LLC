@@ -157,7 +157,7 @@ function UnifiedDashboard() {
 
   // Fetch sub-items and folders for each project
   const { data: projectsData, isLoading: dataLoading } = useQuery({
-    queryKey: ["/api/projects-with-subitems", projects?.length],
+    queryKey: ["/api/projects-with-subitems", projects.length || 0],
     queryFn: async () => {
       if (!projects || projects.length === 0) return [];
       
@@ -223,7 +223,7 @@ function UnifiedDashboard() {
       );
       return projectsWithData;
     },
-    enabled: projects.length > 0,
+    enabled: !projectsLoading && projects && projects.length > 0,
   });
 
   const getProjectColor = (status: string) => {
@@ -250,6 +250,14 @@ function UnifiedDashboard() {
       return newSet;
     });
   };
+
+  console.log("MondayBoard state:", {
+    user: !!user,
+    isLoading: dataLoading,
+    projects: projects.length,
+    projectsData: projectsData?.length || 0,
+    error: null
+  });
 
   const filteredProjects = projectsData?.filter(project =>
     project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
