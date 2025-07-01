@@ -1,14 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import { useUnifiedProject, UnifiedProjectProvider } from "@/contexts/UnifiedProjectContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { type Project } from "@shared/schema";
-import { UnifiedTask } from "@/hooks/useUnifiedProjectData";
+
+// Local task interface for trackline dashboard
+interface TracklineTask {
+  id: number;
+  projectId: number;
+  title: string;
+  status: string;
+  assignedTo?: string;
+  dueDate?: string;
+  progress: number;
+}
 import { 
   Home,
   Users,
