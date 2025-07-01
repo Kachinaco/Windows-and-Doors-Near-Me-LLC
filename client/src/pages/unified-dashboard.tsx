@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -6,218 +6,195 @@ import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { type Project } from "@shared/schema";
-import { 
-  Home,
-  Users,
-  Calendar,
-  Clock,
-  CheckSquare,
-  Settings,
-  BarChart3,
-  MapPin,
-  Timer,
-  Activity,
+import {
+  Menu,
+  Plus,
+  Folder,
+  FolderOpen,
   ChevronRight,
   ChevronDown,
-  Plus,
-  Filter,
+  MapPin,
+  Phone,
+  User,
+  Building,
   Search,
-  MoreHorizontal,
-  Menu,
-  X,
-  ArrowLeft,
-  FolderOpen,
-  Folder,
-  Eye,
-  EyeOff
+  MoreHorizontal
 } from "lucide-react";
-import { Link, useLocation } from "wouter";
 
-interface ProjectFolder {
+// Types
+interface Project {
   id: number;
   name: string;
   description?: string | null;
   status: string;
-  itemCount: number;
-  subItems: any[];
-  folders: any[];
-  teamMembers: any[];
-  isExpanded: boolean;
-  color: string;
+  assigned_to?: string | null;
+  project_address?: string | null;
+  client_phone?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ProjectForm {
+  name: string;
+  description: string;
+  status: string;
+  assigned_to: string;
+  project_address: string;
+  client_phone: string;
+}
+
+function NewProjectForm({ onClose }: { onClose: () => void }) {
+  const [formData, setFormData] = useState<ProjectForm>({
+    name: '',
+    description: '',
+    status: 'new lead',
+    assigned_to: '',
+    project_address: '',
+    client_phone: ''
+  });
+  
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const createProjectMutation = useMutation({
+    mutationFn: (data: ProjectForm) => apiRequest('POST', '/api/projects', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Project created successfully!" });
+      onClose();
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Failed to create project", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      toast({ title: "Project name is required", variant: "destructive" });
+      return;
+    }
+    createProjectMutation.mutate(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="name">Project Name</Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            placeholder="Enter project name"
+            className="mt-1"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            placeholder="Enter project description"
+            className="mt-1"
+            rows={3}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="status">Status</Label>
+          <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+            <SelectTrigger className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="new lead">New Lead</SelectItem>
+              <SelectItem value="in progress">In Progress</SelectItem>
+              <SelectItem value="on order">On Order</SelectItem>
+              <SelectItem value="scheduled">Scheduled</SelectItem>
+              <SelectItem value="complete">Complete</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="assigned_to">Assigned To</Label>
+          <Input
+            id="assigned_to"
+            value={formData.assigned_to}
+            onChange={(e) => setFormData(prev => ({ ...prev, assigned_to: e.target.value }))}
+            placeholder="Enter assignee name"
+            className="mt-1"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="project_address">Project Address</Label>
+          <Input
+            id="project_address"
+            value={formData.project_address}
+            onChange={(e) => setFormData(prev => ({ ...prev, project_address: e.target.value }))}
+            placeholder="Enter project address"
+            className="mt-1"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="client_phone">Client Phone</Label>
+          <Input
+            id="client_phone"
+            value={formData.client_phone}
+            onChange={(e) => setFormData(prev => ({ ...prev, client_phone: e.target.value }))}
+            placeholder="Enter client phone number"
+            className="mt-1"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-3">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={createProjectMutation.isPending}>
+          {createProjectMutation.isPending ? 'Creating...' : 'Create Project'}
+        </Button>
+      </div>
+    </form>
+  );
 }
 
 function UnifiedDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [location, navigate] = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set());
-  const [showTimeline, setShowTimeline] = useState(true);
-  const [newProjectDialog, setNewProjectDialog] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   
-  // Dialog states for sub-items and folders
-  const [showSubItemDialog, setShowSubItemDialog] = useState(false);
-  const [showFolderDialog, setShowFolderDialog] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
-  const [newSubItemName, setNewSubItemName] = useState("");
-  const [newFolderName, setNewFolderName] = useState("");
+  // State management
+  const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [newProjectDialog, setNewProjectDialog] = useState(false);
 
-  // Mutation for creating sub-items
-  const createSubItemMutation = useMutation({
-    mutationFn: async ({ projectId, name }: { projectId: number; name: string }) => {
-      const response = await apiRequest("POST", `/api/projects/${projectId}/sub-items`, {
-        name: name,
-        folderId: null
-      });
-      return response.json();
-    },
-    onSuccess: () => {
-      // Force a complete refresh of all project data
-      queryClient.invalidateQueries({ queryKey: ["/api/projects-with-subitems"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      queryClient.refetchQueries({ queryKey: ["/api/projects-with-subitems"] });
-      toast({ title: "Sub-item created", description: "New sub-item has been added successfully" });
-      setShowSubItemDialog(false);
-      setNewSubItemName("");
-      setSelectedProjectId(null);
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Failed to create sub-item", variant: "destructive" });
-    }
-  });
-
-  // Mutation for creating folders
-  const createFolderMutation = useMutation({
-    mutationFn: async ({ projectId, name }: { projectId: number; name: string }) => {
-      const response = await apiRequest("POST", `/api/projects/${projectId}/sub-item-folders`, {
-        name: name
-      });
-      return response.json();
-    },
-    onSuccess: () => {
-      // Force a complete refresh of all project data
-      queryClient.invalidateQueries({ queryKey: ["/api/projects-with-subitems"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      queryClient.refetchQueries({ queryKey: ["/api/projects-with-subitems"] });
-      toast({ title: "Folder created", description: "New folder has been added successfully" });
-      setShowFolderDialog(false);
-      setNewFolderName("");
-      setSelectedProjectId(null);
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Failed to create folder", variant: "destructive" });
-    }
-  });
-
-  // Handler functions
-  const handleAddSubItem = (projectId: number) => {
-    setSelectedProjectId(projectId);
-    setShowSubItemDialog(true);
-  };
-
-  const handleAddFolder = (projectId: number) => {
-    setSelectedProjectId(projectId);
-    setShowFolderDialog(true);
-  };
-
-  const handleCreateSubItem = () => {
-    if (selectedProjectId && newSubItemName.trim()) {
-      console.log("Creating sub-item:", { projectId: selectedProjectId, name: newSubItemName.trim() });
-      createSubItemMutation.mutate({ 
-        projectId: selectedProjectId, 
-        name: newSubItemName.trim() 
-      });
-    }
-  };
-
-  const handleCreateFolder = () => {
-    if (selectedProjectId && newFolderName.trim()) {
-      console.log("Creating folder:", { projectId: selectedProjectId, name: newFolderName.trim() });
-      createFolderMutation.mutate({ 
-        projectId: selectedProjectId, 
-        name: newFolderName.trim() 
-      });
-    }
-  };
-
-  // Fetch projects data
+  // Fetch projects
   const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
-  // Simplified approach: Use projects directly and fetch sub-data separately
-  const projectsWithData = useMemo(() => {
-    if (!projects || projects.length === 0) return [];
-    
-    return projects.map(project => ({
-      ...project,
-      description: project.description || null,
-      subItems: [],
-      folders: [],
-      teamMembers: [],
-      itemCount: 0,
-      isExpanded: expandedProjects.has(project.id),
-      color: getProjectColor(project.status)
-    }));
-  }, [projects, expandedProjects]);
-
-  // Fetch sub-items for each project separately
-  const subItemQueries = projects.map(project => 
-    useQuery({
-      queryKey: [`/api/projects/${project.id}/sub-items`],
-      queryFn: async () => {
-        const response = await apiRequest("GET", `/api/projects/${project.id}/sub-items`);
-        return response.json();
-      },
-      enabled: !!project.id
-    })
-  );
-
-  // Fetch folders for each project separately  
-  const folderQueries = projects.map(project =>
-    useQuery({
-      queryKey: [`/api/projects/${project.id}/sub-item-folders`],
-      queryFn: async () => {
-        const response = await apiRequest("GET", `/api/projects/${project.id}/sub-item-folders`);
-        return response.json();
-      },
-      enabled: !!project.id
-    })
-  );
-
-  // Combine the data
-  const projectsData = useMemo(() => {
-    return projectsWithData.map((project, index) => {
-      const subItems = subItemQueries[index]?.data || [];
-      const folders = folderQueries[index]?.data || [];
-      
-      console.log(`Project ${project.id} has:`, {
-        subItems: subItems.length,
-        subItemFolders: folders.length,
-        subItemsData: subItems
-      });
-      
-      return {
-        ...project,
-        subItems: Array.isArray(subItems) ? subItems : [],
-        folders: Array.isArray(folders) ? folders : [],
-        itemCount: Array.isArray(subItems) ? subItems.length : 0
-      };
-    });
-  }, [projectsWithData, subItemQueries, folderQueries]);
-
-  const dataLoading = subItemQueries.some(q => q.isLoading) || folderQueries.some(q => q.isLoading);
-
+  // Utility functions
   const getProjectColor = (status: string) => {
     const colors = {
       'new lead': '#f59e0b',
@@ -231,6 +208,74 @@ function UnifiedDashboard() {
     return colors[status as keyof typeof colors] || '#6b7280';
   };
 
+  const getStatusColor = (status: string) => {
+    const statusColors = {
+      'new lead': 'bg-amber-100 text-amber-800 border-amber-200',
+      'in progress': 'bg-blue-100 text-blue-800 border-blue-200',
+      'on order': 'bg-purple-100 text-purple-800 border-purple-200',
+      'scheduled': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      'complete': 'bg-green-100 text-green-800 border-green-200',
+      'under_review': 'bg-orange-100 text-orange-800 border-orange-200',
+      'not_started': 'bg-gray-100 text-gray-800 border-gray-200'
+    };
+    return statusColors[status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
+  // Filter projects
+  const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (project.description && project.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesStatus = statusFilter === "all" || project.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  // Statistics
+  const stats = {
+    total: projects.length,
+    newLeads: projects.filter(p => p.status === 'new lead').length,
+    inProgress: projects.filter(p => p.status === 'in progress').length,
+    completed: projects.filter(p => p.status === 'complete').length
+  };
+
+  // Mutations for sub-items and folders
+  const addSubItemMutation = useMutation({
+    mutationFn: ({ projectId, name }: { projectId: number; name: string }) =>
+      apiRequest(`/api/projects/${projectId}/sub-items`, {
+        method: 'POST',
+        body: JSON.stringify({ name, status: 'not_started' })
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Sub-item added successfully!" });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Failed to add sub-item", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
+  });
+
+  const addFolderMutation = useMutation({
+    mutationFn: ({ projectId, name }: { projectId: number; name: string }) =>
+      apiRequest(`/api/projects/${projectId}/folders`, {
+        method: 'POST',
+        body: JSON.stringify({ name })
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({ title: "Folder added successfully!" });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Failed to add folder", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
+  });
+
   const toggleProject = (projectId: number) => {
     setExpandedProjects(prev => {
       const newSet = new Set(prev);
@@ -243,755 +288,386 @@ function UnifiedDashboard() {
     });
   };
 
-  console.log("MondayBoard state:", {
-    user: !!user,
-    isLoading: dataLoading,
-    projects: projects.length,
-    projectsData: projectsData?.length || 0,
-    error: null
-  });
+  const handleAddSubItem = (projectId: number) => {
+    const name = prompt("Enter sub-item name:");
+    if (name && name.trim()) {
+      addSubItemMutation.mutate({ projectId, name: name.trim() });
+    }
+  };
 
-  const filteredProjects = projectsData?.filter(project =>
-    project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
-
-  const sidebarItems = [
-    { icon: Home, label: "Dashboard", href: "/dashboard", active: location === "/unified" },
-    { icon: Users, label: "Teams", href: "/teams" },
-    { icon: Calendar, label: "Calendar", href: "/calendar" },
-    { icon: Clock, label: "Time Tracker", href: "/time-tracker" },
-    { icon: CheckSquare, label: "My Tasks", href: "/my-tasks" },
-    { icon: Settings, label: "Settings", href: "/settings" }
-  ];
-
-  // Calculate summary stats
-  const totalTasks = filteredProjects.reduce((sum, p) => sum + p.itemCount, 0);
-  const completedTasks = filteredProjects.reduce((sum, p) => 
-    sum + p.subItems.filter((item: any) => item.status === 'complete').length, 0
-  );
-  const inProgressTasks = filteredProjects.reduce((sum, p) => 
-    sum + p.subItems.filter((item: any) => item.status === 'in_progress').length, 0
-  );
-  const underReviewTasks = filteredProjects.reduce((sum, p) => 
-    sum + p.subItems.filter((item: any) => item.status === 'under_review').length, 0
-  );
-
-  const SidebarContent = () => (
-    <div className="h-full flex flex-col bg-white">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <BarChart3 className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-800">Unified</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="md:hidden text-gray-600 hover:bg-gray-100 rounded-lg"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
-        {sidebarItems.map((item) => (
-          <Link key={item.href} href={item.href}>
-            <div
-              className={`${
-                item.active 
-                  ? 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 text-blue-700 shadow-sm' 
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 hover:shadow-sm hover:border hover:border-gray-200'
-              } group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 border border-transparent cursor-pointer`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <div className={`${
-                item.active 
-                  ? 'bg-blue-100 text-blue-600' 
-                  : 'bg-gray-100 text-gray-500 group-hover:bg-gray-200 group-hover:text-gray-600'
-              } p-2 rounded-lg mr-3 transition-colors duration-200`}>
-                <item.icon className="h-4 w-4" />
-              </div>
-              {item.label}
-            </div>
-          </Link>
-        ))}
-        
-        <div className="pt-6 mt-6">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-gray-700">Projects</span>
-            <Dialog open={newProjectDialog} onOpenChange={setNewProjectDialog}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create New Project Board</DialogTitle>
-                </DialogHeader>
-                <NewProjectForm onClose={() => setNewProjectDialog(false)} />
-              </DialogContent>
-            </Dialog>
-          </div>
-          
-          <div className="space-y-1">
-            {filteredProjects.slice(0, 5).map((project) => (
-              <div
-                key={project.id}
-                className="flex items-center px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-50 hover:shadow-sm cursor-pointer transition-all duration-200 border border-transparent hover:border-gray-200"
-                onClick={() => {
-                  toggleProject(project.id);
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <div className="w-6 h-6 rounded-md mr-3 flex items-center justify-center" style={{ backgroundColor: `${project.color}20` }}>
-                  <Folder className="h-3 w-3" style={{ color: project.color }} />
-                </div>
-                <span className="truncate flex-1 font-medium">{project.name}</span>
-                <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600 border-0">
-                  {project.itemCount}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </div>
-      </nav>
-    </div>
-  );
+  const handleAddFolder = (projectId: number) => {
+    const name = prompt("Enter folder name:");
+    if (name && name.trim()) {
+      addFolderMutation.mutate({ projectId, name: name.trim() });
+    }
+  };
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
-          <p className="text-gray-600 mb-4">Please log in to access the dashboard.</p>
-          <Link href="/login">
-            <Button>Go to Login</Button>
-          </Link>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600">You need to be logged in to access this page.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex font-['Inter',sans-serif]">
-      {/* Mobile Sidebar */}
-      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="p-0 w-80">
-          <SidebarContent />
-        </SheetContent>
-      </Sheet>
-
-      {/* Desktop Sidebar - Light Mode Nickbakeddesign Style */}
-      <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <div className="flex flex-col flex-grow bg-white border-r border-gray-100 pt-5 pb-4 overflow-y-auto">
-          {/* Header */}
-          <div className="flex items-center flex-shrink-0 px-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <BarChart3 className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="sm" className="p-2">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-80 p-0">
+            <div className="h-full bg-white">
+              <div className="p-6 border-b border-gray-100">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <Building className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-gray-900">Project Board</h2>
+                    <p className="text-xs text-gray-500">Unified Dashboard</p>
+                  </div>
+                </div>
               </div>
-              <span className="text-xl font-bold text-gray-800">Unified</span>
+
+              <div className="p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-medium text-gray-700">Projects</h3>
+                  <Button
+                    size="sm"
+                    onClick={() => setNewProjectDialog(true)}
+                    className="h-7 px-2 text-xs bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    New
+                  </Button>
+                </div>
+                
+                <div className="space-y-1">
+                  {filteredProjects.slice(0, 5).map((project) => (
+                    <div
+                      key={project.id}
+                      className="flex items-center px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-50 hover:shadow-sm cursor-pointer transition-all duration-200 border border-transparent hover:border-gray-200"
+                      onClick={() => {
+                        toggleProject(project.id);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <div className="w-6 h-6 rounded-md mr-3 flex items-center justify-center" style={{ backgroundColor: `${getProjectColor(project.status)}20` }}>
+                        <Folder className="h-3 w-3" style={{ color: getProjectColor(project.status) }} />
+                      </div>
+                      <span className="truncate flex-1 font-medium">{project.name}</span>
+                      <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600 border-0">
+                        0
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        <h1 className="text-lg font-semibold text-gray-900">Project Board</h1>
+        
+        <Button
+          size="sm"
+          onClick={() => setNewProjectDialog(true)}
+          className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700"
+        >
+          <Plus className="h-3 w-3 mr-1" />
+          New
+        </Button>
+      </div>
+
+      <div className="flex">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block w-80 bg-white border-r border-gray-200 h-screen sticky top-0">
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Building className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-gray-900">Project Board</h2>
+                <p className="text-xs text-gray-500">Unified Dashboard</p>
+              </div>
             </div>
           </div>
-          
-          {/* Navigation */}
-          <nav className="mt-8 flex-1 px-4 space-y-2">
-            {sidebarItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <div
-                  className={`${
-                    item.active 
-                      ? 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 text-blue-700 shadow-sm' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 hover:shadow-sm hover:border hover:border-gray-200'
-                  } group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 border border-transparent cursor-pointer`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <div className={`${
-                    item.active 
-                      ? 'bg-blue-100 text-blue-600' 
-                      : 'bg-gray-100 text-gray-500 group-hover:bg-gray-200 group-hover:text-gray-600'
-                  } p-2 rounded-lg mr-3 transition-colors duration-200`}>
-                    <item.icon className="h-4 w-4" />
-                  </div>
-                  {item.label}
-                </div>
-              </Link>
-            ))}
-          </nav>
-          
-          {/* Projects Section */}
-          <div className="px-4 mt-6">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-gray-700">
-                Projects
-              </h3>
-              <Dialog open={newProjectDialog} onOpenChange={setNewProjectDialog}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New Project Board</DialogTitle>
-                  </DialogHeader>
-                  <NewProjectForm onClose={() => setNewProjectDialog(false)} />
-                </DialogContent>
-              </Dialog>
+
+          <div className="p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-medium text-gray-700">Projects</h3>
+              <Button
+                size="sm"
+                onClick={() => setNewProjectDialog(true)}
+                className="h-7 px-2 text-xs bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                New
+              </Button>
             </div>
+            
             <div className="space-y-1">
-              {filteredProjects.slice(0, 5).map((project) => (
+              {filteredProjects.slice(0, 10).map((project) => (
                 <div
                   key={project.id}
                   className="flex items-center px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-50 hover:shadow-sm cursor-pointer transition-all duration-200 border border-transparent hover:border-gray-200"
-                  onClick={() => {
-                    toggleProject(project.id);
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={() => toggleProject(project.id)}
                 >
-                  <div className="w-6 h-6 rounded-md mr-3 flex items-center justify-center" style={{ backgroundColor: `${project.color}20` }}>
-                    <Folder className="h-3 w-3" style={{ color: project.color }} />
+                  <div className="w-6 h-6 rounded-md mr-3 flex items-center justify-center" style={{ backgroundColor: `${getProjectColor(project.status)}20` }}>
+                    {expandedProjects.has(project.id) ? (
+                      <FolderOpen className="h-3 w-3" style={{ color: getProjectColor(project.status) }} />
+                    ) : (
+                      <Folder className="h-3 w-3" style={{ color: getProjectColor(project.status) }} />
+                    )}
                   </div>
                   <span className="truncate flex-1 font-medium">{project.name}</span>
                   <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600 border-0">
-                    {project.itemCount}
+                    0
                   </Badge>
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col md:ml-64">
-        {/* Top Bar */}
-        <header className="bg-white border-b border-gray-200 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="md:hidden"
-                onClick={() => setMobileMenuOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-              <h1 className="text-xl font-semibold text-gray-900">Project Dashboard</h1>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowTimeline(!showTimeline)}
-                className="hidden sm:flex"
-              >
-                {showTimeline ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                <span className="ml-1">Timeline</span>
-              </Button>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search projects..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 w-64"
-                />
+        {/* Main Content */}
+        <div className="flex-1 overflow-hidden">
+          {/* Header */}
+          <div className="bg-white border-b border-gray-200 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Project Management</h1>
+                <div className="flex items-center space-x-4 mt-2">
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <span>Total: {stats.total}</span>
+                    <span>•</span>
+                    <span>New: {stats.newLeads}</span>
+                    <span>•</span>
+                    <span>Active: {stats.inProgress}</span>
+                    <span>•</span>
+                    <span>Complete: {stats.completed}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search projects..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 w-64"
+                  />
+                </div>
+                
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="new lead">New Lead</SelectItem>
+                    <SelectItem value="in progress">In Progress</SelectItem>
+                    <SelectItem value="on order">On Order</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="complete">Complete</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
-        </header>
 
-        {/* Timeline Summary Bar */}
-        {showTimeline && (
-          <div className="bg-white border-b border-gray-200 px-4 py-3">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Card className="p-3">
-                <div className="text-sm text-gray-600">Total Tasks</div>
-                <div className="text-2xl font-bold text-gray-900">{totalTasks}</div>
-              </Card>
-              <Card className="p-3">
-                <div className="text-sm text-gray-600">In Progress</div>
-                <div className="text-2xl font-bold text-blue-600">{inProgressTasks}</div>
-              </Card>
-              <Card className="p-3">
-                <div className="text-sm text-gray-600">Under Review</div>
-                <div className="text-2xl font-bold text-orange-600">{underReviewTasks}</div>
-              </Card>
-              <Card className="p-3">
-                <div className="text-sm text-gray-600">Completed</div>
-                <div className="text-2xl font-bold text-green-600">{completedTasks}</div>
-              </Card>
-            </div>
-          </div>
-        )}
-
-        {/* Project Boards Section */}
-        <main className="flex-1 p-4 overflow-y-auto">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Project Boards</h2>
-              <Dialog open={newProjectDialog} onOpenChange={setNewProjectDialog}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Board
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New Project Board</DialogTitle>
-                  </DialogHeader>
-                  <NewProjectForm onClose={() => setNewProjectDialog(false)} />
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            {dataLoading ? (
+          {/* Projects List */}
+          <div className="p-6">
+            {projectsLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <Card key={i} className="p-4 animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                      <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                    </CardContent>
                   </Card>
                 ))}
               </div>
+            ) : filteredProjects.length === 0 ? (
+              <div className="text-center py-12">
+                <Folder className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
+                <p className="text-gray-600 mb-4">
+                  {searchQuery || statusFilter !== "all" 
+                    ? "Try adjusting your search or filter criteria."
+                    : "Create your first project to get started."
+                  }
+                </p>
+                <Button onClick={() => setNewProjectDialog(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Project
+                </Button>
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {filteredProjects.map((project) => (
-                  <ProjectFolderCard
-                    key={project.id}
-                    project={project}
-                    isExpanded={expandedProjects.has(project.id)}
-                    onToggle={() => toggleProject(project.id)}
-                    onAddSubItem={handleAddSubItem}
-                    onAddFolder={handleAddFolder}
-                  />
-                ))}
-                
-                {filteredProjects.length === 0 && (
-                  <Card className="p-8 text-center">
-                    <div className="text-gray-500">
-                      {searchTerm ? `No projects found matching "${searchTerm}"` : "No projects found"}
-                    </div>
-                    <Button 
-                      className="mt-4" 
-                      onClick={() => setNewProjectDialog(true)}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Project
-                    </Button>
+                  <Card key={project.id} className="transition-all duration-200 hover:shadow-md border border-gray-200">
+                    <CardContent className="p-0">
+                      {/* Project Header */}
+                      <div 
+                        className="flex items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-150"
+                        onClick={() => toggleProject(project.id)}
+                      >
+                        <div className="flex items-center flex-1">
+                          <div className="mr-3">
+                            {expandedProjects.has(project.id) ? (
+                              <ChevronDown className="h-4 w-4 text-gray-400" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-gray-400" />
+                            )}
+                          </div>
+                          
+                          <div className="w-8 h-8 rounded-lg mr-3 flex items-center justify-center" style={{ backgroundColor: `${getProjectColor(project.status)}20` }}>
+                            {expandedProjects.has(project.id) ? (
+                              <FolderOpen className="h-4 w-4" style={{ color: getProjectColor(project.status) }} />
+                            ) : (
+                              <Folder className="h-4 w-4" style={{ color: getProjectColor(project.status) }} />
+                            )}
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3">
+                              <h3 className="font-semibold text-gray-900">{project.name}</h3>
+                              <Badge className={`text-xs ${getStatusColor(project.status)}`}>
+                                {project.status.replace('_', ' ')}
+                              </Badge>
+                            </div>
+                            
+                            {project.description && (
+                              <p className="text-sm text-gray-600 mt-1">{project.description}</p>
+                            )}
+
+                            <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                              {project.project_address && (
+                                <div className="flex items-center">
+                                  <MapPin className="h-3 w-3 mr-1" />
+                                  <span>{project.project_address}</span>
+                                </div>
+                              )}
+                              {project.client_phone && (
+                                <div className="flex items-center">
+                                  <Phone className="h-3 w-3 mr-1" />
+                                  <span>{project.client_phone}</span>
+                                </div>
+                              )}
+                              {project.assigned_to && (
+                                <div className="flex items-center">
+                                  <User className="h-3 w-3 mr-1" />
+                                  <span>{project.assigned_to}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="secondary" className="text-xs">
+                              0 items
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Expanded Content */}
+                      {expandedProjects.has(project.id) && (
+                        <div className="border-t border-gray-100 bg-gray-50">
+                          <div className="p-4">
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="font-medium text-gray-900">Project Details</h4>
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddSubItem(project.id);
+                                  }}
+                                  className="text-xs h-7"
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Add Sub Item
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddFolder(project.id);
+                                  }}
+                                  className="text-xs h-7"
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Add Folder
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Project Table */}
+                            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                  <thead className="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                      <th className="px-4 py-3 text-left font-medium text-gray-700">Item</th>
+                                      <th className="px-4 py-3 text-left font-medium text-gray-700">Status</th>
+                                      <th className="px-4 py-3 text-left font-medium text-gray-700">Assignee</th>
+                                      <th className="px-4 py-3 text-left font-medium text-gray-700">Created</th>
+                                      <th className="px-4 py-3 text-left font-medium text-gray-700">Actions</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-200">
+                                    <tr>
+                                      <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                                        <div className="flex flex-col items-center">
+                                          <Folder className="h-8 w-8 text-gray-300 mb-2" />
+                                          <p>No sub-items yet</p>
+                                          <p className="text-xs">Click "Add Sub Item" to get started</p>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
                   </Card>
-                )}
+                ))}
               </div>
             )}
           </div>
-        </main>
-
-        {/* Dialog for Adding Sub Items */}
-        <Dialog open={showSubItemDialog} onOpenChange={setShowSubItemDialog}>
-          <DialogContent aria-describedby="sub-item-description">
-            <DialogHeader>
-              <DialogTitle>Add New Sub Item</DialogTitle>
-              <p id="sub-item-description" className="text-sm text-gray-600">
-                Create a new task or item for this project
-              </p>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="subItemName">Sub Item Name</Label>
-                <Input
-                  id="subItemName"
-                  value={newSubItemName}
-                  onChange={(e) => setNewSubItemName(e.target.value)}
-                  placeholder="Enter sub item name..."
-                  onKeyPress={(e) => e.key === 'Enter' && handleCreateSubItem()}
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowSubItemDialog(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleCreateSubItem}
-                  disabled={!newSubItemName.trim() || createSubItemMutation.isPending}
-                >
-                  {createSubItemMutation.isPending ? "Creating..." : "Create Sub Item"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Dialog for Adding Folders */}
-        <Dialog open={showFolderDialog} onOpenChange={setShowFolderDialog}>
-          <DialogContent aria-describedby="folder-description">
-            <DialogHeader>
-              <DialogTitle>Add New Folder</DialogTitle>
-              <p id="folder-description" className="text-sm text-gray-600">
-                Create a new folder to organize sub-items in this project
-              </p>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="folderName">Folder Name</Label>
-                <Input
-                  id="folderName"
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  placeholder="Enter folder name..."
-                  onKeyPress={(e) => e.key === 'Enter' && handleCreateFolder()}
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowFolderDialog(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleCreateFolder}
-                  disabled={!newFolderName.trim() || createFolderMutation.isPending}
-                >
-                  {createFolderMutation.isPending ? "Creating..." : "Create Folder"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        </div>
       </div>
+
+      {/* New Project Dialog */}
+      <Dialog open={newProjectDialog} onOpenChange={setNewProjectDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+          </DialogHeader>
+          <NewProjectForm onClose={() => setNewProjectDialog(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
-}
-
-// Project Folder Card Component
-function ProjectFolderCard({ 
-  project, 
-  isExpanded, 
-  onToggle,
-  onAddSubItem,
-  onAddFolder
-}: { 
-  project: ProjectFolder; 
-  isExpanded: boolean; 
-  onToggle: () => void;
-  onAddSubItem: (projectId: number) => void;
-  onAddFolder: (projectId: number) => void;
-}) {
-  return (
-    <Card className="border border-gray-200 rounded-xl shadow-sm transition-all duration-200 hover:shadow-lg hover:border-gray-300 bg-white">
-      {/* Folder Header */}
-      <div 
-        className="p-4 cursor-pointer select-none"
-        onClick={onToggle}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              {isExpanded ? (
-                <ChevronDown className="h-4 w-4 text-gray-500" />
-              ) : (
-                <ChevronRight className="h-4 w-4 text-gray-500" />
-              )}
-              {isExpanded ? (
-                <FolderOpen className="h-5 w-5" style={{ color: project.color }} />
-              ) : (
-                <Folder className="h-5 w-5" style={{ color: project.color }} />
-              )}
-            </div>
-            
-            <div>
-              <h3 className="font-medium text-gray-900">{project.name}</h3>
-              <p className="text-sm text-gray-600">{project.description || "No description"}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <Badge variant="secondary" className="text-xs">
-              {project.itemCount} tasks
-            </Badge>
-            <Badge 
-              className={`${getStatusColor(project.status)} rounded-full px-3 py-1 text-xs font-medium border-0`}
-            >
-              {project.status.replace('_', ' ')}
-            </Badge>
-            <div className="flex -space-x-1">
-              {project.teamMembers.slice(0, 3).map((member, idx) => (
-                <Avatar key={member.id} className="h-6 w-6 border-2 border-white">
-                  <AvatarFallback className="text-xs">
-                    {member.firstName?.[0]}{member.lastName?.[0]}
-                  </AvatarFallback>
-                </Avatar>
-              ))}
-              {project.teamMembers.length > 3 && (
-                <div className="h-6 w-6 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center">
-                  <span className="text-xs text-gray-600">+{project.teamMembers.length - 3}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Expanded Board View */}
-      {isExpanded && (
-        <div className="border-t border-gray-200 bg-gray-50">
-          <ProjectBoardTable 
-            project={project} 
-            onAddSubItem={onAddSubItem}
-            onAddFolder={onAddFolder}
-          />
-        </div>
-      )}
-    </Card>
-  );
-}
-
-// Project Board Table Component
-function ProjectBoardTable({ 
-  project, 
-  onAddSubItem, 
-  onAddFolder 
-}: { 
-  project: ProjectFolder; 
-  onAddSubItem: (projectId: number) => void;
-  onAddFolder: (projectId: number) => void;
-}) {
-  return (
-    <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h4 className="font-medium text-gray-900">Board Items</h4>
-        <div className="flex items-center space-x-3">
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={() => onAddSubItem(project.id)}
-            className="rounded-lg border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 px-4 py-2 font-medium shadow-sm hover:shadow-md"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Sub Item
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={() => onAddFolder(project.id)}
-            className="rounded-lg border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 transition-all duration-200 px-4 py-2 font-medium shadow-sm hover:shadow-md"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Folder
-          </Button>
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
-                  Item
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-                  Assignee
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
-                  Due Date
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-                  Progress
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
-                  
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {project.subItems.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                    No items yet. Click "Add Item" to get started.
-                  </td>
-                </tr>
-              ) : (
-                project.subItems.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">
-                        {item.name || `Item ${index + 1}`}
-                      </div>
-                      {item.description && (
-                        <div className="text-sm text-gray-600 mt-1">
-                          {item.description}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge 
-                        variant="outline"
-                        className={getStatusColor(item.status)}
-                      >
-                        {item.status.replace('_', ' ')}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      {item.assignedTo && (
-                        <div className="flex items-center space-x-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-xs">
-                              {item.assignedTo.split(' ').map((n: string) => n[0]).join('')}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm">{item.assignedTo}</span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {item.dueDate ? new Date(item.dueDate).toLocaleDateString() : '-'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full" 
-                          style={{ width: `${item.progress || 0}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-xs text-gray-500 mt-1">
-                        {item.progress || 0}%
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// New Project Form Component
-function NewProjectForm({ onClose }: { onClose: () => void }) {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    status: "new lead"
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      
-      if (response.ok) {
-        onClose();
-        window.location.reload(); // Refresh to show new project
-      }
-    } catch (error) {
-      console.error('Failed to create project:', error);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="name">Project Name</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-          placeholder="Enter project name..."
-          required
-        />
-      </div>
-      
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-          placeholder="Project description..."
-          rows={3}
-        />
-      </div>
-      
-      <div>
-        <Label htmlFor="status">Initial Status</Label>
-        <Select 
-          value={formData.status} 
-          onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="new lead">New Lead</SelectItem>
-            <SelectItem value="in progress">In Progress</SelectItem>
-            <SelectItem value="on order">On Order</SelectItem>
-            <SelectItem value="scheduled">Scheduled</SelectItem>
-            <SelectItem value="complete">Complete</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button type="submit">
-          Create Project Board
-        </Button>
-      </div>
-    </form>
-  );
-}
-
-function getStatusColor(status: string) {
-  const colors = {
-    'new_lead': 'text-yellow-700 bg-yellow-50 border-yellow-200',
-    'in_progress': 'text-blue-700 bg-blue-50 border-blue-200',
-    'on_order': 'text-purple-700 bg-purple-50 border-purple-200',
-    'scheduled': 'text-green-700 bg-green-50 border-green-200',
-    'complete': 'text-emerald-700 bg-emerald-50 border-emerald-200',
-    'under_review': 'text-orange-700 bg-orange-50 border-orange-200',
-    'not_started': 'text-gray-700 bg-gray-50 border-gray-200'
-  };
-  return colors[status as keyof typeof colors] || colors.not_started;
 }
 
 export default UnifiedDashboard;
