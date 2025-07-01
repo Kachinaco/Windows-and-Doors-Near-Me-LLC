@@ -136,6 +136,7 @@ function UnifiedDashboard() {
 
   const handleCreateFolder = () => {
     if (selectedProjectId && newFolderName.trim()) {
+      console.log("Creating folder:", { projectId: selectedProjectId, name: newFolderName.trim() });
       createFolderMutation.mutate({ 
         projectId: selectedProjectId, 
         name: newFolderName.trim() 
@@ -556,9 +557,12 @@ function UnifiedDashboard() {
 
         {/* Dialog for Adding Sub Items */}
         <Dialog open={showSubItemDialog} onOpenChange={setShowSubItemDialog}>
-          <DialogContent>
+          <DialogContent aria-describedby="sub-item-description">
             <DialogHeader>
               <DialogTitle>Add New Sub Item</DialogTitle>
+              <p id="sub-item-description" className="text-sm text-gray-600">
+                Create a new task or item for this project
+              </p>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -591,9 +595,12 @@ function UnifiedDashboard() {
 
         {/* Dialog for Adding Folders */}
         <Dialog open={showFolderDialog} onOpenChange={setShowFolderDialog}>
-          <DialogContent>
+          <DialogContent aria-describedby="folder-description">
             <DialogHeader>
               <DialogTitle>Add New Folder</DialogTitle>
+              <p id="folder-description" className="text-sm text-gray-600">
+                Create a new folder to organize sub-items in this project
+              </p>
             </DialogHeader>
             <div className="space-y-4">
               <div>
