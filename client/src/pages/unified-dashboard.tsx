@@ -240,10 +240,7 @@ function UnifiedDashboard() {
   // Mutations for sub-items and folders
   const addSubItemMutation = useMutation({
     mutationFn: ({ projectId, name }: { projectId: number; name: string }) =>
-      apiRequest(`/api/projects/${projectId}/sub-items`, {
-        method: 'POST',
-        body: JSON.stringify({ name, status: 'not_started' })
-      }),
+      apiRequest('POST', `/api/projects/${projectId}/sub-items`, { name, status: 'not_started' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       toast({ title: "Sub-item added successfully!" });
@@ -259,10 +256,7 @@ function UnifiedDashboard() {
 
   const addFolderMutation = useMutation({
     mutationFn: ({ projectId, name }: { projectId: number; name: string }) =>
-      apiRequest(`/api/projects/${projectId}/folders`, {
-        method: 'POST',
-        body: JSON.stringify({ name })
-      }),
+      apiRequest('POST', `/api/projects/${projectId}/folders`, { name }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       toast({ title: "Folder added successfully!" });
