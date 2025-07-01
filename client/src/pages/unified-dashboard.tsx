@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -155,76 +155,68 @@ function UnifiedDashboard() {
     queryKey: ["/api/projects"],
   });
 
-  // Fetch sub-items and folders for each project
-  const { data: projectsData, isLoading: dataLoading } = useQuery({
-    queryKey: ["/api/projects-with-subitems", projects.length || 0],
-    queryFn: async () => {
-      if (!projects || projects.length === 0) return [];
-      
-      const projectsWithData = await Promise.all(
-        projects.map(async (project) => {
-          try {
-            // Ensure project has required properties
-            if (!project || !project.id) {
-              throw new Error('Invalid project data');
-            }
+  // Simplified approach: Use projects directly and fetch sub-data separately
+  const projectsWithData = useMemo(() => {
+    if (!projects || projects.length === 0) return [];
+    
+    return projects.map(project => ({
+      ...project,
+      description: project.description || null,
+      subItems: [],
+      folders: [],
+      teamMembers: [],
+      itemCount: 0,
+      isExpanded: expandedProjects.has(project.id),
+      color: getProjectColor(project.status)
+    }));
+  }, [projects, expandedProjects]);
 
-            const [subItemsRes, foldersRes, teamRes] = await Promise.all([
-              apiRequest("GET", `/api/projects/${project.id}/sub-items`),
-              apiRequest("GET", `/api/projects/${project.id}/sub-item-folders`),
-              apiRequest("GET", `/api/projects/${project.id}/team-members`)
-            ]);
-            
-            // Check if responses are valid
-            if (!subItemsRes.ok || !foldersRes.ok || !teamRes.ok) {
-              throw new Error('API request failed');
-            }
-            
-            const subItems = await subItemsRes.json();
-            const folders = await foldersRes.json();
-            const teamMembers = await teamRes.json();
-            
-            // Ensure arrays are properly initialized and log data
-            const safeSubItems = Array.isArray(subItems) ? subItems : [];
-            const safeFolders = Array.isArray(folders) ? folders : [];
-            const safeTeamMembers = Array.isArray(teamMembers) ? teamMembers : [];
-            
-            // Debug logging
-            console.log(`Project ${project.id} data:`, {
-              subItems: safeSubItems.length,
-              folders: safeFolders.length,
-              teamMembers: safeTeamMembers.length,
-              subItemsData: safeSubItems
-            });
-            
-            return {
-              ...project,
-              description: project.description || null,
-              subItems: safeSubItems,
-              folders: safeFolders,
-              teamMembers: safeTeamMembers,
-              itemCount: safeSubItems.length,
-              isExpanded: expandedProjects.has(project.id),
-              color: getProjectColor(project.status)
-            } as ProjectFolder;
-          } catch (error) {
-            console.error(`Error fetching data for project ${project.id}:`, error);
-            return {
-              ...project,
-              subItems: [],
-              folders: [],
-              teamMembers: [],
-              itemCount: 0,
-              isExpanded: false,
-              color: '#6b7280'
-            };
-          }
-        })
-      );
-      return projectsWithData;
-    },
-    enabled: !projectsLoading && projects && projects.length > 0,
-  });
+  // Fetch sub-items for each project separately
+  const subItemQueries = projects.map(project => 
+    useQuery({
+      queryKey: [`/api/projects/${project.id}/sub-items`],
+      queryFn: async () => {
+        const response = await apiRequest("GET", `/api/projects/${project.id}/sub-items`);
+        return response.json();
+      },
+      enabled: !!project.id
+    })
+  );
+
+  // Fetch folders for each project separately  
+  const folderQueries = projects.map(project =>
+    useQuery({
+      queryKey: [`/api/projects/${project.id}/sub-item-folders`],
+      queryFn: async () => {
+        const response = await apiRequest("GET", `/api/projects/${project.id}/sub-item-folders`);
+        return response.json();
+      },
+      enabled: !!project.id
+    })
+  );
+
+  // Combine the data
+  const projectsData = useMemo(() => {
+    return projectsWithData.map((project, index) => {
+      const subItems = subItemQueries[index]?.data || [];
+      const folders = folderQueries[index]?.data || [];
+      
+      console.log(`Project ${project.id} has:`, {
+        subItems: subItems.length,
+        subItemFolders: folders.length,
+        subItemsData: subItems
+      });
+      
+      return {
+        ...project,
+        subItems: Array.isArray(subItems) ? subItems : [],
+        folders: Array.isArray(folders) ? folders : [],
+        itemCount: Array.isArray(subItems) ? subItems.length : 0
+      };
+    });
+  }, [projectsWithData, subItemQueries, folderQueries]);
+
+  const dataLoading = subItemQueries.some(q => q.isLoading) || folderQueries.some(q => q.isLoading);
 
   const getProjectColor = (status: string) => {
     const colors = {
