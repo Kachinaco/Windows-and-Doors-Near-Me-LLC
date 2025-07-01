@@ -75,16 +75,9 @@ function UnifiedDashboard() {
   // Mutation for creating sub-items
   const createSubItemMutation = useMutation({
     mutationFn: async ({ projectId, name }: { projectId: number; name: string }) => {
-      const response = await apiRequest("POST", "/api/sub-items", {
-        parentProjectId: projectId,
+      const response = await apiRequest("POST", `/api/projects/${projectId}/sub-items`, {
         name: name,
-        description: null,
-        status: "not_started",
-        priority: "medium",
-        assignedTo: null,
-        dueDate: null,
-        folderId: null,
-        sortOrder: 0
+        folderId: null
       });
       return response.json();
     },
@@ -103,10 +96,8 @@ function UnifiedDashboard() {
   // Mutation for creating folders
   const createFolderMutation = useMutation({
     mutationFn: async ({ projectId, name }: { projectId: number; name: string }) => {
-      const response = await apiRequest("POST", "/api/sub-item-folders", {
-        projectId: projectId,
-        name: name,
-        color: "#6b7280"
+      const response = await apiRequest("POST", `/api/projects/${projectId}/sub-item-folders`, {
+        name: name
       });
       return response.json();
     },
@@ -135,6 +126,7 @@ function UnifiedDashboard() {
 
   const handleCreateSubItem = () => {
     if (selectedProjectId && newSubItemName.trim()) {
+      console.log("Creating sub-item:", { projectId: selectedProjectId, name: newSubItemName.trim() });
       createSubItemMutation.mutate({ 
         projectId: selectedProjectId, 
         name: newSubItemName.trim() 
@@ -158,8 +150,10 @@ function UnifiedDashboard() {
 
   // Fetch sub-items and folders for each project
   const { data: projectsData, isLoading: dataLoading } = useQuery({
-    queryKey: ["/api/projects-with-subitems"],
+    queryKey: ["/api/projects-with-subitems", projects?.length],
     queryFn: async () => {
+      if (!projects || projects.length === 0) return [];
+      
       const projectsWithData = await Promise.all(
         projects.map(async (project) => {
           try {
