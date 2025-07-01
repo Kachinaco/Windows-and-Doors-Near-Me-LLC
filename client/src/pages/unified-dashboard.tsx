@@ -340,7 +340,7 @@ function UnifiedDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex font-['Inter',sans-serif]">
       {/* Mobile Sidebar */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="left" className="p-0 w-80">
@@ -348,13 +348,94 @@ function UnifiedDashboard() {
         </SheetContent>
       </Sheet>
 
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block w-64 bg-gray-900">
-        <SidebarContent />
+      {/* Desktop Sidebar - Light Mode Nickbakeddesign Style */}
+      <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+        <div className="flex flex-col flex-grow bg-white border-r border-gray-100 pt-5 pb-4 overflow-y-auto">
+          {/* Header */}
+          <div className="flex items-center flex-shrink-0 px-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xl font-bold text-gray-800">Unified</span>
+            </div>
+          </div>
+          
+          {/* Navigation */}
+          <nav className="mt-8 flex-1 px-4 space-y-2">
+            {sidebarItems.map((item) => (
+              <Link key={item.href} href={item.href}>
+                <div
+                  className={`${
+                    item.active 
+                      ? 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 text-blue-700 shadow-sm' 
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 hover:shadow-sm hover:border hover:border-gray-200'
+                  } group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 border border-transparent cursor-pointer`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <div className={`${
+                    item.active 
+                      ? 'bg-blue-100 text-blue-600' 
+                      : 'bg-gray-100 text-gray-500 group-hover:bg-gray-200 group-hover:text-gray-600'
+                  } p-2 rounded-lg mr-3 transition-colors duration-200`}>
+                    <item.icon className="h-4 w-4" />
+                  </div>
+                  {item.label}
+                </div>
+              </Link>
+            ))}
+          </nav>
+          
+          {/* Projects Section */}
+          <div className="px-4 mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-700">
+                Projects
+              </h3>
+              <Dialog open={newProjectDialog} onOpenChange={setNewProjectDialog}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Project Board</DialogTitle>
+                  </DialogHeader>
+                  <NewProjectForm onClose={() => setNewProjectDialog(false)} />
+                </DialogContent>
+              </Dialog>
+            </div>
+            <div className="space-y-1">
+              {filteredProjects.slice(0, 5).map((project) => (
+                <div
+                  key={project.id}
+                  className="flex items-center px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-50 hover:shadow-sm cursor-pointer transition-all duration-200 border border-transparent hover:border-gray-200"
+                  onClick={() => {
+                    toggleProject(project.id);
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <div className="w-6 h-6 rounded-md mr-3 flex items-center justify-center" style={{ backgroundColor: `${project.color}20` }}>
+                    <Folder className="h-3 w-3" style={{ color: project.color }} />
+                  </div>
+                  <span className="truncate flex-1 font-medium">{project.name}</span>
+                  <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600 border-0">
+                    {project.itemCount}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col md:ml-64">
         {/* Top Bar */}
         <header className="bg-white border-b border-gray-200 px-4 py-3">
           <div className="flex items-center justify-between">
@@ -568,7 +649,7 @@ function ProjectFolderCard({
   onAddFolder: (projectId: number) => void;
 }) {
   return (
-    <Card className="border border-gray-200 transition-all duration-200 hover:shadow-md">
+    <Card className="border border-gray-200 rounded-xl shadow-sm transition-all duration-200 hover:shadow-lg hover:border-gray-300 bg-white">
       {/* Folder Header */}
       <div 
         className="p-4 cursor-pointer select-none"
@@ -600,11 +681,7 @@ function ProjectFolderCard({
               {project.itemCount} tasks
             </Badge>
             <Badge 
-              variant="outline" 
-              style={{ 
-                borderColor: project.color,
-                color: project.color 
-              }}
+              className={`${getStatusColor(project.status)} rounded-full px-3 py-1 text-xs font-medium border-0`}
             >
               {project.status.replace('_', ' ')}
             </Badge>
@@ -654,21 +731,23 @@ function ProjectBoardTable({
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
         <h4 className="font-medium text-gray-900">Board Items</h4>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
           <Button 
             size="sm" 
             variant="outline"
             onClick={() => onAddSubItem(project.id)}
+            className="rounded-lg border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 px-4 py-2 font-medium shadow-sm hover:shadow-md"
           >
-            <Plus className="h-3 w-3 mr-1" />
+            <Plus className="h-4 w-4 mr-2" />
             Add Sub Item
           </Button>
           <Button 
             size="sm" 
             variant="outline"
             onClick={() => onAddFolder(project.id)}
+            className="rounded-lg border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 transition-all duration-200 px-4 py-2 font-medium shadow-sm hover:shadow-md"
           >
-            <Plus className="h-3 w-3 mr-1" />
+            <Plus className="h-4 w-4 mr-2" />
             Add Folder
           </Button>
         </div>
