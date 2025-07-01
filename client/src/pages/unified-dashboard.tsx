@@ -188,6 +188,10 @@ function UnifiedDashboard() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [newProjectDialog, setNewProjectDialog] = useState(false);
+  
+  // Unified dashboard-specific data storage
+  const [unifiedFolders, setUnifiedFolders] = useState<Record<number, Array<{name: string, id: string}>>>({});
+  const [unifiedSubItems, setUnifiedSubItems] = useState<Record<number, Array<{name: string, id: string, status: string}>>>({});
 
   // Fetch projects
   const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
@@ -241,8 +245,16 @@ function UnifiedDashboard() {
   const addSubItemMutation = useMutation({
     mutationFn: ({ projectId, name }: { projectId: number; name: string }) =>
       apiRequest('POST', `/api/unified-dashboard/projects/${projectId}/sub-items`, { name, status: 'not_started' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+    onSuccess: (data, variables) => {
+      // Add sub-item to local state
+      const subItemId = `subitem-${Date.now()}`;
+      setUnifiedSubItems(prev => ({
+        ...prev,
+        [variables.projectId]: [
+          ...(prev[variables.projectId] || []),
+          { name: variables.name, id: subItemId, status: 'not_started' }
+        ]
+      }));
       toast({ title: "Unified sub-item added successfully!" });
     },
     onError: (error: any) => {
@@ -257,8 +269,16 @@ function UnifiedDashboard() {
   const addFolderMutation = useMutation({
     mutationFn: ({ projectId, name }: { projectId: number; name: string }) =>
       apiRequest('POST', `/api/unified-dashboard/projects/${projectId}/folders`, { name }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+    onSuccess: (data, variables) => {
+      // Add folder to local state
+      const folderId = `folder-${Date.now()}`;
+      setUnifiedFolders(prev => ({
+        ...prev,
+        [variables.projectId]: [
+          ...(prev[variables.projectId] || []),
+          { name: variables.name, id: folderId }
+        ]
+      }));
       toast({ title: "Unified folder added successfully!" });
     },
     onError: (error: any) => {
@@ -572,7 +592,7 @@ function UnifiedDashboard() {
 
                           <div className="flex items-center space-x-2">
                             <Badge variant="secondary" className="text-xs">
-                              0 items
+                              {((unifiedFolders[project.id]?.length || 0) + (unifiedSubItems[project.id]?.length || 0))} items
                             </Badge>
                           </div>
                         </div>
@@ -626,15 +646,69 @@ function UnifiedDashboard() {
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-gray-200">
-                                    <tr>
-                                      <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                                        <div className="flex flex-col items-center">
-                                          <Folder className="h-8 w-8 text-gray-300 mb-2" />
-                                          <p>No sub-items yet</p>
-                                          <p className="text-xs">Click "Add Sub Item" to get started</p>
-                                        </div>
-                                      </td>
-                                    </tr>
+                                    {/* Display unified folders */}
+                                    {unifiedFolders[project.id]?.map((folder) => (
+                                      <tr key={folder.id} className="hover:bg-gray-50">
+                                        <td className="px-4 py-3">
+                                          <div className="flex items-center">
+                                            <Folder className="h-4 w-4 text-amber-500 mr-2" />
+                                            <span className="font-medium">{folder.name}</span>
+                                          </div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                                            Folder
+                                          </Badge>
+                                        </td>
+                                        <td className="px-4 py-3 text-gray-500">-</td>
+                                        <td className="px-4 py-3 text-gray-500">Just now</td>
+                                        <td className="px-4 py-3">
+                                          <Button size="sm" variant="ghost" className="h-6 text-xs">
+                                            <MoreHorizontal className="h-3 w-3" />
+                                          </Button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                    
+                                    {/* Display unified sub-items */}
+                                    {unifiedSubItems[project.id]?.map((subItem) => (
+                                      <tr key={subItem.id} className="hover:bg-gray-50">
+                                        <td className="px-4 py-3">
+                                          <div className="flex items-center">
+                                            <div className="w-4 h-4 rounded-full bg-blue-100 mr-2 flex items-center justify-center">
+                                              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                            </div>
+                                            <span>{subItem.name}</span>
+                                          </div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+                                            {subItem.status.replace('_', ' ')}
+                                          </Badge>
+                                        </td>
+                                        <td className="px-4 py-3 text-gray-500">Unassigned</td>
+                                        <td className="px-4 py-3 text-gray-500">Just now</td>
+                                        <td className="px-4 py-3">
+                                          <Button size="sm" variant="ghost" className="h-6 text-xs">
+                                            <MoreHorizontal className="h-3 w-3" />
+                                          </Button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                    
+                                    {/* Show empty state only if no items exist */}
+                                    {(!unifiedFolders[project.id] || unifiedFolders[project.id].length === 0) &&
+                                     (!unifiedSubItems[project.id] || unifiedSubItems[project.id].length === 0) && (
+                                      <tr>
+                                        <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                                          <div className="flex flex-col items-center">
+                                            <Folder className="h-8 w-8 text-gray-300 mb-2" />
+                                            <p>No sub-items yet</p>
+                                            <p className="text-xs">Click "Add Sub Item" to get started</p>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    )}
                                   </tbody>
                                 </table>
                               </div>
