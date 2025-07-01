@@ -122,6 +122,35 @@ function UnifiedDashboard() {
     }
   });
 
+  // Handler functions
+  const handleAddSubItem = (projectId: number) => {
+    setSelectedProjectId(projectId);
+    setShowSubItemDialog(true);
+  };
+
+  const handleAddFolder = (projectId: number) => {
+    setSelectedProjectId(projectId);
+    setShowFolderDialog(true);
+  };
+
+  const handleCreateSubItem = () => {
+    if (selectedProjectId && newSubItemName.trim()) {
+      createSubItemMutation.mutate({ 
+        projectId: selectedProjectId, 
+        name: newSubItemName.trim() 
+      });
+    }
+  };
+
+  const handleCreateFolder = () => {
+    if (selectedProjectId && newFolderName.trim()) {
+      createFolderMutation.mutate({ 
+        projectId: selectedProjectId, 
+        name: newFolderName.trim() 
+      });
+    }
+  };
+
   // Fetch projects data
   const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
@@ -426,6 +455,8 @@ function UnifiedDashboard() {
                     project={project}
                     isExpanded={expandedProjects.has(project.id)}
                     onToggle={() => toggleProject(project.id)}
+                    onAddSubItem={handleAddSubItem}
+                    onAddFolder={handleAddFolder}
                   />
                 ))}
                 
@@ -447,6 +478,76 @@ function UnifiedDashboard() {
             )}
           </div>
         </main>
+
+        {/* Dialog for Adding Sub Items */}
+        <Dialog open={showSubItemDialog} onOpenChange={setShowSubItemDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Sub Item</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="subItemName">Sub Item Name</Label>
+                <Input
+                  id="subItemName"
+                  value={newSubItemName}
+                  onChange={(e) => setNewSubItemName(e.target.value)}
+                  placeholder="Enter sub item name..."
+                  onKeyPress={(e) => e.key === 'Enter' && handleCreateSubItem()}
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowSubItemDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleCreateSubItem}
+                  disabled={!newSubItemName.trim() || createSubItemMutation.isPending}
+                >
+                  {createSubItemMutation.isPending ? "Creating..." : "Create Sub Item"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog for Adding Folders */}
+        <Dialog open={showFolderDialog} onOpenChange={setShowFolderDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Folder</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="folderName">Folder Name</Label>
+                <Input
+                  id="folderName"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  placeholder="Enter folder name..."
+                  onKeyPress={(e) => e.key === 'Enter' && handleCreateFolder()}
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowFolderDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleCreateFolder}
+                  disabled={!newFolderName.trim() || createFolderMutation.isPending}
+                >
+                  {createFolderMutation.isPending ? "Creating..." : "Create Folder"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
@@ -456,11 +557,15 @@ function UnifiedDashboard() {
 function ProjectFolderCard({ 
   project, 
   isExpanded, 
-  onToggle 
+  onToggle,
+  onAddSubItem,
+  onAddFolder
 }: { 
-  project: ProjectFolder, 
-  isExpanded: boolean, 
-  onToggle: () => void 
+  project: ProjectFolder; 
+  isExpanded: boolean; 
+  onToggle: () => void;
+  onAddSubItem: (projectId: number) => void;
+  onAddFolder: (projectId: number) => void;
 }) {
   return (
     <Card className="border border-gray-200 transition-all duration-200 hover:shadow-md">
@@ -524,7 +629,11 @@ function ProjectFolderCard({
       {/* Expanded Board View */}
       {isExpanded && (
         <div className="border-t border-gray-200 bg-gray-50">
-          <ProjectBoardTable project={project} />
+          <ProjectBoardTable 
+            project={project} 
+            onAddSubItem={onAddSubItem}
+            onAddFolder={onAddFolder}
+          />
         </div>
       )}
     </Card>
@@ -532,21 +641,33 @@ function ProjectFolderCard({
 }
 
 // Project Board Table Component
-function ProjectBoardTable({ project }: { project: ProjectFolder }) {
+function ProjectBoardTable({ 
+  project, 
+  onAddSubItem, 
+  onAddFolder 
+}: { 
+  project: ProjectFolder; 
+  onAddSubItem: (projectId: number) => void;
+  onAddFolder: (projectId: number) => void;
+}) {
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
         <h4 className="font-medium text-gray-900">Board Items</h4>
         <div className="flex items-center space-x-2">
-          <Button size="sm" variant="outline">
-            <Plus className="h-3 w-3 mr-1" />
-            Add Item
-          </Button>
-          <Button size="sm" variant="outline">
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={() => onAddSubItem(project.id)}
+          >
             <Plus className="h-3 w-3 mr-1" />
             Add Sub Item
           </Button>
-          <Button size="sm" variant="outline">
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={() => onAddFolder(project.id)}
+          >
             <Plus className="h-3 w-3 mr-1" />
             Add Folder
           </Button>
