@@ -653,9 +653,12 @@ function UnifiedDashboard() {
 
       {/* New Project Dialog */}
       <Dialog open={newProjectDialog} onOpenChange={setNewProjectDialog}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px]" aria-describedby="dialog-description">
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
+            <div id="dialog-description" className="sr-only">
+              Create a new project with details like name, description, status, and assignments.
+            </div>
           </DialogHeader>
           <NewProjectForm onClose={() => setNewProjectDialog(false)} />
         </DialogContent>

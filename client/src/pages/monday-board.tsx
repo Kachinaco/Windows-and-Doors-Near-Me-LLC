@@ -2566,7 +2566,7 @@ export default function MondayBoard() {
               {!group.collapsed && (
                 <>
                   {group.items.map((item) => (
-                    <React.Fragment key={item.id}>
+                    <div key={item.id}>
                       {/* Main Item Row - Clickable for Updates */}
                       <div 
                         className="flex hover:bg-gray-50 transition-all border-b border-gray-200 last:border-b-0 bg-white cursor-pointer"
@@ -3103,7 +3103,7 @@ export default function MondayBoard() {
                           )}
                         </>
                       )}
-                    </React.Fragment>
+                    </div>
                   ))}
                   
                   {/* Add Item Button at bottom of group */}
