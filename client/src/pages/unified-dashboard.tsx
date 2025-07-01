@@ -237,17 +237,17 @@ function UnifiedDashboard() {
     completed: projects.filter(p => p.status === 'complete').length
   };
 
-  // Mutations for sub-items and folders
+  // Mutations for unified dashboard sub-items and folders
   const addSubItemMutation = useMutation({
     mutationFn: ({ projectId, name }: { projectId: number; name: string }) =>
-      apiRequest('POST', `/api/projects/${projectId}/sub-items`, { name, status: 'not_started' }),
+      apiRequest('POST', `/api/unified-dashboard/projects/${projectId}/sub-items`, { name, status: 'not_started' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({ title: "Sub-item added successfully!" });
+      toast({ title: "Unified sub-item added successfully!" });
     },
     onError: (error: any) => {
       toast({ 
-        title: "Failed to add sub-item", 
+        title: "Failed to add unified sub-item", 
         description: error.message,
         variant: "destructive" 
       });
@@ -256,14 +256,14 @@ function UnifiedDashboard() {
 
   const addFolderMutation = useMutation({
     mutationFn: ({ projectId, name }: { projectId: number; name: string }) =>
-      apiRequest('POST', `/api/projects/${projectId}/folders`, { name }),
+      apiRequest('POST', `/api/unified-dashboard/projects/${projectId}/folders`, { name }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({ title: "Folder added successfully!" });
+      toast({ title: "Unified folder added successfully!" });
     },
     onError: (error: any) => {
       toast({ 
-        title: "Failed to add folder", 
+        title: "Failed to add unified folder", 
         description: error.message,
         variant: "destructive" 
       });
