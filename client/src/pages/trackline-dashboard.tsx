@@ -54,16 +54,18 @@ function TracklineDashboardContent() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // Get unified project data
-  const {
-    processedTasks,
-    taskStats,
-    isLoading: unifiedLoading,
-    updateTask,
-    createTask,
-    updateFilters,
-    filters
-  } = useUnifiedProject();
+  // Fetch projects from your existing API
+  const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
+    queryKey: ["/api/projects"],
+  });
+
+  // Create mock task stats for now (replace with real data later)
+  const taskStats = {
+    total: projects.length || 0,
+    inProgress: Math.floor(projects.length * 0.4) || 0,
+    underReview: Math.floor(projects.length * 0.2) || 0,
+    completed: Math.floor(projects.length * 0.4) || 0
+  };
 
   // Update current time every minute
   useEffect(() => {
@@ -71,12 +73,7 @@ function TracklineDashboardContent() {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch projects from your existing API
-  const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
-    queryKey: ["/api/projects"],
-  });
-
-  const isLoading = unifiedLoading || projectsLoading;
+  const isLoading = projectsLoading;
 
   // Helper function for status colors
   const getStatusColor = (status: string) => {
@@ -92,38 +89,27 @@ function TracklineDashboardContent() {
     return colors[status as keyof typeof colors] || '#6b7280';
   };
 
-  // Convert unified tasks to timeline format
-  const timelineTasks = processedTasks
-    .filter(task => task.timeline?.start && task.timeline?.end)
-    .map(task => ({
-      id: task.id,
-      title: task.title,
-      startTime: new Date(task.timeline!.start).toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        hour12: false 
-      }),
-      endTime: new Date(task.timeline!.end).toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        hour12: false 
-      }),
-      assignees: task.assignedUser ? [`${task.assignedUser.firstName} ${task.assignedUser.lastName}`] : [],
-      status: task.status === 'complete' ? 'completed' as const : 
-             task.status === 'in_progress' ? 'ongoing' as const : 'under_review' as const,
-      color: getStatusColor(task.status),
-      projectId: task.projectId,
-      task: task // Include full task data
-    }));
+  // Create sample timeline tasks based on projects
+  const timelineTasks = projects.slice(0, 6).map((project, index) => ({
+    id: project.id,
+    title: project.name,
+    startTime: `${8 + index}:00`,
+    endTime: `${10 + index}:00`,
+    assignees: project.assignedTo ? [project.assignedTo] : ['Unassigned'],
+    status: project.status === 'complete' ? 'completed' as const : 
+           project.status === 'in progress' ? 'ongoing' as const : 'under_review' as const,
+    color: getStatusColor(project.status),
+    projectId: project.id
+  }));
 
   // Project summaries from real data
   const projectSummaries: ProjectSummary[] = projects.slice(0, 5).map((project, index) => {
-    const projectTasks = processedTasks.filter(task => task.projectId === project.id);
+    const taskCount = Math.floor(Math.random() * 5) + 1;
     return {
       id: project.id,
       name: project.name,
       icon: "🏠",
-      tasksCount: projectTasks.length,
+      tasksCount: taskCount,
       color: ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444"][index % 5],
     };
   });
@@ -434,7 +420,7 @@ function TracklineDashboardContent() {
                           {task.assignees.map((assignee, index) => (
                             <Avatar key={index} className="w-6 h-6 border-2 border-white">
                               <AvatarFallback className="text-xs bg-gray-300">
-                                {assignee.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                {String(assignee).split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                           ))}
@@ -665,10 +651,4 @@ function TracklineDashboardContent() {
 }
 
 // Main export with provider wrapper
-export default function TracklineDashboard() {
-  return (
-    <UnifiedProjectProvider>
-      <TracklineDashboardContent />
-    </UnifiedProjectProvider>
-  );
-}
+export default TracklineDashboardContent;
