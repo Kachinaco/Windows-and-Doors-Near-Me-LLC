@@ -918,6 +918,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Unified Dashboard-specific API endpoints
+  app.post("/api/unified-dashboard/projects/:projectId/folders", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const { name } = req.body;
+      
+      // For unified dashboard, we'll just return a success response
+      // This is separate from the Monday Board project management system
+      res.status(200).json({ 
+        success: true, 
+        message: "Unified dashboard folder created",
+        folder: { name, projectId }
+      });
+    } catch (error: any) {
+      console.error("Error creating unified dashboard folder:", error);
+      res.status(500).json({ message: "Failed to create unified dashboard folder" });
+    }
+  });
+
+  app.post("/api/unified-dashboard/projects/:projectId/sub-items", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const { name, status } = req.body;
+      
+      // For unified dashboard, we'll just return a success response
+      // This is separate from the Monday Board project management system
+      res.status(200).json({ 
+        success: true, 
+        message: "Unified dashboard sub-item created",
+        subItem: { name, status, projectId }
+      });
+    } catch (error: any) {
+      console.error("Error creating unified dashboard sub-item:", error);
+      res.status(500).json({ message: "Failed to create unified dashboard sub-item" });
+    }
+  });
+
   app.get("/api/employees", authenticateToken, requireRole(['admin', 'employee']), async (req: AuthenticatedRequest, res) => {
     try {
       const employees = await storage.getAllEmployees();

@@ -2625,7 +2625,7 @@ export default function MondayBoard() {
                                   const currentFolderName = folderNames[folder.id] || folder.name;
                                   
                                   return (
-                                    <React.Fragment key={folder.id}>
+                                    <div key={folder.id}>
                                       {/* Folder Header with Column Headers */}
                                       <div className="group flex hover:bg-gray-50 transition-all bg-white border-b-2 border-blue-200 shadow-sm">
                                         {/* Empty space where checkbox used to be */}
@@ -2962,7 +2962,7 @@ export default function MondayBoard() {
                                           </div>
                                         </>
                                       )}
-                                    </React.Fragment>
+                                    </div>
                                   );
                                 })}
 
