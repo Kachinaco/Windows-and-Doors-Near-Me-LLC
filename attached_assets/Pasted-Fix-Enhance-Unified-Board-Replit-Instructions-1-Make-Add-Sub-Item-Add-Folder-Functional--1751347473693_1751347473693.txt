@@ -1,0 +1,52 @@
+Fix & Enhance Unified Board (Replit Instructions)
+	1.	Make “Add Sub Item” & “Add Folder” Functional
+	•	Add Sub Item:
+	•	On click of Add Sub Item, create a new child row under the selected main item.
+	•	Include properties: item name, status, assignee, due date, progress.
+	•	Auto-inherit structure and styling from parent item.
+	•	Save to project’s persistent data file (e.g., projectData.json or database).
+	•	Add Folder:
+	•	On click of Add Folder, show a modal to name the folder.
+	•	Once created, allow it to contain drag-and-drop items or boards inside.
+	•	Save folder state and contents persistently.
+	2.	Redesign Sidebar UI (Light Mode)
+	•	Use a layout similar to Nickbakeddesign style:
+	•	Flat cards
+	•	Icons aligned on left
+	•	Use pastel colors (not black/dark)
+	•	Rounded edges, lighter background (#f9f9f9 or #ffffff)
+	•	Hover effects: slight elevation and outline
+	•	Sections:
+	•	Dashboard (Home icon)
+	•	Teams
+	•	Calendar
+	•	Time Tracker
+	•	My Tasks
+	•	Settings
+	•	Projects (Collapsible list view with folders)
+	3.	Auto-Save All Structure
+	•	Whenever any board, item, sub-item, column, or folder is created, edited, or deleted:
+	•	Immediately update it to localStorage or connected backend (Firebase / Supabase / db.json).
+	•	Ensure column types and structure are saved with metadata.
+	4.	Mobile Layout Enhancements
+	•	Adjust all grid columns to wrap properly on mobile screens.
+	•	Use collapsible accordions for project boards (like Cory Analla > drop down to reveal board).
+	•	Sticky top nav on scroll.
+	•	Avoid full-screen modals; use bottom sheets or side-sliding drawers.
+	5.	Unify Design System
+	•	Font: Inter or Poppins
+	•	Spacing: 16px grid
+	•	Buttons: Rounded, filled style with icons
+	•	Cards: Light shadow, hover pop
+	•	Status labels: colored pills (e.g., “In Progress” in blue pill)
+	6.	Refactor Column Picker Popup
+	•	When adding a column, remove the manual text field input.
+	•	Show icons for each column type (text, date, status, number, progress).
+	•	Once selected, let the user rename the column after it’s added.
+	7.	Display Project Boards as Expandable Sections
+	•	Under each board name (like “Cory Analla”):
+	•	Show a card with project overview: status, task count, progress bar.
+	•	When tapped or clicked, expand the board inline (not redirect).
+	•	Within expanded board:
+	•	Columns show in scrollable table (mobile friendly).
+	•	“Add Item” stays sticky on top or bottom.

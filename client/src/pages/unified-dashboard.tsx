@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -54,12 +56,71 @@ interface ProjectFolder {
 
 function UnifiedDashboard() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [location, navigate] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set());
   const [showTimeline, setShowTimeline] = useState(true);
   const [newProjectDialog, setNewProjectDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Dialog states for sub-items and folders
+  const [showSubItemDialog, setShowSubItemDialog] = useState(false);
+  const [showFolderDialog, setShowFolderDialog] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [newSubItemName, setNewSubItemName] = useState("");
+  const [newFolderName, setNewFolderName] = useState("");
+
+  // Mutation for creating sub-items
+  const createSubItemMutation = useMutation({
+    mutationFn: async ({ projectId, name }: { projectId: number; name: string }) => {
+      const response = await apiRequest("POST", "/api/sub-items", {
+        parentProjectId: projectId,
+        name: name,
+        description: null,
+        status: "not_started",
+        priority: "medium",
+        assignedTo: null,
+        dueDate: null,
+        folderId: null,
+        sortOrder: 0
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects-with-subitems"] });
+      toast({ title: "Sub-item created", description: "New sub-item has been added successfully" });
+      setShowSubItemDialog(false);
+      setNewSubItemName("");
+      setSelectedProjectId(null);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create sub-item", variant: "destructive" });
+    }
+  });
+
+  // Mutation for creating folders
+  const createFolderMutation = useMutation({
+    mutationFn: async ({ projectId, name }: { projectId: number; name: string }) => {
+      const response = await apiRequest("POST", "/api/sub-item-folders", {
+        projectId: projectId,
+        name: name,
+        color: "#6b7280"
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects-with-subitems"] });
+      toast({ title: "Folder created", description: "New folder has been added successfully" });
+      setShowFolderDialog(false);
+      setNewFolderName("");
+      setSelectedProjectId(null);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create folder", variant: "destructive" });
+    }
+  });
 
   // Fetch projects data
   const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
@@ -74,14 +135,14 @@ function UnifiedDashboard() {
         projects.map(async (project) => {
           try {
             const [subItemsRes, foldersRes, teamRes] = await Promise.all([
-              fetch(`/api/projects/${project.id}/sub-items`),
-              fetch(`/api/projects/${project.id}/sub-item-folders`),
-              fetch(`/api/projects/${project.id}/team-members`)
+              apiRequest("GET", `/api/projects/${project.id}/sub-items`),
+              apiRequest("GET", `/api/projects/${project.id}/sub-item-folders`),
+              apiRequest("GET", `/api/projects/${project.id}/team-members`)
             ]);
             
-            const subItems = subItemsRes.ok ? await subItemsRes.json() : [];
-            const folders = foldersRes.ok ? await foldersRes.json() : [];
-            const teamMembers = teamRes.ok ? await teamRes.json() : [];
+            const subItems = await subItemsRes.json();
+            const folders = await foldersRes.json();
+            const teamMembers = await teamRes.json();
             
             return {
               ...project,
