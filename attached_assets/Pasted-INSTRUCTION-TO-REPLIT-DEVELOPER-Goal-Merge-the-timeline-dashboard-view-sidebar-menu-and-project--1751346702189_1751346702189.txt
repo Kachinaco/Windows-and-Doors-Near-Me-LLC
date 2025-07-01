@@ -1,0 +1,58 @@
+INSTRUCTION TO REPLIT DEVELOPER
+
+Goal: Merge the timeline dashboard view, sidebar menu, and project board into one seamless interface. The user wants a unified mobile-first design where all project boards are organized under one main dashboard, and each board can be expanded like a folder/file explorer.
+
+⸻
+
+STRUCTURE & FUNCTIONALITY
+
+1. Main Dashboard Layout
+	•	Mobile-first layout using Flexbox/Grid + media queries.
+	•	Left sidebar as collapsible drawer (hamburger icon for mobile).
+	•	Center panel shows:
+	•	“Project Boards” section with drop-down folders.
+	•	Each folder = project board.
+	•	Timeline summary bar is shown at the top (optional toggle).
+	•	Tap folder/project board → expands to full board table view underneath.
+
+2. Sidebar (Shared Navigation)
+	•	Display icon + label:
+	•	Dashboard
+	•	Teams
+	•	Calendar
+	•	Time Tracker
+	•	My Tasks
+	•	Settings
+	•	Under that, show:
+	•	List of workspaces/projects
+	•	“+” button to add a new board or folder (opens modal)
+
+3. Project Board Integration
+	•	Each board is a folder view (like macOS Finder or Google Drive).
+	•	On tap, the board drops down to display the Monday.com-style table with:
+	•	Main items
+	•	Sub-items
+	•	Column types: status, people, due date, done, progress, etc.
+	•	Boards should retain smart fields, formulas, and column types across sessions.
+	•	New boards created should automatically be added to the dropdown view under “Project Boards.”
+
+⸻
+
+FUNCTIONAL BEHAVIOR
+
+Add Buttons:
+	•	Each dropdown folder includes:
+	•	+ Add Item (row)
+	•	+ Add Sub Item
+	•	+ Add Folder (creates new project board)
+
+Data Behavior:
+	•	All added data must be saved persistently using your DB (Supabase, Firebase, etc.).
+	•	When new columns are added, auto-align rows across all items.
+	•	Column header types should auto-populate fields so each row is aligned and editable.
+
+Mobile Optimization:
+	•	Tap interface (no hover reliance).
+	•	Column headers scroll horizontally (sticky top for column names).
+	•	Rows are collapsible to reduce screen clutter.
+	•	Timeline view adjusts to stacked view on small screens
