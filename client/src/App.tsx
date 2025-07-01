@@ -13,7 +13,6 @@ import LeadsPage from "@/pages/leads";
 import SettingsPage from "@/pages/settings";
 import ProjectDetailPage from "@/pages/project-detail";
 import LeadDetailPage from "@/pages/lead-detail";
-import TracklineDashboard from "@/pages/trackline-dashboard";
 import UnifiedDashboard from "@/pages/unified-dashboard";
 
 function Router() {
@@ -42,7 +41,6 @@ function Router() {
         <>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/unified" component={UnifiedDashboard} />
-          <Route path="/trackline" component={TracklineDashboard} />
           <Route path="/projects" component={MondayBoard} />
           <Route path="/projects/:id/detail" component={ProjectDetailPage} />
           <Route path="/leads" component={LeadsPage} />
