@@ -5,44 +5,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { useAuth } from "@/hooks/useAuth";
-import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
-import GilbertWindowsDoors from "@/pages/gilbert-windows-doors";
-import MesaWindowsDoors from "@/pages/mesa-windows-doors";
-import ChandlerWindowsDoors from "@/pages/chandler-windows-doors";
-import TempeWindowsDoors from "@/pages/tempe-windows-doors";
-import ScottsdaleWindowsDoors from "@/pages/scottsdale-windows-doors";
-import QueenCreekWindowsDoors from "@/pages/queen-creek-windows-doors";
 import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard";
-import CatalogPage from "@/pages/catalog";
-import QuotePage from "@/pages/quote";
-import ProjectsPage from "@/pages/projects";
-import ProjectTablePage from "@/pages/project-table";
-import SimpleExcelManager from "@/pages/simple-excel-manager";
 import MondayBoard from "@/pages/monday-board";
-import PipelinePage from "@/pages/pipeline";
 import LeadsPage from "@/pages/leads";
-import SchedulingPage from "@/pages/scheduling";
-import ProposalsPage from "@/pages/proposals";
-import ProjectDetailPage from "@/pages/project-detail";
-import SubscriptionPage from "@/pages/subscription";
-import QuotesDashboard from "@/pages/quotes-dashboard";
 import SettingsPage from "@/pages/settings";
-import CalendarView from "@/pages/calendar";
-import UpdatesPage from "@/pages/updates";
-import CompanyFeedPage from "@/pages/company-feed";
+import ProjectDetailPage from "@/pages/project-detail";
 import LeadDetailPage from "@/pages/lead-detail";
-import ProjectDashboardPage from "@/pages/project-dashboard";
-import ProjectPortfolioPage from "@/pages/project-portfolio";
-import CompanySettingsPage from "@/pages/company-settings";
-import QuoteDashboard from "@/pages/quote-dashboard";
-import PayrollPage from "@/pages/payroll";
-import CustomerOrdersPage from "@/pages/customer-orders";
-import CustomerDeliveryPage from "@/pages/customer-delivery";
-import CustomerSettingsPage from "@/pages/customer-settings";
-import ContractsPage from "@/pages/contracts";
-import ProposalClientPage from "@/pages/proposal-client";
 import TracklineDashboard from "@/pages/trackline-dashboard";
 import UnifiedDashboard from "@/pages/unified-dashboard";
 
@@ -62,31 +32,10 @@ function Router() {
 
   return (
     <Switch>
-      {/* Public marketing website routes */}
-      <Route path="/" component={isAuthenticated ? MondayBoard : AuthPage} />
-      <Route path="/gilbert-windows-doors" component={GilbertWindowsDoors} />
-      <Route path="/mesa-windows-doors" component={MesaWindowsDoors} />
-      <Route path="/chandler-windows-doors" component={ChandlerWindowsDoors} />
-      <Route path="/tempe-windows-doors" component={TempeWindowsDoors} />
-      <Route path="/scottsdale-windows-doors" component={ScottsdaleWindowsDoors} />
-      <Route path="/queen-creek-windows-doors" component={QueenCreekWindowsDoors} />
-      
-      {/* Authentication routes */}
+      {/* Main routes */}
+      <Route path="/" component={isAuthenticated ? Dashboard : AuthPage} />
       <Route path="/login" component={AuthPage} />
       <Route path="/auth" component={AuthPage} />
-      
-      {/* Public proposal routes */}
-      <Route path="/proposal/:id" component={ProposalClientPage} />
-      <Route path="/proposal/:id/client-view" component={ProposalClientPage} />
-      
-      {/* Public catalog and quote routes */}
-      <Route path="/catalog" component={CatalogPage} />
-      <Route path="/quote" component={QuotePage} />
-      <Route path="/quote/:id" component={QuoteDashboard} />
-      
-      {/* Direct access to Monday.com board for testing */}
-      <Route path="/board" component={MondayBoard} />
-      <Route path="/monday-board" component={MondayBoard} />
       
       {/* Protected user routes */}
       {isAuthenticated ? (
@@ -94,38 +43,18 @@ function Router() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/unified" component={UnifiedDashboard} />
           <Route path="/trackline" component={TracklineDashboard} />
-          <Route path="/catalog" component={CatalogPage} />
-          <Route path="/quotes-manager" component={QuoteDashboard} />
-          <Route path="/quote" component={QuotePage} />
           <Route path="/projects" component={MondayBoard} />
-          <Route path="/projects/:id" component={ProjectDashboardPage} />
           <Route path="/projects/:id/detail" component={ProjectDetailPage} />
-          <Route path="/projects-list" component={ProjectsPage} />
-          <Route path="/project-portfolio" component={ProjectPortfolioPage} />
-          <Route path="/pipeline" component={PipelinePage} />
           <Route path="/leads" component={LeadsPage} />
           <Route path="/leads/:id" component={LeadDetailPage} />
-          <Route path="/scheduling" component={SchedulingPage} />
-          <Route path="/proposals" component={ProposalsPage} />
-          <Route path="/quotes" component={QuotesDashboard} />
-          <Route path="/subscription" component={SubscriptionPage} />
           <Route path="/settings" component={SettingsPage} />
-          <Route path="/company-settings" component={CompanySettingsPage} />
-          <Route path="/calendar" component={CalendarView} />
-          <Route path="/updates" component={UpdatesPage} />
-          <Route path="/company-feed" component={CompanyFeedPage} />
-          <Route path="/payroll" component={PayrollPage} />
-          <Route path="/contracts" component={ContractsPage} />
-          <Route path="/customer-orders" component={CustomerOrdersPage} />
-          <Route path="/customer-delivery" component={CustomerDeliveryPage} />
-          <Route path="/customer-settings" component={CustomerSettingsPage} />
         </>
       ) : (
         <>
           <Route path="/dashboard" component={AuthPage} />
-          <Route path="/catalog" component={AuthPage} />
           <Route path="/projects" component={AuthPage} />
           <Route path="/leads" component={AuthPage} />
+          <Route path="/settings" component={AuthPage} />
         </>
       )}
       
