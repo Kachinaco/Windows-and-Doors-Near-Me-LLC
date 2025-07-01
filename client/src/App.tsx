@@ -44,6 +44,7 @@ import CustomerSettingsPage from "@/pages/customer-settings";
 import ContractsPage from "@/pages/contracts";
 import ProposalClientPage from "@/pages/proposal-client";
 import TracklineDashboard from "@/pages/trackline-dashboard";
+import UnifiedDashboard from "@/pages/unified-dashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -91,6 +92,7 @@ function Router() {
       {isAuthenticated ? (
         <>
           <Route path="/dashboard" component={Dashboard} />
+          <Route path="/unified" component={UnifiedDashboard} />
           <Route path="/trackline" component={TracklineDashboard} />
           <Route path="/catalog" component={CatalogPage} />
           <Route path="/quotes-manager" component={QuoteDashboard} />
