@@ -82,7 +82,10 @@ function UnifiedDashboard() {
       return response.json();
     },
     onSuccess: () => {
+      // Force a complete refresh of all project data
       queryClient.invalidateQueries({ queryKey: ["/api/projects-with-subitems"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.refetchQueries({ queryKey: ["/api/projects-with-subitems"] });
       toast({ title: "Sub-item created", description: "New sub-item has been added successfully" });
       setShowSubItemDialog(false);
       setNewSubItemName("");
@@ -102,7 +105,10 @@ function UnifiedDashboard() {
       return response.json();
     },
     onSuccess: () => {
+      // Force a complete refresh of all project data
       queryClient.invalidateQueries({ queryKey: ["/api/projects-with-subitems"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.refetchQueries({ queryKey: ["/api/projects-with-subitems"] });
       toast({ title: "Folder created", description: "New folder has been added successfully" });
       setShowFolderDialog(false);
       setNewFolderName("");
