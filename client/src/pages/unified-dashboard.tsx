@@ -164,23 +164,46 @@ function UnifiedDashboard() {
       const projectsWithData = await Promise.all(
         projects.map(async (project) => {
           try {
+            // Ensure project has required properties
+            if (!project || !project.id) {
+              throw new Error('Invalid project data');
+            }
+
             const [subItemsRes, foldersRes, teamRes] = await Promise.all([
               apiRequest("GET", `/api/projects/${project.id}/sub-items`),
               apiRequest("GET", `/api/projects/${project.id}/sub-item-folders`),
               apiRequest("GET", `/api/projects/${project.id}/team-members`)
             ]);
             
+            // Check if responses are valid
+            if (!subItemsRes.ok || !foldersRes.ok || !teamRes.ok) {
+              throw new Error('API request failed');
+            }
+            
             const subItems = await subItemsRes.json();
             const folders = await foldersRes.json();
             const teamMembers = await teamRes.json();
             
+            // Ensure arrays are properly initialized and log data
+            const safeSubItems = Array.isArray(subItems) ? subItems : [];
+            const safeFolders = Array.isArray(folders) ? folders : [];
+            const safeTeamMembers = Array.isArray(teamMembers) ? teamMembers : [];
+            
+            // Debug logging
+            console.log(`Project ${project.id} data:`, {
+              subItems: safeSubItems.length,
+              folders: safeFolders.length,
+              teamMembers: safeTeamMembers.length,
+              subItemsData: safeSubItems
+            });
+            
             return {
               ...project,
               description: project.description || null,
-              subItems,
-              folders,
-              teamMembers,
-              itemCount: subItems.length,
+              subItems: safeSubItems,
+              folders: safeFolders,
+              teamMembers: safeTeamMembers,
+              itemCount: safeSubItems.length,
               isExpanded: expandedProjects.has(project.id),
               color: getProjectColor(project.status)
             } as ProjectFolder;
