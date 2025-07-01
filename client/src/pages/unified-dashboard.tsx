@@ -249,15 +249,20 @@ function UnifiedDashboard() {
   );
 
   const SidebarContent = () => (
-    <div className="h-full flex flex-col bg-gray-900 text-white">
+    <div className="h-full flex flex-col bg-white">
       {/* Header */}
-      <div className="p-4 border-b border-gray-700">
+      <div className="p-6 border-b border-gray-100">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Workspace</h2>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <BarChart3 className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gray-800">Unified</span>
+          </div>
           <Button
             variant="ghost"
             size="sm"
-            className="md:hidden text-white hover:bg-gray-800"
+            className="md:hidden text-gray-600 hover:bg-gray-100 rounded-lg"
             onClick={() => setMobileMenuOpen(false)}
           >
             <X className="h-4 w-4" />
@@ -266,27 +271,40 @@ function UnifiedDashboard() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-2">
         {sidebarItems.map((item) => (
           <Link key={item.href} href={item.href}>
-            <Button
-              variant={item.active ? "secondary" : "ghost"}
-              className="w-full justify-start text-white hover:bg-gray-800"
+            <div
+              className={`${
+                item.active 
+                  ? 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 text-blue-700 shadow-sm' 
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 hover:shadow-sm hover:border hover:border-gray-200'
+              } group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 border border-transparent cursor-pointer`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <item.icon className="h-4 w-4 mr-3" />
+              <div className={`${
+                item.active 
+                  ? 'bg-blue-100 text-blue-600' 
+                  : 'bg-gray-100 text-gray-500 group-hover:bg-gray-200 group-hover:text-gray-600'
+              } p-2 rounded-lg mr-3 transition-colors duration-200`}>
+                <item.icon className="h-4 w-4" />
+              </div>
               {item.label}
-            </Button>
+            </div>
           </Link>
         ))}
         
-        <div className="pt-4 border-t border-gray-700 mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-300">Projects</span>
+        <div className="pt-6 mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold text-gray-700">Projects</span>
             <Dialog open={newProjectDialog} onOpenChange={setNewProjectDialog}>
               <DialogTrigger asChild>
-                <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-gray-300 hover:bg-gray-800">
-                  <Plus className="h-3 w-3" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -298,23 +316,26 @@ function UnifiedDashboard() {
             </Dialog>
           </div>
           
-          {projects.slice(0, 5).map((project) => (
-            <Button
-              key={project.id}
-              variant="ghost"
-              className="w-full justify-start text-sm text-gray-300 hover:bg-gray-800"
-              onClick={() => {
-                toggleProject(project.id);
-                setMobileMenuOpen(false);
-              }}
-            >
-              <div 
-                className="h-2 w-2 rounded-full mr-3" 
-                style={{ backgroundColor: getProjectColor(project.status) }}
-              />
-              <span className="truncate">{project.name}</span>
-            </Button>
-          ))}
+          <div className="space-y-1">
+            {filteredProjects.slice(0, 5).map((project) => (
+              <div
+                key={project.id}
+                className="flex items-center px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-50 hover:shadow-sm cursor-pointer transition-all duration-200 border border-transparent hover:border-gray-200"
+                onClick={() => {
+                  toggleProject(project.id);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <div className="w-6 h-6 rounded-md mr-3 flex items-center justify-center" style={{ backgroundColor: `${project.color}20` }}>
+                  <Folder className="h-3 w-3" style={{ color: project.color }} />
+                </div>
+                <span className="truncate flex-1 font-medium">{project.name}</span>
+                <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600 border-0">
+                  {project.itemCount}
+                </Badge>
+              </div>
+            ))}
+          </div>
         </div>
       </nav>
     </div>
