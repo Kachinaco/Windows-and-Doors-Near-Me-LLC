@@ -1,636 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(0, 0%, 5%);
-  --muted: hsl(0, 0%, 96%);
-  --muted-foreground: hsl(0, 0%, 40%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(0, 0%, 5%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(0, 0%, 5%);
-  --border: hsl(0, 0%, 90%);
-  --input: hsl(0, 0%, 90%);
-  --primary: hsl(210, 100%, 50%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(210, 17%, 95%);
-  --secondary-foreground: hsl(210, 24%, 16%);
-  --accent: hsl(39, 100%, 50%);
-  --accent-foreground: hsl(210, 24%, 16%);
-  --destructive: hsl(0, 84%, 60%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(217, 91%, 60%);
-  --radius: 0.5rem;
-  --primary-blue: hsl(217, 91%, 60%);
-  --secondary-blue: hsl(213, 93%, 68%);
-  --light-blue: hsl(214, 100%, 97%);
-  --success-green: hsl(158, 64%, 52%);
-  --deep-navy: hsl(215, 28%, 17%);
-  --warm-orange: hsl(25, 95%, 53%);
-  --golden-yellow: hsl(45, 100%, 51%);
-  --soft-cream: hsl(48, 100%, 97%);
-}
-
-/* Column Management Styles */
-.column-btn-minimal {
-  @apply flex flex-col items-center justify-center p-4 rounded-2xl text-white shadow-lg hover:shadow-2xl transform hover:scale-110 transition-all duration-300 cursor-pointer relative overflow-hidden;
-}
-
-.column-btn-minimal::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-
-.column-btn-minimal:hover::before {
-  left: 100%;
-}
-
-.column-btn-modern {
-  @apply flex flex-col items-center justify-center p-5 rounded-3xl text-white shadow-xl hover:shadow-2xl transform hover:scale-110 transition-all duration-300 cursor-pointer backdrop-blur-sm;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-.floating-add-btn {
-  @apply fixed bottom-8 right-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white p-5 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 z-50;
-  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
-  animation: pulse-glow 2s infinite;
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.75rem;
   }
-  50% {
-    box-shadow: 0 15px 40px rgba(59, 130, 246, 0.5);
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
   }
-}
-
-.modal-backdrop {
-  @apply fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6;
-  animation: fade-in 0.3s ease-out;
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal-content {
-  @apply bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 shadow-2xl max-w-md w-full mx-4 border border-gray-700/50;
-  animation: slide-up 0.3s ease-out;
-  backdrop-filter: blur(20px);
-}
-
-@keyframes slide-up {
-  from { 
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.delete-btn {
-  @apply text-red-400 hover:text-red-300 hover:bg-red-500/20 p-2 rounded-lg transition-all duration-200;
-}
-
-.delete-btn:hover {
-  transform: scale(1.1);
-}
-
-/* Enhanced Customization Mode */
-.customization-highlight {
-  @apply ring-2 ring-blue-400/50 bg-blue-500/10 border-blue-400/30;
-  animation: pulse-border 2s infinite;
-}
-
-@keyframes pulse-border {
-  0%, 100% {
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-  }
-  50% {
-    border-color: rgba(59, 130, 246, 0.6);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
-  }
-}
-
-/* Success Animation */
-.success-feedback {
-  animation: success-pop 0.6s ease-out;
-}
-
-@keyframes success-pop {
-  0% { transform: scale(0.8); opacity: 0; }
-  50% { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* Column Card Enhancements */
-.column-card {
-  @apply bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/30 hover:border-gray-600/50 transition-all duration-300;
-}
-
-.column-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
-/* Enhanced Project Cards */
-.project-card-enhanced {
-  @apply bg-gradient-to-br from-gray-800/70 to-gray-900/70 backdrop-blur-sm rounded-xl border border-gray-700/30 hover:border-gray-600/50 transition-all duration-300;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.project-card-enhanced:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-}
-
-.dark {
-  --background: hsl(224, 71%, 4%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(215, 28%, 17%);
-  --muted-foreground: hsl(217, 10%, 64%);
-  --popover: hsl(224, 71%, 4%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(224, 71%, 4%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(215, 28%, 17%);
-  --input: hsl(215, 28%, 17%);
-  --primary: hsl(217, 91%, 60%);
-  --primary-foreground: hsl(0, 0%, 98%);
-  --secondary: hsl(215, 28%, 17%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(215, 28%, 17%);
-  --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(0, 63%, 31%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(217, 91%, 60%);
-  --radius: 0.5rem;
-  --primary-blue: hsl(217, 91%, 60%);
-  --secondary-blue: hsl(213, 93%, 68%);
-  --light-blue: hsl(214, 50%, 15%);
-  --success-green: hsl(158, 64%, 52%);
-  --deep-navy: hsl(215, 28%, 17%);
-  --warm-orange: hsl(25, 95%, 53%);
-  --golden-yellow: hsl(45, 100%, 51%);
-  --soft-cream: hsl(224, 71%, 10%);
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
   }
-
-  html {
-    scroll-behavior: smooth;
-  }
 }
 
-@layer utilities {
-  .primary-blue {
-    color: hsl(217, 91%, 60%);
-  }
-  
-  .bg-primary-blue {
-    background-color: hsl(217, 91%, 60%);
-  }
-  
-  .border-primary-blue {
-    border-color: hsl(217, 91%, 60%);
-  }
-  
-  .bg-light-blue {
-    background-color: hsl(214, 100%, 97%);
-  }
-  
-  .dark .bg-light-blue {
-    background-color: hsl(214, 50%, 15%);
-  }
-  
-  .bg-success-green {
-    background-color: hsl(158, 64%, 52%);
-  }
-  
-  .text-success-green {
-    color: hsl(158, 64%, 52%);
-  }
-
-  .bg-deep-navy {
-    background-color: hsl(215, 28%, 17%);
-  }
-  
-  .text-deep-navy {
-    color: hsl(215, 28%, 17%);
-  }
-
-  .dark .text-deep-navy {
-    color: hsl(0, 0%, 98%);
-  }
-
-  /* Column button styles for Monday.com customization toolbar */
-  .column-btn {
-    @apply flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs text-white font-medium transition-all hover:scale-105 hover:shadow-lg;
-    min-width: 80px;
-    min-height: 60px;
-  }
-
-  .column-btn span {
-    text-align: center;
-    line-height: 1.2;
-    font-size: 10px;
-  }
-  
-  .bg-warm-orange {
-    background-color: hsl(25, 95%, 53%);
-  }
-  
-  .text-warm-orange {
-    color: hsl(25, 95%, 53%);
-  }
-  
-  .bg-golden-yellow {
-    background-color: hsl(45, 100%, 51%);
-  }
-  
-  .text-golden-yellow {
-    color: hsl(45, 100%, 51%);
-  }
-  
-  .bg-soft-cream {
-    background-color: hsl(48, 100%, 97%);
-  }
-
-  .dark .bg-soft-cream {
-    background-color: hsl(224, 71%, 10%);
-  }
-
-  .subtle-animation {
-    animation: subtleFloat 4s ease-in-out infinite;
-  }
-
-  /* Enhanced Calendar Styling */
-  .rbc-event {
-    border-radius: 6px;
-    padding: 4px 8px;
-    font-size: 0.75rem;
-    border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-    font-weight: 500;
-    transition: all 0.2s ease;
-  }
-
-  .rbc-event:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  }
-
-  .rbc-calendar {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    border: 1px solid rgb(229, 231, 235);
-  }
-
-  .dark .rbc-calendar {
-    background: rgb(31, 41, 55);
-    color: rgb(243, 244, 246);
-    border: 1px solid rgb(75, 85, 99);
-  }
-
-  .rbc-header {
-    background: rgb(249, 250, 251);
-    border-bottom: 1px solid rgb(229, 231, 235);
-    padding: 16px 12px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: rgb(55, 65, 81);
-    text-align: center;
-  }
-
-  .dark .rbc-header {
-    background: rgb(55, 65, 81);
-    border-bottom: 1px solid rgb(75, 85, 99);
-    color: rgb(243, 244, 246);
-  }
-
-  .rbc-today {
-    background-color: rgba(59, 130, 246, 0.05) !important;
-  }
-
-  .dark .rbc-today {
-    background-color: rgba(59, 130, 246, 0.1) !important;
-  }
-
-  .rbc-date-cell {
-    padding: 12px 8px;
-    text-align: right;
-    font-weight: 500;
-    color: rgb(75, 85, 99);
-  }
-
-  .dark .rbc-date-cell {
-    color: rgb(156, 163, 175);
-  }
-
-  .rbc-date-cell.rbc-today {
-    background-color: rgb(59, 130, 246);
-    color: white;
-    border-radius: 6px;
-    margin: 2px;
-  }
-
-  .rbc-month-view, .rbc-time-view {
-    border: none;
-    border-radius: 8px;
-  }
-
-  .rbc-time-header {
-    border-bottom: 2px solid rgb(229, 231, 235);
-    background: rgb(249, 250, 251);
-  }
-
-  .dark .rbc-time-header {
-    border-bottom: 2px solid rgb(75, 85, 99);
-    background: rgb(55, 65, 81);
-  }
-
-  .rbc-timeslot-group {
-    border-bottom: 1px solid rgb(243, 244, 246);
-    min-height: 40px;
-  }
-
-  .dark .rbc-timeslot-group {
-    border-bottom: 1px solid rgb(55, 65, 81);
-  }
-
-  .rbc-time-gutter .rbc-timeslot-group {
-    border-right: 2px solid rgb(229, 231, 235);
-    background: rgb(249, 250, 251);
-  }
-
-  .dark .rbc-time-gutter .rbc-timeslot-group {
-    border-right: 2px solid rgb(75, 85, 99);
-    background: rgb(55, 65, 81);
-  }
-
-  .rbc-time-gutter .rbc-time-slot {
-    color: rgb(107, 114, 128);
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: 4px 8px;
-    text-align: center;
-  }
-
-  .dark .rbc-time-gutter .rbc-time-slot {
-    color: rgb(156, 163, 175);
-  }
-
-  .rbc-day-slot .rbc-time-slot {
-    border-top: 1px solid rgb(243, 244, 246);
-  }
-
-  .dark .rbc-day-slot .rbc-time-slot {
-    border-top: 1px solid rgb(55, 65, 81);
-  }
-
-  .rbc-current-time-indicator {
-    background-color: rgb(239, 68, 68);
-    height: 2px;
-    border-radius: 1px;
-    box-shadow: 0 0 4px rgba(239, 68, 68, 0.4);
-  }
-
-  .rbc-agenda-view {
-    border: none;
-    border-radius: 8px;
-    background: white;
-  }
-
-  .dark .rbc-agenda-view {
-    background: rgb(31, 41, 55);
-  }
-
-  .rbc-agenda-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-  }
-
-  .rbc-agenda-table tbody > tr > td {
-    padding: 16px;
-    border-bottom: 1px solid rgb(243, 244, 246);
-    vertical-align: top;
-  }
-
-  .dark .rbc-agenda-table tbody > tr > td {
-    border-bottom: 1px solid rgb(55, 65, 81);
-  }
-
-  .rbc-agenda-table tbody > tr:hover > td {
-    background-color: rgb(249, 250, 251);
-  }
-
-  .dark .rbc-agenda-table tbody > tr:hover > td {
-    background-color: rgb(55, 65, 81);
-  }
-
-  .rbc-show-more {
-    background: linear-gradient(135deg, rgb(59, 130, 246), rgb(37, 99, 235));
-    color: white;
-    border-radius: 6px;
-    padding: 4px 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-    transition: all 0.2s ease;
-  }
-
-  .rbc-show-more:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  }
-
-  .rbc-slot-selection {
-    background-color: rgba(59, 130, 246, 0.1);
-    border: 2px dashed rgb(59, 130, 246);
-    border-radius: 4px;
-  }
-
-  .rbc-selected {
-    background-color: rgb(59, 130, 246);
-    color: white;
-  }
-
-  .subtle-animation-delay {
-    animation: subtleFloat 4s ease-in-out infinite;
-    animation-delay: -2s;
-  }
-
-  @keyframes subtleFloat {
-    0%, 100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
-  .glass-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-
-  .dark .glass-card {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .hover-lift {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  }
-
-  .dark .hover-lift:hover {
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  }
-
-  /* Mobile-first responsive improvements */
-  @media (max-width: 768px) {
-    .hover-lift:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Reduce animations on mobile for better performance */
-    .subtle-animation,
-    .subtle-animation-delay {
-      animation: none;
-    }
-    
-    /* Better mobile text scaling */
-    .mobile-title {
-      font-size: 2rem;
-      line-height: 1.2;
-    }
-    
-    .mobile-subtitle {
-      font-size: 1.125rem;
-      line-height: 1.4;
-    }
-    
-    .mobile-body {
-      font-size: 0.875rem;
-      line-height: 1.5;
-    }
-    
-    /* Mobile-friendly spacing */
-    .mobile-section {
-      padding-top: 3rem;
-      padding-bottom: 3rem;
-    }
-    
-    .mobile-card {
-      padding: 1rem;
-    }
-    
-    /* Touch-friendly buttons */
-    .mobile-button {
-      min-height: 44px;
-      padding: 0.75rem 1.5rem;
-    }
-    
-    /* Stack layouts on mobile */
-    .mobile-stack {
-      flex-direction: column;
-    }
-    
-    /* Improved mobile form inputs */
-    .mobile-input {
-      font-size: 16px; /* Prevents zoom on iOS */
-      padding: 0.75rem;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .mobile-title {
-      font-size: 1.75rem;
-    }
-    
-    .mobile-subtitle {
-      font-size: 1rem;
-    }
-    
-    .mobile-section {
-      padding-top: 2rem;
-      padding-bottom: 2rem;
-    }
-    
-    .mobile-card {
-      padding: 0.75rem;
-    }
-  }
-
-  /* Monday Board Grid Alignment - Fix Select component alignment */
-  .monday-board-select [data-radix-select-trigger] {
-    height: 24px !important;
-    min-height: 24px !important;
-    padding: 0 4px !important;
-    line-height: 24px !important;
-    border: none !important;
-    background: transparent !important;
-    font-size: 12px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  .monday-board-select [data-radix-select-trigger]:focus {
-    outline: none !important;
-    box-shadow: none !important;
-  }
-
-  .monday-board-select [data-radix-select-value] {
-    font-size: 12px !important;
-    line-height: 1 !important;
-  }
+/* Clean, Simple Styles */
+.floating-add-btn {
+  @apply fixed bottom-6 right-6 w-12 h-12 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:bg-blue-700 hover:scale-105 z-50;
 }
 
-/* Minimal Column Button Styles */
-.column-btn-minimal {
-  @apply flex flex-col items-center justify-center gap-1 p-3 rounded-xl text-white transition-all duration-200 hover:opacity-90;
-  min-height: 60px;
+.column-modal {
+  @apply fixed inset-0 bg-black/60 flex items-center justify-center z-50;
 }
 
-.column-btn-minimal:hover {
-  transform: translateY(-1px);
+.column-modal-content {
+  @apply bg-gray-900 rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl border border-gray-700;
 }
 
-.column-btn-minimal:active {
-  transform: translateY(0);
+.column-selection-grid {
+  @apply grid grid-cols-2 gap-3;
+}
+
+.column-option {
+  @apply bg-gray-800 border border-gray-700 rounded-lg p-4 text-left hover:bg-gray-700 hover:border-gray-600 transition-all duration-150 cursor-pointer;
+}
+
+.column-option-icon {
+  @apply w-8 h-8 text-blue-400 mb-3;
+}
+
+.column-option-title {
+  @apply text-white font-medium text-base mb-1;
+}
+
+.column-option-description {
+  @apply text-gray-400 text-sm;
+}
+
+.delete-btn {
+  @apply text-gray-400 hover:text-red-400 hover:bg-red-500/10 p-1.5 rounded transition-colors duration-150;
+}
+
+.project-card-enhanced {
+  @apply bg-gray-800 rounded-lg border border-gray-700 transition-colors duration-150 hover:border-gray-600;
+}
+
+/* Clean card styling */
+.project-card {
+  @apply bg-gray-800 rounded-lg border border-gray-700 p-4 transition-colors duration-150 hover:border-gray-600;
+}
+
+/* Simple field styling */
+.field-container {
+  @apply bg-gray-700 rounded-lg p-3 border border-gray-600 transition-colors duration-150 hover:border-gray-500;
+}
+
+/* Clean button styling */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-150;
+}
+
+.btn-secondary {
+  @apply bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors duration-150;
+}
+
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-150;
 }
