@@ -392,6 +392,18 @@ export default function MondayBoard() {
   // Update local board items when projects data changes
   useEffect(() => {
     if (Array.isArray(projects) && projects.length > 0) {
+      // Debug logging for each project's sub-items
+      projects.forEach((project: any) => {
+        if (project.subItems?.length > 0 || project.subItemFolders?.length > 0) {
+          console.log(`Project ${project.id} has:`, {
+            subItems: project.subItems?.length || 0,
+            subItemFolders: project.subItemFolders?.length || 0,
+            subItemsData: project.subItems,
+            foldersData: project.subItemFolders
+          });
+        }
+      });
+
       const transformedItems = projects.map((project: any) => {
         // Map project status to pipeline groups
         let groupName = 'New Leads';
@@ -441,13 +453,8 @@ export default function MondayBoard() {
         };
       });
       
-      // Only update if the data has actually changed
-      setBoardItems(prevItems => {
-        if (JSON.stringify(prevItems.map(item => item.id)) !== JSON.stringify(transformedItems.map(item => item.id))) {
-          return transformedItems;
-        }
-        return prevItems;
-      });
+      // Always update to ensure sub-items changes are reflected
+      setBoardItems(transformedItems);
     }
   }, [projects]);
 
