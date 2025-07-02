@@ -859,18 +859,18 @@ const ProjectPanel: React.FC = () => {
     const visibleColumns = columns.filter(col => col.visible).sort((a, b) => a.order - b.order);
     
     return (
-      <div key={project.id} className="bg-gray-800 rounded-lg border border-gray-700 p-4 hover:border-gray-600 transition-colors duration-150">
+      <div key={project.id} className="bg-gray-800 rounded-lg border border-gray-700 p-3 hover:border-gray-600 transition-colors duration-150">
         {/* Header with title and actions */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-medium">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
               {project.avatar}
             </div>
             <input
               type="text"
               value={project.name}
               onChange={(e) => updateProject(project.id, 'name', e.target.value)}
-              className="bg-transparent text-white font-medium text-lg border-none outline-none focus:bg-gray-700 rounded px-2 py-1"
+              className="bg-transparent text-white font-medium text-base border-none outline-none focus:bg-gray-700 rounded px-2 py-1"
             />
           </div>
           <div className="flex items-center gap-1">
@@ -886,23 +886,23 @@ const ProjectPanel: React.FC = () => {
           </div>
         </div>
 
-        {/* Dynamic Column Fields */}
-        <div className="space-y-3 mb-4">
+        {/* Responsive Grid Layout - 2 cols on mobile, 3 on tablet, 4 on desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-3">
           {visibleColumns.filter(col => col.id !== 'name').map(column => (
             <div key={column.id} className="space-y-1">
               <div className="flex items-center justify-between">
-                <label className="text-gray-400 text-sm font-medium">{column.name}</label>
+                <label className="text-gray-400 text-xs font-medium truncate">{column.name}</label>
                 {isCustomizationMode && (
                   <button
                     onClick={() => deleteColumn(column.id)}
                     className="delete-btn"
                     title={`Delete ${column.name} column`}
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3 h-3" />
                   </button>
                 )}
               </div>
-              <div className="bg-gray-700 rounded-lg p-3 border border-gray-600">
+              <div className="bg-gray-700 rounded-lg p-2 border border-gray-600 text-sm">
                 {renderCellValue(column, project, (project as any)[column.id])}
               </div>
             </div>
