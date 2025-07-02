@@ -33,6 +33,15 @@
   --soft-cream: hsl(48, 100%, 97%);
 }
 
+/* Column Management Styles */
+.column-btn-minimal {
+  @apply flex flex-col items-center justify-center p-3 rounded-xl text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 cursor-pointer;
+}
+
+.column-btn-modern {
+  @apply flex flex-col items-center justify-center p-4 rounded-2xl text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 cursor-pointer;
+}
+
 .dark {
   --background: hsl(224, 71%, 4%);
   --foreground: hsl(0, 0%, 98%);
