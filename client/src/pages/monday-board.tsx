@@ -34,6 +34,13 @@ import {
 
 const ProjectBoard = () => {
   const [items, setItems] = useState([]);
+  
+  // Apple-style customization states
+  const [isCustomizationMode, setIsCustomizationMode] = useState(false);
+  const [selectedSubitem, setSelectedSubitem] = useState(null);
+  const [showSubitemModal, setShowSubitemModal] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState(null);
+  const [editingColumnName, setEditingColumnName] = useState(null);
 
   const [columnWidths, setColumnWidths] = useState({
     item: 300,
@@ -47,6 +54,21 @@ const ProjectBoard = () => {
     firstBid: 100,
     notes: 200,
     actions: 80,
+  });
+  
+  // Column configuration with editable names
+  const [columnConfig, setColumnConfig] = useState({
+    item: { name: "Item", visible: true, order: 0 },
+    owner: { name: "People", visible: true, order: 1 },
+    status: { name: "Status", visible: true, order: 2 },
+    priority: { name: "Priority", visible: true, order: 3 },
+    progress: { name: "Progress", visible: true, order: 4 },
+    measureDate: { name: "Measure Date", visible: true, order: 5 },
+    installDate: { name: "Install Date", visible: true, order: 6 },
+    materials: { name: "Materials", visible: true, order: 7 },
+    firstBid: { name: "First Bid", visible: true, order: 8 },
+    notes: { name: "Notes", visible: true, order: 9 },
+    actions: { name: "Actions", visible: true, order: 10 },
   });
 
   const [currentView, setCurrentView] = useState("dashboard");
@@ -128,6 +150,210 @@ const ProjectBoard = () => {
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [resizingColumn]);
+
+  // Apple-style customization functions
+  const handleLongPress = (columnKey) => {
+    setIsCustomizationMode(true);
+    // Add haptic feedback if available
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  };
+
+  const handleTouchStart = (e, columnKey) => {
+    const timer = setTimeout(() => {
+      handleLongPress(columnKey);
+    }, 500); // 500ms long press
+    setLongPressTimer(timer);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
+  const toggleColumnVisibility = (columnKey) => {
+    setColumnConfig(prev => ({
+      ...prev,
+      [columnKey]: {
+        ...prev[columnKey],
+        visible: !prev[columnKey].visible
+      }
+    }));
+  };
+
+  const updateColumnName = (columnKey, newName) => {
+    setColumnConfig(prev => ({
+      ...prev,
+      [columnKey]: {
+        ...prev[columnKey],
+        name: newName
+      }
+    }));
+    setEditingColumnName(null);
+  };
+
+  const reorderColumns = (dragIndex, hoverIndex) => {
+    // Column reordering logic would go here
+    console.log(`Reordering column from ${dragIndex} to ${hoverIndex}`);
+  };
+
+  const addNewColumn = (afterColumn = null) => {
+    const newColumnKey = `custom_${Date.now()}`;
+    const maxOrder = Math.max(...Object.values(columnConfig).map(c => c.order));
+    
+    setColumnConfig(prev => ({
+      ...prev,
+      [newColumnKey]: {
+        name: "New Column",
+        visible: true,
+        order: maxOrder + 1,
+        type: "text"
+      }
+    }));
+    
+    setColumnWidths(prev => ({
+      ...prev,
+      [newColumnKey]: 120
+    }));
+  };
+
+  const removeColumn = (columnKey) => {
+    const { [columnKey]: removed, ...rest } = columnConfig;
+    setColumnConfig(rest);
+    
+    const { [columnKey]: removedWidth, ...restWidths } = columnWidths;
+    setColumnWidths(restWidths);
+  };
+
+  // Sub-item modal functions
+  const openSubitemModal = (subitem, parentId) => {
+    setSelectedSubitem({ ...subitem, parentId });
+    setShowSubitemModal(true);
+  };
+
+  const closeSubitemModal = () => {
+    setSelectedSubitem(null);
+    setShowSubitemModal(false);
+  };
+
+  const updateSubitemData = (field, value) => {
+    if (!selectedSubitem) return;
+    
+    const updatedSubitem = { ...selectedSubitem, [field]: value };
+    setSelectedSubitem(updatedSubitem);
+    
+    // Update in main items array
+    updateSubitemValue(selectedSubitem.parentId, selectedSubitem.id, field, value);
+  };
+
+  // Sub-item modal component
+  const SubitemModal = () => {
+    if (!showSubitemModal || !selectedSubitem) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 border border-gray-600">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-white">Edit Sub-item</h2>
+            <button
+              onClick={closeSubitemModal}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Name
+              </label>
+              <input
+                type="text"
+                value={selectedSubitem.name || ''}
+                onChange={(e) => updateSubitemData('name', e.target.value)}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Assigned To
+              </label>
+              <input
+                type="text"
+                value={selectedSubitem.assignedTo || ''}
+                onChange={(e) => updateSubitemData('assignedTo', e.target.value)}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Status
+              </label>
+              <select
+                value={selectedSubitem.status || 'Not Started'}
+                onChange={(e) => updateSubitemData('status', e.target.value)}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+              >
+                <option value="Not Started">Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Complete">Complete</option>
+                <option value="On Hold">On Hold</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Priority
+              </label>
+              <select
+                value={selectedSubitem.priority || 'Medium'}
+                onChange={(e) => updateSubitemData('priority', e.target.value)}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Description
+              </label>
+              <textarea
+                value={selectedSubitem.description || ''}
+                onChange={(e) => updateSubitemData('description', e.target.value)}
+                rows={3}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={closeSubitemModal}
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-white transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={closeSubitemModal}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition-colors"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // Filter items based on search and filters
   const filteredItems = items.filter((item) => {
@@ -380,89 +606,114 @@ const ProjectBoard = () => {
     <div className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
       {/* Desktop Table View */}
       <div className="hidden lg:block">
-        {/* Table Header */}
+        {/* Table Header with Apple-style customization */}
         <div className="flex bg-gray-700 text-sm font-medium text-gray-300 border-b-2 border-gray-600">
-        <div
-          className="relative flex items-center gap-3 px-4 py-4 border-r border-gray-600"
-          style={{ width: columnWidths.item }}
-        >
-          <input type="checkbox" className="rounded" />
-          <span>Item</span>
-          <ColumnResizer columnKey="item" />
+          {Object.entries(columnConfig)
+            .filter(([key, config]) => config.visible)
+            .sort((a, b) => a[1].order - b[1].order)
+            .map(([columnKey, config]) => (
+              <div
+                key={columnKey}
+                className={`relative flex items-center gap-2 px-4 py-4 border-r border-gray-600 transition-all duration-200 ${
+                  isCustomizationMode ? 'animate-pulse bg-blue-800/20' : 'hover:bg-gray-600'
+                }`}
+                style={{ width: columnWidths[columnKey] }}
+                onTouchStart={(e) => handleTouchStart(e, columnKey)}
+                onTouchEnd={handleTouchEnd}
+                onMouseDown={(e) => {
+                  if (e.button === 0 && e.detail === 1) {
+                    const timer = setTimeout(() => handleLongPress(columnKey), 500);
+                    setLongPressTimer(timer);
+                  }
+                }}
+                onMouseUp={handleTouchEnd}
+                onMouseLeave={handleTouchEnd}
+              >
+                {/* Column icon based on type */}
+                {columnKey === 'owner' && <User className="w-4 h-4" />}
+                {columnKey === 'item' && <input type="checkbox" className="rounded" />}
+                {columnKey === 'materials' && <Info className="w-4 h-4 text-gray-500" />}
+                
+                {/* Editable column name */}
+                {editingColumnName === columnKey ? (
+                  <input
+                    type="text"
+                    value={config.name}
+                    onChange={(e) => updateColumnName(columnKey, e.target.value)}
+                    onBlur={() => setEditingColumnName(null)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') setEditingColumnName(null);
+                      if (e.key === 'Escape') setEditingColumnName(null);
+                    }}
+                    className="bg-transparent border-b border-blue-500 text-white font-medium text-sm focus:outline-none"
+                    autoFocus
+                  />
+                ) : (
+                  <span 
+                    onDoubleClick={() => setEditingColumnName(columnKey)}
+                    className="cursor-pointer select-none"
+                  >
+                    {config.name}
+                  </span>
+                )}
+
+                {/* Customization mode controls */}
+                {isCustomizationMode && (
+                  <div className="flex items-center gap-1 ml-auto">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addNewColumn(columnKey);
+                      }}
+                      className="w-5 h-5 bg-green-600 hover:bg-green-500 rounded-full flex items-center justify-center transition-colors"
+                      title="Add column"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeColumn(columnKey);
+                      }}
+                      className="w-5 h-5 bg-red-600 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
+                      title="Remove column"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+
+                <ColumnResizer columnKey={columnKey} />
+              </div>
+            ))}
         </div>
-        <div
-          className="relative flex items-center gap-2 px-4 py-4 border-r border-gray-600"
-          style={{ width: columnWidths.owner }}
-        >
-          <User className="w-4 h-4" />
-          <span>Owner</span>
-          <ColumnResizer columnKey="owner" />
-        </div>
-        <div
-          className="relative flex items-center px-4 py-4 border-r border-gray-600"
-          style={{ width: columnWidths.status }}
-        >
-          <span>Status</span>
-          <ColumnResizer columnKey="status" />
-        </div>
-        <div
-          className="relative flex items-center px-4 py-4 border-r border-gray-600"
-          style={{ width: columnWidths.priority }}
-        >
-          <span>Priority</span>
-          <ColumnResizer columnKey="priority" />
-        </div>
-        <div
-          className="relative flex items-center px-4 py-4 border-r border-gray-600"
-          style={{ width: columnWidths.progress }}
-        >
-          <span>Progress</span>
-          <ColumnResizer columnKey="progress" />
-        </div>
-        <div
-          className="relative flex items-center px-4 py-4 border-r border-gray-600"
-          style={{ width: columnWidths.measureDate }}
-        >
-          <span>Measure Date</span>
-          <ColumnResizer columnKey="measureDate" />
-        </div>
-        <div
-          className="relative flex items-center px-4 py-4 border-r border-gray-600"
-          style={{ width: columnWidths.installDate }}
-        >
-          <span>Install Date</span>
-          <ColumnResizer columnKey="installDate" />
-        </div>
-        <div
-          className="relative flex items-center gap-1 px-4 py-4 border-r border-gray-600"
-          style={{ width: columnWidths.materials }}
-        >
-          <span>Materials</span>
-          <Info className="w-4 h-4 text-gray-500" />
-          <ColumnResizer columnKey="materials" />
-        </div>
-        <div
-          className="relative flex items-center px-4 py-4 border-r border-gray-600"
-          style={{ width: columnWidths.firstBid }}
-        >
-          <span>1st Bid</span>
-          <ColumnResizer columnKey="firstBid" />
-        </div>
-        <div
-          className="relative flex items-center px-4 py-4 border-r border-gray-600"
-          style={{ width: columnWidths.notes }}
-        >
-          <span>Notes</span>
-          <ColumnResizer columnKey="notes" />
-        </div>
-        <div
-          className="relative flex items-center px-4 py-4"
-          style={{ width: columnWidths.actions }}
-        >
-          <span>Actions</span>
-          <ColumnResizer columnKey="actions" />
-        </div>
-      </div>
+
+        {/* Customization mode controls */}
+        {isCustomizationMode && (
+          <div className="bg-blue-900/50 p-4 border-b border-gray-600">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-blue-300 font-medium">Customization Mode</span>
+                <span className="text-gray-400 text-sm">Long press columns to edit • Double-click names to rename</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={addNewColumn}
+                  className="flex items-center gap-2 px-3 py-1 bg-green-600 hover:bg-green-500 rounded-lg text-white text-sm transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Column
+                </button>
+                <button
+                  onClick={() => setIsCustomizationMode(false)}
+                  className="px-4 py-1 bg-blue-600 hover:bg-blue-500 rounded-lg text-white text-sm transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       {/* Table Rows */}
       {filteredItems.map((item) => (
@@ -1108,15 +1359,20 @@ const ProjectBoard = () => {
                 </div>
                 <div className="space-y-3">
                   {item.subitems.map((subitem) => (
-                    <div key={subitem.id} className="bg-gray-600 rounded p-3">
+                    <div 
+                      key={subitem.id} 
+                      className="bg-gray-600 rounded p-3 cursor-pointer hover:bg-gray-550 transition-colors"
+                      onClick={() => openSubitemModal(subitem, item.id)}
+                    >
                       <div className="flex items-center justify-between mb-2">
-                        <EditableCell
-                          value={subitem.name}
-                          onSave={(value) => updateSubitem(item.id, subitem.id, "name", value)}
-                          className="text-blue-400 font-medium text-sm"
-                        />
+                        <div className="text-blue-400 font-medium text-sm">
+                          {subitem.name || 'Click to edit sub-item'}
+                        </div>
                         <button
-                          onClick={() => deleteSubitem(item.id, subitem.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteSubitem(item.id, subitem.id);
+                          }}
                           className="text-red-400 hover:text-red-300 p-1"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -1124,15 +1380,19 @@ const ProjectBoard = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs">
-                          {subitem.owner ? subitem.owner.charAt(0) : "U"}
+                          {subitem.assignedTo ? subitem.assignedTo.charAt(0) : "U"}
                         </div>
-                        <EditableCell
-                          value={subitem.owner}
-                          onSave={(value) => updateSubitem(item.id, subitem.id, "owner", value)}
-                          type="select"
-                          options={["", ...teamMembers]}
-                          className="text-gray-300 text-xs flex-1"
-                        />
+                        <span className="text-gray-300 text-xs flex-1">
+                          {subitem.assignedTo || 'Unassigned'}
+                        </span>
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          subitem.status === 'Complete' ? 'bg-green-600' :
+                          subitem.status === 'In Progress' ? 'bg-blue-600' :
+                          subitem.status === 'On Hold' ? 'bg-yellow-600' :
+                          'bg-gray-500'
+                        }`}>
+                          {subitem.status || 'Not Started'}
+                        </span>
                       </div>
                     </div>
                   ))}
