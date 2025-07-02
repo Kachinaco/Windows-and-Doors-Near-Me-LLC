@@ -528,6 +528,12 @@ const ProjectPanel: React.FC = () => {
       settings: getDefaultSettings(type)
     };
     setColumns(prev => [...prev, newColumn]);
+    
+    // Close the customization mode after adding
+    setIsCustomizationMode(false);
+    
+    // Show success message
+    console.log(`Added new ${type} column: ${newColumn.name}`);
   };
 
   const getDefaultSettings = (type: Column['type']) => {
@@ -821,7 +827,15 @@ const ProjectPanel: React.FC = () => {
   };
 
   const deleteColumn = (columnId: string) => {
+    // Prevent deletion of essential columns
+    const essentialColumns = ['name', 'status', 'priority'];
+    if (essentialColumns.includes(columnId)) {
+      console.warn(`Cannot delete essential column: ${columnId}`);
+      return;
+    }
+    
     setColumns(prev => prev.filter(col => col.id !== columnId));
+    console.log(`Deleted column: ${columnId}`);
   };
 
   const toggleColumnVisibility = (columnId: string) => {
@@ -1223,35 +1237,35 @@ const ProjectPanel: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-4 gap-2 mb-4">
-              <button onClick={() => addColumn('text')} className="column-btn-minimal bg-blue-600">
+              <button onClick={() => addColumn('text')} className="column-btn-minimal bg-blue-600 hover:bg-blue-500 transition-colors">
                 <Type className="w-4 h-4" />
                 <span className="text-xs">Text</span>
               </button>
-              <button onClick={() => addColumn('dropdown')} className="column-btn-minimal bg-orange-600">
+              <button onClick={() => addColumn('dropdown')} className="column-btn-minimal bg-orange-600 hover:bg-orange-500 transition-colors">
                 <ChevronDown className="w-4 h-4" />
                 <span className="text-xs">Dropdown</span>
               </button>
-              <button onClick={() => addColumn('status')} className="column-btn-minimal bg-green-600">
+              <button onClick={() => addColumn('status')} className="column-btn-minimal bg-green-600 hover:bg-green-500 transition-colors">
                 <Circle className="w-4 h-4" />
                 <span className="text-xs">Status</span>
               </button>
-              <button onClick={() => addColumn('people')} className="column-btn-minimal bg-purple-600">
+              <button onClick={() => addColumn('people')} className="column-btn-minimal bg-purple-600 hover:bg-purple-500 transition-colors">
                 <Users className="w-4 h-4" />
                 <span className="text-xs">People</span>
               </button>
-              <button onClick={() => addColumn('number')} className="column-btn-minimal bg-indigo-600">
+              <button onClick={() => addColumn('number')} className="column-btn-minimal bg-indigo-600 hover:bg-indigo-500 transition-colors">
                 <Hash className="w-4 h-4" />
                 <span className="text-xs">Number</span>
               </button>
-              <button onClick={() => addColumn('date')} className="column-btn-minimal bg-teal-600">
+              <button onClick={() => addColumn('date')} className="column-btn-minimal bg-teal-600 hover:bg-teal-500 transition-colors">
                 <Calendar className="w-4 h-4" />
                 <span className="text-xs">Date</span>
               </button>
-              <button onClick={() => addColumn('progress')} className="column-btn-minimal bg-blue-500">
+              <button onClick={() => addColumn('progress')} className="column-btn-minimal bg-blue-500 hover:bg-blue-400 transition-colors">
                 <BarChart3 className="w-4 h-4" />
                 <span className="text-xs">Progress</span>
               </button>
-              <button onClick={() => addColumn('tags')} className="column-btn-minimal bg-pink-600">
+              <button onClick={() => addColumn('tags')} className="column-btn-minimal bg-pink-600 hover:bg-pink-500 transition-colors">
                 <Tags className="w-4 h-4" />
                 <span className="text-xs">Tags</span>
               </button>
