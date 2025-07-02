@@ -1207,6 +1207,65 @@ const ProjectPanel: React.FC = () => {
         </div>
       )}
       
+      {/* Minimal Column Addition Modal */}
+      {isCustomizationMode && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-800 rounded-2xl p-4 shadow-xl max-w-sm w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white text-base font-medium">Add Column</h3>
+              <button 
+                onClick={() => setIsCustomizationMode(false)}
+                className="p-1 hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-4 gap-2 mb-4">
+              <button onClick={() => addColumn('text')} className="column-btn-minimal bg-blue-600">
+                <Type className="w-4 h-4" />
+                <span className="text-xs">Text</span>
+              </button>
+              <button onClick={() => addColumn('dropdown')} className="column-btn-minimal bg-orange-600">
+                <ChevronDown className="w-4 h-4" />
+                <span className="text-xs">Dropdown</span>
+              </button>
+              <button onClick={() => addColumn('status')} className="column-btn-minimal bg-green-600">
+                <Circle className="w-4 h-4" />
+                <span className="text-xs">Status</span>
+              </button>
+              <button onClick={() => addColumn('people')} className="column-btn-minimal bg-purple-600">
+                <Users className="w-4 h-4" />
+                <span className="text-xs">People</span>
+              </button>
+              <button onClick={() => addColumn('number')} className="column-btn-minimal bg-indigo-600">
+                <Hash className="w-4 h-4" />
+                <span className="text-xs">Number</span>
+              </button>
+              <button onClick={() => addColumn('date')} className="column-btn-minimal bg-teal-600">
+                <Calendar className="w-4 h-4" />
+                <span className="text-xs">Date</span>
+              </button>
+              <button onClick={() => addColumn('progress')} className="column-btn-minimal bg-blue-500">
+                <BarChart3 className="w-4 h-4" />
+                <span className="text-xs">Progress</span>
+              </button>
+              <button onClick={() => addColumn('tags')} className="column-btn-minimal bg-pink-600">
+                <Tag className="w-4 h-4" />
+                <span className="text-xs">Tags</span>
+              </button>
+            </div>
+            
+            <button 
+              onClick={() => setIsCustomizationMode(false)}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm py-2 px-3 rounded-xl transition-colors"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Floating Add Column Button */}
       {!isCustomizationMode && (
         <button
@@ -1215,205 +1274,23 @@ const ProjectPanel: React.FC = () => {
         >
           <Plus className="w-6 h-6" />
         </button>
-              <span>Dropdown</span>
-            </button>
-            
-            {/* Number & Date Columns */}
-            <button onClick={() => addColumn('number')} className="column-btn bg-green-600 hover:bg-green-500">
-              <Hash className="w-3 h-3" />
-              <span>Number</span>
-            </button>
-            <button onClick={() => addColumn('date')} className="column-btn bg-green-600 hover:bg-green-500">
-              <Calendar className="w-3 h-3" />
-              <span>Date</span>
-            </button>
-            <button onClick={() => addColumn('timeline')} className="column-btn bg-green-600 hover:bg-green-500">
-              <BarChart3 className="w-3 h-3" />
-              <span>Timeline</span>
-            </button>
-            
-            {/* People & Tags */}
-            <button onClick={() => addColumn('people')} className="column-btn bg-purple-600 hover:bg-purple-500">
-              <Users className="w-3 h-3" />
-              <span>People</span>
-            </button>
-            <button onClick={() => addColumn('tags')} className="column-btn bg-purple-600 hover:bg-purple-500">
-              <Tags className="w-3 h-3" />
-              <span>Tags</span>
-            </button>
-            
-            {/* Files & Links */}
-            <button onClick={() => addColumn('files')} className="column-btn bg-indigo-600 hover:bg-indigo-500">
-              <Paperclip className="w-3 h-3" />
-              <span>Files</span>
-            </button>
-            <button onClick={() => addColumn('link')} className="column-btn bg-indigo-600 hover:bg-indigo-500">
-              <Link className="w-3 h-3" />
-              <span>Link</span>
-            </button>
-            
-            {/* Contact Columns */}
-            <button onClick={() => addColumn('email')} className="column-btn bg-pink-600 hover:bg-pink-500">
-              <Mail className="w-3 h-3" />
-              <span>Email</span>
-            </button>
-            <button onClick={() => addColumn('phone')} className="column-btn bg-pink-600 hover:bg-pink-500">
-              <Phone className="w-3 h-3" />
-              <span>Phone</span>
-            </button>
-            
-            {/* Special Columns */}
-            <button onClick={() => addColumn('checkbox')} className="column-btn bg-cyan-600 hover:bg-cyan-500">
-              <CheckSquare className="w-3 h-3" />
-              <span>Checkbox</span>
-            </button>
-            <button onClick={() => addColumn('rating')} className="column-btn bg-cyan-600 hover:bg-cyan-500">
-              <Star className="w-3 h-3" />
-              <span>Rating</span>
-            </button>
-            <button onClick={() => addColumn('location')} className="column-btn bg-cyan-600 hover:bg-cyan-500">
-              <MapPin className="w-3 h-3" />
-              <span>Location</span>
-            </button>
-            
-            {/* Advanced Columns */}
-            <button onClick={() => addColumn('formula')} className="column-btn bg-yellow-600 hover:bg-yellow-500">
-              <Calculator className="w-3 h-3" />
-              <span>Formula</span>
-            </button>
-            <button onClick={() => addColumn('progress')} className="column-btn bg-yellow-600 hover:bg-yellow-500">
-              <BarChart2 className="w-3 h-3" />
-              <span>Progress</span>
-            </button>
-            <button onClick={() => addColumn('auto_number')} className="column-btn bg-yellow-600 hover:bg-yellow-500">
-              <Hash className="w-3 h-3" />
-              <span>Auto #</span>
-            </button>
-            
-            {/* Advanced: Mirror & Dependency */}
-            <button onClick={() => addColumn('mirror')} className="column-btn bg-teal-600 hover:bg-teal-500">
-              <RefreshCw className="w-3 h-3" />
-              <span>Mirror</span>
-            </button>
-            <button onClick={() => addColumn('dependency')} className="column-btn bg-teal-600 hover:bg-teal-500">
-              <ArrowRight className="w-3 h-3" />
-              <span>Dependency</span>
-            </button>
-            
-            {/* Meta Columns */}
-            <button onClick={() => addColumn('creation_log')} className="column-btn bg-gray-600 hover:bg-gray-500">
-              <Clock className="w-3 h-3" />
-              <span>Created</span>
-            </button>
-            <button onClick={() => addColumn('last_updated')} className="column-btn bg-gray-600 hover:bg-gray-500">
-              <RefreshCw className="w-3 h-3" />
-              <span>Updated</span>
-            </button>
-            
-            {/* Interactive */}
-            <button onClick={() => addColumn('vote')} className="column-btn bg-red-600 hover:bg-red-500">
-              <Heart className="w-3 h-3" />
-              <span>Vote</span>
-            </button>
-          </div>
-          
-          <div className="text-center">
-            <button
-              onClick={exitCustomizationMode}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm text-white font-medium"
-            >
-              Done
-            </button>
-          </div>
-        </div>
       )}
 
-      {/* Content - Mobile-first single column layout */}
-      <div className="max-w-md mx-auto px-4 py-6 space-y-6">
-        {projects.map(renderProjectCard)}
-        
-        {/* Add Item Input */}
-        <div className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 shadow-lg">
-          <div className="flex items-center justify-between">
-            <input
-              type="text"
-              placeholder="Enter item name..."
-              className="flex-1 bg-transparent text-gray-300 placeholder-gray-500 border-none outline-none text-lg"
-            />
-            <button className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-white font-medium">
-              Add
-            </button>
+      {/* Main Content */}
+      <div className="flex-1 p-6">
+        <div className="space-y-6">
+          {/* Project Cards */}
+          {projects.map(renderProjectCard)}
+          
+          {/* Add New Project Card */}
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border-2 border-dashed border-gray-600 hover:border-blue-500 transition-colors cursor-pointer">
+            <div className="text-center">
+              <Plus className="w-8 h-8 text-gray-500 mx-auto mb-3" />
+              <p className="text-gray-400 font-medium">Add New Project</p>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Floating Action Button for Column Management */}
-      {!isCustomizationMode && (
-        <button
-          onClick={() => setIsCustomizationMode(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full flex items-center justify-center shadow-lg z-40"
-        >
-          <Plus className="w-6 h-6 text-white" />
-        </button>
-      )}
-
-      {/* Formula Editor Modal */}
-      {editingFormula && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4 border border-gray-600">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">Edit Formula - {editingFormula.columnId}</h2>
-              <button
-                onClick={() => setEditingFormula(null)}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Formula
-              </label>
-              <textarea
-                value={editingFormula.formula}
-                onChange={(e) => setEditingFormula(prev => prev ? { ...prev, formula: e.target.value } : null)}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none h-24 font-mono"
-                placeholder="Enter formula (e.g., SUM({subitems.cost}))"
-              />
-            </div>
-
-            <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-300 mb-2">Available Functions:</h3>
-              <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
-                <div>SUM(), AVERAGE(), MIN(), MAX()</div>
-                <div>COUNT(), ROUND(), IF(), AND(), OR()</div>
-                <div>CONCATENATE(), TODAY(), WORKDAYS()</div>
-                <div>PROGRESS(), STATUS_COUNT()</div>
-              </div>
-              <p className="text-xs text-gray-400 mt-2">
-                Use {'{subitems.fieldName}'} to reference subitem fields
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setEditingFormula(null)}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => saveFormula(editingFormula.columnId, editingFormula.formula)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                Save Formula
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
