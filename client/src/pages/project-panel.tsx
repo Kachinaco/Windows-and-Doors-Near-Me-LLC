@@ -90,6 +90,11 @@ const ProjectPanel: React.FC = () => {
   const [editingFormula, setEditingFormula] = useState<{ columnId: string; formula: string } | null>(null);
   const [formulaEngine] = useState(() => FormulaEngine.getInstance());
   const [viewMode, setViewMode] = useState<'table' | 'card' | 'kanban' | 'timeline'>('card');
+  
+  // Apple-style column customization states
+  const [isCustomizationMode, setIsCustomizationMode] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [editingColumnName, setEditingColumnName] = useState<string | null>(null);
 
   // Initialize sample data
   useEffect(() => {
@@ -345,6 +350,69 @@ const ProjectPanel: React.FC = () => {
     }).format(amount);
   };
 
+  // Apple-style column customization functions
+  const startLongPress = (columnId: string, event: React.TouchEvent | React.MouseEvent) => {
+    event.preventDefault();
+    const timer = setTimeout(() => {
+      setIsCustomizationMode(true);
+      // Add shake animation class to the element
+      const element = (event.target as HTMLElement).closest('.column-field');
+      if (element) {
+        element.classList.add('animate-pulse', 'animate-bounce');
+      }
+    }, 800); // 800ms long press
+    setLongPressTimer(timer);
+  };
+
+  const cancelLongPress = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
+  const exitCustomizationMode = () => {
+    setIsCustomizationMode(false);
+    setEditingColumnName(null);
+    // Remove animation classes
+    document.querySelectorAll('.column-field').forEach(element => {
+      element.classList.remove('animate-pulse', 'animate-bounce');
+    });
+  };
+
+  const addColumn = (type: Column['type']) => {
+    const newColumn: Column = {
+      id: `column_${Date.now()}`,
+      name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+      type,
+      width: 120,
+      visible: true,
+      editable: true,
+      ...(type === 'status' && { options: ['Not Started', 'In Progress', 'Complete'] }),
+      ...(type === 'priority' && { options: ['Low', 'Medium', 'High', 'Critical'] }),
+      ...(type === 'tags' && { options: [] }),
+      ...(type === 'formula' && { formula: '0' })
+    };
+    setColumns(prev => [...prev, newColumn]);
+  };
+
+  const deleteColumn = (columnId: string) => {
+    setColumns(prev => prev.filter(col => col.id !== columnId));
+  };
+
+  const toggleColumnVisibility = (columnId: string) => {
+    setColumns(prev => prev.map(col => 
+      col.id === columnId ? { ...col, visible: !col.visible } : col
+    ));
+  };
+
+  const renameColumn = (columnId: string, newName: string) => {
+    setColumns(prev => prev.map(col => 
+      col.id === columnId ? { ...col, name: newName } : col
+    ));
+    setEditingColumnName(null);
+  };
+
   const renderProjectCard = (project: ProjectItem) => (
     <div key={project.id} className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 shadow-lg">
       {/* Header with title and actions */}
@@ -373,11 +441,26 @@ const ProjectPanel: React.FC = () => {
       {/* Status and Priority Row */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         <div>
-          <label className="block text-gray-400 text-sm mb-2 font-medium">Status</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-gray-400 text-sm font-medium">Status</label>
+            {isCustomizationMode && (
+              <button
+                onClick={() => deleteColumn('status')}
+                className="text-red-400 hover:text-red-300 p-1"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
           <select
             value={project.status}
             onChange={(e) => updateProject(project.id, 'status', e.target.value)}
-            className="w-full bg-orange-500 text-white px-4 py-3 rounded-xl text-sm font-medium border-none outline-none focus:ring-2 focus:ring-orange-400"
+            onTouchStart={(e) => startLongPress('status', e)}
+            onTouchEnd={cancelLongPress}
+            onMouseDown={(e) => startLongPress('status', e)}
+            onMouseUp={cancelLongPress}
+            onMouseLeave={cancelLongPress}
+            className={`column-field w-full bg-orange-500 text-white px-4 py-3 rounded-xl text-sm font-medium border-none outline-none focus:ring-2 focus:ring-orange-400 ${isCustomizationMode ? 'ring-2 ring-blue-400' : ''}`}
           >
             <option value="New Lead" className="bg-gray-800">New Lead</option>
             <option value="In Progress" className="bg-gray-800">In Progress</option>
@@ -389,11 +472,26 @@ const ProjectPanel: React.FC = () => {
           </select>
         </div>
         <div>
-          <label className="block text-gray-400 text-sm mb-2 font-medium">Priority</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-gray-400 text-sm font-medium">Priority</label>
+            {isCustomizationMode && (
+              <button
+                onClick={() => deleteColumn('priority')}
+                className="text-red-400 hover:text-red-300 p-1"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
           <select
             value={project.priority}
             onChange={(e) => updateProject(project.id, 'priority', e.target.value)}
-            className="w-full bg-orange-500 text-white px-4 py-3 rounded-xl text-sm font-medium border-none outline-none focus:ring-2 focus:ring-orange-400"
+            onTouchStart={(e) => startLongPress('priority', e)}
+            onTouchEnd={cancelLongPress}
+            onMouseDown={(e) => startLongPress('priority', e)}
+            onMouseUp={cancelLongPress}
+            onMouseLeave={cancelLongPress}
+            className={`column-field w-full bg-orange-500 text-white px-4 py-3 rounded-xl text-sm font-medium border-none outline-none focus:ring-2 focus:ring-orange-400 ${isCustomizationMode ? 'ring-2 ring-blue-400' : ''}`}
           >
             <option value="Low" className="bg-gray-800">Low</option>
             <option value="Medium" className="bg-gray-800">Medium</option>
@@ -436,9 +534,26 @@ const ProjectPanel: React.FC = () => {
       {/* Formula Fields */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         <div>
-          <label className="block text-gray-400 text-sm mb-2 font-medium">Materials</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-gray-400 text-sm font-medium">Materials</label>
+            {isCustomizationMode && (
+              <button
+                onClick={() => deleteColumn('materials')}
+                className="text-red-400 hover:text-red-300 p-1"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
           <div className="relative">
-            <div className="bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-green-400 text-sm cursor-pointer hover:bg-gray-600/50 transition-colors">
+            <div 
+              onTouchStart={(e) => startLongPress('materials', e)}
+              onTouchEnd={cancelLongPress}
+              onMouseDown={(e) => startLongPress('materials', e)}
+              onMouseUp={cancelLongPress}
+              onMouseLeave={cancelLongPress}
+              className={`column-field bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-green-400 text-sm cursor-pointer hover:bg-gray-600/50 transition-colors ${isCustomizationMode ? 'ring-2 ring-blue-400' : ''}`}
+            >
               Click to edit
             </div>
             <button
@@ -451,9 +566,26 @@ const ProjectPanel: React.FC = () => {
           </div>
         </div>
         <div>
-          <label className="block text-gray-400 text-sm mb-2 font-medium">First Bid</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-gray-400 text-sm font-medium">First Bid</label>
+            {isCustomizationMode && (
+              <button
+                onClick={() => deleteColumn('firstBid')}
+                className="text-red-400 hover:text-red-300 p-1"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
           <div className="relative">
-            <div className="bg-blue-600/30 border border-blue-500/50 rounded-xl px-4 py-3 text-white text-sm font-medium">
+            <div 
+              onTouchStart={(e) => startLongPress('firstBid', e)}
+              onTouchEnd={cancelLongPress}
+              onMouseDown={(e) => startLongPress('firstBid', e)}
+              onMouseUp={cancelLongPress}
+              onMouseLeave={cancelLongPress}
+              className={`column-field bg-blue-600/30 border border-blue-500/50 rounded-xl px-4 py-3 text-white text-sm font-medium ${isCustomizationMode ? 'ring-2 ring-blue-400' : ''}`}
+            >
               {project.firstBid || '0'}
             </div>
             <button
@@ -542,7 +674,48 @@ const ProjectPanel: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white relative">
+      {/* Apple-style Customization Toolbar */}
+      {isCustomizationMode && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-black/80 backdrop-blur-sm rounded-2xl px-6 py-3 border border-gray-700">
+          <div className="flex items-center gap-4">
+            <span className="text-white text-sm font-medium">Customize Columns</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => addColumn('text')}
+                className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs text-white"
+              >
+                Text
+              </button>
+              <button
+                onClick={() => addColumn('status')}
+                className="px-3 py-1 bg-orange-600 hover:bg-orange-500 rounded-lg text-xs text-white"
+              >
+                Status
+              </button>
+              <button
+                onClick={() => addColumn('date')}
+                className="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs text-white"
+              >
+                Date
+              </button>
+              <button
+                onClick={() => addColumn('formula')}
+                className="px-3 py-1 bg-green-600 hover:bg-green-500 rounded-lg text-xs text-white"
+              >
+                Formula
+              </button>
+            </div>
+            <button
+              onClick={exitCustomizationMode}
+              className="px-4 py-1 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs text-white font-medium"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Content - Mobile-first single column layout */}
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
         {projects.map(renderProjectCard)}
@@ -561,6 +734,16 @@ const ProjectPanel: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Floating Action Button for Column Management */}
+      {!isCustomizationMode && (
+        <button
+          onClick={() => setIsCustomizationMode(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full flex items-center justify-center shadow-lg z-40"
+        >
+          <Plus className="w-6 h-6 text-white" />
+        </button>
+      )}
 
       {/* Formula Editor Modal */}
       {editingFormula && (
