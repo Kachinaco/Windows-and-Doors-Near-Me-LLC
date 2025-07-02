@@ -760,11 +760,10 @@ export default function Settings() {
                 </div>
               </CardContent>
             </Card>
-            </TabsContent>
-          )}
+          </TabsContent>
         </Tabs>
-        )}
-      </main>
-    </div>
+      )}
+    </main>
+  </div>
   );
 }
