@@ -100,7 +100,7 @@ const ProjectBoard = () => {
     actions: 80,
   });
 
-  const [currentView, setCurrentView] = useState("table");
+  const [currentView, setCurrentView] = useState("dashboard");
   const [showAutomations, setShowAutomations] = useState(false);
   const [editingCell, setEditingCell] = useState(null);
   const [resizingColumn, setResizingColumn] = useState(null);
