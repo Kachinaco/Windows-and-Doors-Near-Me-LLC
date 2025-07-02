@@ -1127,30 +1127,94 @@ const ProjectPanel: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white relative">
-      {/* Complete Monday.com Column Customization Toolbar */}
+      {/* Modern Monday.com Column Addition Modal */}
       {isCustomizationMode && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-black/90 backdrop-blur-sm rounded-2xl px-6 py-4 border border-gray-700 max-w-5xl">
-          <div className="text-center mb-4">
-            <span className="text-white text-sm font-semibold">Add Column</span>
-          </div>
-          <div className="grid grid-cols-8 gap-2 mb-4">
-            {/* Basic Text Columns */}
-            <button onClick={() => addColumn('text')} className="column-btn bg-blue-600 hover:bg-blue-500">
-              <Type className="w-3 h-3" />
-              <span>Text</span>
-            </button>
-            <button onClick={() => addColumn('long_text')} className="column-btn bg-blue-600 hover:bg-blue-500">
-              <FileText className="w-3 h-3" />
-              <span>Long Text</span>
-            </button>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900/95 backdrop-blur-lg rounded-3xl p-6 border border-gray-700/50 shadow-2xl max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-white text-lg font-semibold">Add Column</h3>
+              <button 
+                onClick={() => setIsCustomizationMode(false)}
+                className="p-2 hover:bg-gray-700/50 rounded-xl transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
             
-            {/* Selection Columns */}
-            <button onClick={() => addColumn('status')} className="column-btn bg-orange-600 hover:bg-orange-500">
-              <Circle className="w-3 h-3" />
-              <span>Status</span>
+            <div className="grid grid-cols-4 gap-3 mb-6">
+              {/* Text & Content */}
+              <button onClick={() => addColumn('text')} className="column-btn-modern bg-blue-600 hover:bg-blue-500">
+                <Type className="w-5 h-5" />
+                <span className="text-xs font-medium">Text</span>
+              </button>
+              <button onClick={() => addColumn('dropdown')} className="column-btn-modern bg-orange-600 hover:bg-orange-500">
+                <ChevronDown className="w-5 h-5" />
+                <span className="text-xs font-medium">Dropdown</span>
+              </button>
+              <button onClick={() => addColumn('status')} className="column-btn-modern bg-green-600 hover:bg-green-500">
+                <Circle className="w-5 h-5" />
+                <span className="text-xs font-medium">Status</span>
+              </button>
+              <button onClick={() => addColumn('people')} className="column-btn-modern bg-purple-600 hover:bg-purple-500">
+                <Users className="w-5 h-5" />
+                <span className="text-xs font-medium">People</span>
+              </button>
+              
+              {/* Numbers & Data */}
+              <button onClick={() => addColumn('number')} className="column-btn-modern bg-indigo-600 hover:bg-indigo-500">
+                <Hash className="w-5 h-5" />
+                <span className="text-xs font-medium">Number</span>
+              </button>
+              <button onClick={() => addColumn('date')} className="column-btn-modern bg-teal-600 hover:bg-teal-500">
+                <Calendar className="w-5 h-5" />
+                <span className="text-xs font-medium">Date</span>
+              </button>
+              <button onClick={() => addColumn('timeline')} className="column-btn-modern bg-cyan-600 hover:bg-cyan-500">
+                <Clock className="w-5 h-5" />
+                <span className="text-xs font-medium">Timeline</span>
+              </button>
+              <button onClick={() => addColumn('location')} className="column-btn-modern bg-red-600 hover:bg-red-500">
+                <MapPin className="w-5 h-5" />
+                <span className="text-xs font-medium">Location</span>
+              </button>
+              
+              {/* Interactive */}
+              <button onClick={() => addColumn('rating')} className="column-btn-modern bg-yellow-600 hover:bg-yellow-500">
+                <Star className="w-5 h-5" />
+                <span className="text-xs font-medium">Rating</span>
+              </button>
+              <button onClick={() => addColumn('checkbox')} className="column-btn-modern bg-gray-600 hover:bg-gray-500">
+                <CheckSquare className="w-5 h-5" />
+                <span className="text-xs font-medium">Checkbox</span>
+              </button>
+              <button onClick={() => addColumn('progress')} className="column-btn-modern bg-green-600 hover:bg-green-500">
+                <BarChart3 className="w-5 h-5" />
+                <span className="text-xs font-medium">Progress</span>
+              </button>
+              <button onClick={() => addColumn('tags')} className="column-btn-modern bg-pink-600 hover:bg-pink-500">
+                <Tag className="w-5 h-5" />
+                <span className="text-xs font-medium">Tags</span>
+              </button>
+            </div>
+            
+            <button 
+              onClick={() => setIsCustomizationMode(false)}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-2xl transition-colors"
+            >
+              Done
             </button>
-            <button onClick={() => addColumn('dropdown')} className="column-btn bg-orange-600 hover:bg-orange-500">
-              <ChevronDown className="w-3 h-3" />
+          </div>
+        </div>
+      )}
+      
+      {/* Floating Add Column Button */}
+      {!isCustomizationMode && (
+        <button
+          onClick={() => setIsCustomizationMode(true)}
+          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 z-40"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
               <span>Dropdown</span>
             </button>
             
