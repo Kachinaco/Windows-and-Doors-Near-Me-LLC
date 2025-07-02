@@ -21,8 +21,18 @@ export class FormulaEngine {
   // Main formula evaluation function
   evaluateFormula(formula: string, context: FormulaContext): any {
     try {
+      // Return early if formula is empty or invalid
+      if (!formula || typeof formula !== 'string' || formula.trim() === '') {
+        return '';
+      }
+
       // Clean and prepare formula
       const cleanFormula = this.preprocessFormula(formula);
+      
+      // Return early if still empty after cleaning
+      if (!cleanFormula) {
+        return '';
+      }
       
       // Replace function calls with actual calculations
       const processedFormula = this.replaceFunctions(cleanFormula, context);
@@ -30,7 +40,10 @@ export class FormulaEngine {
       // Evaluate the final expression
       return this.safeEvaluate(processedFormula);
     } catch (error) {
-      console.error('Formula evaluation error:', error);
+      // Only log actual errors, not empty formulas
+      if (formula && formula.trim() !== '') {
+        console.error('Formula evaluation error:', error);
+      }
       return '#ERROR';
     }
   }
