@@ -119,6 +119,19 @@
   .dark .text-deep-navy {
     color: hsl(0, 0%, 98%);
   }
+
+  /* Column button styles for Monday.com customization toolbar */
+  .column-btn {
+    @apply flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs text-white font-medium transition-all hover:scale-105 hover:shadow-lg;
+    min-width: 80px;
+    min-height: 60px;
+  }
+
+  .column-btn span {
+    text-align: center;
+    line-height: 1.2;
+    font-size: 10px;
+  }
   
   .bg-warm-orange {
     background-color: hsl(25, 95%, 53%);

@@ -1,0 +1,47 @@
+What I Want for Columns:
+	•	Every board is made up of columns.
+Columns define the type of data stored for each item and subitem (rows).
+	•	Columns are fully customizable:
+	•	Users can add, remove, hide, and reorder columns.
+	•	Columns can be renamed and their type can be changed at any time.
+	•	Support all Monday.com column types:
+	•	Text, Long Text, Status, Dropdown, Number, Date, Timeline, People, Tags, Files, Link, Email, Phone, Checkbox, Rating, Location, Formula, Progress, Auto Number, Mirror, Dependency, Vote, Creation Log, Last Updated, etc.
+	•	Every column type should match Monday.com’s behavior:
+	•	For example, a Status column has color-coded labels; a People column assigns users; a File column supports attachments; a Formula column computes values live.
+	•	Columns are visible and editable both in main items and in subitems (subitems use the same or their own set of columns).
+	•	Easy, inline editing:
+	•	Users should be able to edit column values directly in the table (no popups or new screens needed).
+	•	Flexible order and visibility:
+	•	Users can drag columns to change their order, show/hide columns as needed, and save custom views.
+	•	Column settings:
+	•	Each column type can have settings (for example: status options and colors, date formats, formula definitions, etc.).
+	•	Add columns anytime:
+	•	Users can insert a new column at any position.
+	•	Remove or hide columns:
+	•	Users can hide columns (just for themselves, or board-wide), or remove them entirely.
+
+⸻
+
+Behavior Details:
+	•	When adding a new column, prompt for type and name.
+	•	Columns should be available to both main items and subitems.
+	•	Editing a cell should update instantly.
+	•	Column values should be saved per item/subitem (cell-based, not just row-based).
+	•	Formula columns recalculate in real time based on referenced columns.
+	•	Columns can be used as triggers for automations, filters, or formulas.
+
+⸻
+
+Data Structure:
+	•	Columns are defined in a separate table/model and assigned to boards.
+	•	Each column has:
+	•	A unique ID, name, type, settings/config
+	•	Position/order
+	•	Visibility status
+	•	Each item/subitem stores its own cell value for every column.
+
+⸻
+
+Reference Video:
+	•	https://youtu.be/WZYbGwDu8xA?si=7u-Kj2UvmXV5nlTQ
+(Shows exactly how columns work in Monday.com, including adding, renaming, moving, hiding, and editing all column types.)

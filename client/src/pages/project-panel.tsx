@@ -60,31 +60,149 @@ interface ProjectItem {
 interface Column {
   id: string;
   name: string;
-  type: 'text' | 'status' | 'priority' | 'people' | 'date' | 'numbers' | 'progress' | 'formula' | 'tags' | 'files';
+  type: 'text' | 'long_text' | 'status' | 'dropdown' | 'number' | 'date' | 'timeline' | 'people' | 'tags' | 'files' | 'link' | 'email' | 'phone' | 'checkbox' | 'rating' | 'location' | 'formula' | 'progress' | 'auto_number' | 'mirror' | 'dependency' | 'vote' | 'creation_log' | 'last_updated';
   width: number;
   visible: boolean;
   editable: boolean;
-  formula?: string;
-  options?: string[];
-  color?: string;
+  order: number;
+  settings: {
+    formula?: string;
+    options?: Array<{ label: string; color: string; value: string }>;
+    color?: string;
+    dateFormat?: string;
+    numberFormat?: 'number' | 'currency' | 'percentage';
+    multiSelect?: boolean;
+    required?: boolean;
+    defaultValue?: any;
+    mirrorBoardId?: string;
+    mirrorColumnId?: string;
+    dependencies?: string[];
+    ratingScale?: number;
+    phoneFormat?: 'international' | 'national';
+    emailValidation?: boolean;
+    linkText?: string;
+    progressType?: 'percentage' | 'numbers';
+    autoNumberPrefix?: string;
+    autoNumberStart?: number;
+  };
 }
 
 const ProjectPanel: React.FC = () => {
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [columns, setColumns] = useState<Column[]>([
-    { id: 'name', name: 'Item', type: 'text', width: 250, visible: true, editable: true },
-    { id: 'avatar', name: 'Owner', type: 'people', width: 100, visible: true, editable: true },
-    { id: 'status', name: 'Status', type: 'status', width: 130, visible: true, editable: true, 
-      options: ['New Lead', 'In Progress', 'Measured', 'Quoted', 'Sold', 'Installed', 'Done'] },
-    { id: 'priority', name: 'Priority', type: 'priority', width: 120, visible: true, editable: true,
-      options: ['Low', 'Medium', 'High', 'Critical'] },
-    { id: 'progress', name: 'Progress', type: 'progress', width: 120, visible: true, editable: false },
-    { id: 'measureDate', name: 'Measure Date', type: 'date', width: 140, visible: true, editable: true },
-    { id: 'installDate', name: 'Install Date', type: 'date', width: 140, visible: true, editable: true },
-    { id: 'materials', name: 'Materials', type: 'formula', width: 120, visible: true, editable: false,
-      formula: 'SUM({subitems.cost})' },
-    { id: 'firstBid', name: 'First Bid', type: 'formula', width: 120, visible: true, editable: false,
-      formula: 'ROUND({materials} * 1.3 + 500, 2)' }
+    { 
+      id: 'name', 
+      name: 'Item', 
+      type: 'text', 
+      width: 250, 
+      visible: true, 
+      editable: true, 
+      order: 0,
+      settings: { required: true }
+    },
+    { 
+      id: 'avatar', 
+      name: 'Owner', 
+      type: 'people', 
+      width: 100, 
+      visible: true, 
+      editable: true, 
+      order: 1,
+      settings: { multiSelect: false }
+    },
+    { 
+      id: 'status', 
+      name: 'Status', 
+      type: 'status', 
+      width: 130, 
+      visible: true, 
+      editable: true, 
+      order: 2,
+      settings: {
+        options: [
+          { label: 'New Lead', color: '#ff6b35', value: 'new_lead' },
+          { label: 'In Progress', color: '#fdca40', value: 'in_progress' },
+          { label: 'Measured', color: '#4ecdc4', value: 'measured' },
+          { label: 'Quoted', color: '#a8e6cf', value: 'quoted' },
+          { label: 'Sold', color: '#ff8b94', value: 'sold' },
+          { label: 'Installed', color: '#b4f7d1', value: 'installed' },
+          { label: 'Done', color: '#81c784', value: 'done' }
+        ]
+      }
+    },
+    { 
+      id: 'priority', 
+      name: 'Priority', 
+      type: 'status', 
+      width: 120, 
+      visible: true, 
+      editable: true, 
+      order: 3,
+      settings: {
+        options: [
+          { label: 'Low', color: '#90caf9', value: 'low' },
+          { label: 'Medium', color: '#ffb74d', value: 'medium' },
+          { label: 'High', color: '#f06292', value: 'high' },
+          { label: 'Critical', color: '#e57373', value: 'critical' }
+        ]
+      }
+    },
+    { 
+      id: 'progress', 
+      name: 'Progress', 
+      type: 'progress', 
+      width: 120, 
+      visible: true, 
+      editable: false, 
+      order: 4,
+      settings: { progressType: 'percentage' }
+    },
+    { 
+      id: 'measureDate', 
+      name: 'Measure Date', 
+      type: 'date', 
+      width: 140, 
+      visible: true, 
+      editable: true, 
+      order: 5,
+      settings: { dateFormat: 'MM/DD/YYYY' }
+    },
+    { 
+      id: 'installDate', 
+      name: 'Install Date', 
+      type: 'date', 
+      width: 140, 
+      visible: true, 
+      editable: true, 
+      order: 6,
+      settings: { dateFormat: 'MM/DD/YYYY' }
+    },
+    { 
+      id: 'materials', 
+      name: 'Materials', 
+      type: 'formula', 
+      width: 120, 
+      visible: true, 
+      editable: false, 
+      order: 7,
+      settings: { 
+        formula: 'SUM({subitems.cost})',
+        numberFormat: 'currency'
+      }
+    },
+    { 
+      id: 'firstBid', 
+      name: 'First Bid', 
+      type: 'formula', 
+      width: 120, 
+      visible: true, 
+      editable: false, 
+      order: 8,
+      settings: { 
+        formula: 'ROUND({materials} * 1.3 + 500, 2)',
+        numberFormat: 'currency'
+      }
+    }
   ]);
 
   const [editingFormula, setEditingFormula] = useState<{ columnId: string; formula: string } | null>(null);
@@ -381,6 +499,7 @@ const ProjectPanel: React.FC = () => {
   };
 
   const addColumn = (type: Column['type']) => {
+    const maxOrder = Math.max(...columns.map(col => col.order), 0);
     const newColumn: Column = {
       id: `column_${Date.now()}`,
       name: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
@@ -388,12 +507,50 @@ const ProjectPanel: React.FC = () => {
       width: 120,
       visible: true,
       editable: true,
-      ...(type === 'status' && { options: ['Not Started', 'In Progress', 'Complete'] }),
-      ...(type === 'priority' && { options: ['Low', 'Medium', 'High', 'Critical'] }),
-      ...(type === 'tags' && { options: [] }),
-      ...(type === 'formula' && { formula: '0' })
+      order: maxOrder + 1,
+      settings: getDefaultSettings(type)
     };
     setColumns(prev => [...prev, newColumn]);
+  };
+
+  const getDefaultSettings = (type: Column['type']) => {
+    switch (type) {
+      case 'status':
+      case 'dropdown':
+        return {
+          options: [
+            { label: 'Option 1', color: '#ff6b35', value: 'option1' },
+            { label: 'Option 2', color: '#fdca40', value: 'option2' },
+            { label: 'Option 3', color: '#4ecdc4', value: 'option3' }
+          ]
+        };
+      case 'formula':
+        return { formula: '0', numberFormat: 'number' as const };
+      case 'people':
+        return { multiSelect: true };
+      case 'number':
+        return { numberFormat: 'number' as const };
+      case 'date':
+        return { dateFormat: 'MM/DD/YYYY' };
+      case 'rating':
+        return { ratingScale: 5 };
+      case 'progress':
+        return { progressType: 'percentage' as const };
+      case 'auto_number':
+        return { autoNumberPrefix: '#', autoNumberStart: 1 };
+      case 'phone':
+        return { phoneFormat: 'national' as const };
+      case 'email':
+        return { emailValidation: true };
+      case 'link':
+        return { linkText: 'Click here' };
+      case 'checkbox':
+        return { defaultValue: false };
+      case 'tags':
+        return { multiSelect: true, options: [] };
+      default:
+        return {};
+    }
   };
 
   const deleteColumn = (columnId: string) => {
@@ -675,40 +832,136 @@ const ProjectPanel: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white relative">
-      {/* Apple-style Customization Toolbar */}
+      {/* Complete Monday.com Column Customization Toolbar */}
       {isCustomizationMode && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-black/80 backdrop-blur-sm rounded-2xl px-6 py-3 border border-gray-700">
-          <div className="flex items-center gap-4">
-            <span className="text-white text-sm font-medium">Customize Columns</span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => addColumn('text')}
-                className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs text-white"
-              >
-                Text
-              </button>
-              <button
-                onClick={() => addColumn('status')}
-                className="px-3 py-1 bg-orange-600 hover:bg-orange-500 rounded-lg text-xs text-white"
-              >
-                Status
-              </button>
-              <button
-                onClick={() => addColumn('date')}
-                className="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs text-white"
-              >
-                Date
-              </button>
-              <button
-                onClick={() => addColumn('formula')}
-                className="px-3 py-1 bg-green-600 hover:bg-green-500 rounded-lg text-xs text-white"
-              >
-                Formula
-              </button>
-            </div>
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-black/90 backdrop-blur-sm rounded-2xl px-6 py-4 border border-gray-700 max-w-5xl">
+          <div className="text-center mb-4">
+            <span className="text-white text-sm font-semibold">Add Column</span>
+          </div>
+          <div className="grid grid-cols-8 gap-2 mb-4">
+            {/* Basic Text Columns */}
+            <button onClick={() => addColumn('text')} className="column-btn bg-blue-600 hover:bg-blue-500">
+              <Type className="w-3 h-3" />
+              <span>Text</span>
+            </button>
+            <button onClick={() => addColumn('long_text')} className="column-btn bg-blue-600 hover:bg-blue-500">
+              <FileText className="w-3 h-3" />
+              <span>Long Text</span>
+            </button>
+            
+            {/* Selection Columns */}
+            <button onClick={() => addColumn('status')} className="column-btn bg-orange-600 hover:bg-orange-500">
+              <Circle className="w-3 h-3" />
+              <span>Status</span>
+            </button>
+            <button onClick={() => addColumn('dropdown')} className="column-btn bg-orange-600 hover:bg-orange-500">
+              <ChevronDown className="w-3 h-3" />
+              <span>Dropdown</span>
+            </button>
+            
+            {/* Number & Date Columns */}
+            <button onClick={() => addColumn('number')} className="column-btn bg-green-600 hover:bg-green-500">
+              <Hash className="w-3 h-3" />
+              <span>Number</span>
+            </button>
+            <button onClick={() => addColumn('date')} className="column-btn bg-green-600 hover:bg-green-500">
+              <Calendar className="w-3 h-3" />
+              <span>Date</span>
+            </button>
+            <button onClick={() => addColumn('timeline')} className="column-btn bg-green-600 hover:bg-green-500">
+              <BarChart3 className="w-3 h-3" />
+              <span>Timeline</span>
+            </button>
+            
+            {/* People & Tags */}
+            <button onClick={() => addColumn('people')} className="column-btn bg-purple-600 hover:bg-purple-500">
+              <Users className="w-3 h-3" />
+              <span>People</span>
+            </button>
+            <button onClick={() => addColumn('tags')} className="column-btn bg-purple-600 hover:bg-purple-500">
+              <Tags className="w-3 h-3" />
+              <span>Tags</span>
+            </button>
+            
+            {/* Files & Links */}
+            <button onClick={() => addColumn('files')} className="column-btn bg-indigo-600 hover:bg-indigo-500">
+              <Paperclip className="w-3 h-3" />
+              <span>Files</span>
+            </button>
+            <button onClick={() => addColumn('link')} className="column-btn bg-indigo-600 hover:bg-indigo-500">
+              <Link className="w-3 h-3" />
+              <span>Link</span>
+            </button>
+            
+            {/* Contact Columns */}
+            <button onClick={() => addColumn('email')} className="column-btn bg-pink-600 hover:bg-pink-500">
+              <Mail className="w-3 h-3" />
+              <span>Email</span>
+            </button>
+            <button onClick={() => addColumn('phone')} className="column-btn bg-pink-600 hover:bg-pink-500">
+              <Phone className="w-3 h-3" />
+              <span>Phone</span>
+            </button>
+            
+            {/* Special Columns */}
+            <button onClick={() => addColumn('checkbox')} className="column-btn bg-cyan-600 hover:bg-cyan-500">
+              <CheckSquare className="w-3 h-3" />
+              <span>Checkbox</span>
+            </button>
+            <button onClick={() => addColumn('rating')} className="column-btn bg-cyan-600 hover:bg-cyan-500">
+              <Star className="w-3 h-3" />
+              <span>Rating</span>
+            </button>
+            <button onClick={() => addColumn('location')} className="column-btn bg-cyan-600 hover:bg-cyan-500">
+              <MapPin className="w-3 h-3" />
+              <span>Location</span>
+            </button>
+            
+            {/* Advanced Columns */}
+            <button onClick={() => addColumn('formula')} className="column-btn bg-yellow-600 hover:bg-yellow-500">
+              <Calculator className="w-3 h-3" />
+              <span>Formula</span>
+            </button>
+            <button onClick={() => addColumn('progress')} className="column-btn bg-yellow-600 hover:bg-yellow-500">
+              <BarChart2 className="w-3 h-3" />
+              <span>Progress</span>
+            </button>
+            <button onClick={() => addColumn('auto_number')} className="column-btn bg-yellow-600 hover:bg-yellow-500">
+              <Hash className="w-3 h-3" />
+              <span>Auto #</span>
+            </button>
+            
+            {/* Advanced: Mirror & Dependency */}
+            <button onClick={() => addColumn('mirror')} className="column-btn bg-teal-600 hover:bg-teal-500">
+              <RefreshCw className="w-3 h-3" />
+              <span>Mirror</span>
+            </button>
+            <button onClick={() => addColumn('dependency')} className="column-btn bg-teal-600 hover:bg-teal-500">
+              <ArrowRight className="w-3 h-3" />
+              <span>Dependency</span>
+            </button>
+            
+            {/* Meta Columns */}
+            <button onClick={() => addColumn('creation_log')} className="column-btn bg-gray-600 hover:bg-gray-500">
+              <Clock className="w-3 h-3" />
+              <span>Created</span>
+            </button>
+            <button onClick={() => addColumn('last_updated')} className="column-btn bg-gray-600 hover:bg-gray-500">
+              <RefreshCw className="w-3 h-3" />
+              <span>Updated</span>
+            </button>
+            
+            {/* Interactive */}
+            <button onClick={() => addColumn('vote')} className="column-btn bg-red-600 hover:bg-red-500">
+              <Heart className="w-3 h-3" />
+              <span>Vote</span>
+            </button>
+          </div>
+          
+          <div className="text-center">
             <button
               onClick={exitCustomizationMode}
-              className="px-4 py-1 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs text-white font-medium"
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm text-white font-medium"
             >
               Done
             </button>
