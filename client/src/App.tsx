@@ -18,7 +18,7 @@ import Dashboard from "@/pages/dashboard";
 import CatalogPage from "@/pages/catalog";
 import QuotePage from "@/pages/quote";
 import ProjectsPage from "@/pages/projects";
-import ProjectTablePage from "@/pages/project-table";
+
 import SimpleExcelManager from "@/pages/simple-excel-manager";
 import MondayBoard from "@/pages/monday-board";
 import ProjectPanel from "@/pages/project-panel";
