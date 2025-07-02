@@ -28,7 +28,6 @@ import {
   Bell,
   MessageSquare,
   Calendar,
-  FolderOpen,
   ChevronRight,
   DollarSign,
   BarChart3,
@@ -504,27 +503,6 @@ export default function Dashboard() {
               </Link>
             </div>
 
-            {/* Unified Dashboard */}
-            <div>
-              <Link href="/unified">
-                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20 border-violet-200 dark:border-violet-800">
-                  <CardContent className="p-3 sm:p-6">
-                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                      <div className="p-2 sm:p-4 bg-violet-600 rounded-xl sm:rounded-2xl shadow-lg">
-                        <FolderOpen className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Unified Dashboard</p>
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                          All-in-one project workspace
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </div>
-
             {/* Project Management */}
             <div>
               <Link href="/projects">
@@ -535,30 +513,9 @@ export default function Dashboard() {
                         <BarChart3 className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Project Board</p>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Project Management</p>
                         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                          Monday.com-style board view
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </div>
-
-            {/* Trackline Timeline Dashboard */}
-            <div>
-              <Link href="/trackline">
-                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 border-teal-200 dark:border-teal-800">
-                  <CardContent className="p-3 sm:p-6">
-                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                      <div className="p-2 sm:p-4 bg-teal-600 rounded-xl sm:rounded-2xl shadow-lg">
-                        <Clock className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Trackline Timeline</p>
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                          Visual timeline management
+                          Manage installation projects
                         </p>
                       </div>
                     </div>

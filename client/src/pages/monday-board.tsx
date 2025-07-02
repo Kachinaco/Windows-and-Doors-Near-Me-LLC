@@ -305,25 +305,10 @@ export default function MondayBoard() {
     queryKey: ['/api/projects'],
     enabled: !!user, // Only fetch when user is available
     refetchInterval: 5000,
-    staleTime: 0, // Force fresh data on every query
   });
 
   // Debug logging
-  console.log('MondayBoard state:', { user: !!user, isLoading, projects: Array.isArray(projects) ? projects.length : 0, error });
-  
-  // Debug sub-items and folders
-  if (Array.isArray(projects) && projects.length > 0) {
-    projects.forEach((project: any) => {
-      if (project.subItems?.length > 0 || project.subItemFolders?.length > 0) {
-        console.log(`Project ${project.id} has:`, {
-          subItems: project.subItems?.length || 0,
-          subItemFolders: project.subItemFolders?.length || 0,
-          subItemsData: project.subItems,
-          foldersData: project.subItemFolders
-        });
-      }
-    });
-  }
+  console.log('MondayBoard state:', { user: !!user, isLoading, projects: projects?.length || 0, error });
 
   // Query for project team members (for "Assigned To" dropdowns)
   const { data: teamMembers = [] } = useQuery({
@@ -2566,7 +2551,7 @@ export default function MondayBoard() {
               {!group.collapsed && (
                 <>
                   {group.items.map((item) => (
-                    <div key={item.id}>
+                    <React.Fragment key={item.id}>
                       {/* Main Item Row - Clickable for Updates */}
                       <div 
                         className="flex hover:bg-gray-50 transition-all border-b border-gray-200 last:border-b-0 bg-white cursor-pointer"
@@ -2625,7 +2610,7 @@ export default function MondayBoard() {
                                   const currentFolderName = folderNames[folder.id] || folder.name;
                                   
                                   return (
-                                    <div key={folder.id}>
+                                    <React.Fragment key={folder.id}>
                                       {/* Folder Header with Column Headers */}
                                       <div className="group flex hover:bg-gray-50 transition-all bg-white border-b-2 border-blue-200 shadow-sm">
                                         {/* Empty space where checkbox used to be */}
@@ -2958,11 +2943,50 @@ export default function MondayBoard() {
                                               </div>
                                             ))}
                                             
-
+                                            {/* Add Sub Item button - blue theme */}
+                                            <div className="flex hover:bg-blue-100/50 transition-all border-b border-blue-200 bg-blue-50/10 relative">
+                                              {/* Empty checkbox space */}
+                                              <div className="w-12 px-2 py-2 border-r border-blue-200 sticky left-0 bg-blue-50/20 z-30"></div>
+                                              <div 
+                                                className="px-4 py-2 flex-shrink-0 sticky left-12 bg-blue-50/20 z-20"
+                                                style={{ 
+                                                  width: (columnWidths['item'] || 120),
+                                                  minWidth: '80px',
+                                                  maxWidth: 'none'
+                                                }}
+                                              >
+                                                <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  onClick={() => handleAddSubItemToFolder(item.id, folder.id)}
+                                                  className="text-blue-700 hover:text-blue-800 hover:bg-blue-100 text-sm h-8 px-3 flex items-center gap-2 border border-blue-400 hover:border-blue-500 rounded-md transition-all font-medium"
+                                                >
+                                                  <Plus className="w-4 h-4" />
+                                                  Add Sub Item
+                                                </Button>
+                                              </div>
+                                              
+                                              {/* Empty cells using exact same columns as main board */}
+                                              {columns.slice(1).map((column, index) => {
+                                                const columnWidth = getColumnWidth(column.id, index + 1); // +1 because we slice(1)
+                                                
+                                                return (
+                                                <div 
+                                                  key={`add-sub-${folder.id}-${column.id}`}
+                                                  className="px-4 py-3 border-r border-gray-200 flex-shrink-0 bg-white z-5"
+                                                  style={{ 
+                                                    width: columnWidth,
+                                                    minWidth: index === 0 ? '80px' : '90px',
+                                                    maxWidth: 'none'
+                                                  }}
+                                                />
+                                                )
+                                              })}
+                                            </div>
                                           </div>
                                         </>
                                       )}
-                                    </div>
+                                    </React.Fragment>
                                   );
                                 })}
 
@@ -2986,6 +3010,15 @@ export default function MondayBoard() {
                                   >
                                     <Plus className="w-4 h-4" />
                                     Add Sub Item
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleAddSubItemFolder(item.id)}
+                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm h-8 px-3 flex items-center gap-2 font-medium border border-blue-300 hover:border-blue-400 rounded-md transition-all"
+                                  >
+                                    <Folder className="w-4 h-4" />
+                                    Add Folder
                                   </Button>
                                   <Button
                                     variant="ghost"
@@ -3103,7 +3136,7 @@ export default function MondayBoard() {
                           )}
                         </>
                       )}
-                    </div>
+                    </React.Fragment>
                   ))}
                   
                   {/* Add Item Button at bottom of group */}
