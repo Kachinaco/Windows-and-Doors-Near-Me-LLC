@@ -246,7 +246,7 @@ const ProjectBoard = () => {
     setSelectedSubitem(updatedSubitem);
     
     // Update in main items array
-    updateSubitemValue(selectedSubitem.parentId, selectedSubitem.id, field, value);
+    updateSubitem(selectedSubitem.parentId, selectedSubitem.id, field, value);
   };
 
   // Sub-item modal component
@@ -420,7 +420,24 @@ const ProjectBoard = () => {
         progress: 0,
         owner: "",
         notes: "",
-        subitems: [],
+        subitems: [
+          {
+            id: Date.now() + 1,
+            name: "Site Measurement",
+            assignedTo: "John Doe",
+            status: "Not Started",
+            priority: "High",
+            description: "Initial site measurement and assessment"
+          },
+          {
+            id: Date.now() + 2,
+            name: "Material Ordering",
+            assignedTo: "Jane Smith",
+            status: "Not Started", 
+            priority: "Medium",
+            description: "Order required materials and supplies"
+          }
+        ],
       };
       setItems([...items, newItem]);
       setNewItemName("");
@@ -2077,6 +2094,9 @@ const ProjectBoard = () => {
 
       {/* Automation Center Modal */}
       {showAutomations && renderAutomationCenter()}
+      
+      {/* Sub-item Edit Modal */}
+      <SubitemModal />
     </div>
   );
 };
