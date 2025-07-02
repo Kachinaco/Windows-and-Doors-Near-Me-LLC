@@ -7,11 +7,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { 
-  ArrowLeft, 
+import {
+  ArrowLeft,
   Calendar,
   ChevronDown,
   CheckSquare,
@@ -26,7 +32,7 @@ import {
   Paperclip,
   Mail,
   Plus,
-  User
+  User,
 } from "lucide-react";
 import type { Project, ProjectUpdate } from "@shared/schema";
 
@@ -43,7 +49,9 @@ export default function ProjectDashboard() {
     enabled: !!projectId,
   });
 
-  const { data: projectUpdates, isLoading: updatesLoading } = useQuery<ProjectUpdate[]>({
+  const { data: projectUpdates, isLoading: updatesLoading } = useQuery<
+    ProjectUpdate[]
+  >({
     queryKey: ["/api/project-updates", projectId],
     enabled: !!projectId,
   });
@@ -65,7 +73,9 @@ export default function ProjectDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Project not found</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Project not found
+          </h2>
           <Button onClick={() => setLocation("/projects")} variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Projects
@@ -78,10 +88,10 @@ export default function ProjectDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div 
+      <div
         className="relative bg-gradient-to-r from-gray-800 to-gray-900 text-white px-4 py-6"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="white" opacity="0.1"/><circle cx="80" cy="40" r="1" fill="white" opacity="0.1"/><circle cx="40" cy="80" r="1" fill="white" opacity="0.1"/><circle cx="90" cy="10" r="1" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>')}')`
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="white" opacity="0.1"/><circle cx="80" cy="40" r="1" fill="white" opacity="0.1"/><circle cx="40" cy="80" r="1" fill="white" opacity="0.1"/><circle cx="90" cy="10" r="1" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>')}')`,
         }}
       >
         <div className="flex items-center justify-between">
@@ -109,10 +119,18 @@ export default function ProjectDashboard() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/20"
+            >
               <Paperclip className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/20"
+            >
               <MoreVertical className="w-5 h-5" />
             </Button>
           </div>
@@ -123,26 +141,26 @@ export default function ProjectDashboard() {
       <div className="bg-gray-800 px-4">
         <Tabs defaultValue="activity" className="w-full">
           <TabsList className="bg-transparent border-none p-0 h-auto">
-            <TabsTrigger 
-              value="activity" 
+            <TabsTrigger
+              value="activity"
               className="text-[#d1d5db] bg-[#1f2936] border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
             >
               Activity
             </TabsTrigger>
-            <TabsTrigger 
-              value="files" 
+            <TabsTrigger
+              value="files"
               className="text-[#d1d5db] bg-[#1f2936] border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
             >
               Files
             </TabsTrigger>
-            <TabsTrigger 
-              value="notes" 
+            <TabsTrigger
+              value="notes"
               className="text-[#d1d5db] bg-[#1f2936] border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
             >
               Notes
             </TabsTrigger>
-            <TabsTrigger 
-              value="details" 
+            <TabsTrigger
+              value="details"
               className="text-[#d1d5db] bg-[#1f2936] border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
             >
               Details
@@ -169,8 +187,15 @@ export default function ProjectDashboard() {
                       <CardTitle className="text-lg">Tasks</CardTitle>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge variant="secondary" className="bg-gray-100 text-gray-700">
-                        {Array.isArray(tasks) ? tasks.filter((task: any) => task.status === 'completed').length : 0}
+                      <Badge
+                        variant="secondary"
+                        className="bg-gray-100 text-gray-700"
+                      >
+                        {Array.isArray(tasks)
+                          ? tasks.filter(
+                              (task: any) => task.status === "completed",
+                            ).length
+                          : 0}
                       </Badge>
                       <ChevronRight className="w-4 h-4 text-gray-500" />
                     </div>
@@ -193,7 +218,9 @@ export default function ProjectDashboard() {
                           <span className="font-medium text-gray-900">
                             Client paid $1730.27
                           </span>
-                          <span className="text-gray-600">via credit card for</span>
+                          <span className="text-gray-600">
+                            via credit card for
+                          </span>
                           <span className="font-medium text-gray-900">
                             {project.title} Proposal (2 Doors)
                           </span>
@@ -201,9 +228,7 @@ export default function ProjectDashboard() {
                         <div className="text-sm text-gray-600 mb-1">
                           2 of 2 payments
                         </div>
-                        <div className="text-sm text-gray-500">
-                          3:45 PM
-                        </div>
+                        <div className="text-sm text-gray-500">3:45 PM</div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-gray-400" />
                     </div>
@@ -223,7 +248,7 @@ export default function ProjectDashboard() {
                             {project.title} Proposal (2 Doors)
                           </span>
                         </div>
-                        
+
                         <div className="flex items-center space-x-3 mb-2">
                           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                             <FileText className="w-6 h-6 text-blue-600" />
@@ -237,10 +262,8 @@ export default function ProjectDashboard() {
                             </Badge>
                           </div>
                         </div>
-                        
-                        <div className="text-sm text-gray-500">
-                          3:44 PM
-                        </div>
+
+                        <div className="text-sm text-gray-500">3:44 PM</div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-gray-400" />
                     </div>
@@ -253,7 +276,8 @@ export default function ProjectDashboard() {
                     <div className="flex items-start space-x-3">
                       <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
                         <span className="text-white text-sm font-medium">
-                          {user?.username?.substring(0, 2).toUpperCase() || 'JM'}
+                          {user?.username?.substring(0, 2).toUpperCase() ||
+                            "JM"}
                         </span>
                       </div>
                       <div className="flex-1">
@@ -266,20 +290,24 @@ export default function ProjectDashboard() {
                         <div className="text-gray-700 mb-3">
                           <p>Hi James,</p>
                           <p className="mt-2">
-                            This message is to inform you that a milestone has been completed on {project.title} Proposal (2 Doors).
+                            This message is to inform you that a milestone has
+                            been completed on {project.title} Proposal (2
+                            Doors).
                           </p>
                           <p className="mt-2">
-                            Click below to pay for this milestone. Project name: {project.title}
+                            Click below to pay for this milestone. Project name:{" "}
+                            {project.title}
                           </p>
-                          <p className="mt-2">
-                            Due date: 06/13/2025
-                          </p>
+                          <p className="mt-2">Due date: 06/13/2025</p>
                         </div>
                         <div className="flex space-x-3">
                           <Button variant="outline" size="sm">
                             Send email
                           </Button>
-                          <Button size="sm" className="bg-gray-900 hover:bg-gray-800">
+                          <Button
+                            size="sm"
+                            className="bg-gray-900 hover:bg-gray-800"
+                          >
                             Create file
                           </Button>
                         </div>
@@ -296,7 +324,9 @@ export default function ProjectDashboard() {
             <TabsContent value="files" className="mt-0 p-4">
               <div className="text-center py-12">
                 <FileText className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No files yet</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No files yet
+                </h3>
                 <p className="text-gray-600 mb-4">
                   Upload project files, contracts, and proposals here
                 </p>
@@ -310,7 +340,9 @@ export default function ProjectDashboard() {
             <TabsContent value="notes" className="mt-0 p-4">
               <div className="text-center py-12">
                 <MessageSquare className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No notes yet</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No notes yet
+                </h3>
                 <p className="text-gray-600 mb-4">
                   Add notes and comments about this project
                 </p>
@@ -332,26 +364,43 @@ export default function ProjectDashboard() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Customer</label>
-                      <p className="text-gray-900">{project.email || "No customer info"}</p>
+                      <label className="text-sm font-medium text-gray-600">
+                        Customer
+                      </label>
+                      <p className="text-gray-900">
+                        {project.email || "No customer info"}
+                      </p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Project Title</label>
+                      <label className="text-sm font-medium text-gray-600">
+                        Project Title
+                      </label>
                       <p className="text-gray-900">{project.title}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Status</label>
-                      <Badge 
-                        variant={project.status === 'completed' ? 'default' : 
-                                project.status === 'in_progress' ? 'secondary' : 'outline'}
+                      <label className="text-sm font-medium text-gray-600">
+                        Status
+                      </label>
+                      <Badge
+                        variant={
+                          project.status === "completed"
+                            ? "default"
+                            : project.status === "in_progress"
+                              ? "secondary"
+                              : "outline"
+                        }
                         className="capitalize ml-2"
                       >
-                        {project.status?.replace('_', ' ')}
+                        {project.status?.replace("_", " ")}
                       </Badge>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Description</label>
-                      <p className="text-gray-900">{project.description || 'No description provided'}</p>
+                      <label className="text-sm font-medium text-gray-600">
+                        Description
+                      </label>
+                      <p className="text-gray-900">
+                        {project.description || "No description provided"}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -365,19 +414,31 @@ export default function ProjectDashboard() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Estimated Cost</label>
-                      <p className="text-gray-900">${project.estimatedCost?.toLocaleString() || 'Not set'}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Start Date</label>
+                      <label className="text-sm font-medium text-gray-600">
+                        Estimated Cost
+                      </label>
                       <p className="text-gray-900">
-                        {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'Not set'}
+                        ${project.estimatedCost?.toLocaleString() || "Not set"}
                       </p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">End Date</label>
+                      <label className="text-sm font-medium text-gray-600">
+                        Start Date
+                      </label>
                       <p className="text-gray-900">
-                        {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'Not set'}
+                        {project.startDate
+                          ? new Date(project.startDate).toLocaleDateString()
+                          : "Not set"}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">
+                        End Date
+                      </label>
+                      <p className="text-gray-900">
+                        {project.endDate
+                          ? new Date(project.endDate).toLocaleDateString()
+                          : "Not set"}
                       </p>
                     </div>
                   </CardContent>
