@@ -1612,8 +1612,7 @@ const ProjectBoard = () => {
                     .toLocaleString()}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-green-400 text-sm">↗ +12.5%</span>
-                  <span className="text-gray-400 text-sm">vs last month</span>
+                  <span className="text-gray-400 text-sm">Current total</span>
                 </div>
               </div>
 
@@ -1640,8 +1639,7 @@ const ProjectBoard = () => {
                   }
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-blue-400 text-sm">↗ +8 projects</span>
-                  <span className="text-gray-400 text-sm">vs last month</span>
+                  <span className="text-gray-400 text-sm">This month</span>
                 </div>
               </div>
 
@@ -1659,10 +1657,9 @@ const ProjectBoard = () => {
                     </div>
                   </div>
                 </div>
-                <div className="text-3xl font-bold text-white mb-2">18</div>
+                <div className="text-3xl font-bold text-white mb-2">0</div>
                 <div className="flex items-center gap-2">
-                  <span className="text-green-400 text-sm">↓ -2 days</span>
-                  <span className="text-gray-400 text-sm">improvement</span>
+                  <span className="text-gray-400 text-sm">No data yet</span>
                 </div>
               </div>
 
@@ -1680,10 +1677,9 @@ const ProjectBoard = () => {
                     </div>
                   </div>
                 </div>
-                <div className="text-3xl font-bold text-white mb-2">87%</div>
+                <div className="text-3xl font-bold text-white mb-2">0%</div>
                 <div className="flex items-center gap-2">
-                  <span className="text-yellow-400 text-sm">→ Optimal</span>
-                  <span className="text-gray-400 text-sm">capacity</span>
+                  <span className="text-gray-400 text-sm">No data yet</span>
                 </div>
               </div>
             </div>
