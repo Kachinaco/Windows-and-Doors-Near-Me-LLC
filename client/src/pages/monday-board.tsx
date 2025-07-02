@@ -33,58 +33,7 @@ import {
 } from "lucide-react";
 
 const ProjectBoard = () => {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      name: "New Windows Project - Living Room",
-      people: ["John Doe"],
-      status: "New Lead",
-      priority: "Medium",
-      measureDate: "2025-07-15",
-      installDate: "2025-08-01",
-      materialsSpent: 250,
-      firstBid: 1500,
-      lowestBid: 1200,
-      contractSent: false,
-      expanded: true,
-      progress: 25,
-      owner: "John Doe",
-      notes: "Customer wants energy-efficient windows",
-      subitems: [
-        {
-          id: 1,
-          name: "Initial consultation and measurement",
-          owner: "John Doe",
-          status: "In Progress",
-          materialsSpent: "150",
-          dimensions: '36" x 80"',
-          operation: "Swing",
-          jambWidth: '4-9/16"',
-          frameType: "Wood",
-          files: [],
-          progress: 75,
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Front Door Replacement - Smith Residence",
-      people: ["Jane Smith"],
-      status: "Measured",
-      priority: "High",
-      measureDate: "2025-07-10",
-      installDate: "2025-07-25",
-      materialsSpent: 400,
-      firstBid: 2200,
-      lowestBid: 2000,
-      contractSent: true,
-      expanded: false,
-      progress: 60,
-      owner: "Jane Smith",
-      notes: "Custom mahogany door with glass panels",
-      subitems: [],
-    },
-  ]);
+  const [items, setItems] = useState([]);
 
   const [columnWidths, setColumnWidths] = useState({
     item: 300,
@@ -104,24 +53,7 @@ const ProjectBoard = () => {
   const [showAutomations, setShowAutomations] = useState(false);
   const [editingCell, setEditingCell] = useState(null);
   const [resizingColumn, setResizingColumn] = useState(null);
-  const [automations, setAutomations] = useState([
-    {
-      id: 1,
-      name: "Status change notification",
-      trigger: "When status changes to Done",
-      action: "Send notification to team",
-      active: true,
-      runs: 45,
-    },
-    {
-      id: 2,
-      name: "Auto-assign tasks",
-      trigger: "When item is created",
-      action: "Assign to project manager",
-      active: true,
-      runs: 12,
-    },
-  ]);
+  const [automations, setAutomations] = useState([]);
 
   const [newItemName, setNewItemName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -164,19 +96,7 @@ const ProjectBoard = () => {
     "Tom Brown",
   ];
 
-  // Simulate real-time updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setItems((prevItems) =>
-        prevItems.map((item) => ({
-          ...item,
-          progress: Math.min(100, item.progress + Math.random() * 0.5),
-        })),
-      );
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
+  // Real-time updates would be handled here when connected to actual data
 
   // Column resizing logic
   const handleMouseDown = (e, columnKey) => {
