@@ -21,6 +21,7 @@ import ProjectsPage from "@/pages/projects";
 import ProjectTablePage from "@/pages/project-table";
 import SimpleExcelManager from "@/pages/simple-excel-manager";
 import MondayBoard from "@/pages/monday-board";
+import ProjectPanel from "@/pages/project-panel";
 import PipelinePage from "@/pages/pipeline";
 import LeadsPage from "@/pages/leads";
 import SchedulingPage from "@/pages/scheduling";
@@ -85,6 +86,7 @@ function Router() {
       {/* Direct access to Monday.com board for testing */}
       <Route path="/board" component={MondayBoard} />
       <Route path="/monday-board" component={MondayBoard} />
+      <Route path="/project-panel" component={ProjectPanel} />
       
       {/* Protected user routes */}
       {isAuthenticated ? (
