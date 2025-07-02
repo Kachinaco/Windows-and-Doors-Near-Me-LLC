@@ -346,206 +346,195 @@ const ProjectPanel: React.FC = () => {
   };
 
   const renderProjectCard = (project: ProjectItem) => (
-    <div key={project.id} className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-colors">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+    <div key={project.id} className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 shadow-lg">
+      {/* Header with title and actions */}
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+          <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
             {project.avatar}
           </div>
-          <div>
-            <input
-              type="text"
-              value={project.name}
-              onChange={(e) => updateProject(project.id, 'name', e.target.value)}
-              className="bg-transparent text-white font-semibold text-lg border-none outline-none focus:bg-gray-700 rounded px-2 py-1"
-            />
-          </div>
+          <input
+            type="text"
+            value={project.name}
+            onChange={(e) => updateProject(project.id, 'name', e.target.value)}
+            className="bg-transparent text-white font-semibold text-xl border-none outline-none focus:bg-gray-700/30 rounded px-2 py-1"
+          />
         </div>
         <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-700 rounded">
-            <Plus className="w-4 h-4 text-gray-400" />
+          <button className="p-2 hover:bg-gray-700/50 rounded-lg text-blue-400 hover:text-blue-300">
+            <Plus className="w-5 h-5" />
           </button>
-          <button className="p-2 hover:bg-gray-700 rounded text-red-400">
-            <Trash2 className="w-4 h-4" />
+          <button className="p-2 hover:bg-gray-700/50 rounded-lg text-red-400 hover:text-red-300">
+            <Trash2 className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Status and Priority */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex items-center gap-2">
-          <span className="text-gray-400 text-sm">Status</span>
+      {/* Status and Priority Row */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div>
+          <label className="block text-gray-400 text-sm mb-2 font-medium">Status</label>
           <select
             value={project.status}
             onChange={(e) => updateProject(project.id, 'status', e.target.value)}
-            className={`${getStatusColor(project.status)} text-white px-3 py-1 rounded-full text-sm border-none outline-none`}
+            className="w-full bg-orange-500 text-white px-4 py-3 rounded-xl text-sm font-medium border-none outline-none focus:ring-2 focus:ring-orange-400"
           >
-            {columns.find(c => c.id === 'status')?.options?.map(option => (
-              <option key={option} value={option} className="bg-gray-800 text-white">
-                {option}
-              </option>
-            ))}
+            <option value="New Lead" className="bg-gray-800">New Lead</option>
+            <option value="In Progress" className="bg-gray-800">In Progress</option>
+            <option value="Measured" className="bg-gray-800">Measured</option>
+            <option value="Quoted" className="bg-gray-800">Quoted</option>
+            <option value="Sold" className="bg-gray-800">Sold</option>
+            <option value="Installed" className="bg-gray-800">Installed</option>
+            <option value="Done" className="bg-gray-800">Done</option>
           </select>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-gray-400 text-sm">Priority</span>
+        <div>
+          <label className="block text-gray-400 text-sm mb-2 font-medium">Priority</label>
           <select
             value={project.priority}
             onChange={(e) => updateProject(project.id, 'priority', e.target.value)}
-            className={`${getPriorityColor(project.priority)} text-white px-3 py-1 rounded-full text-sm border-none outline-none`}
+            className="w-full bg-orange-500 text-white px-4 py-3 rounded-xl text-sm font-medium border-none outline-none focus:ring-2 focus:ring-orange-400"
           >
-            {columns.find(c => c.id === 'priority')?.options?.map(option => (
-              <option key={option} value={option} className="bg-gray-800 text-white">
-                {option}
-              </option>
-            ))}
+            <option value="Low" className="bg-gray-800">Low</option>
+            <option value="Medium" className="bg-gray-800">Medium</option>
+            <option value="High" className="bg-gray-800">High</option>
+            <option value="Critical" className="bg-gray-800">Critical</option>
           </select>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="mb-4">
+      <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-gray-400 text-sm">Progress</span>
-          <span className="text-white text-sm">{project.progress}%</span>
+          <label className="text-gray-400 text-sm font-medium">Progress</label>
+          <span className="text-gray-300 text-sm font-medium">{project.progress}%</span>
         </div>
-        <div className="w-full bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-gray-700 rounded-full h-3">
           <div 
-            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+            className="bg-gradient-to-r from-blue-500 to-blue-400 h-3 rounded-full transition-all duration-500"
             style={{ width: `${project.progress}%` }}
           />
         </div>
       </div>
 
-      {/* Dates */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      {/* Date Fields */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
         <div>
-          <label className="block text-gray-400 text-sm mb-1">Measure Date</label>
-          <input
-            type="date"
-            value={project.measureDate}
-            onChange={(e) => updateProject(project.id, 'measureDate', e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white text-sm focus:border-blue-500 focus:outline-none"
-          />
+          <label className="block text-gray-400 text-sm mb-2 font-medium">Measure Date</label>
+          <div className="bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-gray-300 text-sm cursor-pointer hover:bg-gray-600/50 transition-colors">
+            {project.measureDate ? new Date(project.measureDate).toLocaleDateString() : 'Click to edit'}
+          </div>
         </div>
         <div>
-          <label className="block text-gray-400 text-sm mb-1">Install Date</label>
-          <input
-            type="date"
-            value={project.installDate}
-            onChange={(e) => updateProject(project.id, 'installDate', e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white text-sm focus:border-blue-500 focus:outline-none"
-          />
+          <label className="block text-gray-400 text-sm mb-2 font-medium">Install Date</label>
+          <div className="bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-gray-300 text-sm cursor-pointer hover:bg-gray-600/50 transition-colors">
+            {project.installDate ? new Date(project.installDate).toLocaleDateString() : 'Click to edit'}
+          </div>
         </div>
       </div>
 
       {/* Formula Fields */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-2 gap-3 mb-6">
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-gray-400 text-sm">Materials</label>
+          <label className="block text-gray-400 text-sm mb-2 font-medium">Materials</label>
+          <div className="relative">
+            <div className="bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-green-400 text-sm cursor-pointer hover:bg-gray-600/50 transition-colors">
+              Click to edit
+            </div>
             <button
               onClick={() => setEditingFormula({ columnId: 'materials', formula: project.materialsFormula })}
-              className="text-blue-400 hover:text-blue-300 p-1"
+              className="absolute top-2 right-2 text-blue-400 hover:text-blue-300 p-1"
               title="Edit formula"
             >
               <Calculator className="w-3 h-3" />
             </button>
-          </div>
-          <div className="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-green-400 font-semibold">
-            {formatCurrency(project.materials)}
           </div>
         </div>
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-gray-400 text-sm">First Bid</label>
+          <label className="block text-gray-400 text-sm mb-2 font-medium">First Bid</label>
+          <div className="relative">
+            <div className="bg-blue-600/30 border border-blue-500/50 rounded-xl px-4 py-3 text-white text-sm font-medium">
+              {project.firstBid || '0'}
+            </div>
             <button
               onClick={() => setEditingFormula({ columnId: 'firstBid', formula: project.firstBidFormula })}
-              className="text-blue-400 hover:text-blue-300 p-1"
+              className="absolute top-2 right-2 text-blue-400 hover:text-blue-300 p-1"
               title="Edit formula"
             >
               <Calculator className="w-3 h-3" />
             </button>
-          </div>
-          <div className="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-blue-400 font-semibold">
-            {formatCurrency(project.firstBid)}
           </div>
         </div>
       </div>
 
       {/* Subitems Section */}
-      <div className="border-t border-gray-600 pt-4">
-        <div className="flex items-center justify-between mb-3">
+      <div>
+        <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => toggleProjectExpanded(project.id)}
-            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-white font-medium text-base hover:text-gray-300 transition-colors"
           >
+            <span>Subitems</span>
             {project.expanded ? (
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="w-5 h-5" />
             ) : (
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-5 h-5" />
             )}
-            <span className="font-medium">Subitems ({project.subitems.length})</span>
           </button>
           <button
             onClick={() => addSubitem(project.id)}
-            className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
+            className="p-2 hover:bg-gray-700/50 rounded-lg text-gray-400 hover:text-white"
           >
             <Plus className="w-4 h-4" />
           </button>
         </div>
 
         {project.expanded && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {project.subitems.map(subitem => (
-              <div key={subitem.id} className="bg-gray-700 rounded p-3 border border-gray-600">
-                <div className="flex items-center justify-between mb-2">
+              <div key={subitem.id} className="bg-gray-700/40 rounded-xl p-4 border border-gray-600/30">
+                <div className="flex items-center justify-between mb-3">
                   <input
                     type="text"
                     value={subitem.name}
                     onChange={(e) => updateSubitem(project.id, subitem.id, 'name', e.target.value)}
-                    className="bg-transparent text-blue-400 font-medium text-sm border-none outline-none focus:bg-gray-600 rounded px-1 py-1 flex-1"
+                    className="bg-transparent text-blue-400 font-medium text-sm border-none outline-none focus:bg-gray-600/30 rounded px-2 py-1 flex-1"
                   />
                   <button
                     onClick={() => deleteSubitem(project.id, subitem.id)}
                     className="text-red-400 hover:text-red-300 p-1"
                   >
-                    <Trash2 className="w-3 h-3" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="flex items-center gap-3 text-xs">
-                  <div className="flex items-center gap-1">
-                    <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs">
-                      {subitem.assignedTo ? subitem.assignedTo.charAt(0) : 'U'}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                      {subitem.assignedTo ? subitem.assignedTo.charAt(0) : 'J'}
                     </div>
-                    <input
-                      type="text"
-                      value={subitem.assignedTo}
-                      onChange={(e) => updateSubitem(project.id, subitem.id, 'assignedTo', e.target.value)}
-                      placeholder="Assign to..."
-                      className="bg-gray-600 border border-gray-500 rounded px-2 py-1 text-white text-xs focus:border-blue-500 focus:outline-none w-20"
-                    />
+                    <span className="text-gray-300 text-sm">{subitem.assignedTo || 'John Doe'}</span>
                   </div>
                   <select
                     value={subitem.status}
                     onChange={(e) => updateSubitem(project.id, subitem.id, 'status', e.target.value)}
-                    className={`${getStatusColor(subitem.status)} text-white px-2 py-1 rounded text-xs border-none outline-none`}
+                    className="bg-gray-600 text-white px-3 py-1 rounded-lg text-xs border-none outline-none"
                   >
                     <option value="Not Started" className="bg-gray-800">Not Started</option>
                     <option value="In Progress" className="bg-gray-800">In Progress</option>
                     <option value="Complete" className="bg-gray-800">Complete</option>
                   </select>
-                  <input
-                    type="number"
-                    value={subitem.cost}
-                    onChange={(e) => updateSubitem(project.id, subitem.id, 'cost', parseFloat(e.target.value) || 0)}
-                    placeholder="Cost"
-                    className="bg-gray-600 border border-gray-500 rounded px-2 py-1 text-white text-xs focus:border-blue-500 focus:outline-none w-16"
-                  />
                 </div>
               </div>
             ))}
+            
+            {/* Hide subitems toggle */}
+            <button
+              onClick={() => toggleProjectExpanded(project.id)}
+              className="flex items-center gap-2 text-gray-400 hover:text-gray-300 text-sm mt-3"
+            >
+              <ChevronRight className="w-4 h-4 rotate-90" />
+              <span>Hide subitems ({project.subitems.length})</span>
+            </button>
           </div>
         )}
       </div>
@@ -553,65 +542,20 @@ const ProjectPanel: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      {/* Header */}
-      <div className="border-b border-gray-800 bg-gray-900 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold">Project Panel</h1>
-            <div className="flex items-center gap-2 bg-gray-800 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('card')}
-                className={`px-3 py-1 rounded text-sm ${viewMode === 'card' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
-              >
-                Card
-              </button>
-              <button
-                onClick={() => setViewMode('table')}
-                className={`px-3 py-1 rounded text-sm ${viewMode === 'table' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
-              >
-                Table
-              </button>
-              <button
-                onClick={() => setViewMode('kanban')}
-                className={`px-3 py-1 rounded text-sm ${viewMode === 'kanban' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
-              >
-                Kanban
-              </button>
-              <button
-                onClick={() => setViewMode('timeline')}
-                className={`px-3 py-1 rounded text-sm ${viewMode === 'timeline' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}
-              >
-                Timeline
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Add Project
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-6">
-        {viewMode === 'card' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {projects.map(renderProjectCard)}
-          </div>
-        )}
-
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Content - Mobile-first single column layout */}
+      <div className="max-w-md mx-auto px-4 py-6 space-y-6">
+        {projects.map(renderProjectCard)}
+        
         {/* Add Item Input */}
-        <div className="mt-6 bg-gray-800 rounded-lg p-4 border border-gray-700">
-          <div className="flex items-center gap-3">
+        <div className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 shadow-lg">
+          <div className="flex items-center justify-between">
             <input
               type="text"
               placeholder="Enter item name..."
-              className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+              className="flex-1 bg-transparent text-gray-300 placeholder-gray-500 border-none outline-none text-lg"
             />
-            <button className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded text-white">
+            <button className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-white font-medium">
               Add
             </button>
           </div>
