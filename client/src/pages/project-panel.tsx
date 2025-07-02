@@ -859,35 +859,35 @@ const ProjectPanel: React.FC = () => {
     const visibleColumns = columns.filter(col => col.visible).sort((a, b) => a.order - b.order);
     
     return (
-      <div key={project.id} className="project-card-enhanced p-6">
+      <div key={project.id} className="bg-gray-800 rounded-lg border border-gray-700 p-4 hover:border-gray-600 transition-colors duration-150">
         {/* Header with title and actions */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+            <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-medium">
               {project.avatar}
             </div>
             <input
               type="text"
               value={project.name}
               onChange={(e) => updateProject(project.id, 'name', e.target.value)}
-              className="bg-transparent text-white font-semibold text-xl border-none outline-none focus:bg-gray-700/30 rounded px-2 py-1"
+              className="bg-transparent text-white font-medium text-lg border-none outline-none focus:bg-gray-700 rounded px-2 py-1"
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button 
               onClick={() => addSubitem(project.id)}
-              className="p-2 hover:bg-gray-700/50 rounded-lg text-blue-400 hover:text-blue-300"
+              className="p-1.5 hover:bg-gray-700 rounded text-blue-400 hover:text-blue-300"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-4 h-4" />
             </button>
-            <button className="p-2 hover:bg-gray-700/50 rounded-lg text-red-400 hover:text-red-300">
-              <Trash2 className="w-5 h-5" />
+            <button className="p-1.5 hover:bg-gray-700 rounded text-red-400 hover:text-red-300">
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Dynamic Column Fields */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-3 mb-4">
           {visibleColumns.filter(col => col.id !== 'name').map(column => (
             <div key={column.id} className="space-y-1">
               <div className="flex items-center justify-between">
@@ -902,7 +902,7 @@ const ProjectPanel: React.FC = () => {
                   </button>
                 )}
               </div>
-              <div className={`bg-gray-700/30 rounded-lg p-3 transition-all duration-200 ${isCustomizationMode ? 'customization-highlight' : ''}`}>
+              <div className="bg-gray-700 rounded-lg p-3 border border-gray-600">
                 {renderCellValue(column, project, (project as any)[column.id])}
               </div>
             </div>
