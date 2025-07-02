@@ -464,8 +464,10 @@ const ProjectBoard = () => {
 
   const renderTableView = () => (
     <div className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
-      {/* Table Header */}
-      <div className="flex bg-gray-700 text-sm font-medium text-gray-300 border-b-2 border-gray-600">
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        {/* Table Header */}
+        <div className="flex bg-gray-700 text-sm font-medium text-gray-300 border-b-2 border-gray-600">
         <div
           className="relative flex items-center gap-3 px-4 py-4 border-r border-gray-600"
           style={{ width: columnWidths.item }}
@@ -1037,6 +1039,228 @@ const ProjectBoard = () => {
           </button>
         </div>
       </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-4 p-4">
+        {filteredItems.map((item) => (
+          <div key={item.id} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+            {/* Project Header */}
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1">
+                <h3 className="text-white font-medium text-lg mb-1">{item.name}</h3>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                    {item.owner ? item.owner.charAt(0) : "U"}
+                  </div>
+                  <span className="text-gray-300 text-sm">{item.owner}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => addSubitem(item.id)}
+                  className="text-blue-400 hover:text-blue-300 p-2 hover:bg-gray-600 rounded"
+                  title="Add subitem"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => deleteItem(item.id)}
+                  className="text-red-400 hover:text-red-300 p-2 hover:bg-gray-600 rounded"
+                  title="Delete item"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Status and Priority Row */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1">
+                <label className="text-gray-400 text-xs block mb-1">Status</label>
+                <div
+                  className="px-3 py-1 rounded-full text-xs font-medium text-white text-center cursor-pointer"
+                  style={{ backgroundColor: statusColors[item.status] }}
+                  onClick={() => {
+                    const statusKeys = Object.keys(statusColors);
+                    const currentIndex = statusKeys.indexOf(item.status);
+                    const nextIndex = (currentIndex + 1) % statusKeys.length;
+                    updateItem(item.id, "status", statusKeys[nextIndex]);
+                  }}
+                >
+                  {item.status}
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className="text-gray-400 text-xs block mb-1">Priority</label>
+                <div
+                  className="px-3 py-1 rounded-full text-xs font-medium text-white text-center cursor-pointer"
+                  style={{ backgroundColor: priorityColors[item.priority] }}
+                  onClick={() => {
+                    const priorityKeys = Object.keys(priorityColors);
+                    const currentIndex = priorityKeys.indexOf(item.priority);
+                    const nextIndex = (currentIndex + 1) % priorityKeys.length;
+                    updateItem(item.id, "priority", priorityKeys[nextIndex]);
+                  }}
+                >
+                  {item.priority}
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mb-3">
+              <label className="text-gray-400 text-xs block mb-1">Progress</label>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 bg-gray-600 rounded-full h-3">
+                  <div
+                    className="bg-green-500 h-3 rounded-full transition-all duration-300"
+                    style={{ width: `${item.progress}%` }}
+                  ></div>
+                </div>
+                <span className="text-xs text-gray-400 w-10 text-right">
+                  {Math.round(item.progress)}%
+                </span>
+              </div>
+            </div>
+
+            {/* Dates Row */}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label className="text-gray-400 text-xs block mb-1">Measure Date</label>
+                <EditableCell
+                  value={item.measureDate}
+                  onSave={(value) => updateItem(item.id, "measureDate", value)}
+                  type="date"
+                  className="w-full text-sm bg-gray-600 rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="text-gray-400 text-xs block mb-1">Install Date</label>
+                <EditableCell
+                  value={item.installDate}
+                  onSave={(value) => updateItem(item.id, "installDate", value)}
+                  type="date"
+                  className="w-full text-sm bg-gray-600 rounded px-2 py-1"
+                />
+              </div>
+            </div>
+
+            {/* Financial Info Row */}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label className="text-gray-400 text-xs block mb-1">Materials</label>
+                <EditableCell
+                  value={item.materialsSpent}
+                  onSave={(value) => updateItem(item.id, "materialsSpent", Number(value))}
+                  type="number"
+                  className="text-green-400 font-medium text-sm w-full bg-gray-600 rounded px-2 py-1"
+                />
+              </div>
+              <div>
+                <label className="text-gray-400 text-xs block mb-1">First Bid</label>
+                <EditableCell
+                  value={item.firstBid}
+                  onSave={(value) => updateItem(item.id, "firstBid", Number(value))}
+                  type="number"
+                  className="text-blue-400 font-medium text-sm w-full bg-gray-600 rounded px-2 py-1"
+                />
+              </div>
+            </div>
+
+            {/* Notes */}
+            {item.notes && (
+              <div className="mb-3">
+                <label className="text-gray-400 text-xs block mb-1">Notes</label>
+                <EditableCell
+                  value={item.notes}
+                  onSave={(value) => updateItem(item.id, "notes", value)}
+                  className="text-gray-300 text-sm w-full bg-gray-600 rounded px-2 py-1"
+                />
+              </div>
+            )}
+
+            {/* Subitems for Mobile */}
+            {item.expanded && item.subitems.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-600">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-white font-medium">Subitems</h4>
+                  <button
+                    onClick={() => toggleItemExpansion(item.id)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {item.subitems.map((subitem) => (
+                    <div key={subitem.id} className="bg-gray-600 rounded p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <EditableCell
+                          value={subitem.name}
+                          onSave={(value) => updateSubitem(item.id, subitem.id, "name", value)}
+                          className="text-blue-400 font-medium text-sm"
+                        />
+                        <button
+                          onClick={() => deleteSubitem(item.id, subitem.id)}
+                          className="text-red-400 hover:text-red-300 p-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs">
+                          {subitem.owner ? subitem.owner.charAt(0) : "U"}
+                        </div>
+                        <EditableCell
+                          value={subitem.owner}
+                          onSave={(value) => updateSubitem(item.id, subitem.id, "owner", value)}
+                          type="select"
+                          options={["", ...teamMembers]}
+                          className="text-gray-300 text-xs flex-1"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Expand/Collapse Button */}
+            <div className="mt-3 pt-3 border-t border-gray-600 flex items-center justify-between">
+              <button
+                onClick={() => toggleItemExpansion(item.id)}
+                className="flex items-center gap-2 text-gray-400 hover:text-white text-sm"
+              >
+                <ChevronDown 
+                  className={`w-4 h-4 transition-transform ${item.expanded ? 'rotate-180' : ''}`} 
+                />
+                {item.expanded ? 'Hide' : 'Show'} subitems ({item.subitems.length})
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* Add New Item - Mobile */}
+        <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+          <div className="flex items-center gap-3">
+            <input
+              type="text"
+              placeholder="Enter item name..."
+              value={newItemName}
+              onChange={(e) => setNewItemName(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && addNewItem()}
+              className="flex-1 bg-gray-600 text-white px-3 py-2 rounded border border-gray-500 focus:border-blue-500 outline-none"
+            />
+            <button
+              onClick={addNewItem}
+              disabled={!newItemName.trim()}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 text-white px-4 py-2 rounded font-medium transition-colors"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
@@ -1238,85 +1462,96 @@ const ProjectBoard = () => {
     <div className="bg-gray-900 text-white min-h-screen">
       {/* Top Navigation Bar */}
       <div className="bg-gray-800 border-b border-gray-700 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex items-center gap-2">
-              <MoreHorizontal className="w-5 h-5 text-gray-400" />
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <MoreHorizontal className="w-5 h-5 text-gray-400 sm:block hidden" />
+              <ChevronDown className="w-4 h-4 text-gray-400 sm:block hidden" />
               <div className="bg-purple-600 px-3 py-1 rounded text-sm font-medium">
                 Windows & Doors Projects
               </div>
-              <span className="text-gray-400 text-sm">
+              <span className="text-gray-400 text-sm hidden sm:inline">
                 {filteredItems.length} of {items.length} items
               </span>
             </div>
 
             {/* Search */}
-            <div className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2 w-full sm:w-auto">
               <Search className="w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search projects..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-transparent border-none outline-none text-white text-sm"
+                className="bg-transparent border-none outline-none text-white text-sm flex-1 sm:w-auto"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowAutomations(true)}
-              className="flex items-center gap-1 bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-medium transition-colors"
-            >
-              <Zap className="w-4 h-4" />
-              Automate
-            </button>
-            <button className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium transition-colors">
-              <Share2 className="w-4 h-4" />
-              Share
-            </button>
-            <button className="text-gray-400 hover:text-white p-1">
-              <Bell className="w-5 h-5" />
-            </button>
-            <button className="text-gray-400 hover:text-white p-1">
-              <Settings className="w-5 h-5" />
-            </button>
+          {/* Mobile: Show count and simplified controls */}
+          <div className="flex items-center justify-between sm:justify-end gap-2">
+            <span className="text-gray-400 text-sm sm:hidden">
+              {filteredItems.length} of {items.length} items
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowAutomations(true)}
+                className="flex items-center gap-1 bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm font-medium transition-colors"
+              >
+                <Zap className="w-4 h-4" />
+                <span className="hidden sm:inline">Automate</span>
+              </button>
+              <button className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium transition-colors">
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+              <button className="text-gray-400 hover:text-white p-1 hidden sm:block">
+                <Bell className="w-5 h-5" />
+              </button>
+              <button className="text-gray-400 hover:text-white p-1">
+                <Settings className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {/* View Tabs and Controls */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-1 bg-gray-800 rounded-lg p-1 border border-gray-700">
-            {views.map((view) => {
-              const IconComponent = view.icon;
-              return (
-                <button
-                  key={view.id}
-                  onClick={() => setCurrentView(view.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === view.id
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-400 hover:text-white hover:bg-gray-700"
-                  }`}
-                >
-                  <IconComponent className="w-4 h-4" />
-                  {view.name}
-                </button>
-              );
-            })}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          {/* View Tabs - Responsive */}
+          <div className="overflow-x-auto">
+            <div className="flex items-center gap-1 bg-gray-800 rounded-lg p-1 border border-gray-700 w-max">
+              {views.map((view) => {
+                const IconComponent = view.icon;
+                return (
+                  <button
+                    key={view.id}
+                    onClick={() => setCurrentView(view.id)}
+                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+                      currentView === view.id
+                        ? "bg-blue-600 text-white"
+                        : "text-gray-400 hover:text-white hover:bg-gray-700"
+                    }`}
+                  >
+                    <IconComponent className="w-4 h-4" />
+                    <span className="hidden sm:inline">{view.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
+          {/* Controls - Mobile-responsive */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            {/* Filters row */}
+            <div className="flex items-center gap-2 overflow-x-auto">
               <select
                 value={filters.status}
                 onChange={(e) =>
                   setFilters({ ...filters, status: e.target.value })
                 }
-                className="bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm"
+                className="bg-gray-800 text-white border border-gray-600 rounded px-2 sm:px-3 py-2 text-sm min-w-0 flex-shrink-0"
               >
                 <option value="">All Status</option>
                 {Object.keys(statusColors).map((status) => (
@@ -1330,7 +1565,7 @@ const ProjectBoard = () => {
                 onChange={(e) =>
                   setFilters({ ...filters, priority: e.target.value })
                 }
-                className="bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm"
+                className="bg-gray-800 text-white border border-gray-600 rounded px-2 sm:px-3 py-2 text-sm min-w-0 flex-shrink-0"
               >
                 <option value="">All Priority</option>
                 {Object.keys(priorityColors).map((priority) => (
@@ -1344,7 +1579,7 @@ const ProjectBoard = () => {
                 onChange={(e) =>
                   setFilters({ ...filters, assignee: e.target.value })
                 }
-                className="bg-gray-800 text-white border border-gray-600 rounded px-3 py-2 text-sm"
+                className="bg-gray-800 text-white border border-gray-600 rounded px-2 sm:px-3 py-2 text-sm min-w-0 flex-shrink-0"
               >
                 <option value="">All Assignees</option>
                 {teamMembers.map((member) => (
@@ -1354,19 +1589,23 @@ const ProjectBoard = () => {
                 ))}
               </select>
             </div>
-            <button className="flex items-center gap-1 text-gray-400 hover:text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors">
-              <Filter className="w-4 h-4" />
-              More Filters
-            </button>
-            <button className="flex items-center gap-1 text-gray-400 hover:text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors">
-              <Download className="w-4 h-4" />
-              Export
-            </button>
+            
+            {/* Action buttons */}
+            <div className="flex items-center gap-2">
+              <button className="flex items-center gap-1 text-gray-400 hover:text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+                <Filter className="w-4 h-4" />
+                <span className="hidden lg:inline">More Filters</span>
+              </button>
+              <button className="flex items-center gap-1 text-gray-400 hover:text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+                <Download className="w-4 h-4" />
+                <span className="hidden lg:inline">Export</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center gap-2 mb-2">
               <Target className="w-5 h-5 text-blue-400" />
