@@ -735,36 +735,37 @@ export default function Settings() {
                       placeholder="SG...."
                       disabled={!isEditingCompany}
                     />
+
                   </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Twilio Account SID</Label>
-                    <Input
-                      value={isEditingCompany ? (companyFormData.twilioAccountSid || '') : (companySettings?.twilioAccountSid || "")}
-                      onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, twilioAccountSid: e.target.value }))}
-                      placeholder="AC..."
-                      disabled={!isEditingCompany}
-                    />
                   </div>
-                  <div>
-                    <Label>Twilio Auth Token</Label>
-                    <Input
-                      type={isEditingCompany ? "text" : "password"}
-                      value={isEditingCompany ? (companyFormData.twilioAuthToken || '') : (companySettings?.twilioAuthToken || "")}
-                      onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, twilioAuthToken: e.target.value }))}
-                      placeholder="Enter Twilio auth token"
-                      disabled={!isEditingCompany}
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Twilio Account SID</Label>
+                      <Input
+                        value={isEditingCompany ? (companyFormData.twilioAccountSid || '') : (companySettings?.twilioAccountSid || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, twilioAccountSid: e.target.value }))}
+                        placeholder="AC..."
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
+                    <div>
+                      <Label>Twilio Auth Token</Label>
+                      <Input
+                        type={isEditingCompany ? "text" : "password"}
+                        value={isEditingCompany ? (companyFormData.twilioAuthToken || '') : (companySettings?.twilioAuthToken || "")}
+                        onChange={(e) => isEditingCompany && setCompanyFormData((prev: any) => ({ ...prev, twilioAuthToken: e.target.value }))}
+                        placeholder="Enter Twilio auth token"
+                        disabled={!isEditingCompany}
+                      />
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             </TabsContent>
-          )}
-        </Tabs>
+          </Tabs>
         )}
       </main>
     </div>
-  );
+    );
+  }
 }
