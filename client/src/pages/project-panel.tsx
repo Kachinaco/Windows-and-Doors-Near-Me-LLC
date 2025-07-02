@@ -27,7 +27,6 @@ import {
   Hash,
   Users,
   Tags,
-  Tag,
   Paperclip,
   Link,
   Mail,
@@ -1194,7 +1193,7 @@ const ProjectPanel: React.FC = () => {
                 <span className="text-xs font-medium">Progress</span>
               </button>
               <button onClick={() => addColumn('tags')} className="column-btn-modern bg-pink-600 hover:bg-pink-500">
-                <Tag className="w-5 h-5" />
+                <Tags className="w-5 h-5" />
                 <span className="text-xs font-medium">Tags</span>
               </button>
             </div>
@@ -1253,7 +1252,7 @@ const ProjectPanel: React.FC = () => {
                 <span className="text-xs">Progress</span>
               </button>
               <button onClick={() => addColumn('tags')} className="column-btn-minimal bg-pink-600">
-                <Tag className="w-4 h-4" />
+                <Tags className="w-4 h-4" />
                 <span className="text-xs">Tags</span>
               </button>
             </div>
