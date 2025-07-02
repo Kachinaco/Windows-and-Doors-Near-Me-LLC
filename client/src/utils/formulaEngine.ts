@@ -35,6 +35,11 @@ export class FormulaEngine {
     }
   }
 
+  // Alias for compatibility
+  calculate(formula: string, context: FormulaContext): any {
+    return this.evaluateFormula(formula, context);
+  }
+
   private preprocessFormula(formula: string): string {
     // Remove whitespace and normalize
     return formula.trim().replace(/\s+/g, ' ');
