@@ -88,13 +88,7 @@ const ProjectBoard = () => {
     { id: "dashboard", name: "Dashboard", icon: Eye },
   ];
 
-  const teamMembers = [
-    "John Doe",
-    "Jane Smith",
-    "Mike Johnson",
-    "Sarah Wilson",
-    "Tom Brown",
-  ];
+  const teamMembers = [];
 
   // Real-time updates would be handled here when connected to actual data
 
@@ -1736,34 +1730,9 @@ const ProjectBoard = () => {
                   <BarChart3 className="w-5 h-5" />
                   Monthly Revenue Trend
                 </h3>
-                <div className="space-y-3">
-                  {["Jan", "Feb", "Mar", "Apr", "May", "Jun"].map(
-                    (month, index) => {
-                      const revenue = Math.random() * 50000 + 20000;
-                      const maxRevenue = 70000;
-                      const percentage = (revenue / maxRevenue) * 100;
-                      return (
-                        <div key={month} className="flex items-center gap-3">
-                          <div className="w-8 text-gray-400 text-sm">
-                            {month}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="w-full bg-gray-700 rounded-full h-3">
-                                <div
-                                  className="bg-green-500 h-3 rounded-full transition-all duration-300"
-                                  style={{ width: `${percentage}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-gray-300 text-sm ml-3">
-                                ${Math.round(revenue).toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    },
-                  )}
+                <div className="text-center py-8">
+                  <p className="text-gray-400">No revenue data available yet</p>
+                  <p className="text-gray-500 text-sm mt-1">Add projects to see revenue trends</p>
                 </div>
               </div>
             </div>
@@ -1776,53 +1745,9 @@ const ProjectBoard = () => {
                   <Clock className="w-5 h-5" />
                   Recent Activity
                 </h3>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                    <div className="flex-1">
-                      <p className="text-gray-300 text-sm">
-                        <span className="text-white font-medium">John Doe</span>{" "}
-                        completed measurement for Front Door Project
-                      </p>
-                      <p className="text-gray-500 text-xs">2 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                    <div className="flex-1">
-                      <p className="text-gray-300 text-sm">
-                        <span className="text-white font-medium">
-                          Jane Smith
-                        </span>{" "}
-                        updated status to "Quoted"
-                      </p>
-                      <p className="text-gray-500 text-xs">4 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
-                    <div className="flex-1">
-                      <p className="text-gray-300 text-sm">
-                        New lead created:{" "}
-                        <span className="text-white font-medium">
-                          Kitchen Windows Replacement
-                        </span>
-                      </p>
-                      <p className="text-gray-500 text-xs">6 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
-                    <div className="flex-1">
-                      <p className="text-gray-300 text-sm">
-                        <span className="text-white font-medium">
-                          Mike Johnson
-                        </span>{" "}
-                        scheduled installation
-                      </p>
-                      <p className="text-gray-500 text-xs">1 day ago</p>
-                    </div>
-                  </div>
+                <div className="text-center py-8">
+                  <p className="text-gray-400">No recent activity</p>
+                  <p className="text-gray-500 text-sm mt-1">Project activities will appear here</p>
                 </div>
               </div>
 
@@ -1880,48 +1805,9 @@ const ProjectBoard = () => {
                   <Users className="w-5 h-5" />
                   Team Performance
                 </h3>
-                <div className="space-y-4">
-                  {teamMembers.slice(0, 4).map((member, index) => {
-                    const projectCount = items.filter(
-                      (item) => item.owner === member,
-                    ).length;
-                    const completedCount = items.filter(
-                      (item) =>
-                        item.owner === member &&
-                        (item.status === "Done" || item.status === "Installed"),
-                    ).length;
-                    const efficiency =
-                      projectCount > 0
-                        ? (completedCount / projectCount) * 100
-                        : 0;
-                    return (
-                      <div key={member} className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                          {member.charAt(0)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-white text-sm font-medium">
-                              {member}
-                            </span>
-                            <span className="text-gray-400 text-sm">
-                              {Math.round(efficiency)}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-gray-700 rounded-full h-2">
-                            <div
-                              className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${efficiency}%` }}
-                            ></div>
-                          </div>
-                          <p className="text-gray-500 text-xs mt-1">
-                            {completedCount} of {projectCount} projects
-                            completed
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="text-center py-8">
+                  <p className="text-gray-400">No team members added yet</p>
+                  <p className="text-gray-500 text-sm mt-1">Add team members to track performance</p>
                 </div>
               </div>
             </div>
