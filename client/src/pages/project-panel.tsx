@@ -20,7 +20,24 @@ import {
   Filter,
   SortAsc,
   Eye,
-  EyeOff
+  EyeOff,
+  Type,
+  FileText,
+  Circle,
+  Hash,
+  Users,
+  Tags,
+  Paperclip,
+  Link,
+  Mail,
+  Phone,
+  CheckSquare,
+  Star,
+  MapPin,
+  BarChart2,
+  RefreshCw,
+  ArrowRight,
+  Heart
 } from 'lucide-react';
 import FormulaEngine, { FormulaContext } from '../utils/formulaEngine';
 
@@ -553,6 +570,255 @@ const ProjectPanel: React.FC = () => {
     }
   };
 
+  // Render cell value based on column type
+  const renderCellValue = (column: Column, project: ProjectItem, value: any) => {
+    const columnKey = column.id as keyof ProjectItem;
+    
+    switch (column.type) {
+      case 'text':
+      case 'long_text':
+        return (
+          <input
+            type="text"
+            value={value || ''}
+            onChange={(e) => updateProject(project.id, columnKey, e.target.value)}
+            className="bg-transparent text-white border-none outline-none w-full"
+            placeholder="Enter text..."
+          />
+        );
+        
+      case 'status':
+      case 'dropdown':
+        const options = column.settings.options || [];
+        const selectedOption = options.find(opt => opt.value === value);
+        return (
+          <div className="flex items-center gap-2">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: selectedOption?.color || '#gray' }}
+            />
+            <select
+              value={value || ''}
+              onChange={(e) => updateProject(project.id, columnKey, e.target.value)}
+              className="bg-gray-700 text-white border-none outline-none text-sm rounded px-2 py-1"
+            >
+              <option value="">Select...</option>
+              {options.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        );
+        
+      case 'number':
+        return (
+          <input
+            type="number"
+            value={value || ''}
+            onChange={(e) => updateProject(project.id, columnKey, parseFloat(e.target.value) || 0)}
+            className="bg-transparent text-white border-none outline-none w-full text-right"
+            placeholder="0"
+          />
+        );
+        
+      case 'date':
+        return (
+          <input
+            type="date"
+            value={value || ''}
+            onChange={(e) => updateProject(project.id, columnKey, e.target.value)}
+            className="bg-gray-700 text-white border-none outline-none text-sm rounded px-2 py-1"
+          />
+        );
+        
+      case 'people':
+        return (
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs">
+              {typeof value === 'string' && value ? value.charAt(0) : 'U'}
+            </div>
+            <input
+              type="text"
+              value={value || ''}
+              onChange={(e) => updateProject(project.id, columnKey, e.target.value)}
+              className="bg-transparent text-white border-none outline-none flex-1 text-sm"
+              placeholder="Assign person..."
+            />
+          </div>
+        );
+        
+      case 'progress':
+        const progressValue = typeof value === 'number' ? value : 0;
+        return (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-gray-600 rounded-full h-2">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all"
+                style={{ width: `${progressValue}%` }}
+              />
+            </div>
+            <span className="text-xs text-gray-300">{progressValue}%</span>
+          </div>
+        );
+        
+      case 'checkbox':
+        return (
+          <input
+            type="checkbox"
+            checked={!!value}
+            onChange={(e) => updateProject(project.id, columnKey, e.target.checked)}
+            className="w-4 h-4 accent-blue-500"
+          />
+        );
+        
+      case 'rating':
+        const ratingValue = typeof value === 'number' ? value : 0;
+        const maxRating = column.settings.ratingScale || 5;
+        return (
+          <div className="flex items-center gap-1">
+            {Array.from({ length: maxRating }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => updateProject(project.id, columnKey, i + 1)}
+                className={`text-lg ${i < ratingValue ? 'text-yellow-400' : 'text-gray-600'}`}
+              >
+                ⭐
+              </button>
+            ))}
+          </div>
+        );
+        
+      case 'email':
+        return (
+          <input
+            type="email"
+            value={value || ''}
+            onChange={(e) => updateProject(project.id, columnKey, e.target.value)}
+            className="bg-transparent text-white border-none outline-none w-full text-sm"
+            placeholder="email@example.com"
+          />
+        );
+        
+      case 'phone':
+        return (
+          <input
+            type="tel"
+            value={value || ''}
+            onChange={(e) => updateProject(project.id, columnKey, e.target.value)}
+            className="bg-transparent text-white border-none outline-none w-full text-sm"
+            placeholder="(555) 123-4567"
+          />
+        );
+        
+      case 'link':
+        return (
+          <div className="flex items-center gap-2">
+            <input
+              type="url"
+              value={value || ''}
+              onChange={(e) => updateProject(project.id, columnKey, e.target.value)}
+              className="bg-transparent text-white border-none outline-none flex-1 text-sm"
+              placeholder="https://..."
+            />
+            {value && (
+              <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">
+                <Link className="w-4 h-4" />
+              </a>
+            )}
+          </div>
+        );
+        
+      case 'tags':
+        const tags = Array.isArray(value) ? value : [];
+        return (
+          <div className="flex flex-wrap gap-1">
+            {tags.map((tag, index) => (
+              <span key={index} className="bg-purple-600 text-white px-2 py-1 rounded text-xs">
+                {tag}
+              </span>
+            ))}
+            <input
+              type="text"
+              placeholder="Add tag..."
+              className="bg-transparent text-white border-none outline-none text-sm min-w-20"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                  const newTags = [...tags, e.currentTarget.value.trim()];
+                  updateProject(project.id, columnKey, newTags);
+                  e.currentTarget.value = '';
+                }
+              }}
+            />
+          </div>
+        );
+        
+      case 'formula':
+        const formulaResult = formulaEngine.calculate(column.settings.formula || '0', {
+          project,
+          projects,
+          subitems: project.subitems
+        });
+        const format = column.settings.numberFormat;
+        let displayValue = formulaResult;
+        
+        if (format === 'currency') {
+          displayValue = new Intl.NumberFormat('en-US', { 
+            style: 'currency', 
+            currency: 'USD' 
+          }).format(formulaResult);
+        } else if (format === 'percentage') {
+          displayValue = `${(formulaResult * 100).toFixed(1)}%`;
+        }
+        
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-blue-400">{displayValue}</span>
+            <button
+              onClick={() => setEditingFormula({ 
+                columnId: column.id, 
+                formula: column.settings.formula || '0' 
+              })}
+              className="text-gray-400 hover:text-white"
+            >
+              <Calculator className="w-4 h-4" />
+            </button>
+          </div>
+        );
+        
+      case 'auto_number':
+        const prefix = column.settings.autoNumberPrefix || '#';
+        const startNum = column.settings.autoNumberStart || 1;
+        return (
+          <span className="text-gray-400 text-sm">
+            {prefix}{startNum + project.id}
+          </span>
+        );
+        
+      case 'creation_log':
+        return (
+          <span className="text-gray-400 text-sm">
+            {new Date().toLocaleDateString()}
+          </span>
+        );
+        
+      case 'last_updated':
+        return (
+          <span className="text-gray-400 text-sm">
+            {new Date().toLocaleDateString()}
+          </span>
+        );
+        
+      default:
+        return (
+          <span className="text-gray-400 text-sm">
+            {value || '-'}
+          </span>
+        );
+    }
+  };
+
   const deleteColumn = (columnId: string) => {
     setColumns(prev => prev.filter(col => col.id !== columnId));
   };
@@ -570,30 +836,58 @@ const ProjectPanel: React.FC = () => {
     setEditingColumnName(null);
   };
 
-  const renderProjectCard = (project: ProjectItem) => (
-    <div key={project.id} className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 shadow-lg">
-      {/* Header with title and actions */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-            {project.avatar}
+  const renderProjectCard = (project: ProjectItem) => {
+    const visibleColumns = columns.filter(col => col.visible).sort((a, b) => a.order - b.order);
+    
+    return (
+      <div key={project.id} className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 shadow-lg">
+        {/* Header with title and actions */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+              {project.avatar}
+            </div>
+            <input
+              type="text"
+              value={project.name}
+              onChange={(e) => updateProject(project.id, 'name', e.target.value)}
+              className="bg-transparent text-white font-semibold text-xl border-none outline-none focus:bg-gray-700/30 rounded px-2 py-1"
+            />
           </div>
-          <input
-            type="text"
-            value={project.name}
-            onChange={(e) => updateProject(project.id, 'name', e.target.value)}
-            className="bg-transparent text-white font-semibold text-xl border-none outline-none focus:bg-gray-700/30 rounded px-2 py-1"
-          />
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => addSubitem(project.id)}
+              className="p-2 hover:bg-gray-700/50 rounded-lg text-blue-400 hover:text-blue-300"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+            <button className="p-2 hover:bg-gray-700/50 rounded-lg text-red-400 hover:text-red-300">
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-700/50 rounded-lg text-blue-400 hover:text-blue-300">
-            <Plus className="w-5 h-5" />
-          </button>
-          <button className="p-2 hover:bg-gray-700/50 rounded-lg text-red-400 hover:text-red-300">
-            <Trash2 className="w-5 h-5" />
-          </button>
+
+        {/* Dynamic Column Fields */}
+        <div className="space-y-4 mb-6">
+          {visibleColumns.filter(col => col.id !== 'name').map(column => (
+            <div key={column.id} className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label className="text-gray-400 text-sm font-medium">{column.name}</label>
+                {isCustomizationMode && (
+                  <button
+                    onClick={() => deleteColumn(column.id)}
+                    className="text-red-400 hover:text-red-300 p-1"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+              <div className="bg-gray-700/30 rounded-lg p-3">
+                {renderCellValue(column, project, (project as any)[column.id])}
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
 
       {/* Status and Priority Row */}
       <div className="grid grid-cols-2 gap-3 mb-6">
@@ -828,7 +1122,8 @@ const ProjectPanel: React.FC = () => {
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white relative">
