@@ -21,7 +21,7 @@ import ProjectsPage from "@/pages/projects";
 import ProjectTablePage from "@/pages/project-table";
 import SimpleExcelManager from "@/pages/simple-excel-manager";
 import MondayBoard from "@/pages/monday-board";
-import ProjectPanel from "@/pages/project-panel";
+import ProjectPanel from "@/pages/project-panel-clean";
 import PipelinePage from "@/pages/pipeline";
 import LeadsPage from "@/pages/leads";
 import SchedulingPage from "@/pages/scheduling";
