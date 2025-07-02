@@ -27,6 +27,7 @@ import {
   Hash,
   Users,
   Tags,
+  Tag,
   Paperclip,
   Link,
   Mail,
@@ -756,9 +757,10 @@ const ProjectPanel: React.FC = () => {
         
       case 'formula':
         const formulaResult = formulaEngine.calculate(column.settings.formula || '0', {
-          project,
-          projects,
-          subitems: project.subitems
+          item: project,
+          subitems: project.subitems || [],
+          columns: {},
+          boardData: projects
         });
         const format = column.settings.numberFormat;
         let displayValue = formulaResult;

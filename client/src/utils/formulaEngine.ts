@@ -138,14 +138,23 @@ export class FormulaEngine {
   private getColumnValue(columnName: string, context: FormulaContext): any {
     const lowerName = columnName.toLowerCase();
     
+    // Handle subitems.property references
+    if (lowerName.startsWith('subitems.')) {
+      const propertyName = lowerName.replace('subitems.', '');
+      const subitemValues = (context.subitems || [])
+        .map(subitem => subitem && subitem[propertyName] ? subitem[propertyName] : 0)
+        .filter(val => val !== undefined && val !== null && val !== '');
+      return subitemValues;
+    }
+    
     // Check item properties first
-    if (context.item[lowerName] !== undefined) {
+    if (context.item && context.item[lowerName] !== undefined) {
       return context.item[lowerName];
     }
     
     // Check subitems for aggregated values
-    const subitemValues = context.subitems
-      .map(subitem => subitem[lowerName])
+    const subitemValues = (context.subitems || [])
+      .map(subitem => subitem && subitem[lowerName] ? subitem[lowerName] : 0)
       .filter(val => val !== undefined && val !== null && val !== '');
     
     if (subitemValues.length > 0) {
