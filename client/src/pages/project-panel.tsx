@@ -527,13 +527,17 @@ const ProjectPanel: React.FC = () => {
       order: maxOrder + 1,
       settings: getDefaultSettings(type)
     };
+    
+    // Add column with animation feedback
     setColumns(prev => [...prev, newColumn]);
     
-    // Close the customization mode after adding
-    setIsCustomizationMode(false);
+    // Close modal with delay for visual feedback
+    setTimeout(() => {
+      setIsCustomizationMode(false);
+    }, 300);
     
-    // Show success message
-    console.log(`Added new ${type} column: ${newColumn.name}`);
+    // Success feedback
+    console.log(`✓ Added new ${type} column: ${newColumn.name}`);
   };
 
   const getDefaultSettings = (type: Column['type']) => {
@@ -855,7 +859,7 @@ const ProjectPanel: React.FC = () => {
     const visibleColumns = columns.filter(col => col.visible).sort((a, b) => a.order - b.order);
     
     return (
-      <div key={project.id} className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 shadow-lg">
+      <div key={project.id} className="project-card-enhanced p-6">
         {/* Header with title and actions */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -891,13 +895,14 @@ const ProjectPanel: React.FC = () => {
                 {isCustomizationMode && (
                   <button
                     onClick={() => deleteColumn(column.id)}
-                    className="text-red-400 hover:text-red-300 p-1"
+                    className="delete-btn"
+                    title={`Delete ${column.name} column`}
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
-              <div className="bg-gray-700/30 rounded-lg p-3">
+              <div className={`bg-gray-700/30 rounded-lg p-3 transition-all duration-200 ${isCustomizationMode ? 'customization-highlight' : ''}`}>
                 {renderCellValue(column, project, (project as any)[column.id])}
               </div>
             </div>
@@ -912,9 +917,10 @@ const ProjectPanel: React.FC = () => {
             {isCustomizationMode && (
               <button
                 onClick={() => deleteColumn('status')}
-                className="text-red-400 hover:text-red-300 p-1"
+                className="delete-btn"
+                title="Delete Status column"
               >
-                <X className="w-3 h-3" />
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -943,9 +949,10 @@ const ProjectPanel: React.FC = () => {
             {isCustomizationMode && (
               <button
                 onClick={() => deleteColumn('priority')}
-                className="text-red-400 hover:text-red-300 p-1"
+                className="delete-btn"
+                title="Delete Priority column"
               >
-                <X className="w-3 h-3" />
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -1005,9 +1012,10 @@ const ProjectPanel: React.FC = () => {
             {isCustomizationMode && (
               <button
                 onClick={() => deleteColumn('materials')}
-                className="text-red-400 hover:text-red-300 p-1"
+                className="delete-btn"
+                title="Delete Materials column"
               >
-                <X className="w-3 h-3" />
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -1037,9 +1045,10 @@ const ProjectPanel: React.FC = () => {
             {isCustomizationMode && (
               <button
                 onClick={() => deleteColumn('firstBid')}
-                className="text-red-400 hover:text-red-300 p-1"
+                className="delete-btn"
+                title="Delete First Bid column"
               >
-                <X className="w-3 h-3" />
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -1100,7 +1109,8 @@ const ProjectPanel: React.FC = () => {
                   />
                   <button
                     onClick={() => deleteSubitem(project.id, subitem.id)}
-                    className="text-red-400 hover:text-red-300 p-1"
+                    className="delete-btn"
+                    title={`Delete ${subitem.name} subitem`}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -1222,72 +1232,92 @@ const ProjectPanel: React.FC = () => {
         </div>
       )}
       
-      {/* Minimal Column Addition Modal */}
+      {/* Enhanced Column Addition Modal */}
       {isCustomizationMode && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-800 rounded-2xl p-4 shadow-xl max-w-sm w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white text-base font-medium">Add Column</h3>
+        <div className="modal-backdrop">
+          <div className="modal-content">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-white text-xl font-semibold mb-1">Add New Column</h3>
+                <p className="text-gray-400 text-sm">Choose a column type to enhance your board</p>
+              </div>
               <button 
                 onClick={() => setIsCustomizationMode(false)}
-                className="p-1 hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-700/50 rounded-xl transition-all duration-200 hover:scale-110"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-5 h-5 text-gray-400" />
               </button>
             </div>
             
-            <div className="grid grid-cols-4 gap-2 mb-4">
-              <button onClick={() => addColumn('text')} className="column-btn-minimal bg-blue-600 hover:bg-blue-500 transition-colors">
-                <Type className="w-4 h-4" />
-                <span className="text-xs">Text</span>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <button onClick={() => addColumn('text')} className="column-btn-minimal bg-gradient-to-r from-blue-600 to-blue-700">
+                <Type className="w-6 h-6 mb-2" />
+                <span className="text-sm font-medium">Text</span>
+                <span className="text-xs opacity-75">Single line text</span>
               </button>
-              <button onClick={() => addColumn('dropdown')} className="column-btn-minimal bg-orange-600 hover:bg-orange-500 transition-colors">
-                <ChevronDown className="w-4 h-4" />
-                <span className="text-xs">Dropdown</span>
+              <button onClick={() => addColumn('dropdown')} className="column-btn-minimal bg-gradient-to-r from-orange-600 to-orange-700">
+                <ChevronDown className="w-6 h-6 mb-2" />
+                <span className="text-sm font-medium">Dropdown</span>
+                <span className="text-xs opacity-75">Select from options</span>
               </button>
-              <button onClick={() => addColumn('status')} className="column-btn-minimal bg-green-600 hover:bg-green-500 transition-colors">
-                <Circle className="w-4 h-4" />
-                <span className="text-xs">Status</span>
+              <button onClick={() => addColumn('status')} className="column-btn-minimal bg-gradient-to-r from-green-600 to-green-700">
+                <Circle className="w-6 h-6 mb-2" />
+                <span className="text-sm font-medium">Status</span>
+                <span className="text-xs opacity-75">Project status</span>
               </button>
-              <button onClick={() => addColumn('people')} className="column-btn-minimal bg-purple-600 hover:bg-purple-500 transition-colors">
-                <Users className="w-4 h-4" />
-                <span className="text-xs">People</span>
+              <button onClick={() => addColumn('people')} className="column-btn-minimal bg-gradient-to-r from-purple-600 to-purple-700">
+                <Users className="w-6 h-6 mb-2" />
+                <span className="text-sm font-medium">People</span>
+                <span className="text-xs opacity-75">Team members</span>
               </button>
-              <button onClick={() => addColumn('number')} className="column-btn-minimal bg-indigo-600 hover:bg-indigo-500 transition-colors">
-                <Hash className="w-4 h-4" />
-                <span className="text-xs">Number</span>
+              <button onClick={() => addColumn('number')} className="column-btn-minimal bg-gradient-to-r from-indigo-600 to-indigo-700">
+                <Hash className="w-6 h-6 mb-2" />
+                <span className="text-sm font-medium">Number</span>
+                <span className="text-xs opacity-75">Numeric values</span>
               </button>
-              <button onClick={() => addColumn('date')} className="column-btn-minimal bg-teal-600 hover:bg-teal-500 transition-colors">
-                <Calendar className="w-4 h-4" />
-                <span className="text-xs">Date</span>
+              <button onClick={() => addColumn('date')} className="column-btn-minimal bg-gradient-to-r from-teal-600 to-teal-700">
+                <Calendar className="w-6 h-6 mb-2" />
+                <span className="text-sm font-medium">Date</span>
+                <span className="text-xs opacity-75">Calendar dates</span>
               </button>
-              <button onClick={() => addColumn('progress')} className="column-btn-minimal bg-blue-500 hover:bg-blue-400 transition-colors">
-                <BarChart3 className="w-4 h-4" />
-                <span className="text-xs">Progress</span>
+              <button onClick={() => addColumn('progress')} className="column-btn-minimal bg-gradient-to-r from-cyan-600 to-cyan-700">
+                <BarChart3 className="w-6 h-6 mb-2" />
+                <span className="text-sm font-medium">Progress</span>
+                <span className="text-xs opacity-75">Percentage bars</span>
               </button>
-              <button onClick={() => addColumn('tags')} className="column-btn-minimal bg-pink-600 hover:bg-pink-500 transition-colors">
-                <Tags className="w-4 h-4" />
-                <span className="text-xs">Tags</span>
+              <button onClick={() => addColumn('tags')} className="column-btn-minimal bg-gradient-to-r from-pink-600 to-pink-700">
+                <Tags className="w-6 h-6 mb-2" />
+                <span className="text-sm font-medium">Tags</span>
+                <span className="text-xs opacity-75">Color labels</span>
               </button>
             </div>
             
-            <button 
-              onClick={() => setIsCustomizationMode(false)}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm py-2 px-3 rounded-xl transition-colors"
-            >
-              Done
-            </button>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setIsCustomizationMode(false)}
+                className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => setIsCustomizationMode(false)}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 hover:scale-105"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Floating Add Column Button */}
+      {/* Enhanced Floating Add Column Button */}
       {!isCustomizationMode && (
         <button
           onClick={() => setIsCustomizationMode(true)}
-          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 z-40"
+          className="floating-add-btn"
+          title="Add new column"
         >
-          <Plus className="w-6 h-6" />
+          <Plus className="w-7 h-7" />
         </button>
       )}
 
