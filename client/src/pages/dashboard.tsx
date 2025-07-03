@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useRef, useEffect } from "react";
+import SimpleProjectTable from "@/components/SimpleProjectTable";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -992,6 +993,13 @@ export default function Dashboard() {
                 </Link>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Monday.com Style Project Table - Only for Contractors */}
+        {effectiveUser?.role !== 'customer' && (
+          <div className="mb-8">
+            <SimpleProjectTable height="500px" className="mb-6" />
           </div>
         )}
       </main>
