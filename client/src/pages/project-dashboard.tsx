@@ -33,6 +33,78 @@ import {
   Mail,
   Plus,
   User,
+  BarChart3,
+  Users,
+  MapPin,
+  Phone,
+  Filter,
+  ArrowUpDown,
+  Settings,
+  Edit,
+  Archive,
+  Trash2,
+  UserPlus,
+  MoreHorizontal,
+  FolderOpen,
+  Folder,
+  X,
+  Save,
+  Star,
+  Target,
+  TrendingUp,
+  Calculator,
+  Hash,
+  FileX,
+  Link,
+  AtSign,
+  Zap,
+  Eye,
+  EyeOff,
+  Columns,
+  SortAsc,
+  SortDesc,
+  Copy,
+  Download,
+  Upload,
+  RefreshCw,
+  Search,
+  Bell,
+  AlertCircle,
+  Info,
+  Home,
+  Building,
+  Car,
+  Briefcase,
+  Heart,
+  Smile,
+  ThumbsUp,
+  Coffee,
+  Zap as ZapIcon,
+  Sun,
+  Moon,
+  CloudRain,
+  Music,
+  Camera,
+  Gamepad2,
+  Plane,
+  Gift,
+  Flag,
+  Award,
+  Crown,
+  Gem,
+  Shield,
+  Key,
+  Lock,
+  Unlock,
+  Database,
+  Server,
+  Wifi,
+  Bluetooth,
+  Smartphone,
+  Laptop,
+  Monitor,
+  Headphones,
+
 } from "lucide-react";
 import type { Project, ProjectUpdate } from "@shared/schema";
 
@@ -164,6 +236,12 @@ export default function ProjectDashboard() {
               className="text-[#d1d5db] bg-[#1f2936] border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
             >
               Details
+            </TabsTrigger>
+            <TabsTrigger
+              value="board"
+              className="text-[#d1d5db] bg-[#1f2936] border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:text-white rounded-none px-6 py-3"
+            >
+              Board
             </TabsTrigger>
           </TabsList>
 
@@ -443,6 +521,278 @@ export default function ProjectDashboard() {
                     </div>
                   </CardContent>
                 </Card>
+              </div>
+            </TabsContent>
+
+            {/* Board Tab Content - Monday.com-style Interface */}
+            <TabsContent value="board" className="mt-0 p-0">
+              <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                {/* Enhanced Board Header */}
+                <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <BarChart3 className="w-6 h-6 text-blue-600" />
+                      <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                        {project?.name || "Project Board"}
+                      </h1>
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        Enhanced
+                      </Badge>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button variant="outline" size="sm">
+                        <Filter className="w-4 h-4 mr-2" />
+                        Filter
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <ArrowUpDown className="w-4 h-4 mr-2" />
+                        Sort
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Settings
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Board Content */}
+                <div className="p-4">
+                  {/* Project Summary Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <Card className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                              {project?.status || "Active"}
+                            </p>
+                          </div>
+                          <div className="p-2 bg-blue-600 rounded-lg">
+                            <Target className="w-5 h-5 text-white" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Assigned To</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                              {project?.assignedTo || "Team"}
+                            </p>
+                          </div>
+                          <div className="p-2 bg-green-600 rounded-lg">
+                            <Users className="w-5 h-5 text-white" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Progress</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                              75%
+                            </p>
+                          </div>
+                          <div className="p-2 bg-purple-600 rounded-lg">
+                            <TrendingUp className="w-5 h-5 text-white" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Monday.com-style Table */}
+                  <Card className="bg-white dark:bg-gray-800 border-0 shadow-lg">
+                    <div className="p-0">
+                      {/* Table Header */}
+                      <div className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                        <div className="grid grid-cols-8 gap-4 p-4 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <div className="flex items-center">
+                            <CheckSquare className="w-4 h-4 mr-2" />
+                            Task
+                          </div>
+                          <div className="flex items-center">
+                            <Users className="w-4 h-4 mr-2" />
+                            Assigned
+                          </div>
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Due Date
+                          </div>
+                          <div className="flex items-center">
+                            <Target className="w-4 h-4 mr-2" />
+                            Status
+                          </div>
+                          <div className="flex items-center">
+                            <Star className="w-4 h-4 mr-2" />
+                            Priority
+                          </div>
+                          <div className="flex items-center">
+                            <TrendingUp className="w-4 h-4 mr-2" />
+                            Progress
+                          </div>
+                          <div className="flex items-center">
+                            <FileText className="w-4 h-4 mr-2" />
+                            Notes
+                          </div>
+                          <div className="flex items-center">
+                            <MoreHorizontal className="w-4 h-4 mr-2" />
+                            Actions
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Table Rows */}
+                      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {/* Sample Task Rows */}
+                        <div className="grid grid-cols-8 gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                          <div className="flex items-center">
+                            <CheckSquare className="w-4 h-4 mr-2 text-gray-400" />
+                            <span className="text-sm text-gray-900 dark:text-white">Site Preparation</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
+                              JD
+                            </div>
+                            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">John Doe</span>
+                          </div>
+                          <div className="text-sm text-gray-700 dark:text-gray-300">
+                            {new Date().toLocaleDateString()}
+                          </div>
+                          <div>
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                              In Progress
+                            </Badge>
+                          </div>
+                          <div>
+                            <Badge variant="outline" className="border-orange-300 text-orange-700 dark:border-orange-600 dark:text-orange-400">
+                              High
+                            </Badge>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                              <div className="bg-blue-600 h-2 rounded-full" style={{ width: '60%' }}></div>
+                            </div>
+                            <span className="ml-2 text-xs text-gray-600 dark:text-gray-400">60%</span>
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            Equipment setup required
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button variant="ghost" size="sm">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-8 gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                          <div className="flex items-center">
+                            <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                            <span className="text-sm text-gray-900 dark:text-white">Material Delivery</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
+                              SM
+                            </div>
+                            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Sarah Miller</span>
+                          </div>
+                          <div className="text-sm text-gray-700 dark:text-gray-300">
+                            {new Date(Date.now() - 86400000).toLocaleDateString()}
+                          </div>
+                          <div>
+                            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                              Complete
+                            </Badge>
+                          </div>
+                          <div>
+                            <Badge variant="outline" className="border-green-300 text-green-700 dark:border-green-600 dark:text-green-400">
+                              Normal
+                            </Badge>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                              <div className="bg-green-600 h-2 rounded-full" style={{ width: '100%' }}></div>
+                            </div>
+                            <span className="ml-2 text-xs text-gray-600 dark:text-gray-400">100%</span>
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            All materials on site
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button variant="ghost" size="sm">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-8 gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                          <div className="flex items-center">
+                            <CheckSquare className="w-4 h-4 mr-2 text-gray-400" />
+                            <span className="text-sm text-gray-900 dark:text-white">Installation</span>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
+                              RT
+                            </div>
+                            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Robert Taylor</span>
+                          </div>
+                          <div className="text-sm text-gray-700 dark:text-gray-300">
+                            {new Date(Date.now() + 86400000).toLocaleDateString()}
+                          </div>
+                          <div>
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                              Scheduled
+                            </Badge>
+                          </div>
+                          <div>
+                            <Badge variant="outline" className="border-red-300 text-red-700 dark:border-red-600 dark:text-red-400">
+                              Critical
+                            </Badge>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                              <div className="bg-blue-600 h-2 rounded-full" style={{ width: '0%' }}></div>
+                            </div>
+                            <span className="ml-2 text-xs text-gray-600 dark:text-gray-400">0%</span>
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            Waiting for preparation
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button variant="ghost" size="sm">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Add Task Button */}
+                      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                        <Button variant="outline" className="w-full">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Task
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
               </div>
             </TabsContent>
           </div>
