@@ -46,7 +46,8 @@ import {
   Plus,
   RefreshCw,
   Edit,
-  Trash2
+  Trash2,
+  Folder
 } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useRef, useEffect } from "react";
@@ -504,7 +505,7 @@ export default function Dashboard() {
             </div>
 
             {/* Project Management */}
-            <div>
+            <div className="relative group">
               <Link href="/projects">
                 <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-800">
                   <CardContent className="p-3 sm:p-6">
@@ -515,13 +516,127 @@ export default function Dashboard() {
                       <div>
                         <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Project Management</p>
                         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                          Manage installation projects
+                          Monday.com-style board management
                         </p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </Link>
+              
+              {/* Three-dot menu with enhanced board options */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem>
+                      <Link href="/enhanced-board" className="flex items-center w-full">
+                        <BarChart3 className="mr-2 h-4 w-4" />
+                        Enhanced Board View
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link href="/projects" className="flex items-center w-full">
+                        <Folder className="mr-2 h-4 w-4" />
+                        Standard Project List
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link href="/monday-board" className="flex items-center w-full">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        Original Monday Board
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add New Project
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Filter className="mr-2 h-4 w-4" />
+                      Filter Projects
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ArrowUpDown className="mr-2 h-4 w-4" />
+                      Sort Projects
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ChevronDown className="mr-2 h-4 w-4" />
+                      Collapse All Groups
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <User className="mr-2 h-4 w-4" />
+                      Group by Assignee
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>Duplicate Board</DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Board Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Archive Board
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            {/* Enhanced Board - New Monday.com-style Interface */}
+            <div className="relative group">
+              <Link href="/enhanced-board">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800 ring-2 ring-blue-300/50">
+                  <CardContent className="p-3 sm:p-6">
+                    <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+                      <div className="p-2 sm:p-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl shadow-lg">
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Enhanced Board</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                          Advanced project collaboration
+                        </p>
+                        <Badge variant="secondary" className="mt-2 text-xs bg-blue-100 text-blue-800">NEW</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              {/* Three-dot menu */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-white/80 hover:bg-white shadow-sm"
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Column Management</DropdownMenuItem>
+                    <DropdownMenuItem>Board Settings</DropdownMenuItem>
+                    <DropdownMenuItem>Team Collaboration</DropdownMenuItem>
+                    <DropdownMenuItem>Real-time Sync</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
 
             {/* Calendar */}

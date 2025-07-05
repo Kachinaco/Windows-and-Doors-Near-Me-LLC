@@ -44,6 +44,7 @@ import CustomerDeliveryPage from "@/pages/customer-delivery";
 import CustomerSettingsPage from "@/pages/customer-settings";
 import ContractsPage from "@/pages/contracts";
 import ProposalClientPage from "@/pages/proposal-client";
+import EnhancedBoard from "@/pages/enhanced-board";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -86,6 +87,7 @@ function Router() {
       {/* Direct access to Monday.com board for testing */}
       <Route path="/board" component={MondayBoard} />
       <Route path="/monday-board" component={MondayBoard} />
+      <Route path="/enhanced-board" component={EnhancedBoard} />
       <Route path="/project-panel" component={ProjectPanel} />
       
       {/* Protected user routes */}
