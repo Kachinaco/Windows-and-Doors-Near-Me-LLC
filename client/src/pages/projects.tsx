@@ -1,28 +1,50 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { type Project } from "@shared/schema";
-import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertProjectSchema, type InsertProject, type Project, type User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
-import SimpleProjectTable from "@/components/SimpleProjectTable";
+import { useToast } from "@/hooks/use-toast";
+import { useLayoutConfig } from "@/hooks/useLayoutConfig";
+import LayoutCustomizer from "@/components/LayoutCustomizer";
+import CustomizableProjectTable from "@/components/CustomizableProjectTable";
 import { 
+  PlusCircle, 
+  Building2, 
+  Users, 
+  LogOut,
+  User as UserIcon,
+  Settings,
   ArrowLeft,
-  Plus,
-  Search,
-  Clock,
-  FolderOpen,
+  Phone,
+  MapPin,
   Calendar,
-  BarChart3,
-  GripVertical,
-  Building2,
-  UserIcon,
-  LogOut
+  Clock,
+  DollarSign,
+  CheckCircle,
+  AlertTriangle,
+  Play,
+  TrendingUp,
+  Activity,
+  Briefcase,
+  Target,
+  ArrowRight,
+  Plus,
+  MessageSquare,
+  FileText,
+  GripVertical
 } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   DndContext,
   DragEndEvent,
@@ -33,113 +55,209 @@ import {
   useSensors,
   UniqueIdentifier,
   useDroppable,
-  useDraggable,
 } from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  CSS,
+} from '@dnd-kit/utilities';
 
 // Draggable Project Card Component
-function DraggableProjectCard({ project }: { project: Project }) {
+function DraggableProjectCard({ project, isInFolder = false }: { project: Project; isInFolder?: boolean }) {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
+    transition,
     isDragging,
-  } = useDraggable({ 
-    id: `project-${project.id}`,
-    data: { project }
-  });
+  } = useSortable({ id: project.id });
 
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
-
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      'new_lead': 'bg-blue-100 text-blue-800 border-blue-300',
-      'need_attention': 'bg-red-100 text-red-800 border-red-300',
-      'sent_estimate': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      'signed': 'bg-green-100 text-green-800 border-green-300',
-      'need_ordered': 'bg-orange-100 text-orange-800 border-orange-300',
-      'ordered': 'bg-purple-100 text-purple-800 border-purple-300',
-      'need_scheduled': 'bg-teal-100 text-teal-800 border-teal-300',
-      'scheduled': 'bg-indigo-100 text-indigo-800 border-indigo-300',
-      'in_progress': 'bg-amber-100 text-amber-800 border-amber-300',
-      'completed': 'bg-emerald-100 text-emerald-800 border-emerald-300',
-      'follow_up': 'bg-pink-100 text-pink-800 border-pink-300'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800 border-gray-300';
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
   };
 
+  const getStatusBadgeColor = (status: string) => {
+    const statusColors: Record<string, string> = {
+      pending: "bg-blue-100 text-blue-800",
+      new_lead: "bg-blue-100 text-blue-800",
+      need_attention: "bg-yellow-100 text-yellow-800",
+      sent_estimate: "bg-orange-100 text-orange-800",
+      signed: "bg-green-100 text-green-800",
+      need_ordered: "bg-red-100 text-red-800",
+      ordered: "bg-purple-100 text-purple-800",
+      need_scheduled: "bg-pink-100 text-pink-800",
+      scheduled: "bg-blue-100 text-blue-800",
+      in_progress: "bg-yellow-100 text-yellow-800",
+      complete: "bg-green-100 text-green-800"
+    };
+    return statusColors[status] || "bg-gray-100 text-gray-800";
+  };
+
+  if (isInFolder) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        className={`bg-white rounded-lg border p-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow ${
+          isDragging ? 'shadow-lg ring-2 ring-blue-500' : ''
+        }`}
+      >
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div {...listeners} className="cursor-grab">
+              <GripVertical className="h-4 w-4 text-gray-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">{project.title}</h3>
+              <p className="text-sm text-gray-500">Project #{project.id}</p>
+              {project.description && (
+                <p className="text-sm text-gray-600 mt-1">{project.description}</p>
+              )}
+            </div>
+          </div>
+          <Badge className={getStatusBadgeColor(project.status)}>
+            {project.status === 'new_lead' ? 'New Lead' : project.status.replace('_', ' ')}
+          </Badge>
+        </div>
+        
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              Medium
+            </span>
+            {project.estimatedCost && (
+              <span className="font-medium text-green-600">
+                ${project.estimatedCost}
+              </span>
+            )}
+          </div>
+          <Link href={`/project-detail/${project.id}`}>
+            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+              View Details →
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div
+    <TableRow 
       ref={setNodeRef}
       style={style}
-      {...listeners}
       {...attributes}
-      className={`bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing ${
-        isDragging ? 'opacity-50 rotate-3 scale-105' : ''
-      }`}
+      className={`cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-50' : ''}`}
     >
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex-1">
-          <h3 className="font-semibold text-gray-900 text-sm">{project.name}</h3>
-          <p className="text-xs text-gray-500 mt-1">{project.projectAddress || 'No address'}</p>
+      <TableCell className="font-medium">
+        <div className="flex items-center gap-2">
+          <div {...listeners} className="cursor-grab">
+            <GripVertical className="h-4 w-4 text-gray-400" />
+          </div>
+          {project.title}
         </div>
-        <GripVertical className="h-4 w-4 text-gray-400" />
-      </div>
-      
-      <div className="flex items-center justify-between">
-        <Badge variant="outline" className={`text-xs px-2 py-1 ${getStatusColor(project.status)}`}>
-          {project.status.replace('_', ' ').toUpperCase()}
+      </TableCell>
+      <TableCell>{project.serviceType}</TableCell>
+      <TableCell>
+        <Badge className={getStatusBadgeColor(project.status)}>
+          {project.status.replace('_', ' ')}
         </Badge>
-        <span className="text-xs text-gray-500">
-          {project.estimatedCost || '$0'}
-        </span>
-      </div>
-    </div>
+      </TableCell>
+      <TableCell>{project.priority}</TableCell>
+      <TableCell>{project.estimatedCost ? `$${project.estimatedCost}` : '-'}</TableCell>
+      <TableCell>
+        <Link href={`/project-detail/${project.id}`}>
+          <Button variant="ghost" size="sm">
+            View
+          </Button>
+        </Link>
+      </TableCell>
+    </TableRow>
   );
 }
 
 // Droppable Folder Component
-function DroppableFolder({ name, projects, color, description, id }: {
-  name: string;
-  projects: Project[];
-  color: string;
+function DroppableFolder({ 
+  title, 
+  description, 
+  icon: Icon, 
+  color, 
+  projects, 
+  count, 
+  folderId,
+  actionButton 
+}: { 
+  title: string;
   description: string;
-  id: string;
+  icon: any;
+  color: string;
+  projects: Project[];
+  count: number;
+  folderId: string;
+  actionButton?: React.ReactNode;
 }) {
-  const { isOver, setNodeRef } = useDroppable({ id });
+  const { setNodeRef, isOver } = useDroppable({
+    id: folderId,
+  });
 
   return (
-    <div
+    <div 
       ref={setNodeRef}
-      className={`border border-gray-200 rounded-lg bg-white transition-all ${
-        isOver ? 'bg-blue-50 border-blue-300' : ''
+      className={`border rounded-lg bg-white transition-colors ${
+        isOver ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
       }`}
+      id={`stage-${folderId}`}
     >
-      <div className="p-4 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className={`w-3 h-3 rounded-full ${color}`}></div>
+      <div className="p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${color}`}>
+              <Icon className="h-5 w-5" />
+            </div>
             <div>
-              <h3 className="font-semibold text-gray-900">{name}</h3>
-              <p className="text-xs text-gray-500">{description}</p>
+              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+              <p className="text-sm text-gray-600">{description}</p>
             </div>
           </div>
-          <Badge variant="secondary" className="text-xs">
-            {projects.length}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl font-bold text-gray-900">{count}</span>
+            {actionButton}
+          </div>
         </div>
       </div>
       
-      <div className="p-4 space-y-3 min-h-[200px]">
-        {projects.map((project) => (
-          <DraggableProjectCard key={project.id} project={project} />
-        ))}
-        {projects.length === 0 && (
-          <div className="text-center py-8 text-gray-400">
-            <FolderOpen className="h-8 w-8 mx-auto mb-2" />
-            <p className="text-sm">No projects in this folder</p>
+      <div className="p-6">
+        {projects.length > 0 ? (
+          <SortableContext 
+            items={projects.map(p => p.id)} 
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-4">
+              {projects.map((project) => (
+                <DraggableProjectCard key={project.id} project={project} isInFolder={true} />
+              ))}
+            </div>
+          </SortableContext>
+        ) : (
+          <div className="text-center py-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Briefcase className="h-8 w-8 text-gray-400" />
+            </div>
+            <p className="text-gray-500">No projects in {title.toLowerCase()}</p>
+          </div>
+        )}
+        
+        {/* Drop zone indicator */}
+        {isOver && (
+          <div className="mt-4 p-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-100 text-center text-blue-600">
+            Drop project here to move to {title}
           </div>
         )}
       </div>
@@ -149,13 +267,15 @@ function DroppableFolder({ name, projects, color, description, id }: {
 
 export default function ProjectsPage() {
   const { user, logout } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [viewMode, setViewMode] = useState<'folders' | 'table'>('folders');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [location] = useLocation();
+  const [sortColumn, setSortColumn] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-
-  // Configure drag sensors
+  const { toast } = useToast();
+  
+  // Drag and drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -163,19 +283,42 @@ export default function ProjectsPage() {
       },
     })
   );
+  
+  // Layout configuration
+  const { layout, saveLayout } = useLayoutConfig();
+  
+  // Get stage filter from URL parameters
+  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const stageFilter = urlParams.get('stage');
 
-  // Fetch projects
+  // Auto-scroll to stage section when stage filter is provided
+  useEffect(() => {
+    if (stageFilter) {
+      // Wait for the component to render, then scroll to the stage section
+      setTimeout(() => {
+        const stageElement = document.getElementById(`stage-${stageFilter}`);
+        if (stageElement) {
+          stageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, [stageFilter]);
+
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
-  // Update project mutation
+  // Mutation to update project status
   const updateProjectMutation = useMutation({
     mutationFn: async ({ projectId, status }: { projectId: number; status: string }) => {
-      return apiRequest(`/api/projects/${projectId}`, {
-        method: "PATCH",
+      return await fetch(`/api/projects/${projectId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
         body: JSON.stringify({ status }),
-      });
+      }).then(res => res.json());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -184,8 +327,7 @@ export default function ProjectsPage() {
         description: "Project status updated successfully",
       });
     },
-    onError: (error) => {
-      console.error('❌ Error updating project:', error);
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to update project status",
@@ -194,112 +336,351 @@ export default function ProjectsPage() {
     },
   });
 
-  // Handle drag start
-  const handleDragStart = useCallback((event: DragStartEvent) => {
+  // Drag and drop handlers
+  const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id);
-  }, []);
+  };
 
-  // Handle drag end
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
 
-    if (!over || !active.data.current?.project) {
-      return;
-    }
+    if (!over) return;
 
-    const project = active.data.current.project;
-    const overId = over.id as string;
-    
-    // Map folder IDs to statuses
-    const folderStatusMap: Record<string, string> = {
-      'new-leads': 'new_lead',
-      'active-projects': 'sent_estimate', 
-      'scheduled-work': 'scheduled',
-      'completed': 'completed'
+    const projectId = Number(active.id);
+    const newFolderId = String(over.id);
+
+    // Map folder IDs to actual status values
+    const folderToStatusMap: Record<string, string> = {
+      new_leads: "new_lead",
+      active_projects: "in_progress",
+      scheduled_work: "scheduled"
     };
 
-    const newStatus = folderStatusMap[overId];
-    if (newStatus && project.status !== newStatus) {
-      updateProjectMutation.mutate({ 
-        projectId: project.id, 
-        status: newStatus 
-      });
-    }
-  }, [updateProjectMutation]);
+    const newStatus = folderToStatusMap[newFolderId];
+    if (!newStatus) return;
 
-  // Group projects by status for folder view
-  const projectFolders = useMemo(() => {
-    if (!projects || projects.length === 0) return [];
+    // Find the project and check if status actually changed
+    const project = projects.find((p: Project) => p.id === projectId);
+    if (!project || project.status === newStatus) return;
+
+    // Update the project status
+    updateProjectMutation.mutate({ projectId, status: newStatus });
+  };
+
+  // Filter projects based on stage parameter
+  const filteredProjects = useMemo(() => {
+    if (!stageFilter) return projects;
     
-    const folders = [
-      { 
-        name: 'New Leads', 
-        statuses: ['new_lead', 'need_attention'], 
-        color: 'bg-blue-500',
-        description: 'Fresh inquiries and leads requiring attention',
-        id: 'new-leads'
-      },
-      { 
-        name: 'Active Projects', 
-        statuses: ['sent_estimate', 'signed', 'need_ordered', 'ordered'], 
-        color: 'bg-purple-500',
-        description: 'Projects in progress with estimates or orders',
-        id: 'active-projects'
-      },
-      { 
-        name: 'Scheduled Work', 
-        statuses: ['need_scheduled', 'scheduled', 'in_progress'], 
-        color: 'bg-orange-500',
-        description: 'Jobs ready for scheduling or currently in progress',
-        id: 'scheduled-work'
-      },
-      { 
-        name: 'Completed', 
-        statuses: ['completed', 'follow_up'], 
-        color: 'bg-green-500',
-        description: 'Finished projects and follow-up tasks',
-        id: 'completed'
-      },
-    ];
+    switch (stageFilter) {
+      case 'new_leads':
+        return projects.filter(p => p.status === 'pending' || p.status === 'new_lead');
+      case 'need_attention':
+        return projects.filter(p => p.status === 'need_attention');
+      case 'sent_estimate':
+        return projects.filter(p => p.status === 'sent_estimate' || p.status === 'quoted');
+      case 'signed':
+        return projects.filter(p => p.status === 'signed' || p.status === 'contracted');
+      case 'need_ordered':
+        return projects.filter(p => p.status === 'need_ordered');
+      case 'ordered':
+        return projects.filter(p => p.status === 'ordered');
+      case 'need_scheduled':
+        return projects.filter(p => p.status === 'need_scheduled');
+      case 'scheduled':
+        return projects.filter(p => p.status === 'scheduled');
+      case 'in_progress':
+        return projects.filter(p => p.status === 'in_progress');
+      case 'completed':
+        return projects.filter(p => p.status === 'completed');
+      case 'follow_up':
+        return projects.filter(p => p.status === 'follow_up');
+      default:
+        return projects;
+    }
+  }, [projects, stageFilter]);
 
-    return folders.map(folder => ({
-      ...folder,
-      projects: projects.filter(p => folder.statuses.includes(p.status)),
-      count: projects.filter(p => folder.statuses.includes(p.status)).length
-    }));
+  // Get stage display name
+  const getStageDisplayName = (stage: string) => {
+    const stageNames: Record<string, string> = {
+      'new_leads': 'New Leads',
+      'need_attention': 'Need Attention',
+      'sent_estimate': 'Sent Estimate',
+      'signed': 'Signed',
+      'need_ordered': 'Need Ordered',
+      'ordered': 'Ordered',
+      'need_scheduled': 'Need Scheduled',
+      'scheduled': 'Scheduled',
+      'in_progress': 'In Progress',
+      'completed': 'Complete',
+      'follow_up': 'Follow Up'
+    };
+    return stageNames[stage] || 'All Projects';
+  };
+
+  const { data: employees = [] } = useQuery<User[]>({
+    queryKey: ["/api/employees"],
+    enabled: user?.role === 'admin' || user?.role === 'contractor_paid',
+  });
+
+  const { data: leads = [] } = useQuery({
+    queryKey: ["/api/leads"],
+    enabled: user?.role === 'admin' || user?.role === 'employee' || user?.role === 'contractor_paid',
+  });
+
+  // Calculate dashboard statistics
+  const dashboardStats = useMemo(() => {
+    const totalProjects = projects.length;
+    const newLeads = projects.filter(p => p.projectStatus === 'new_lead' || p.status === 'pending').length;
+    const inProgress = projects.filter(p => p.projectStatus === 'in_progress' || p.projectStatus === 'scheduled').length;
+    const completed = projects.filter(p => p.projectStatus === 'completed' || p.status === 'completed').length;
+    
+    const totalRevenue = projects
+      .filter(p => p.projectStatus === 'completed')
+      .reduce((sum, p) => {
+        const cost = parseFloat(p.estimatedCost?.replace(/[^0-9.]/g, '') || '0');
+        return sum + cost;
+      }, 0);
+
+    const recentProjects = projects
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .slice(0, 5);
+
+    const urgentTasks = projects.filter(p => p.priority === 'high' || p.priority === 'urgent').length;
+
+    return {
+      totalProjects,
+      newLeads,
+      inProgress,
+      completed,
+      totalRevenue,
+      recentProjects,
+      urgentTasks
+    };
   }, [projects]);
 
-  // Filter projects based on search
-  const filteredProjects = useMemo(() => {
-    if (!searchTerm) return projects;
-    return projects.filter(project =>
-      project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.projectAddress?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [projects, searchTerm]);
+  const form = useForm<InsertProject>({
+    resolver: zodResolver(insertProjectSchema),
+    defaultValues: {
+      title: "",
+      serviceType: "",
+      email: "",
+      phone: "",
+      address: "",
+      assignedTo: null,
+      priority: "medium",
+      status: "scheduled",
+      clientId: null,
+    },
+  });
 
-  const totalProjects = projects.length;
-  const activeProjectsCount = projects.filter(p => ['sent_estimate', 'signed', 'need_ordered', 'ordered'].includes(p.status)).length;
-  const completedProjectsCount = projects.filter(p => ['completed', 'follow_up'].includes(p.status)).length;
+  const createProjectMutation = useMutation({
+    mutationFn: async (data: InsertProject) => {
+      const response = await apiRequest("POST", "/api/projects", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      setIsCreateDialogOpen(false);
+      form.reset();
+    },
+  });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading projects...</p>
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-500 text-white";
+      case "in_progress":
+        return "bg-blue-500 text-white";
+      case "scheduled":
+        return "bg-purple-500 text-white";
+      case "paid":
+        return "bg-green-600 text-white";
+      case "cancelled":
+        return "bg-red-500 text-white";
+      default:
+        return "bg-gray-500 text-white";
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "urgent":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "high":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "low":
+        return "bg-green-100 text-green-800 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  const groupedProjects = {
+    scheduled: projects.filter(p => p.status === 'scheduled'),
+    work_orders: projects.filter(p => p.status === 'in_progress'),
+    completed: projects.filter(p => p.status === 'completed'),
+    paid: projects.filter(p => p.status === 'paid'),
+  };
+
+  const onSubmit = (data: InsertProject) => {
+    createProjectMutation.mutate(data);
+  };
+
+  const handleSort = (column: string, direction: 'asc' | 'desc') => {
+    setSortColumn(column);
+    setSortDirection(direction);
+  };
+
+  const sortedFilteredProjects = useMemo(() => {
+    if (!sortColumn) return filteredProjects;
+    
+    return [...filteredProjects].sort((a, b) => {
+      let aVal = a[sortColumn as keyof Project];
+      let bVal = b[sortColumn as keyof Project];
+      
+      // Handle different data types
+      if (aVal instanceof Date) aVal = aVal.getTime();
+      if (bVal instanceof Date) bVal = bVal.getTime();
+      if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+      if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+      
+      if (aVal === null || aVal === undefined) aVal = '';
+      if (bVal === null || bVal === undefined) bVal = '';
+      
+      if (sortDirection === 'asc') {
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      } else {
+        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+      }
+    });
+  }, [filteredProjects, sortColumn, sortDirection]);
+
+  const ProjectTable = ({ title, projects, icon: Icon, count }: { 
+    title: string; 
+    projects: Project[]; 
+    icon: any; 
+    count: number;
+  }) => (
+    <Card className="mb-6">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Icon className="h-5 w-5 text-blue-600" />
+          {title}
+          <Badge variant="secondary" className="ml-2">{count} items</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50 dark:bg-gray-800">
+                <TableHead className="font-semibold">Item</TableHead>
+                <TableHead className="font-semibold">People</TableHead>
+                <TableHead className="font-semibold">Job Status</TableHead>
+                <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="font-semibold">Start Date</TableHead>
+                <TableHead className="font-semibold">Start Time</TableHead>
+                <TableHead className="font-semibold">Payout</TableHead>
+                <TableHead className="font-semibold">Phone</TableHead>
+                <TableHead className="font-semibold">Location</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {projects.map((project) => (
+                <TableRow key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <TableCell className="font-medium">
+                    <div>
+                      <div className="font-semibold text-gray-900 dark:text-white">
+                        {project.title}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {project.serviceType}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                        <UserIcon className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <span className="text-sm">
+                        {project.assignedTo ? `Employee #${project.assignedTo}` : 'Unassigned'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(project.status)}>
+                      {project.status.replace('_', ' ').toUpperCase()}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={getPriorityColor(project.priority)}>
+                      {project.priority.toUpperCase()}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm">
+                        {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'TBD'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm">
+                        {project.startDate ? new Date(project.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <DollarSign className="h-4 w-4 text-green-600" />
+                      <span className="font-semibold text-green-600">
+                        {project.estimatedCost || '$0'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Phone className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm">{project.phone || 'N/A'}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm text-gray-600 max-w-[150px] truncate">
+                        {project.address || 'N/A'}
+                      </span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {projects.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                    No {title.toLowerCase()} projects
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
-      </div>
-    );
-  }
+      </CardContent>
+    </Card>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <Link href="/dashboard">
                 <Button variant="ghost" size="sm">
@@ -307,43 +688,28 @@ export default function ProjectsPage() {
                   Back to Dashboard
                 </Button>
               </Link>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center">
                 <Building2 className="h-8 w-8 text-blue-600" />
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Project Management</h1>
-                  <p className="text-sm text-gray-600">
-                    {viewMode === 'folders' 
-                      ? 'Drag and drop projects between folders to update their status' 
-                      : 'Manage projects with inline editing and collaboration tools'
-                    }
-                  </p>
-                </div>
+                <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
+                  Project Management
+                </span>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <UserIcon className="h-5 w-5 text-gray-500" />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-700 dark:text-gray-300">
                   {user?.firstName} {user?.lastName} ({user?.role})
                 </span>
               </div>
               
-              <div className="flex items-center space-x-6 text-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-gray-600">{totalProjects} Total</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <span className="text-gray-600">{activeProjectsCount} Active</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-gray-600">{completedProjectsCount} Completed</span>
-                </div>
-              </div>
-
+              <LayoutCustomizer
+                currentLayout={layout}
+                onLayoutChange={saveLayout}
+                onSaveLayout={saveLayout}
+              />
+              
               <Button variant="outline" size="sm" onClick={logout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
@@ -351,82 +717,454 @@ export default function ProjectsPage() {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Controls */}
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Search projects..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-64"
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <Button
-              variant={viewMode === 'folders' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('folders')}
-            >
-              <FolderOpen className="h-4 w-4 mr-2" />
-              Folders
-            </Button>
-            <Button
-              variant={viewMode === 'table' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('table')}
-            >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Table
-            </Button>
-          </div>
-        </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 pb-8">
-        {viewMode === 'folders' ? (
-          <DndContext
-            sensors={sensors}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {projectFolders.map((folder) => (
-                <DroppableFolder
-                  key={folder.id}
-                  id={folder.id}
-                  name={folder.name}
-                  projects={searchTerm ? filteredProjects.filter(p => folder.statuses.includes(p.status)) : folder.projects}
-                  color={folder.color}
-                  description={folder.description}
-                />
-              ))}
-            </div>
-            
-            <DragOverlay>
-              {activeId ? (
-                <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-lg rotate-3">
-                  <div className="flex items-center space-x-2">
-                    <GripVertical className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm font-medium">Moving project...</span>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Project Portfolio
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Manage your window and door installation projects
+            </p>
+          </div>
+
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                New Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Create New Project</DialogTitle>
+              </DialogHeader>
+              
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Project Title</Label>
+                    <Input
+                      id="title"
+                      {...form.register("title")}
+                      placeholder="Window Installation Project"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="serviceType">Service Type</Label>
+                    <Select 
+                      value={form.watch("serviceType")} 
+                      onValueChange={(value) => form.setValue("serviceType", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select service type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Window Installation">Window Installation</SelectItem>
+                        <SelectItem value="Door Installation">Door Installation</SelectItem>
+                        <SelectItem value="Window Replacement">Window Replacement</SelectItem>
+                        <SelectItem value="Door Replacement">Door Replacement</SelectItem>
+                        <SelectItem value="Home Improvement">Home Improvement</SelectItem>
+                        <SelectItem value="Repair Service">Repair Service</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-        ) : (
-          <div className="bg-white rounded-lg border border-gray-200">
-            <SimpleProjectTable height="700px" />
-          </div>
-        )}
-      </div>
+
+                {/* Lead Assignment and Project Status */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="leadId">Link to Existing Lead (Optional)</Label>
+                    <Select 
+                      value={form.watch("leadId")?.toString() || ""} 
+                      onValueChange={(value) => form.setValue("leadId", value ? parseInt(value) : undefined)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select existing lead" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">No Lead - New Customer</SelectItem>
+                        {Array.isArray(leads) && leads.map((lead: any) => (
+                          <SelectItem key={lead.id} value={lead.id.toString()}>
+                            {lead.firstName} {lead.lastName} - {lead.source}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="projectStatus">Project Status</Label>
+                    <Select 
+                      value={form.watch("projectStatus") || "new_lead"} 
+                      onValueChange={(value) => form.setValue("projectStatus", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select project status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="new_lead">New Lead</SelectItem>
+                        <SelectItem value="scheduled">Scheduled</SelectItem>
+                        <SelectItem value="work_order">Work Order</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="on_hold">On Hold</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      {...form.register("email")}
+                      placeholder="customer@example.com"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      {...form.register("phone")}
+                      placeholder="(480) 555-0123"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    {...form.register("address")}
+                    placeholder="123 Main St, Gilbert, AZ 85234"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="priority">Priority</Label>
+                    <Select value={form.watch("priority")} onValueChange={(value) => form.setValue("priority", value as any)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="assignedTo">Assigned Employee</Label>
+                    <Select value={form.watch("assignedTo")?.toString()} onValueChange={(value) => form.setValue("assignedTo", parseInt(value))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select employee" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {employees.map((employee: User) => (
+                          <SelectItem key={employee.id} value={employee.id.toString()}>
+                            {employee.firstName} {employee.lastName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={createProjectMutation.isPending}>
+                    {createProjectMutation.isPending ? "Creating..." : "Create Project"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Project Tables */}
+        <div className="space-y-6">
+          {stageFilter ? (
+            // Stage-filtered view
+            <Card id={`stage-${stageFilter}`}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Link href="/project-portfolio">
+                      <Button variant="outline" size="sm">
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to Pipeline
+                      </Button>
+                    </Link>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Target className="h-5 w-5 text-blue-600" />
+                      {getStageDisplayName(stageFilter)}
+                      <Badge variant="secondary" className="ml-2">{filteredProjects.length} projects</Badge>
+                    </CardTitle>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {sortedFilteredProjects.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No projects in {getStageDisplayName(stageFilter)}</h3>
+                    <p className="text-gray-500 mb-4">There are currently 0 projects in this pipeline stage.</p>
+                    <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <PlusCircle className="h-4 w-4 mr-2" />
+                          Create New Project
+                        </Button>
+                      </DialogTrigger>
+                    </Dialog>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50 dark:bg-gray-800">
+                          <TableHead className="font-semibold">Project</TableHead>
+                          <TableHead className="font-semibold">Client</TableHead>
+                          <TableHead className="font-semibold">Status</TableHead>
+                          <TableHead className="font-semibold">Priority</TableHead>
+                          <TableHead className="font-semibold">Estimated Cost</TableHead>
+                          <TableHead className="font-semibold">Start Date</TableHead>
+                          <TableHead className="font-semibold">Contact</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sortedFilteredProjects.map((project) => (
+                          <TableRow key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <TableCell>
+                              <Link href={`/projects/${project.id}`}>
+                                <div className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
+                                  {project.title}
+                                </div>
+                              </Link>
+                              <div className="text-sm text-gray-500">{project.serviceType}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                {project.address && (
+                                  <div className="flex items-center gap-1 text-gray-600">
+                                    <MapPin className="h-3 w-3" />
+                                    {project.address}
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={getStatusColor(project.status)}
+                              >
+                                {project.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={getPriorityColor(project.priority)}
+                              >
+                                {project.priority}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-green-600">
+                                <DollarSign className="h-3 w-3" />
+                                {project.estimatedCost || 'TBD'}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {project.startDate && (
+                                <div className="flex items-center gap-1 text-gray-600">
+                                  <Calendar className="h-3 w-3" />
+                                  {new Date(project.startDate).toLocaleDateString()}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-1">
+                                {project.phone && (
+                                  <div className="flex items-center gap-1 text-gray-600 text-sm">
+                                    <Phone className="h-3 w-3" />
+                                    {project.phone}
+                                  </div>
+                                )}
+                                {project.email && (
+                                  <div className="text-sm text-gray-600">{project.email}</div>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            // Default grouped view
+            <>
+              {/* Pipeline Selection Overview - Shows filtered projects based on user's last pipeline selection */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-blue-600" />
+                    Current Focus
+                    <Badge variant="outline" className="ml-2">
+                      {projects.filter(p => p.status === 'new_lead' || p.status === 'need_attention').length} active
+                    </Badge>
+                  </CardTitle>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Projects requiring immediate attention based on your pipeline focus
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50 dark:bg-gray-800">
+                          <TableHead className="font-semibold">Project</TableHead>
+                          <TableHead className="font-semibold">Client</TableHead>
+                          <TableHead className="font-semibold">Status</TableHead>
+                          <TableHead className="font-semibold">Priority</TableHead>
+                          <TableHead className="font-semibold">Estimated Cost</TableHead>
+                          <TableHead className="font-semibold">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {projects
+                          .filter(p => p.status === 'new_lead' || p.status === 'need_attention')
+                          .slice(0, 5)
+                          .map((project) => (
+                          <TableRow key={project.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <TableCell>
+                              <Link href={`/projects/${project.id}`}>
+                                <div className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
+                                  {project.title}
+                                </div>
+                              </Link>
+                              <div className="text-sm text-gray-500">{project.serviceType}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                {project.address && (
+                                  <div className="flex items-center gap-1 text-gray-600">
+                                    <MapPin className="h-3 w-3" />
+                                    {project.address}
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={getStatusColor(project.status)}
+                              >
+                                {project.status.replace('_', ' ').toUpperCase()}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="outline" 
+                                className={getPriorityColor(project.priority)}
+                              >
+                                {project.priority}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-green-600">
+                                <DollarSign className="h-3 w-3" />
+                                {project.estimatedCost || 'TBD'}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Button size="sm" variant="outline" asChild>
+                                  <Link href={`/projects/${project.id}`}>
+                                    <FileText className="h-3 w-3 mr-1" />
+                                    View
+                                  </Link>
+                                </Button>
+                                <Button size="sm" variant="outline">
+                                  <MessageSquare className="h-3 w-3 mr-1" />
+                                  Contact
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  {projects.filter(p => p.status === 'new_lead' || p.status === 'need_attention').length > 5 && (
+                    <div className="flex justify-center mt-4">
+                      <Button variant="outline" asChild>
+                        <Link href="/projects?stage=new_leads">
+                          View All Active Projects ({projects.filter(p => p.status === 'new_lead' || p.status === 'need_attention').length})
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Recent Projects Section - moved down */}
+              <ProjectTable 
+                title="Recent Projects" 
+                projects={projects.slice(0, 5)} 
+                icon={Clock}
+                count={projects.length}
+              />
+              
+              <ProjectTable 
+                title="Scheduled" 
+                projects={groupedProjects.scheduled} 
+                icon={Calendar}
+                count={groupedProjects.scheduled.length}
+              />
+              
+              <ProjectTable 
+                title="Work Orders" 
+                projects={groupedProjects.work_orders} 
+                icon={Play}
+                count={groupedProjects.work_orders.length}
+              />
+              
+              <ProjectTable 
+                title="Completed - To Be Paid" 
+                projects={groupedProjects.completed} 
+                icon={CheckCircle}
+                count={groupedProjects.completed.length}
+              />
+              
+              <ProjectTable 
+                title="Paid" 
+                projects={groupedProjects.paid} 
+                icon={DollarSign}
+                count={groupedProjects.paid.length}
+              />
+            </>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
