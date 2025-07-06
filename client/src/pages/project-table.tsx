@@ -46,6 +46,15 @@ const MondayBoard = () => {
     { id: "progress", name: "Progress", type: "progress", order: 7 },
   ]);
 
+  // Sub-item columns configuration (separate from main columns)
+  const [subItemColumns, setSubItemColumns] = useState([
+    { id: "status", name: "Status", type: "status", order: 1 },
+    { id: "assignedTo", name: "People", type: "people", order: 2 },
+    { id: "dueDate", name: "Due Date", type: "date", order: 3 },
+    { id: "checkbox", name: "Done", type: "checkbox", order: 4 },
+    { id: "progress", name: "Progress", type: "progress", order: 5 },
+  ]);
+
   // Initial board data with folders
   const [boardItems, setBoardItems] = useState([
     {
@@ -321,6 +330,13 @@ const MondayBoard = () => {
     setAddColumnMenuOpen(null);
   };
 
+  // Handle sub-item column type selection from AddColumnMenu
+  const handleSelectSubItemColumnType = (type) => {
+    const columnName = prompt("Enter column name:") || "New Column";
+    handleAddSubItemColumn(type, columnName);
+    setAddColumnMenuOpen(null);
+  };
+
   // Helper functions
   const getMemberDisplayName = (memberId) => {
     if (!memberId || memberId === "" || memberId === "unassigned")
@@ -586,6 +602,16 @@ const MondayBoard = () => {
     setIsAddingColumn(false);
   };
 
+  const handleAddSubItemColumn = (type, name = "New Column") => {
+    const newColumn = {
+      id: `subcol_${Date.now()}`,
+      name: name,
+      type: type,
+      order: Math.max(...subItemColumns.map(col => col.order)) + 1
+    };
+    setSubItemColumns(prev => [...prev, newColumn]);
+  };
+
   const handleUpdateSubItem = (projectId, subItemId, field, value) => {
     setBoardItems((prev) =>
       prev.map((item) =>
@@ -800,7 +826,7 @@ const MondayBoard = () => {
     );
   };
 
-  const ColumnMenu = ({ columnId, columnName, isOpen, onClose }) => {
+  const ColumnMenu = ({ columnId, columnName, isOpen, onClose, isSubItem = false }) => {
     if (!isOpen) return null;
 
     return (
@@ -1797,6 +1823,12 @@ const MondayBoard = () => {
                                           onClose={() =>
                                             setColumnMenuOpen(null)
                                           }
+                                          isSubItem={true}
+                                        />
+                                        <AddColumnMenu
+                                          isOpen={addColumnMenuOpen === `subitem-${subItem.id}-status`}
+                                          onClose={() => setAddColumnMenuOpen(null)}
+                                          onSelectType={handleSelectSubItemColumnType}
                                         />
                                       </div>
 
@@ -1856,6 +1888,12 @@ const MondayBoard = () => {
                                           onClose={() =>
                                             setColumnMenuOpen(null)
                                           }
+                                          isSubItem={true}
+                                        />
+                                        <AddColumnMenu
+                                          isOpen={addColumnMenuOpen === `subitem-${subItem.id}-people`}
+                                          onClose={() => setAddColumnMenuOpen(null)}
+                                          onSelectType={handleSelectSubItemColumnType}
                                         />
                                       </div>
 
@@ -1903,6 +1941,12 @@ const MondayBoard = () => {
                                           onClose={() =>
                                             setColumnMenuOpen(null)
                                           }
+                                          isSubItem={true}
+                                        />
+                                        <AddColumnMenu
+                                          isOpen={addColumnMenuOpen === `subitem-${subItem.id}-date`}
+                                          onClose={() => setAddColumnMenuOpen(null)}
+                                          onSelectType={handleSelectSubItemColumnType}
                                         />
                                       </div>
 
