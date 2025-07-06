@@ -340,11 +340,13 @@ const MondayBoard = () => {
   const sendMessageToAI = async (message) => {
     if (!message.trim()) return;
 
+    const userMessage = message.trim();
+    
     setFormulaAssistant(prev => ({
       ...prev,
       isProcessing: true,
       userInput: "",
-      chatHistory: [...prev.chatHistory, { type: "user", message }]
+      chatHistory: [...prev.chatHistory, { type: "user", message: userMessage }]
     }));
 
     try {
@@ -1718,14 +1720,22 @@ const MondayBoard = () => {
 
   // AI Formula Assistant Component - Enhanced Interactive Version
   const AIFormulaAssistant = () => {
+    const [localInput, setLocalInput] = React.useState("");
+
+    React.useEffect(() => {
+      if (formulaAssistant.isOpen) {
+        setLocalInput("");
+      }
+    }, [formulaAssistant.isOpen]);
+
     if (!formulaAssistant.isOpen) return null;
 
     const currentColumn = columns.find(col => col.id === formulaAssistant.columnId);
     const availableColumns = columns.filter(col => col.type === 'number' || col.type === 'progress');
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
             <div className="flex items-center justify-between">
@@ -1736,7 +1746,7 @@ const MondayBoard = () => {
                 <div>
                   <h2 className="text-xl font-bold">AI Formula Assistant</h2>
                   <p className="text-purple-100 text-sm">
-                    Creating formula for "{currentColumn?.name}" column
+                    Creating formula for "{currentColumn?.name || 'Formula'}" column
                   </p>
                 </div>
               </div>
@@ -1750,7 +1760,7 @@ const MondayBoard = () => {
           </div>
 
           {/* Chat Interface */}
-          <div className="flex h-96">
+          <div className="flex" style={{ height: '500px' }}>
             {/* Chat Messages */}
             <div className="flex-1 flex flex-col">
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -1798,20 +1808,25 @@ const MondayBoard = () => {
                 <div className="flex space-x-2">
                   <input
                     type="text"
-                    value={formulaAssistant.userInput}
-                    onChange={(e) => setFormulaAssistant(prev => ({ ...prev, userInput: e.target.value }))}
+                    value={localInput}
+                    onChange={(e) => setLocalInput(e.target.value)}
                     placeholder="Ask me anything about formulas... (e.g., 'Calculate remaining budget')"
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !formulaAssistant.isProcessing) {
-                        sendMessageToAI(formulaAssistant.userInput);
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !formulaAssistant.isProcessing && localInput.trim()) {
+                        e.preventDefault();
+                        sendMessageToAI(localInput);
+                        setLocalInput("");
                       }
                     }}
                     disabled={formulaAssistant.isProcessing}
                   />
                   <button
-                    onClick={() => sendMessageToAI(formulaAssistant.userInput)}
-                    disabled={formulaAssistant.isProcessing || !formulaAssistant.userInput.trim()}
+                    onClick={() => {
+                      sendMessageToAI(localInput);
+                      setLocalInput("");
+                    }}
+                    disabled={formulaAssistant.isProcessing || !localInput.trim()}
                     className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {formulaAssistant.isProcessing ? 'Thinking...' : 'Send'}
@@ -1821,31 +1836,47 @@ const MondayBoard = () => {
             </div>
 
             {/* Quick Actions Sidebar */}
-            <div className="w-80 bg-gray-50 dark:bg-gray-700 border-l border-gray-200 dark:border-gray-600 p-4">
+            <div className="w-80 bg-gray-50 dark:bg-gray-700 border-l border-gray-200 dark:border-gray-600 p-4 overflow-y-auto">
               <h3 className="font-semibold text-gray-800 dark:text-white mb-4">Quick Actions</h3>
               
               {/* Common Formula Examples */}
               <div className="space-y-2 mb-6">
                 <button
-                  onClick={() => sendMessageToAI("Calculate the sum of two numbers")}
+                  onClick={() => {
+                    const message = "Calculate the sum of two numbers";
+                    sendMessageToAI(message);
+                    setLocalInput("");
+                  }}
                   className="w-full text-left px-3 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
                 >
                   📊 Simple Addition
                 </button>
                 <button
-                  onClick={() => sendMessageToAI("Calculate percentage completion")}
+                  onClick={() => {
+                    const message = "Calculate percentage completion";
+                    sendMessageToAI(message);
+                    setLocalInput("");
+                  }}
                   className="w-full text-left px-3 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
                 >
                   📈 Percentage
                 </button>
                 <button
-                  onClick={() => sendMessageToAI("Find the maximum value")}
+                  onClick={() => {
+                    const message = "Find the maximum value";
+                    sendMessageToAI(message);
+                    setLocalInput("");
+                  }}
                   className="w-full text-left px-3 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
                 >
                   🔝 Maximum Value
                 </button>
                 <button
-                  onClick={() => sendMessageToAI("Calculate average of numbers")}
+                  onClick={() => {
+                    const message = "Calculate average of numbers";
+                    sendMessageToAI(message);
+                    setLocalInput("");
+                  }}
                   className="w-full text-left px-3 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
                 >
                   📊 Average
@@ -1855,13 +1886,18 @@ const MondayBoard = () => {
               {/* Available Columns */}
               <div className="mb-6">
                 <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Available Columns</h4>
-                <div className="space-y-1">
-                  {availableColumns.map(col => (
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').map(col => (
                     <div key={col.id} className="text-xs px-2 py-1 bg-white dark:bg-gray-800 rounded border">
                       <span className="font-mono text-purple-600 dark:text-purple-400">{col.id}</span>
-                      <span className="text-gray-500 ml-2">({col.name})</span>
+                      <span className="text-gray-500 ml-1">({col.name})</span>
                     </div>
                   ))}
+                  {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').length === 0 && (
+                    <div className="text-xs text-gray-500 italic">
+                      No numeric columns available yet. Add Number or Progress columns first.
+                    </div>
+                  )}
                 </div>
               </div>
 
