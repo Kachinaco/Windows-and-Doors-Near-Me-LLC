@@ -24,6 +24,9 @@ import {
   Globe,
   Link,
   FolderPlus,
+  MoreHorizontal,
+  Edit,
+  Copy,
 } from "lucide-react";
 
 const MondayBoard = () => {
@@ -295,6 +298,7 @@ const MondayBoard = () => {
   const [newColumnName, setNewColumnName] = useState("");
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnType, setNewColumnType] = useState("text");
+  const [openMenus, setOpenMenus] = useState({});
 
   // Groups configuration
   const groupOrder = [
@@ -834,6 +838,62 @@ const MondayBoard = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const SubItemMenu = ({ subItemId, projectId, isOpen, onClose }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="absolute top-full right-0 mt-1 w-48 bg-gray-800 text-white rounded-lg shadow-xl border border-gray-700 z-50">
+        <div className="py-2">
+          <div className="px-4 py-2 text-sm text-gray-300 border-b border-gray-700">
+            <div className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Sub-item Options
+            </div>
+          </div>
+
+          <div 
+            onClick={() => {
+              const newName = prompt("Enter new name for this sub-item:");
+              if (newName !== null && newName.trim()) {
+                // Update sub-item name logic would go here
+                alert(`Rename functionality: ${newName}`);
+              }
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <Edit className="w-4 h-4" />
+            Rename
+          </div>
+
+          <div 
+            onClick={() => {
+              alert("Duplicate functionality coming soon!");
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <Copy className="w-4 h-4" />
+            Duplicate
+          </div>
+
+          <div className="border-t border-gray-700 my-1"></div>
+
+          <div 
+            onClick={() => {
+              handleDeleteSubItem(projectId, subItemId);
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-red-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete Sub-item
           </div>
         </div>
       </div>
@@ -1773,34 +1833,57 @@ const MondayBoard = () => {
                                         </div>
                                       ))}
 
-                                      {/* Updates icon for sub-item */}
+                                      {/* Actions for sub-item */}
                                       <div className="w-12 px-2 py-2 flex items-center justify-center">
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            openUpdatesModal(
-                                              "subitem",
-                                              subItem.id,
-                                              subItem.name ||
-                                                "Untitled Sub-item",
-                                            );
-                                          }}
-                                          className="relative p-1 text-blue-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                                          title="Add update to sub-item"
-                                        >
-                                          <MessageCircle className="w-3 h-3" />
-                                          {getUpdateCount(
-                                            "subitem",
-                                            subItem.id,
-                                          ) > 0 && (
-                                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center text-[10px]">
-                                              {getUpdateCount(
+                                        <div className="flex items-center gap-1">
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              openUpdatesModal(
                                                 "subitem",
                                                 subItem.id,
-                                              )}
-                                            </span>
-                                          )}
-                                        </button>
+                                                subItem.name ||
+                                                  "Untitled Sub-item",
+                                              );
+                                            }}
+                                            className="relative p-1 text-blue-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                            title="Add update to sub-item"
+                                          >
+                                            <MessageCircle className="w-3 h-3" />
+                                            {getUpdateCount(
+                                              "subitem",
+                                              subItem.id,
+                                            ) > 0 && (
+                                              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center text-[10px]">
+                                                {getUpdateCount(
+                                                  "subitem",
+                                                  subItem.id,
+                                                )}
+                                              </span>
+                                            )}
+                                          </button>
+                                          <div className="relative">
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenMenus(prev => ({
+                                                  ...prev,
+                                                  [`subitem-${subItem.id}`]: !prev[`subitem-${subItem.id}`]
+                                                }));
+                                              }}
+                                              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                              title="Sub-item options"
+                                            >
+                                              <MoreHorizontal className="w-3 h-3" />
+                                            </button>
+                                            <SubItemMenu
+                                              subItemId={subItem.id}
+                                              projectId={item.id}
+                                              isOpen={openMenus[`subitem-${subItem.id}`] || false}
+                                              onClose={() => setOpenMenus(prev => ({ ...prev, [`subitem-${subItem.id}`]: false }))}
+                                            />
+                                          </div>
+                                        </div>
                                       </div>
                                     </div>
                                   ))}
