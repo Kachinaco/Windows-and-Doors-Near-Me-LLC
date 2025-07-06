@@ -545,6 +545,25 @@ const MondayBoard = () => {
 
     const info = columnTypeInfo[type] || { name: "New Column", description: "Custom column" };
     
+    // For formula columns, directly create and open AI Formula Assistant
+    if (type === "formula") {
+      const newColumn = {
+        id: `col_${Date.now()}`,
+        name: "Formula Column",
+        type: "formula",
+        order: Math.max(...columns.map(col => col.order)) + 1,
+        formula: ""
+      };
+      setColumns(prev => [...prev, newColumn]);
+      setAddColumnMenuOpen(null);
+      
+      // Open AI Formula Assistant for the new column
+      setTimeout(() => {
+        openFormulaAssistant(newColumn.id, "");
+      }, 100);
+      return;
+    }
+    
     setColumnCreationModal({
       isOpen: true,
       type: type,
@@ -1695,6 +1714,172 @@ const MondayBoard = () => {
           </div>
         );
     }
+  };
+
+  // AI Formula Assistant Component - Enhanced Interactive Version
+  const AIFormulaAssistant = () => {
+    if (!formulaAssistant.isOpen) return null;
+
+    const currentColumn = columns.find(col => col.id === formulaAssistant.columnId);
+    const availableColumns = columns.filter(col => col.type === 'number' || col.type === 'progress');
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">🤖</span>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">AI Formula Assistant</h2>
+                  <p className="text-purple-100 text-sm">
+                    Creating formula for "{currentColumn?.name}" column
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={closeFormulaAssistant}
+                className="text-white/70 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Chat Interface */}
+          <div className="flex h-96">
+            {/* Chat Messages */}
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {formulaAssistant.chatHistory.map((message, index) => (
+                  <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      message.type === 'user' 
+                        ? 'bg-blue-500 text-white' 
+                        : message.type === 'system'
+                        ? 'bg-gradient-to-r from-purple-100 to-blue-100 text-gray-800 border border-purple-200'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      <p className="text-sm">{message.message}</p>
+                      {message.formula && (
+                        <div className="mt-2 p-2 bg-gray-800 rounded text-green-400 font-mono text-xs">
+                          {message.formula}
+                        </div>
+                      )}
+                      {message.formula && (
+                        <button
+                          onClick={() => applyAIFormula(message.formula)}
+                          className="mt-2 px-3 py-1 bg-green-500 text-white rounded-full text-xs hover:bg-green-600 transition-colors"
+                        >
+                          Apply Formula
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {formulaAssistant.isProcessing && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-100 px-4 py-2 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Input Area */}
+              <div className="border-t border-gray-200 p-4">
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={formulaAssistant.userInput}
+                    onChange={(e) => setFormulaAssistant(prev => ({ ...prev, userInput: e.target.value }))}
+                    placeholder="Ask me anything about formulas... (e.g., 'Calculate remaining budget')"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !formulaAssistant.isProcessing) {
+                        sendMessageToAI(formulaAssistant.userInput);
+                      }
+                    }}
+                    disabled={formulaAssistant.isProcessing}
+                  />
+                  <button
+                    onClick={() => sendMessageToAI(formulaAssistant.userInput)}
+                    disabled={formulaAssistant.isProcessing || !formulaAssistant.userInput.trim()}
+                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {formulaAssistant.isProcessing ? 'Thinking...' : 'Send'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions Sidebar */}
+            <div className="w-80 bg-gray-50 dark:bg-gray-700 border-l border-gray-200 dark:border-gray-600 p-4">
+              <h3 className="font-semibold text-gray-800 dark:text-white mb-4">Quick Actions</h3>
+              
+              {/* Common Formula Examples */}
+              <div className="space-y-2 mb-6">
+                <button
+                  onClick={() => sendMessageToAI("Calculate the sum of two numbers")}
+                  className="w-full text-left px-3 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
+                >
+                  📊 Simple Addition
+                </button>
+                <button
+                  onClick={() => sendMessageToAI("Calculate percentage completion")}
+                  className="w-full text-left px-3 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
+                >
+                  📈 Percentage
+                </button>
+                <button
+                  onClick={() => sendMessageToAI("Find the maximum value")}
+                  className="w-full text-left px-3 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
+                >
+                  🔝 Maximum Value
+                </button>
+                <button
+                  onClick={() => sendMessageToAI("Calculate average of numbers")}
+                  className="w-full text-left px-3 py-2 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
+                >
+                  📊 Average
+                </button>
+              </div>
+
+              {/* Available Columns */}
+              <div className="mb-6">
+                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Available Columns</h4>
+                <div className="space-y-1">
+                  {availableColumns.map(col => (
+                    <div key={col.id} className="text-xs px-2 py-1 bg-white dark:bg-gray-800 rounded border">
+                      <span className="font-mono text-purple-600 dark:text-purple-400">{col.id}</span>
+                      <span className="text-gray-500 ml-2">({col.name})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Help Tips */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">💡 Tips</h4>
+                <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
+                  <li>• Use natural language</li>
+                  <li>• Reference column names</li>
+                  <li>• Ask for specific calculations</li>
+                  <li>• Try "if-then" conditions</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // Formula Editor Component
@@ -3678,6 +3863,9 @@ const MondayBoard = () => {
           </div>
         </div>
       )}
+
+      {/* AI Formula Assistant */}
+      <AIFormulaAssistant />
 
       {/* Formula Editor */}
       <FormulaEditor />

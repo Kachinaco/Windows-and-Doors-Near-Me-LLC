@@ -1450,6 +1450,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ========================
+  // AI FORMULA ASSISTANT ENDPOINT
+  // ========================
+
+  app.post("/api/ai/generate-formula", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { message, availableColumns, currentFormula } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      const OpenAI = require('openai');
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+      const systemPrompt = `You are an AI Formula Assistant for a project management system. Your job is to help users create formulas for their columns in a conversational, friendly way.
+
+Available columns: ${availableColumns.map((col: any) => `${col.name} (${col.id})`).join(', ')}
+
+When creating formulas:
+- Use column IDs like: ${availableColumns.map((col: any) => col.id).join(', ')}
+- Support basic operators: +, -, *, /, %
+- Support functions: MAX(), MIN(), ABS(), ROUND(), IF()
+- Use parentheses for grouping
+- Always explain what the formula does
+
+Examples:
+- "Calculate remaining budget" → "hoursBudget - hoursSpent" (This calculates how much budget is left)
+- "Find completion percentage" → "(progress / 100) * 100" (This shows progress as a percentage)
+- "Cost per hour rate" → "cost / hoursBudget" (This calculates the hourly rate)
+
+Current formula: ${currentFormula || "None"}
+
+Return your response in JSON format with the following structure:
+{
+  "explanation": "Your conversational explanation of the formula",
+  "formula": "The actual formula code",
+  "suggestions": ["Optional array of alternative suggestions"]
+}
+
+Be conversational, helpful, and always provide both the formula and a clear explanation of what it does.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 500
+      });
+
+      const result = JSON.parse(response.choices[0].message.content);
+      
+      res.json({
+        explanation: result.explanation || "Here's the formula I created for you:",
+        formula: result.formula || "",
+        suggestions: result.suggestions || []
+      });
+
+    } catch (error) {
+      console.error("Error generating formula:", error);
+      res.status(500).json({ 
+        message: "I apologize, but I'm having trouble processing your request right now. Please try rephrasing your question or check that the OpenAI API is properly configured."
+      });
+    }
+  });
+
+  // ========================
   // COMPREHENSIVE CRM INTEGRATION ENDPOINTS
   // ========================
 
