@@ -1461,10 +1461,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "OpenAI API key not configured" });
       }
 
+      // Clean the input data to remove any Unicode characters that might cause issues
+      const cleanText = (text: string) => text.replace(/[^\x00-\x7F]/g, "");
+      
       const { default: OpenAI } = await import('openai');
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const openai = new OpenAI({ 
+        apiKey: process.env.OPENAI_API_KEY,
+        dangerouslyAllowBrowser: false
+      });
 
-      const systemPrompt = `You are an AI Formula Assistant for a project management system. Your job is to help users create formulas for their columns in a conversational, friendly way.
+      // Simple, clean system prompt
+      const systemPrompt = `You are an AI Formula Assistant for a project management system. Help users create formulas for their columns.
 
 Available columns: ${availableColumns.map((col: any) => `${col.name} (${col.id})`).join(', ')}
 
@@ -1475,30 +1482,24 @@ When creating formulas:
 - Use parentheses for grouping
 - Always explain what the formula does
 
-Examples:
-- "Calculate remaining budget" → "hoursBudget - hoursSpent" (This calculates how much budget is left)
-- "Find completion percentage" → "(progress / 100) * 100" (This shows progress as a percentage)
-- "Cost per hour rate" → "cost / hoursBudget" (This calculates the hourly rate)
-
 Current formula: ${currentFormula || "None"}
 
-Return your response in JSON format with the following structure:
+Return your response in JSON format with:
 {
   "explanation": "Your conversational explanation of the formula",
   "formula": "The actual formula code",
   "suggestions": ["Optional array of alternative suggestions"]
-}
-
-Be conversational, helpful, and always provide both the formula and a clear explanation of what it does.`;
+}`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: message }
+          { role: "system", content: cleanText(systemPrompt) },
+          { role: "user", content: cleanText(message) }
         ],
         response_format: { type: "json_object" },
-        max_tokens: 500
+        max_tokens: 500,
+        temperature: 0.7
       });
 
       const result = JSON.parse(response.choices[0].message.content);
