@@ -318,6 +318,7 @@ const MondayBoard = () => {
   const handleSelectColumnType = (type) => {
     const columnName = prompt("Enter column name:") || "New Column";
     handleAddColumn(type, columnName);
+    setAddColumnMenuOpen(null);
   };
 
   // Helper functions
@@ -1197,14 +1198,15 @@ const MondayBoard = () => {
                         </span>
                       </div>
                       <button
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setColumnMenuOpen(
                             columnMenuOpen === `main-${column.id}`
                               ? null
                               : `main-${column.id}`,
-                          )
-                        }
-                        className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                          );
+                        }}
+                        className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded opacity-100 transition-opacity"
                       >
                         ⋯
                       </button>
