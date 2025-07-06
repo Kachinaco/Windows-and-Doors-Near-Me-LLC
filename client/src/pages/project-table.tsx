@@ -1195,8 +1195,8 @@ const MondayBoard = () => {
         </header>
 
         {/* Board Content */}
-        <div className="flex-1 overflow-auto bg-white">
-          <div className="min-w-max">
+        <div className="flex-1 overflow-x-auto overflow-y-auto bg-white" style={{ scrollBehavior: 'smooth' }}>
+          <div className="min-w-max w-full">
             {/* Column Headers */}
             <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
               <div className="flex">
@@ -1223,7 +1223,10 @@ const MondayBoard = () => {
                   <div
                     key={column.id}
                     className="px-3 py-3 border-r border-gray-200 relative group flex-shrink-0 bg-white"
-                    style={{ width: getColumnWidth(column.id) }}
+                    style={{ 
+                      width: getColumnWidth(column.id),
+                      minWidth: getColumnWidth(column.id)
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
@@ -1304,7 +1307,10 @@ const MondayBoard = () => {
 
                   <div
                     className="px-4 py-3 border-r border-gray-200 flex items-center space-x-2 cursor-pointer"
-                    style={{ width: getColumnWidth("item") }}
+                    style={{ 
+                      width: getColumnWidth("item"),
+                      minWidth: getColumnWidth("item")
+                    }}
                     onClick={() => toggleGroup(group.name)}
                   >
                     {group.collapsed ? (
@@ -1341,7 +1347,10 @@ const MondayBoard = () => {
                     <div
                       key={column.id}
                       className="px-3 py-3 border-r border-gray-200"
-                      style={{ width: getColumnWidth(column.id) }}
+                      style={{ 
+                        width: getColumnWidth(column.id),
+                        minWidth: getColumnWidth(column.id)
+                      }}
                     >
                       <span className="text-xs font-medium text-gray-500 uppercase">
                         {column.name}
@@ -1379,7 +1388,10 @@ const MondayBoard = () => {
                             <div
                               key={`${item.id}-${column.id}`}
                               className="px-4 py-3 border-r border-gray-200 flex items-center relative"
-                              style={{ width: getColumnWidth(column.id) }}
+                              style={{ 
+                                width: getColumnWidth(column.id),
+                                minWidth: getColumnWidth(column.id)
+                              }}
                               onClick={(e) => e.stopPropagation()}
                             >
                               {renderCell(item, column)}
@@ -1430,7 +1442,10 @@ const MondayBoard = () => {
 
                                   <div
                                     className="px-4 py-2 border-r border-blue-200 flex items-center"
-                                    style={{ width: getColumnWidth("item") }}
+                                    style={{ 
+                                      width: getColumnWidth("item"),
+                                      minWidth: getColumnWidth("item")
+                                    }}
                                   >
                                     <div className="flex items-center gap-2 text-sm w-full">
                                       <div className="w-4 h-px bg-blue-400"></div>
