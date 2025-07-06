@@ -1877,18 +1877,46 @@ const MondayBoard = () => {
               {/* Available Columns */}
               <div className="mb-6">
                 <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Available Columns</h4>
+                <p className="text-xs text-gray-500 mb-2">Click to add to formula</p>
                 <div className="space-y-1 max-h-32 overflow-y-auto">
                   {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').map(col => (
-                    <div key={col.id} className="text-xs px-2 py-1 bg-white dark:bg-gray-800 rounded border">
+                    <button
+                      key={col.id}
+                      onClick={() => {
+                        const currentInput = localInput;
+                        const newInput = currentInput ? `${currentInput} + ${col.id}` : col.id;
+                        setLocalInput(newInput);
+                      }}
+                      className="w-full text-left text-xs px-2 py-1 bg-white dark:bg-gray-800 rounded border hover:bg-purple-50 hover:border-purple-300 transition-colors cursor-pointer"
+                    >
                       <span className="font-mono text-purple-600 dark:text-purple-400">{col.id}</span>
                       <span className="text-gray-500 ml-1">({col.name})</span>
-                    </div>
+                    </button>
                   ))}
                   {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').length === 0 && (
                     <div className="text-xs text-gray-500 italic">
                       No numeric columns available yet. Add Number or Progress columns first.
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Quick Operators */}
+              <div className="mb-6">
+                <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Quick Operators</h4>
+                <div className="grid grid-cols-4 gap-1">
+                  {['+', '-', '*', '/', '(', ')', '%', '='].map(op => (
+                    <button
+                      key={op}
+                      onClick={() => {
+                        const currentInput = localInput;
+                        setLocalInput(currentInput + (currentInput && !currentInput.endsWith(' ') ? ' ' : '') + op + ' ');
+                      }}
+                      className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors font-mono"
+                    >
+                      {op}
+                    </button>
+                  ))}
                 </div>
               </div>
 

@@ -1461,7 +1461,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "OpenAI API key not configured" });
       }
 
-      const OpenAI = require('openai');
+      const { default: OpenAI } = await import('openai');
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
       const systemPrompt = `You are an AI Formula Assistant for a project management system. Your job is to help users create formulas for their columns in a conversational, friendly way.
