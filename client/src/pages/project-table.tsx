@@ -1718,12 +1718,27 @@ const MondayBoard = () => {
                                                 />
                                               )}
                                               {column.type === 'progress' && (
-                                                <div className="flex items-center gap-2 w-full">
-                                                  <div className="flex-1 bg-gray-200 rounded-full h-2 relative">
+                                                <div className="flex items-center gap-2 w-full group">
+                                                  <div className="flex-1 bg-gray-200 rounded-full h-2 relative cursor-pointer">
                                                     <div 
                                                       className="bg-green-500 h-2 rounded-full transition-all duration-200"
                                                       style={{ width: '75%' }}
                                                     ></div>
+                                                    <input
+                                                      type="range"
+                                                      min="0"
+                                                      max="100"
+                                                      defaultValue="75"
+                                                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                      onChange={(e) => {
+                                                        const progressBar = e.target.previousElementSibling;
+                                                        const percentageSpan = e.target.parentElement.nextElementSibling;
+                                                        if (progressBar && percentageSpan) {
+                                                          progressBar.style.width = `${e.target.value}%`;
+                                                          percentageSpan.textContent = `${e.target.value}%`;
+                                                        }
+                                                      }}
+                                                    />
                                                   </div>
                                                   <span className="text-xs text-blue-600 font-medium min-w-[30px]">75%</span>
                                                 </div>
