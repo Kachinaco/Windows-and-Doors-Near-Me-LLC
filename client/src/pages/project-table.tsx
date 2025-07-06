@@ -1717,6 +1717,17 @@ const MondayBoard = () => {
                                                   className="w-3 h-3 rounded border-blue-400 text-blue-600"
                                                 />
                                               )}
+                                              {column.type === 'progress' && (
+                                                <div className="flex items-center gap-2 w-full">
+                                                  <div className="flex-1 bg-gray-200 rounded-full h-2 relative">
+                                                    <div 
+                                                      className="bg-green-500 h-2 rounded-full transition-all duration-200"
+                                                      style={{ width: '75%' }}
+                                                    ></div>
+                                                  </div>
+                                                  <span className="text-xs text-blue-600 font-medium min-w-[30px]">75%</span>
+                                                </div>
+                                              )}
                                             </div>
                                           </div>
                                         </div>
