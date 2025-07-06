@@ -766,6 +766,5 @@ export default function Settings() {
         )}
       </main>
     </div>
-    );
-  }
+  );
 }
