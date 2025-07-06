@@ -652,21 +652,23 @@ const MondayBoard = () => {
   };
 
   const handleDeleteSubItem = (projectId, subItemId) => {
-    setBoardItems((prev) =>
-      prev.map((item) =>
-        item.id === projectId
-          ? {
-              ...item,
-              folders: item.folders.map((folder) => ({
-                ...folder,
-                subItems: folder.subItems.filter(
-                  (subItem) => subItem.id !== subItemId,
-                ),
-              })),
-            }
-          : item,
-      ),
-    );
+    if (confirm('Are you sure you want to delete this sub-item? This action cannot be undone.')) {
+      setBoardItems((prev) =>
+        prev.map((item) =>
+          item.id === projectId
+            ? {
+                ...item,
+                folders: (item.folders || []).map((folder) => ({
+                  ...folder,
+                  subItems: (folder.subItems || []).filter(
+                    (subItem) => subItem.id !== subItemId,
+                  ),
+                })),
+              }
+            : item,
+        ),
+      );
+    }
   };
 
   const handleDeleteItem = (itemId) => {
