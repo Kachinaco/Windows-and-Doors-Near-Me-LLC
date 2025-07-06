@@ -1049,7 +1049,9 @@ const MondayBoard = () => {
 
           <div 
             onClick={() => {
-              handleDeleteColumn(columnId);
+              // Use menuKey for sub-items, columnId for main items
+              const deleteId = isSubItem && menuKey ? menuKey : columnId;
+              handleDeleteColumn(deleteId);
               onClose();
             }}
             className="px-4 py-2 text-sm text-red-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
