@@ -999,7 +999,8 @@ const MondayBoard = () => {
                 // For sub-items, use the full menu key which contains the sub-item context
                 setAddColumnMenuOpen(menuKey);
               } else {
-                setAddColumnMenuOpen(columnId);
+                // For main items, use the main- prefix to differentiate from sub-items
+                setAddColumnMenuOpen(`main-${columnId}`);
               }
               onClose();
             }}
