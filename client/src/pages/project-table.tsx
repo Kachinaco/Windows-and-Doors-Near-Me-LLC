@@ -289,6 +289,16 @@ const MondayBoard = () => {
   // Toast notification state
   const [toasts, setToasts] = useState([]);
 
+  // AI Formula Assistant state
+  const [formulaAssistant, setFormulaAssistant] = useState({
+    isOpen: false,
+    columnId: null,
+    currentFormula: "",
+    chatHistory: [],
+    userInput: "",
+    isProcessing: false
+  });
+
   // Toast helper function
   const showToast = (message, type = "info") => {
     const id = Date.now();
@@ -299,6 +309,99 @@ const MondayBoard = () => {
     setTimeout(() => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 3000);
+  };
+
+  // AI Formula Assistant functions
+  const openFormulaAssistant = (columnId, currentFormula = "") => {
+    const column = columns.find(col => col.id === columnId);
+    setFormulaAssistant({
+      isOpen: true,
+      columnId,
+      currentFormula,
+      chatHistory: [
+        {
+          type: "system",
+          message: `Hello! I'm your AI Formula Assistant. I'll help you create a formula for the "${column?.name}" column. You can ask me in natural language like "Calculate the total cost" or "Find the percentage completion". Available columns: ${columns.map(col => col.name).join(", ")}`
+        }
+      ],
+      userInput: "",
+      isProcessing: false
+    });
+  };
+
+  const closeFormulaAssistant = () => {
+    setFormulaAssistant({
+      isOpen: false,
+      columnId: null,
+      currentFormula: "",
+      chatHistory: [],
+      userInput: "",
+      isProcessing: false
+    });
+  };
+
+
+
+  const sendMessageToAI = async (message) => {
+    if (!message.trim()) return;
+
+    setFormulaAssistant(prev => ({
+      ...prev,
+      isProcessing: true,
+      userInput: "",
+      chatHistory: [...prev.chatHistory, { type: "user", message }]
+    }));
+
+    try {
+      const response = await fetch('/api/ai/generate-formula', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message,
+          availableColumns: columns.map(col => ({ id: col.id, name: col.name, type: col.type })),
+          currentFormula: formulaAssistant.currentFormula
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormulaAssistant(prev => ({
+          ...prev,
+          isProcessing: false,
+          chatHistory: [...prev.chatHistory, { 
+            type: "assistant", 
+            message: data.explanation,
+            formula: data.formula
+          }]
+        }));
+      } else {
+        throw new Error('Failed to get AI response');
+      }
+    } catch (error) {
+      setFormulaAssistant(prev => ({
+        ...prev,
+        isProcessing: false,
+        chatHistory: [...prev.chatHistory, { 
+          type: "assistant", 
+          message: "I apologize, but I'm having trouble processing your request right now. Please try rephrasing your question or check that the OpenAI API is properly configured."
+        }]
+      }));
+    }
+  };
+
+  const applyAIFormula = (formula) => {
+    if (!formulaAssistant.columnId || !formula) return;
+
+    setColumns(prev => prev.map(col => 
+      col.id === formulaAssistant.columnId 
+        ? { ...col, formula }
+        : col
+    ));
+
+    showToast("Formula applied successfully!", "success");
+    closeFormulaAssistant();
   };
 
   // Formula evaluation engine
@@ -1530,8 +1633,18 @@ const MondayBoard = () => {
         // Calculate formula result
         const formulaResult = evaluateFormula(column.formula, item);
         return (
-          <div className="h-6 text-xs flex items-center px-2 text-purple-700 bg-purple-50 rounded font-medium">
-            {formulaResult !== null ? formulaResult : "Error"}
+          <div className="h-6 text-xs flex items-center justify-between px-2 text-purple-700 bg-purple-50 rounded font-medium group hover:bg-purple-100 transition-colors">
+            <span>{formulaResult !== null ? formulaResult : "Error"}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openFormulaAssistant(column.id, column.formula);
+              }}
+              className="opacity-0 group-hover:opacity-100 text-purple-600 hover:text-purple-800 transition-all p-0.5"
+              title="AI Formula Assistant"
+            >
+              ✨
+            </button>
           </div>
         );
 
