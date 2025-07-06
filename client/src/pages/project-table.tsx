@@ -36,7 +36,7 @@ const MondayBoard = () => {
   ]);
 
   // Board columns configuration
-  const [columns] = useState([
+  const [columns, setColumns] = useState([
     { id: "item", name: "Main Item", type: "text", order: 1 },
     { id: "subitems", name: "Sub Items", type: "subitems", order: 2 },
     { id: "status", name: "Status", type: "status", order: 3 },
@@ -276,6 +276,16 @@ const MondayBoard = () => {
   // Column menu state
   const [columnMenuOpen, setColumnMenuOpen] = useState(null);
 
+  // Settings functionality state
+  const [columnFilters, setColumnFilters] = useState({});
+  const [columnSortOrder, setColumnSortOrder] = useState({});
+  const [collapsedColumns, setCollapsedColumns] = useState(new Set());
+  const [showColumnSummary, setShowColumnSummary] = useState(new Set());
+  const [isRenamingColumn, setIsRenamingColumn] = useState(null);
+  const [newColumnName, setNewColumnName] = useState("");
+  const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [newColumnType, setNewColumnType] = useState("text");
+
   // Groups configuration
   const groupOrder = [
     "New Leads",
@@ -477,6 +487,94 @@ const MondayBoard = () => {
     );
   };
 
+  // Settings functionality handlers
+  const handleFilterColumn = (columnId, filterValue) => {
+    setColumnFilters(prev => ({ ...prev, [columnId]: filterValue }));
+  };
+
+  const handleSortColumn = (columnId, sortOrder) => {
+    setColumnSortOrder(prev => ({ ...prev, [columnId]: sortOrder }));
+  };
+
+  const handleCollapseColumn = (columnId) => {
+    setCollapsedColumns(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(columnId)) {
+        newSet.delete(columnId);
+      } else {
+        newSet.add(columnId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleToggleColumnSummary = (columnId) => {
+    setShowColumnSummary(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(columnId)) {
+        newSet.delete(columnId);
+      } else {
+        newSet.add(columnId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleRenameColumn = (columnId, newName) => {
+    // Update the column name in the columns array
+    setColumns(prev => prev.map(col => 
+      col.id === columnId ? { ...col, name: newName } : col
+    ));
+    setIsRenamingColumn(null);
+    setNewColumnName("");
+  };
+
+  const handleDeleteColumn = (columnId) => {
+    if (window.confirm("Are you sure you want to delete this column?")) {
+      setColumns(prev => prev.filter(col => col.id !== columnId));
+      // Clean up related state
+      setColumnFilters(prev => {
+        const newFilters = { ...prev };
+        delete newFilters[columnId];
+        return newFilters;
+      });
+      setColumnSortOrder(prev => {
+        const newSort = { ...prev };
+        delete newSort[columnId];
+        return newSort;
+      });
+      setCollapsedColumns(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(columnId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleDuplicateColumn = (columnId) => {
+    const originalColumn = columns.find(col => col.id === columnId);
+    if (originalColumn) {
+      const newColumn = {
+        ...originalColumn,
+        id: `${columnId}_copy_${Date.now()}`,
+        name: `${originalColumn.name} (Copy)`,
+        order: Math.max(...columns.map(col => col.order)) + 1
+      };
+      setColumns(prev => [...prev, newColumn]);
+    }
+  };
+
+  const handleAddColumn = (type, name = "New Column") => {
+    const newColumn = {
+      id: `col_${Date.now()}`,
+      name: name,
+      type: type,
+      order: Math.max(...columns.map(col => col.order)) + 1
+    };
+    setColumns(prev => [...prev, newColumn]);
+    setIsAddingColumn(false);
+  };
+
   const handleUpdateSubItem = (projectId, subItemId, field, value) => {
     setBoardItems((prev) =>
       prev.map((item) =>
@@ -655,7 +753,13 @@ const MondayBoard = () => {
             </div>
           </div>
 
-          <div className="px-4 py-2 text-sm text-blue-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+          <div 
+            onClick={() => {
+              alert("AI Autofill feature coming soon!");
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-blue-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
             <div className="w-4 h-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded flex items-center justify-center text-xs">
               ✨
             </div>
@@ -664,20 +768,44 @@ const MondayBoard = () => {
 
           <div className="border-t border-gray-700 my-1"></div>
 
-          <div className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+          <div 
+            onClick={() => {
+              const filterValue = prompt(`Enter filter value for ${columnName}:`);
+              if (filterValue !== null) {
+                handleFilterColumn(columnId, filterValue);
+                onClose();
+              }
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
             <div className="w-4 h-4">🔍</div>
             Filter
           </div>
 
-          <div className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+          <div 
+            onClick={() => {
+              const sortOptions = ["asc", "desc", "none"];
+              const currentSort = columnSortOrder[columnId] || "none";
+              const nextSort = sortOptions[(sortOptions.indexOf(currentSort) + 1) % sortOptions.length];
+              handleSortColumn(columnId, nextSort);
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
             <div className="w-4 h-4">↕️</div>
-            Sort
+            Sort {columnSortOrder[columnId] ? `(${columnSortOrder[columnId]})` : ""}
             <ChevronRight className="w-3 h-3 ml-auto" />
           </div>
 
-          <div className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+          <div 
+            onClick={() => {
+              handleCollapseColumn(columnId);
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
             <div className="w-4 h-4">↗️</div>
-            Collapse
+            {collapsedColumns.has(columnId) ? "Expand" : "Collapse"}
           </div>
 
           <div className="border-t border-gray-700 my-1"></div>
@@ -687,25 +815,60 @@ const MondayBoard = () => {
             Show Summary on Parent Item
           </div>
 
-          <div className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+          <div 
+            onClick={() => {
+              handleDuplicateColumn(columnId);
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
             <div className="w-4 h-4">📋</div>
             Duplicate column
             <ChevronRight className="w-3 h-3 ml-auto" />
           </div>
 
-          <div className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+          <div 
+            onClick={() => {
+              alert("AI column feature coming soon!");
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
             <div className="w-4 h-4">🤖</div>
             Add AI column to the right
             <ChevronRight className="w-3 h-3 ml-auto" />
           </div>
 
-          <div className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+          <div 
+            onClick={() => {
+              const columnTypes = ["text", "status", "people", "date", "number", "checkbox", "progress"];
+              const selectedType = prompt(`Select column type:\n${columnTypes.join(", ")}`);
+              if (selectedType && columnTypes.includes(selectedType)) {
+                const columnName = prompt("Enter column name:") || "New Column";
+                handleAddColumn(selectedType, columnName);
+                onClose();
+              }
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
             <Plus className="w-4 h-4" />
             Add column to the right
             <ChevronRight className="w-3 h-3 ml-auto" />
           </div>
 
-          <div className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+          <div 
+            onClick={() => {
+              const columnTypes = ["text", "status", "people", "date", "number", "checkbox", "progress"];
+              const selectedType = prompt(`Change column type to:\n${columnTypes.join(", ")}`);
+              if (selectedType && columnTypes.includes(selectedType)) {
+                setColumns(prev => prev.map(col => 
+                  col.id === columnId ? { ...col, type: selectedType } : col
+                ));
+                onClose();
+              }
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
             <div className="w-4 h-4">🔄</div>
             Change column type
             <ChevronRight className="w-3 h-3 ml-auto" />
@@ -727,12 +890,27 @@ const MondayBoard = () => {
 
           <div className="border-t border-gray-700 my-1"></div>
 
-          <div className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+          <div 
+            onClick={() => {
+              const newName = prompt(`Rename column "${columnName}" to:`, columnName);
+              if (newName && newName !== columnName) {
+                handleRenameColumn(columnId, newName);
+                onClose();
+              }
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
             <div className="w-4 h-4">✏️</div>
             Rename
           </div>
 
-          <div className="px-4 py-2 text-sm text-red-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+          <div 
+            onClick={() => {
+              handleDeleteColumn(columnId);
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-red-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
             <Trash2 className="w-4 h-4" />
             Delete
           </div>
