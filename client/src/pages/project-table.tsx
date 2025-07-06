@@ -1656,75 +1656,7 @@ const MondayBoard = () => {
                                         </div>
                                       </div>
 
-                                      <div
-                                        className="px-4 py-2 border-r border-blue-200 relative"
-                                        style={{
-                                          width: getColumnWidth("status"),
-                                        }}
-                                      >
-                                        <div className="flex items-center justify-between">
-                                          <select
-                                            value={subItem.status}
-                                            onChange={(e) =>
-                                              handleUpdateSubItem(
-                                                item.id,
-                                                subItem.id,
-                                                "status",
-                                                e.target.value,
-                                              )
-                                            }
-                                            className={`px-2 py-1 rounded-full text-xs font-medium border-none outline-none cursor-pointer ${
-                                              subItem.status === "completed"
-                                                ? "bg-green-100 text-green-700"
-                                                : subItem.status ===
-                                                    "in_progress"
-                                                  ? "bg-blue-100 text-blue-700"
-                                                  : "bg-gray-100 text-gray-700"
-                                            }`}
-                                          >
-                                            <option value="not_started">
-                                              Not Started
-                                            </option>
-                                            <option value="in_progress">
-                                              In Progress
-                                            </option>
-                                            <option value="completed">
-                                              Completed
-                                            </option>
-                                          </select>
-                                          <button
-                                            onClick={() =>
-                                              setColumnMenuOpen(
-                                                columnMenuOpen ===
-                                                  `subitem-${subItem.id}-status`
-                                                  ? null
-                                                  : `subitem-${subItem.id}-status`,
-                                              )
-                                            }
-                                            className="text-blue-400 hover:text-blue-600 p-1 hover:bg-blue-100 rounded opacity-0 group-hover:opacity-100 transition-opacity ml-1"
-                                          >
-                                            ⋯
-                                          </button>
-                                        </div>
-                                        <ColumnMenu
-                                          columnId="status"
-                                          columnName="Status"
-                                          isOpen={
-                                            columnMenuOpen ===
-                                            `subitem-${subItem.id}-status`
-                                          }
-                                          onClose={() =>
-                                            setColumnMenuOpen(null)
-                                          }
-                                          isSubItem={true}
-                                          menuKey={`subitem-${subItem.id}-status`}
-                                        />
-                                        <AddColumnMenu
-                                          isOpen={addColumnMenuOpen === `subitem-${subItem.id}-status`}
-                                          onClose={() => setAddColumnMenuOpen(null)}
-                                          onSelectType={handleSelectSubItemColumnType}
-                                        />
-                                      </div>
+
 
 
 
