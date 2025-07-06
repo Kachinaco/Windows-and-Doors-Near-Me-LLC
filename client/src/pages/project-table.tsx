@@ -251,6 +251,56 @@ const MondayBoard = () => {
     aiSuggestions: []
   });
 
+  // Column creation modal state
+  const [columnCreationModal, setColumnCreationModal] = useState({
+    isOpen: false,
+    type: null,
+    name: "",
+    description: "",
+    callback: null,
+    isSubItem: false
+  });
+
+  // Column rename modal state
+  const [columnRenameModal, setColumnRenameModal] = useState({
+    isOpen: false,
+    columnId: null,
+    currentName: "",
+    callback: null
+  });
+
+  // Generic modal states for prompts and confirms
+  const [promptModal, setPromptModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    placeholder: "",
+    defaultValue: "",
+    callback: null
+  });
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    callback: null
+  });
+
+  // Toast notification state
+  const [toasts, setToasts] = useState([]);
+
+  // Toast helper function
+  const showToast = (message, type = "info") => {
+    const id = Date.now();
+    const newToast = { id, message, type };
+    setToasts(prev => [...prev, newToast]);
+    
+    // Auto-remove toast after 3 seconds
+    setTimeout(() => {
+      setToasts(prev => prev.filter(toast => toast.id !== id));
+    }, 3000);
+  };
+
   // Formula evaluation engine
   const evaluateFormula = (formula, item) => {
     if (!formula) return null;
@@ -381,24 +431,64 @@ const MondayBoard = () => {
 
   // Handle column type selection from AddColumnMenu
   const handleSelectColumnType = (type) => {
-    if (type === "formula") {
-      const columnName = prompt("Enter column name:") || "Formula Column";
-      const formula = prompt("Enter formula (e.g., 'progress * 100', 'dueDate - startDate'):");
-      if (formula) {
-        handleAddColumn(type, columnName, formula);
-      }
-    } else {
-      const columnName = prompt("Enter column name:") || "New Column";
-      handleAddColumn(type, columnName);
-    }
-    setAddColumnMenuOpen(null);
+    const columnTypeInfo = {
+      text: { name: "Text Column", description: "Simple text field for notes and descriptions" },
+      status: { name: "Status Column", description: "Status with colored labels" },
+      people: { name: "People Column", description: "Assign team members" },
+      date: { name: "Date Column", description: "Date picker for deadlines and schedules" },
+      number: { name: "Number Column", description: "Numeric values for costs, quantities, etc." },
+      checkbox: { name: "Checkbox Column", description: "True/false toggle for completion" },
+      progress: { name: "Progress Column", description: "Progress bar for tracking completion" },
+      formula: { name: "Formula Column", description: "Calculate values from other columns" },
+      email: { name: "Email Column", description: "Email addresses for contacts" },
+      phone: { name: "Phone Column", description: "Phone numbers for communication" },
+      location: { name: "Location Column", description: "Addresses and locations" }
+    };
+
+    const info = columnTypeInfo[type] || { name: "New Column", description: "Custom column" };
+    
+    setColumnCreationModal({
+      isOpen: true,
+      type: type,
+      name: info.name,
+      description: info.description,
+      callback: (name, formula = null) => {
+        if (type === "formula" && formula) {
+          handleAddColumn(type, name, formula);
+        } else {
+          handleAddColumn(type, name);
+        }
+        setAddColumnMenuOpen(null);
+      },
+      isSubItem: false
+    });
   };
 
   // Handle sub-item column type selection from AddColumnMenu
   const handleSelectSubItemColumnType = (type) => {
-    const columnName = prompt("Enter column name:") || "New Column";
-    handleAddSubItemColumn(type, columnName);
-    setAddColumnMenuOpen(null);
+    const columnTypeInfo = {
+      text: { name: "Text Column", description: "Simple text field for notes and descriptions" },
+      status: { name: "Status Column", description: "Status with colored labels" },
+      people: { name: "People Column", description: "Assign team members" },
+      date: { name: "Date Column", description: "Date picker for deadlines and schedules" },
+      number: { name: "Number Column", description: "Numeric values for costs, quantities, etc." },
+      checkbox: { name: "Checkbox Column", description: "True/false toggle for completion" },
+      progress: { name: "Progress Column", description: "Progress bar for tracking completion" }
+    };
+
+    const info = columnTypeInfo[type] || { name: "New Column", description: "Custom column" };
+    
+    setColumnCreationModal({
+      isOpen: true,
+      type: type,
+      name: info.name,
+      description: info.description,
+      callback: (name) => {
+        handleAddSubItemColumn(type, name);
+        setAddColumnMenuOpen(null);
+      },
+      isSubItem: true
+    });
   };
 
   // Helper functions
@@ -631,37 +721,51 @@ const MondayBoard = () => {
       const actualColumnId = parts.slice(2).join('-'); // Everything after "folder-{folderId}-"
       console.log('Deleting sub-item column. Full ID:', columnId, 'Actual column ID:', actualColumnId);
       
-      if (window.confirm("Are you sure you want to delete this sub-item column?")) {
-        setSubItemColumns(prev => {
-          const filtered = prev.filter(col => col.id !== actualColumnId);
-          console.log('Previous sub-item columns:', prev);
-          console.log('Filtered sub-item columns:', filtered);
-          return filtered;
-        });
-      }
+      setConfirmModal({
+        isOpen: true,
+        title: "Delete Sub-Item Column",
+        message: "Are you sure you want to delete this sub-item column?",
+        callback: (confirmed) => {
+          if (confirmed) {
+            setSubItemColumns(prev => {
+              const filtered = prev.filter(col => col.id !== actualColumnId);
+              console.log('Previous sub-item columns:', prev);
+              console.log('Filtered sub-item columns:', filtered);
+              return filtered;
+            });
+          }
+        }
+      });
       return;
     }
     
     // Handle main columns
-    if (window.confirm("Are you sure you want to delete this column?")) {
-      setColumns(prev => prev.filter(col => col.id !== columnId));
-      // Clean up related state
-      setColumnFilters(prev => {
-        const newFilters = { ...prev };
-        delete newFilters[columnId];
-        return newFilters;
-      });
-      setColumnSortOrder(prev => {
-        const newSort = { ...prev };
-        delete newSort[columnId];
-        return newSort;
-      });
-      setCollapsedColumns(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(columnId);
-        return newSet;
-      });
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Column",
+      message: "Are you sure you want to delete this column?",
+      callback: (confirmed) => {
+        if (confirmed) {
+          setColumns(prev => prev.filter(col => col.id !== columnId));
+          // Clean up related state
+          setColumnFilters(prev => {
+            const newFilters = { ...prev };
+            delete newFilters[columnId];
+            return newFilters;
+          });
+          setColumnSortOrder(prev => {
+            const newSort = { ...prev };
+            delete newSort[columnId];
+            return newSort;
+          });
+          setCollapsedColumns(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(columnId);
+            return newSet;
+          });
+        }
+      }
+    });
   };
 
   const handleDuplicateColumn = (columnId) => {
@@ -773,14 +877,21 @@ const MondayBoard = () => {
   };
 
   const handleDeleteMainItem = (itemId) => {
-    if (confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
-      setBoardItems((prev) => prev.filter((item) => item.id !== itemId));
-      setSelectedItems((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(itemId);
-        return newSet;
-      });
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Item",
+      message: "Are you sure you want to delete this item? This action cannot be undone.",
+      callback: (confirmed) => {
+        if (confirmed) {
+          setBoardItems((prev) => prev.filter((item) => item.id !== itemId));
+          setSelectedItems((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(itemId);
+            return newSet;
+          });
+        }
+      }
+    });
   };
 
   const handleSelectToggle = (id) => {
@@ -853,7 +964,7 @@ const MondayBoard = () => {
   const sendEmail = async () => {
     const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
     if (!currentItem?.email || !emailSubject.trim() || !emailMessage.trim()) {
-      alert("Please fill in all email fields");
+      showToast("Please fill in all email fields", "error");
       return;
     }
 
@@ -893,14 +1004,14 @@ const MondayBoard = () => {
         setEmailSubject("");
         setEmailMessage("");
         setActiveTab("updates"); // Switch back to updates tab
-        alert("Email sent successfully!");
+        showToast("Email sent successfully!", "success");
       } else {
         const error = await response.json();
-        alert(`Failed to send email: ${error.message}`);
+        showToast(`Failed to send email: ${error.message}`, "error");
       }
     } catch (error) {
       console.error('Email sending error:', error);
-      alert("Failed to send email. Please check your connection and try again.");
+      showToast("Failed to send email. Please check your connection and try again.", "error");
     } finally {
       setIsEmailSending(false);
     }
@@ -1008,11 +1119,19 @@ const MondayBoard = () => {
 
           <div 
             onClick={() => {
-              const newName = prompt("Enter new name for this sub-item:");
-              if (newName !== null && newName.trim()) {
-                // Update sub-item name logic would go here
-                alert(`Rename functionality: ${newName}`);
-              }
+              setPromptModal({
+                isOpen: true,
+                title: "Rename Sub-Item",
+                message: "Enter a new name for this sub-item",
+                placeholder: "Enter new name...",
+                defaultValue: "",
+                callback: (newName) => {
+                  if (newName !== null && newName.trim()) {
+                    // Update sub-item name logic would go here
+                    showToast("Sub-item renamed successfully!", "success");
+                  }
+                }
+              });
               onClose();
             }}
             className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
@@ -1023,7 +1142,7 @@ const MondayBoard = () => {
 
           <div 
             onClick={() => {
-              alert("Duplicate functionality coming soon!");
+              showToast("Duplicate functionality coming soon!", "info");
               onClose();
             }}
             className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
@@ -1088,7 +1207,7 @@ const MondayBoard = () => {
 
           <div 
             onClick={() => {
-              alert("AI Autofill feature coming soon!");
+              showToast("AI Autofill feature coming soon!", "info");
               onClose();
             }}
             className="px-4 py-2 text-sm text-blue-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
@@ -1103,11 +1222,19 @@ const MondayBoard = () => {
 
           <div 
             onClick={() => {
-              const filterValue = prompt(`Enter filter value for ${columnName}:`);
-              if (filterValue !== null) {
-                handleFilterColumn(columnId, filterValue);
-                onClose();
-              }
+              setPromptModal({
+                isOpen: true,
+                title: "Filter Column",
+                message: `Enter filter value for ${columnName}:`,
+                placeholder: "Enter filter value...",
+                defaultValue: "",
+                callback: (filterValue) => {
+                  if (filterValue !== null) {
+                    handleFilterColumn(columnId, filterValue);
+                  }
+                }
+              });
+              onClose();
             }}
             className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
           >
@@ -1161,13 +1288,21 @@ const MondayBoard = () => {
           <div 
             onClick={() => {
               const columnTypes = ["text", "status", "people", "date", "number", "checkbox", "progress"];
-              const selectedType = prompt(`Change column type to:\n${columnTypes.join(", ")}`);
-              if (selectedType && columnTypes.includes(selectedType)) {
-                setColumns(prev => prev.map(col => 
-                  col.id === columnId ? { ...col, type: selectedType } : col
-                ));
-                onClose();
-              }
+              setPromptModal({
+                isOpen: true,
+                title: "Change Column Type",
+                message: `Available types: ${columnTypes.join(", ")}`,
+                placeholder: "Enter column type...",
+                defaultValue: "",
+                callback: (selectedType) => {
+                  if (selectedType && columnTypes.includes(selectedType.toLowerCase())) {
+                    setColumns(prev => prev.map(col => 
+                      col.id === columnId ? { ...col, type: selectedType.toLowerCase() } : col
+                    ));
+                  }
+                }
+              });
+              onClose();
             }}
             className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
           >
@@ -1182,11 +1317,15 @@ const MondayBoard = () => {
 
           <div 
             onClick={() => {
-              const newName = prompt(`Rename column "${columnName}" to:`, columnName);
-              if (newName && newName !== columnName) {
-                handleRenameColumn(columnId, newName);
-                onClose();
-              }
+              setColumnRenameModal({
+                isOpen: true,
+                columnId: columnId,
+                currentName: columnName,
+                callback: (newName) => {
+                  handleRenameColumn(columnId, newName);
+                  onClose();
+                }
+              });
             }}
             className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
           >
@@ -1665,6 +1804,472 @@ const MondayBoard = () => {
                 className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
               >
                 Save Formula
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Column Creation Modal Component
+  const ColumnCreationModal = () => {
+    const [name, setName] = useState(columnCreationModal.name);
+    const [formula, setFormula] = useState('');
+    const [showFormulaEditor, setShowFormulaEditor] = useState(false);
+
+    const handleSubmit = () => {
+      if (!name.trim()) return;
+      
+      if (columnCreationModal.type === 'formula') {
+        if (!formula.trim()) {
+          setShowFormulaEditor(true);
+          return;
+        }
+        columnCreationModal.callback(name, formula);
+      } else {
+        columnCreationModal.callback(name);
+      }
+      
+      setColumnCreationModal({
+        isOpen: false,
+        type: null,
+        name: "",
+        description: "",
+        callback: null,
+        isSubItem: false
+      });
+    };
+
+    const handleClose = () => {
+      setColumnCreationModal({
+        isOpen: false,
+        type: null,
+        name: "",
+        description: "",
+        callback: null,
+        isSubItem: false
+      });
+    };
+
+    if (!columnCreationModal.isOpen) return null;
+
+    const getColumnIcon = (type) => {
+      const icons = {
+        text: "📝",
+        status: "🟡",
+        people: "👤",
+        date: "📅",
+        number: "🔢",
+        checkbox: "☑️",
+        progress: "📊",
+        formula: "🧮",
+        email: "📧",
+        phone: "📞",
+        location: "📍"
+      };
+      return icons[type] || "📝";
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 animate-in slide-in-from-bottom-4 duration-300">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-lg">
+                  {getColumnIcon(columnCreationModal.type)}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Create New Column
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {columnCreationModal.description}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleClose}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-6">
+            {/* Column Name */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Column Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                placeholder="Enter column name..."
+                autoFocus
+              />
+            </div>
+
+            {/* Formula Editor for Formula Type */}
+            {columnCreationModal.type === 'formula' && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Formula
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formula}
+                    onChange={(e) => setFormula(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    placeholder="e.g., progress * 100, cost / hours"
+                  />
+                  <button
+                    onClick={() => setShowFormulaEditor(true)}
+                    className="absolute right-3 top-3 px-3 py-1.5 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-lg text-xs hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+                  >
+                    Advanced
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Use column IDs like 'progress', 'cost', 'hours' with math operators (+, -, *, /, %)
+                </p>
+              </div>
+            )}
+
+            {/* Column Type Badge */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500 dark:text-gray-400">Type:</span>
+              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
+                {columnCreationModal.type}
+              </span>
+              {columnCreationModal.isSubItem && (
+                <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-sm font-medium">
+                  Sub-item
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={handleClose}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!name.trim()}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
+              >
+                Create Column
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Column Rename Modal Component
+  const ColumnRenameModal = () => {
+    const [name, setName] = useState(columnRenameModal.currentName);
+
+    useEffect(() => {
+      setName(columnRenameModal.currentName);
+    }, [columnRenameModal.currentName]);
+
+    const handleSubmit = () => {
+      if (!name.trim() || name === columnRenameModal.currentName) return;
+      
+      columnRenameModal.callback(name);
+      
+      setColumnRenameModal({
+        isOpen: false,
+        columnId: null,
+        currentName: "",
+        callback: null
+      });
+    };
+
+    const handleClose = () => {
+      setColumnRenameModal({
+        isOpen: false,
+        columnId: null,
+        currentName: "",
+        callback: null
+      });
+    };
+
+    if (!columnRenameModal.isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-in slide-in-from-bottom-4 duration-300">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-lg">
+                  ✏️
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Rename Column
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Change the column name
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleClose}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Column Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  } else if (e.key === 'Escape') {
+                    handleClose();
+                  }
+                }}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                placeholder="Enter new column name..."
+                autoFocus
+              />
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={handleClose}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!name.trim() || name === columnRenameModal.currentName}
+                className="px-6 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
+              >
+                Rename
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Generic Prompt Modal Component
+  const PromptModal = () => {
+    const [value, setValue] = useState(promptModal.defaultValue);
+
+    useEffect(() => {
+      setValue(promptModal.defaultValue);
+    }, [promptModal.defaultValue]);
+
+    const handleSubmit = () => {
+      if (promptModal.callback) {
+        promptModal.callback(value);
+      }
+      
+      setPromptModal({
+        isOpen: false,
+        title: "",
+        message: "",
+        placeholder: "",
+        defaultValue: "",
+        callback: null
+      });
+    };
+
+    const handleClose = () => {
+      if (promptModal.callback) {
+        promptModal.callback(null);
+      }
+      
+      setPromptModal({
+        isOpen: false,
+        title: "",
+        message: "",
+        placeholder: "",
+        defaultValue: "",
+        callback: null
+      });
+    };
+
+    if (!promptModal.isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-in slide-in-from-bottom-4 duration-300">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-lg">
+                  💬
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {promptModal.title}
+                  </h3>
+                  {promptModal.message && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {promptModal.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={handleClose}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-4">
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  } else if (e.key === 'Escape') {
+                    handleClose();
+                  }
+                }}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                placeholder={promptModal.placeholder}
+                autoFocus
+              />
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={handleClose}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Generic Confirm Modal Component
+  const ConfirmModal = () => {
+    const handleConfirm = () => {
+      if (confirmModal.callback) {
+        confirmModal.callback(true);
+      }
+      
+      setConfirmModal({
+        isOpen: false,
+        title: "",
+        message: "",
+        callback: null
+      });
+    };
+
+    const handleCancel = () => {
+      if (confirmModal.callback) {
+        confirmModal.callback(false);
+      }
+      
+      setConfirmModal({
+        isOpen: false,
+        title: "",
+        message: "",
+        callback: null
+      });
+    };
+
+    if (!confirmModal.isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-in slide-in-from-bottom-4 duration-300">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center text-lg">
+                  ⚠️
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {confirmModal.title}
+                  </h3>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6">
+            <p className="text-gray-700 dark:text-gray-300">
+              {confirmModal.message}
+            </p>
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={handleCancel}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirm}
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                Confirm
               </button>
             </div>
           </div>
@@ -2973,6 +3578,18 @@ const MondayBoard = () => {
 
       {/* Formula Editor */}
       <FormulaEditor />
+
+      {/* Column Creation Modal */}
+      <ColumnCreationModal />
+
+      {/* Column Rename Modal */}
+      <ColumnRenameModal />
+
+      {/* Generic Prompt Modal */}
+      <PromptModal />
+
+      {/* Generic Confirm Modal */}
+      <ConfirmModal />
     </div>
   );
 };
