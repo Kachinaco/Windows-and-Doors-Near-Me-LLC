@@ -29,7 +29,11 @@ import {
   Phone,
   Mail,
   Star,
-  Zap
+  Zap,
+  AlertCircle,
+  AlertTriangle,
+  Table,
+  User as UserIcon
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -116,6 +120,32 @@ export default function NavigationPage() {
       requiresAuth: true
     },
     {
+      title: "Old Dashboard",
+      description: "Previous version of the dashboard",
+      path: "/dashboard-old",
+      icon: BarChart3,
+      category: "Dashboard",
+      requiresAuth: true,
+      badge: "Legacy"
+    },
+    {
+      title: "Blog",
+      description: "Company blog and content management",
+      path: "/blog",
+      icon: FileText,
+      category: "Content",
+      requiresAuth: true
+    },
+    {
+      title: "Not Found",
+      description: "404 error page",
+      path: "/404",
+      icon: AlertCircle,
+      category: "System Pages"
+    },
+
+    // Products & Configuration
+    {
       title: "Catalog",
       description: "Product catalog and window configurations",
       path: "/catalog",
@@ -131,8 +161,25 @@ export default function NavigationPage() {
       category: "Products",
       requiresAuth: true
     },
+    {
+      title: "Quote Dashboard",
+      description: "Individual quote management interface",
+      path: "/quote-dashboard",
+      icon: DollarSign,
+      category: "Products",
+      requiresAuth: true
+    },
+    {
+      title: "Quote (Broken)",
+      description: "Legacy quote interface (deprecated)",
+      path: "/quote-broken",
+      icon: AlertTriangle,
+      category: "Development",
+      requiresAuth: true,
+      badge: "Broken"
+    },
 
-    // Project Management
+    // Project Management Boards
     {
       title: "Monday.com Style Board",
       description: "Main project management board with drag-and-drop",
@@ -143,10 +190,50 @@ export default function NavigationPage() {
       badge: "Main"
     },
     {
+      title: "Enhanced Board",
+      description: "Advanced project management board",
+      path: "/enhanced-board",
+      icon: Briefcase,
+      category: "Project Management",
+      requiresAuth: true
+    },
+    {
+      title: "Monday Board",
+      description: "Monday.com-style project board",
+      path: "/monday-board",
+      icon: Briefcase,
+      category: "Project Management",
+      requiresAuth: true
+    },
+    {
+      title: "Project Panel",
+      description: "Project management panel interface",
+      path: "/project-panel",
+      icon: Target,
+      category: "Project Management",
+      requiresAuth: true
+    },
+    {
+      title: "Project Panel (Clean)",
+      description: "Cleaned version of project panel",
+      path: "/project-panel-clean",
+      icon: Target,
+      category: "Project Management",
+      requiresAuth: true
+    },
+    {
       title: "Projects List",
       description: "Traditional project list view",
       path: "/projects-list",
       icon: FileText,
+      category: "Project Management",
+      requiresAuth: true
+    },
+    {
+      title: "Project Table",
+      description: "Tabular project view",
+      path: "/project-table",
+      icon: Table,
       category: "Project Management",
       requiresAuth: true
     },
@@ -167,11 +254,45 @@ export default function NavigationPage() {
       requiresAuth: true
     },
 
+    // Excel-Style Managers
+    {
+      title: "Simple Excel Manager",
+      description: "Excel-style project management interface",
+      path: "/simple-excel-manager",
+      icon: Table,
+      category: "Excel Interfaces",
+      requiresAuth: true
+    },
+    {
+      title: "Excel Project Manager",
+      description: "Advanced Excel-style project manager",
+      path: "/excel-project-manager",
+      icon: Table,
+      category: "Excel Interfaces",
+      requiresAuth: true
+    },
+
     // Lead Management
     {
       title: "Leads Dashboard",
       description: "Lead management and tracking",
       path: "/leads",
+      icon: Users,
+      category: "Lead Management",
+      requiresAuth: true
+    },
+    {
+      title: "Lead Detail",
+      description: "Individual lead detail pages",
+      path: "/leads/1",
+      icon: UserIcon,
+      category: "Lead Management",
+      requiresAuth: true
+    },
+    {
+      title: "CRM Dashboard",
+      description: "Customer relationship management dashboard",
+      path: "/crm-dashboard",
       icon: Users,
       category: "Lead Management",
       requiresAuth: true
@@ -190,6 +311,24 @@ export default function NavigationPage() {
       path: "/quotes-manager",
       icon: FileCheck,
       category: "Lead Management",
+      requiresAuth: true
+    },
+
+    // Project Details & Dashboards
+    {
+      title: "Project Dashboard",
+      description: "Individual project dashboard",
+      path: "/projects/1",
+      icon: Briefcase,
+      category: "Project Details",
+      requiresAuth: true
+    },
+    {
+      title: "Project Detail",
+      description: "Detailed project information page",
+      path: "/projects/1/detail",
+      icon: FileText,
+      category: "Project Details",
       requiresAuth: true
     },
 
@@ -219,6 +358,13 @@ export default function NavigationPage() {
       icon: FileText,
       category: "Business Operations",
       requiresAuth: true
+    },
+    {
+      title: "Proposal Client View",
+      description: "Client-facing proposal interface",
+      path: "/proposal/1",
+      icon: FileCheck,
+      category: "Business Operations"
     },
     {
       title: "Contracts",
@@ -292,6 +438,15 @@ export default function NavigationPage() {
       requiresAuth: true
     },
     {
+      title: "Settings (Broken)",
+      description: "Legacy settings interface (deprecated)",
+      path: "/settings-broken",
+      icon: AlertTriangle,
+      category: "Development",
+      requiresAuth: true,
+      badge: "Broken"
+    },
+    {
       title: "Company Settings",
       description: "Company-wide settings and configuration",
       path: "/company-settings",
@@ -330,9 +485,14 @@ export default function NavigationPage() {
       case "Public Pages": return Home;
       case "Location Pages": return MapPin;
       case "Dashboard": return BarChart3;
+      case "Content": return FileText;
+      case "System Pages": return AlertTriangle;
       case "Products": return Package;
+      case "Development": return AlertTriangle;
       case "Project Management": return Briefcase;
+      case "Excel Interfaces": return Table;
       case "Lead Management": return Users;
+      case "Project Details": return Target;
       case "Scheduling": return Calendar;
       case "Business Operations": return Building2;
       case "Communication": return MessageSquare;
