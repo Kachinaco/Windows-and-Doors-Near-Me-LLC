@@ -1540,6 +1540,11 @@ const MondayBoard = () => {
                                       isSubItem={true}
                                       menuKey={`folder-${folder.id}-status`}
                                     />
+                                    <AddColumnMenu
+                                      isOpen={addColumnMenuOpen === `folder-${folder.id}-status`}
+                                      onClose={() => setAddColumnMenuOpen(null)}
+                                      onSelectType={handleSelectSubItemColumnType}
+                                    />
                                   </div>
 
                                   <div
@@ -1580,6 +1585,11 @@ const MondayBoard = () => {
                                       isSubItem={true}
                                       menuKey={`folder-${folder.id}-people`}
                                     />
+                                    <AddColumnMenu
+                                      isOpen={addColumnMenuOpen === `folder-${folder.id}-people`}
+                                      onClose={() => setAddColumnMenuOpen(null)}
+                                      onSelectType={handleSelectSubItemColumnType}
+                                    />
                                   </div>
 
                                   <div
@@ -1617,6 +1627,11 @@ const MondayBoard = () => {
                                       onClose={() => setColumnMenuOpen(null)}
                                       isSubItem={true}
                                       menuKey={`folder-${folder.id}-date`}
+                                    />
+                                    <AddColumnMenu
+                                      isOpen={addColumnMenuOpen === `folder-${folder.id}-date`}
+                                      onClose={() => setAddColumnMenuOpen(null)}
+                                      onSelectType={handleSelectSubItemColumnType}
                                     />
                                   </div>
 
@@ -1658,6 +1673,11 @@ const MondayBoard = () => {
                                       isSubItem={true}
                                       menuKey={`folder-${folder.id}-done`}
                                     />
+                                    <AddColumnMenu
+                                      isOpen={addColumnMenuOpen === `folder-${folder.id}-done`}
+                                      onClose={() => setAddColumnMenuOpen(null)}
+                                      onSelectType={handleSelectSubItemColumnType}
+                                    />
                                   </div>
 
                                   <div
@@ -1697,6 +1717,11 @@ const MondayBoard = () => {
                                       onClose={() => setColumnMenuOpen(null)}
                                       isSubItem={true}
                                       menuKey={`folder-${folder.id}-progress`}
+                                    />
+                                    <AddColumnMenu
+                                      isOpen={addColumnMenuOpen === `folder-${folder.id}-progress`}
+                                      onClose={() => setAddColumnMenuOpen(null)}
+                                      onSelectType={handleSelectSubItemColumnType}
                                     />
                                   </div>
 
