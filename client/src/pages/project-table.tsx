@@ -41,12 +41,11 @@ const MondayBoard = () => {
   // Board columns configuration
   const [columns, setColumns] = useState([
     { id: "item", name: "Main Item", type: "text", order: 1 },
-    { id: "subitems", name: "Sub Items", type: "subitems", order: 2 },
-    { id: "status", name: "Status", type: "status", order: 3 },
-    { id: "assignedTo", name: "People", type: "people", order: 4 },
-    { id: "dueDate", name: "Due Date", type: "date", order: 5 },
-    { id: "checkbox", name: "Done", type: "checkbox", order: 6 },
-    { id: "progress", name: "Progress", type: "progress", order: 7 },
+    { id: "status", name: "Status", type: "status", order: 2 },
+    { id: "assignedTo", name: "People", type: "people", order: 3 },
+    { id: "dueDate", name: "Due Date", type: "date", order: 4 },
+    { id: "checkbox", name: "Done", type: "checkbox", order: 5 },
+    { id: "progress", name: "Progress", type: "progress", order: 6 },
   ]);
 
   // Sub-item columns configuration (separate from main columns)
@@ -65,7 +64,6 @@ const MondayBoard = () => {
   // State management
   const [columnWidths, setColumnWidths] = useState({
     item: 250,
-    subitems: 150,
     status: 130,
     assignedTo: 150,
     dueDate: 130,
@@ -1444,8 +1442,8 @@ const MondayBoard = () => {
 
 
 
-                                  {/* Dynamic Sub-item Columns */}
-                                  {subItemColumns.map((column) => (
+                                  {/* Dynamic Sub-item Columns - Only show when folder is expanded */}
+                                  {expandedFolders.has(folder.id) && subItemColumns.map((column) => (
                                     <div
                                       key={column.id}
                                       className="px-3 py-2 border-r border-blue-200 relative"
