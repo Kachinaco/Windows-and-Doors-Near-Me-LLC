@@ -2917,6 +2917,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+
+  // AI Formula Generation endpoint
+  app.post("/api/generate-formula", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { description, availableColumns, columnList } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "OpenAI API key not configured" });
+      }
+
+      const OpenAI = require('openai');
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+      const prompt = `
+You are a formula generation assistant for a project management system. 
+Generate a formula based on the user's description.
+
+Available numeric columns: ${availableColumns}
+
+Column details:
+${columnList.map((col: any) => `- ${col.id} (${col.name}): ${col.type}`).join('\n')}
+
+User description: "${description}"
+
+Generate a formula using:
+- Column IDs (like cost, hoursBudget, hoursSpent)
+- Basic math operators (+, -, *, /, %)
+- Functions like MAX(), MIN(), ABS(), ROUND()
+- Parentheses for grouping
+
+Examples:
+- "remaining budget": hoursBudget - hoursSpent
+- "cost per hour": cost / hoursBudget
+- "efficiency": (hoursSpent / hoursBudget) * 100
+
+Return only the formula, no explanation:`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+        temperature: 0.3,
+      });
+
+      const formula = response.choices[0].message.content.trim();
+      
+      res.json({ formula });
+    } catch (error: any) {
+      console.error("OpenAI API error:", error);
+      res.status(500).json({ message: "Failed to generate formula" });
+    }
+  });
   
   // Set up WebSocket server for real-time collaboration
   const wss = new WebSocketServer({ 

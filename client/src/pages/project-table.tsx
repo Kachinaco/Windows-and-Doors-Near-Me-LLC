@@ -243,6 +243,14 @@ const MondayBoard = () => {
   const [emailSubject, setEmailSubject] = useState("");
   const [emailMessage, setEmailMessage] = useState("");
 
+  // Formula editor state
+  const [formulaEditor, setFormulaEditor] = useState({
+    isOpen: false,
+    columnId: null,
+    currentFormula: "",
+    aiSuggestions: []
+  });
+
   // Formula evaluation engine
   const evaluateFormula = (formula, item) => {
     if (!formula) return null;
@@ -294,6 +302,39 @@ const MondayBoard = () => {
       return "Error";
     }
   };
+
+  // AI Formula Assistant
+  const generateFormulaWithAI = async (description) => {
+    try {
+      const availableColumns = columns
+        .filter(col => col.type === 'number' || col.type === 'progress')
+        .map(col => `${col.id} (${col.name})`)
+        .join(', ');
+
+      const response = await fetch('/api/generate-formula', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          description,
+          availableColumns,
+          columnList: columns.map(col => ({ id: col.id, name: col.name, type: col.type }))
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.formula;
+      } else {
+        throw new Error('Failed to generate formula');
+      }
+    } catch (error) {
+      console.error('AI Formula generation error:', error);
+      return null;
+    }
+  };
+
   const [isEmailSending, setIsEmailSending] = useState(false);
 
   // Column menu state
@@ -1011,6 +1052,10 @@ const MondayBoard = () => {
   const ColumnMenu = ({ columnId, columnName, isOpen, onClose, isSubItem = false, menuKey = null }) => {
     if (!isOpen) return null;
 
+    // Check if this is a formula column
+    const column = columns.find(col => col.id === columnId);
+    const isFormulaColumn = column?.type === 'formula';
+
     return (
       <div className="absolute top-full right-0 mt-1 w-64 bg-gray-800 text-white rounded-lg shadow-xl border border-gray-700 z-50">
         <div className="py-2">
@@ -1020,6 +1065,26 @@ const MondayBoard = () => {
               Settings
             </div>
           </div>
+
+          {isFormulaColumn && (
+            <div 
+              onClick={() => {
+                setFormulaEditor({
+                  isOpen: true,
+                  columnId: columnId,
+                  currentFormula: column.formula || '',
+                  aiSuggestions: []
+                });
+                onClose();
+              }}
+              className="px-4 py-2 text-sm text-purple-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+            >
+              <div className="w-4 h-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded flex items-center justify-center text-xs">
+                ƒ
+              </div>
+              Formula Settings
+            </div>
+          )}
 
           <div 
             onClick={() => {
@@ -1388,6 +1453,224 @@ const MondayBoard = () => {
           </div>
         );
     }
+  };
+
+  // Formula Editor Component
+  const FormulaEditor = () => {
+    const [formula, setFormula] = useState(formulaEditor.currentFormula);
+    const [aiPrompt, setAiPrompt] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [suggestions, setSuggestions] = useState([]);
+    const [previewResult, setPreviewResult] = useState('');
+
+    const availableColumns = columns.filter(col => col.type === 'number' || col.type === 'progress');
+
+    // Calculate preview result in real-time
+    useEffect(() => {
+      if (formula && formula.trim()) {
+        const sampleItem = projects[0] || {};
+        const result = evaluateFormula(formula, sampleItem);
+        setPreviewResult(result);
+      } else {
+        setPreviewResult('');
+      }
+    }, [formula]);
+
+    const handleAIGeneration = async () => {
+      if (!aiPrompt.trim()) return;
+      
+      setIsGenerating(true);
+      try {
+        const generatedFormula = await generateFormulaWithAI(aiPrompt);
+        if (generatedFormula) {
+          setFormula(generatedFormula);
+          setSuggestions(prev => [generatedFormula, ...prev.slice(0, 4)]);
+        }
+      } catch (error) {
+        console.error('AI generation failed:', error);
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
+    const handleSave = () => {
+      // Find the column and update its formula
+      const currentColumn = columns.find(col => col.id === formulaEditor.columnId);
+      if (currentColumn) {
+        setColumns(prev => prev.map(col => 
+          col.id === formulaEditor.columnId 
+            ? { ...col, formula: formula }
+            : col
+        ));
+      }
+      
+      setFormulaEditor({ isOpen: false, columnId: null, currentFormula: "", aiSuggestions: [] });
+    };
+
+    const insertColumnReference = (columnId) => {
+      setFormula(prev => prev + columnId);
+    };
+
+    if (!formulaEditor.isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                  ✨
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Formula Editor</h2>
+                  <p className="text-purple-100 text-sm">Build powerful calculations with AI assistance</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setFormulaEditor({ isOpen: false, columnId: null, currentFormula: "", aiSuggestions: [] })}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* AI Assistant Section */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-5 border border-blue-100">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded flex items-center justify-center text-white text-xs">
+                  🤖
+                </div>
+                <h3 className="font-semibold text-gray-800">AI Formula Assistant</h3>
+              </div>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  placeholder="Describe what you want to calculate... (e.g., 'remaining budget after expenses')"
+                  className="flex-1 px-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAIGeneration()}
+                />
+                <button
+                  onClick={handleAIGeneration}
+                  disabled={isGenerating || !aiPrompt.trim()}
+                  className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                >
+                  {isGenerating ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      ✨ Generate
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Formula Input */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-semibold text-gray-700">Formula</label>
+                {previewResult && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-500">Preview:</span>
+                    <span className="font-mono bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                      {previewResult}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <textarea
+                value={formula}
+                onChange={(e) => setFormula(e.target.value)}
+                placeholder="Enter your formula here..."
+                className="w-full h-32 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm resize-none"
+              />
+            </div>
+
+            {/* Available Columns */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-gray-700">Available Columns</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {availableColumns.map(col => (
+                  <button
+                    key={col.id}
+                    onClick={() => insertColumnReference(col.id)}
+                    className="px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-left text-sm transition-colors flex items-center gap-2"
+                  >
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    <span className="font-mono text-blue-600">{col.id}</span>
+                    <span className="text-gray-500">({col.name})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Functions */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-gray-700">Quick Functions</h4>
+              <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+                {['+', '-', '*', '/', '(', ')', 'MAX', 'MIN', 'ABS', 'ROUND', 'SUM', 'AVG'].map(func => (
+                  <button
+                    key={func}
+                    onClick={() => setFormula(prev => prev + func)}
+                    className="px-3 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg text-sm font-mono text-purple-700 transition-colors"
+                  >
+                    {func}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent AI Suggestions */}
+            {suggestions.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-gray-700">Recent AI Suggestions</h4>
+                <div className="space-y-2">
+                  {suggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setFormula(suggestion)}
+                      className="w-full px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 border border-blue-200 rounded-lg text-left text-sm font-mono transition-colors"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="bg-gray-50 px-6 py-4 flex justify-between items-center">
+            <div className="text-sm text-gray-500">
+              Use column IDs in your formulas (e.g., cost + hoursBudget * 2)
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setFormulaEditor({ isOpen: false, columnId: null, currentFormula: "", aiSuggestions: [] })}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Save Formula
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -2687,6 +2970,9 @@ const MondayBoard = () => {
           </div>
         </div>
       )}
+
+      {/* Formula Editor */}
+      <FormulaEditor />
     </div>
   );
 };
