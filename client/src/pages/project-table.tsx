@@ -826,7 +826,7 @@ const MondayBoard = () => {
     );
   };
 
-  const ColumnMenu = ({ columnId, columnName, isOpen, onClose, isSubItem = false }) => {
+  const ColumnMenu = ({ columnId, columnName, isOpen, onClose, isSubItem = false, menuKey = null }) => {
     if (!isOpen) return null;
 
     return (
@@ -879,7 +879,11 @@ const MondayBoard = () => {
 
           <div 
             onClick={() => {
-              handleDuplicateColumn(columnId);
+              if (isSubItem) {
+                handleAddSubItemColumn("text"); // Default to text type for duplication
+              } else {
+                handleDuplicateColumn(columnId);
+              }
               onClose();
             }}
             className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
@@ -891,7 +895,12 @@ const MondayBoard = () => {
 
           <div 
             onClick={() => {
-              setAddColumnMenuOpen(columnId);
+              if (isSubItem && menuKey) {
+                // For sub-items, use the full menu key which contains the sub-item context
+                setAddColumnMenuOpen(menuKey);
+              } else {
+                setAddColumnMenuOpen(columnId);
+              }
               onClose();
             }}
             className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2 relative"
@@ -1824,6 +1833,7 @@ const MondayBoard = () => {
                                             setColumnMenuOpen(null)
                                           }
                                           isSubItem={true}
+                                          menuKey={`subitem-${subItem.id}-status`}
                                         />
                                         <AddColumnMenu
                                           isOpen={addColumnMenuOpen === `subitem-${subItem.id}-status`}
@@ -1889,6 +1899,7 @@ const MondayBoard = () => {
                                             setColumnMenuOpen(null)
                                           }
                                           isSubItem={true}
+                                          menuKey={`subitem-${subItem.id}-people`}
                                         />
                                         <AddColumnMenu
                                           isOpen={addColumnMenuOpen === `subitem-${subItem.id}-people`}
@@ -1942,6 +1953,7 @@ const MondayBoard = () => {
                                             setColumnMenuOpen(null)
                                           }
                                           isSubItem={true}
+                                          menuKey={`subitem-${subItem.id}-date`}
                                         />
                                         <AddColumnMenu
                                           isOpen={addColumnMenuOpen === `subitem-${subItem.id}-date`}
