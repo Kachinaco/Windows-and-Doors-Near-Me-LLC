@@ -46,6 +46,14 @@ import ContractsPage from "@/pages/contracts";
 import ProposalClientPage from "@/pages/proposal-client";
 import EnhancedBoard from "@/pages/enhanced-board";
 import NavigationPage from "@/pages/navigation";
+import Blog from "@/pages/blog";
+import CrmDashboard from "@/pages/crm-dashboard";
+import DashboardOld from "@/pages/dashboard-old";
+import ExcelProjectManager from "@/pages/excel-project-manager";
+import ProjectPanelClean from "@/pages/project-panel-clean";
+import ProjectTable from "@/pages/project-table";
+import QuoteBroken from "@/pages/quote-broken";
+import SettingsBroken from "@/pages/settings-broken";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -94,6 +102,17 @@ function Router() {
       <Route path="/monday-board" component={MondayBoard} />
       <Route path="/enhanced-board" component={EnhancedBoard} />
       <Route path="/project-panel" component={ProjectPanel} />
+      <Route path="/project-panel-clean" component={ProjectPanelClean} />
+      
+      {/* Additional development and testing pages */}
+      <Route path="/blog" component={Blog} />
+      <Route path="/dashboard-old" component={DashboardOld} />
+      <Route path="/excel-project-manager" component={ExcelProjectManager} />
+      <Route path="/project-table" component={ProjectTable} />
+      <Route path="/quote-broken" component={QuoteBroken} />
+      <Route path="/settings-broken" component={SettingsBroken} />
+      <Route path="/simple-excel-manager" component={SimpleExcelManager} />
+      <Route path="/crm-dashboard" component={CrmDashboard} />
       
       {/* Protected user routes */}
       {isAuthenticated ? (
