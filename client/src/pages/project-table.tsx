@@ -2578,9 +2578,7 @@ const MondayBoard = () => {
                         minWidth: getColumnWidth(column.id)
                       }}
                     >
-                      <span className="text-xs font-medium text-gray-500 uppercase">
-                        {column.name}
-                      </span>
+                      {/* Empty space for group header row - no column names */}
                     </div>
                   ))}
 
