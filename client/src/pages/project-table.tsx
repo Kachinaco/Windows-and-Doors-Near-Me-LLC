@@ -565,9 +565,20 @@ const MondayBoard = () => {
     
     // Check if this is a sub-item column (contains folder info)
     if (columnId.includes('folder-')) {
-      // This is a sub-item column, handle differently
-      console.log('Deleting sub-item column:', columnId);
-      setSubItemColumns(prev => prev.filter(col => col.id !== columnId));
+      // Extract the actual column ID from the folder-specific ID
+      // Format: "folder-{folderId}-{columnId}"
+      const parts = columnId.split('-');
+      const actualColumnId = parts.slice(2).join('-'); // Everything after "folder-{folderId}-"
+      console.log('Deleting sub-item column. Full ID:', columnId, 'Actual column ID:', actualColumnId);
+      
+      if (window.confirm("Are you sure you want to delete this sub-item column?")) {
+        setSubItemColumns(prev => {
+          const filtered = prev.filter(col => col.id !== actualColumnId);
+          console.log('Previous sub-item columns:', prev);
+          console.log('Filtered sub-item columns:', filtered);
+          return filtered;
+        });
+      }
       return;
     }
     
