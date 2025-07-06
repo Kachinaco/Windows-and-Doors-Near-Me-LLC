@@ -64,8 +64,122 @@ const MondayBoard = () => {
   ]);
 
   // Initial board data with folders
-  // Initial board data - empty state with default groups
-  const [boardItems, setBoardItems] = useState<any[]>([]);
+  // Initial board data with sample items for testing email functionality
+  const [boardItems, setBoardItems] = useState<any[]>([
+    {
+      id: 1,
+      name: "Kitchen Renovation Project",
+      status: { id: "in-progress", color: "#0066CC", label: "In Progress" },
+      assignedTo: ["John Smith", "Sarah Wilson"],
+      dueDate: "2025-07-15",
+      email: "client1@example.com",
+      phone: "(555) 123-4567",
+      location: "123 Main St, Anytown USA",
+      checkbox: false,
+      progress: 65,
+      group: "Active Projects",
+      folders: [
+        {
+          id: 3001,
+          name: "Design Phase",
+          expanded: false,
+          items: [
+            {
+              id: 30001,
+              status: { id: "complete", color: "#00C875", label: "Complete" },
+              assignedTo: ["Design Team"],
+              dueDate: "2025-07-10",
+              checkbox: true,
+              progress: 100
+            },
+            {
+              id: 30002,
+              status: { id: "in-progress", color: "#0066CC", label: "In Progress" },
+              assignedTo: ["Sarah Wilson"],
+              dueDate: "2025-07-12",
+              checkbox: false,
+              progress: 80
+            }
+          ]
+        },
+        {
+          id: 3002,
+          name: "Installation Phase",
+          expanded: false,
+          items: [
+            {
+              id: 30003,
+              status: { id: "not-started", color: "#C4C4C4", label: "Not Started" },
+              assignedTo: ["Installation Team"],
+              dueDate: "2025-07-20",
+              checkbox: false,
+              progress: 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: 2,
+      name: "Bathroom Remodel",
+      status: { id: "not-started", color: "#C4C4C4", label: "Not Started" },
+      assignedTo: ["Mike Johnson"],
+      dueDate: "2025-08-01",
+      email: "client2@example.com",
+      phone: "(555) 987-6543",
+      location: "456 Oak Ave, Somewhere City",
+      checkbox: false,
+      progress: 0,
+      group: "Scheduled Work",
+      folders: [
+        {
+          id: 3003,
+          name: "Planning Phase",
+          expanded: false,
+          items: [
+            {
+              id: 30004,
+              status: { id: "not-started", color: "#C4C4C4", label: "Not Started" },
+              assignedTo: ["Planning Team"],
+              dueDate: "2025-07-25",
+              checkbox: false,
+              progress: 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: 3,
+      name: "Window Installation",
+      status: { id: "complete", color: "#00C875", label: "Complete" },
+      assignedTo: ["Alex Brown"],
+      dueDate: "2025-06-30",
+      email: "client3@example.com",
+      phone: "(555) 456-7890",
+      location: "789 Pine St, Demo Town",
+      checkbox: true,
+      progress: 100,
+      group: "Completed",
+      folders: [
+        {
+          id: 3004,
+          name: "Installation Complete",
+          expanded: false,
+          items: [
+            {
+              id: 30005,
+              status: { id: "complete", color: "#00C875", label: "Complete" },
+              assignedTo: ["Alex Brown"],
+              dueDate: "2025-06-30",
+              checkbox: true,
+              progress: 100
+            }
+          ]
+        }
+      ]
+    }
+  ]);
 
   // State management
   const [columnWidths, setColumnWidths] = useState({
@@ -105,6 +219,10 @@ const MondayBoard = () => {
   });
   const [itemUpdates, setItemUpdates] = useState({});
   const [newUpdate, setNewUpdate] = useState("");
+  const [activeTab, setActiveTab] = useState("updates");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailMessage, setEmailMessage] = useState("");
+  const [isEmailSending, setIsEmailSending] = useState(false);
 
   // Column menu state
   const [columnMenuOpen, setColumnMenuOpen] = useState(null);
@@ -604,6 +722,66 @@ const MondayBoard = () => {
       itemId,
       itemName,
     });
+    setActiveTab("updates"); // Reset to updates tab when opening
+    setEmailSubject(""); // Clear email form
+    setEmailMessage("");
+  };
+
+  // Email sending functionality
+  const sendEmail = async () => {
+    const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+    if (!currentItem?.email || !emailSubject.trim() || !emailMessage.trim()) {
+      alert("Please fill in all email fields");
+      return;
+    }
+
+    setIsEmailSending(true);
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: currentItem.email,
+          subject: emailSubject,
+          message: emailMessage,
+          projectName: updatesModal.itemName,
+          itemType: updatesModal.itemType
+        }),
+      });
+
+      if (response.ok) {
+        // Add email to updates log
+        const updateKey = `${updatesModal.itemType}-${updatesModal.itemId}`;
+        setItemUpdates(prev => ({
+          ...prev,
+          [updateKey]: [
+            ...(prev[updateKey] || []),
+            {
+              id: Date.now(),
+              content: `📧 Email sent: "${emailSubject}"`,
+              author: "System",
+              timestamp: new Date(),
+              type: "email"
+            }
+          ]
+        }));
+
+        setEmailSubject("");
+        setEmailMessage("");
+        setActiveTab("updates"); // Switch back to updates tab
+        alert("Email sent successfully!");
+      } else {
+        const error = await response.json();
+        alert(`Failed to send email: ${error.message}`);
+      }
+    } catch (error) {
+      console.error('Email sending error:', error);
+      alert("Failed to send email. Please check your connection and try again.");
+    } finally {
+      setIsEmailSending(false);
+    }
   };
 
   const closeUpdatesModal = () => {
@@ -1973,14 +2151,14 @@ const MondayBoard = () => {
         </div>
       )}
 
-      {/* Enhanced Updates Modal */}
+      {/* Enhanced Communication Modal with Side Tabs */}
       {updatesModal.isOpen && (
         <div 
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200"
           onClick={closeUpdatesModal}
         >
           <div 
-            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col animate-in slide-in-from-bottom-4 duration-300"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[85vh] flex flex-col animate-in slide-in-from-bottom-4 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Enhanced Header */}
@@ -1992,7 +2170,7 @@ const MondayBoard = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Updates & Discussion
+                      Customer Communication Hub
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {updatesModal.itemType === "main" && "📋 Project: "}
@@ -2011,142 +2189,372 @@ const MondayBoard = () => {
               </div>
             </div>
 
-            {/* Updates Feed */}
-            <div className="flex-1 overflow-auto px-6 py-4">
-              <div className="space-y-4">
-                {(() => {
-                  const updateKey = `${updatesModal.itemType}-${updatesModal.itemId}`;
-                  const updates = itemUpdates[updateKey] || [];
+            {/* Tab Navigation */}
+            <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <button
+                onClick={() => setActiveTab("updates")}
+                className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "updates"
+                    ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-900"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                }`}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Updates</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("sms")}
+                className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "sms"
+                    ? "border-b-2 border-green-500 text-green-600 dark:text-green-400 bg-white dark:bg-gray-900"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                }`}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <Phone className="w-4 h-4" />
+                  <span>SMS/Phone</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("email")}
+                className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "email"
+                    ? "border-b-2 border-purple-500 text-purple-600 dark:text-purple-400 bg-white dark:bg-gray-900"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                }`}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <Mail className="w-4 h-4" />
+                  <span>Email</span>
+                </div>
+              </button>
+            </div>
 
-                  if (updates.length === 0) {
-                    return (
-                      <div className="text-center py-12">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 flex items-center justify-center">
-                          <MessageCircle className="w-8 h-8 text-blue-500 dark:text-blue-400" />
-                        </div>
-                        <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                          Start the conversation
-                        </h4>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">
-                          No updates yet. Be the first to share progress, ask questions, or provide feedback!
-                        </p>
-                      </div>
-                    );
-                  }
+            {/* Tab Content */}
+            <div className="flex-1 overflow-hidden">
+              {/* Updates Tab */}
+              {activeTab === "updates" && (
+                <div className="h-full flex flex-col">
+                  <div className="flex-1 overflow-auto px-6 py-4">
+                    <div className="space-y-4">
+                      {(() => {
+                        const updateKey = `${updatesModal.itemType}-${updatesModal.itemId}`;
+                        const updates = itemUpdates[updateKey] || [];
 
-                  return updates.map((update, index) => (
-                    <div key={update.id} className="group animate-in slide-in-from-left duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                        if (updates.length === 0) {
+                          return (
+                            <div className="text-center py-12">
+                              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 flex items-center justify-center">
+                                <MessageCircle className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+                              </div>
+                              <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                Start the conversation
+                              </h4>
+                              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                                No updates yet. Be the first to share progress, ask questions, or provide feedback!
+                              </p>
+                            </div>
+                          );
+                        }
+
+                        return updates.map((update, index) => (
+                          <div key={update.id} className="group animate-in slide-in-from-left duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                            <div className="flex space-x-3">
+                              <div className="flex-shrink-0">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium text-sm shadow-lg">
+                                  {update.author[0].toUpperCase()}
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span className="font-medium text-gray-900 dark:text-white text-sm">
+                                    {update.author}
+                                  </span>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    {new Date(update.timestamp).toLocaleString()}
+                                  </span>
+                                  <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button className="text-gray-400 hover:text-blue-500 transition-colors">
+                                      <Heart className="w-3 h-3" />
+                                    </button>
+                                    <button className="text-gray-400 hover:text-blue-500 transition-colors">
+                                      <MoreHorizontal className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                    {update.content}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Updates Compose Area */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                    <div className="p-6">
                       <div className="flex space-x-3">
                         <div className="flex-shrink-0">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium text-sm shadow-lg">
-                            {update.author[0].toUpperCase()}
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white font-medium text-sm">
+                            U
                           </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <span className="font-medium text-gray-900 dark:text-white text-sm">
-                              {update.author}
-                            </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {new Date(update.timestamp).toLocaleString()}
-                            </span>
-                            <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="text-gray-400 hover:text-blue-500 transition-colors">
-                                <Heart className="w-3 h-3" />
+                        <div className="flex-1">
+                          <div className="relative">
+                            <textarea
+                              value={newUpdate}
+                              onChange={(e) => setNewUpdate(e.target.value)}
+                              placeholder="Share an update, ask a question, or provide feedback..."
+                              className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              rows={3}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                  e.preventDefault();
+                                  if (newUpdate.trim()) {
+                                    addUpdate();
+                                  }
+                                }
+                              }}
+                            />
+                            {newUpdate.trim() && (
+                              <div className="absolute bottom-2 right-2 text-xs text-gray-400">
+                                ⌘ + Enter to send
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Action Buttons */}
+                          <div className="flex items-center justify-between mt-3">
+                            <div className="flex items-center space-x-2">
+                              <button 
+                                className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                title="Add attachment"
+                              >
+                                <Paperclip className="w-4 h-4" />
                               </button>
-                              <button className="text-gray-400 hover:text-blue-500 transition-colors">
-                                <MoreHorizontal className="w-3 h-3" />
+                              <button 
+                                className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                title="Add emoji"
+                              >
+                                <Smile className="w-4 h-4" />
+                              </button>
+                              <button 
+                                className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                title="Mention someone"
+                              >
+                                <AtSign className="w-4 h-4" />
+                              </button>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={closeUpdatesModal}
+                                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-medium transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={addUpdate}
+                                disabled={!newUpdate.trim()}
+                                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg disabled:shadow-none"
+                              >
+                                Post Update
                               </button>
                             </div>
                           </div>
-                          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
-                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                              {update.content}
-                            </p>
-                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ));
-                })()}
-              </div>
-            </div>
-
-            {/* Enhanced Compose Area */}
-            <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl">
-              <div className="p-6">
-                <div className="flex space-x-3">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white font-medium text-sm">
-                      U
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="relative">
-                      <textarea
-                        value={newUpdate}
-                        onChange={(e) => setNewUpdate(e.target.value)}
-                        placeholder="Share an update, ask a question, or provide feedback..."
-                        className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        rows={3}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                            e.preventDefault();
-                            if (newUpdate.trim()) {
-                              addUpdate();
-                            }
-                          }
-                        }}
-                      />
-                      {newUpdate.trim() && (
-                        <div className="absolute bottom-2 right-2 text-xs text-gray-400">
-                          ⌘ + Enter to send
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center space-x-2">
-                        <button 
-                          className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                          title="Add attachment"
-                        >
-                          <Paperclip className="w-4 h-4" />
-                        </button>
-                        <button 
-                          className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                          title="Add emoji"
-                        >
-                          <Smile className="w-4 h-4" />
-                        </button>
-                        <button 
-                          className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                          title="Mention someone"
-                        >
-                          <AtSign className="w-4 h-4" />
-                        </button>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={closeUpdatesModal}
-                          className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-medium transition-colors"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={addUpdate}
-                          disabled={!newUpdate.trim()}
-                          className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg disabled:shadow-none"
-                        >
-                          Post Update
-                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* SMS/Phone Tab */}
+              {activeTab === "sms" && (
+                <div className="h-full flex flex-col">
+                  <div className="flex-1 overflow-auto px-6 py-4">
+                    <div className="space-y-4">
+                      {/* Customer Phone Info */}
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                            <Phone className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-green-900 dark:text-green-100">
+                              Customer Phone
+                            </h4>
+                            <p className="text-sm text-green-700 dark:text-green-300">
+                              {(() => {
+                                const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                                return currentItem?.phone || "No phone number available";
+                              })()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* SMS Conversation */}
+                      <div className="space-y-3">
+                        <h4 className="font-medium text-gray-900 dark:text-white">SMS Conversation</h4>
+                        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 min-h-[200px]">
+                          <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-8">
+                            <Phone className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                            <p>SMS integration coming soon!</p>
+                            <p className="text-xs mt-1">Connect with OpenPhone to send and receive text messages.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SMS Compose Area */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 bg-green-50 dark:bg-green-900/20">
+                    <div className="p-6">
+                      <div className="flex space-x-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-medium text-sm">
+                            <Phone className="w-4 h-4" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <textarea
+                            placeholder="Type your SMS message here..."
+                            className="w-full border border-green-200 dark:border-green-700 rounded-xl px-4 py-3 text-sm resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                            rows={3}
+                            disabled
+                          />
+                          <div className="flex items-center justify-between mt-3">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              Requires OpenPhone integration
+                            </div>
+                            <button
+                              disabled
+                              className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium opacity-50 cursor-not-allowed"
+                            >
+                              Send SMS
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Email Tab */}
+              {activeTab === "email" && (
+                <div className="h-full flex flex-col">
+                  <div className="flex-1 overflow-auto px-6 py-4">
+                    <div className="space-y-4">
+                      {/* Customer Email Info */}
+                      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Mail className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-purple-900 dark:text-purple-100">
+                              Customer Email
+                            </h4>
+                            <p className="text-sm text-purple-700 dark:text-purple-300">
+                              {(() => {
+                                const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                                return currentItem?.email || "No email address available";
+                              })()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Email Thread */}
+                      <div className="space-y-3">
+                        <h4 className="font-medium text-gray-900 dark:text-white">Email Thread</h4>
+                        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 min-h-[200px]">
+                          <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-8">
+                            <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                            <p>Email integration ready!</p>
+                            <p className="text-xs mt-1">Connect with SendGrid to send professional emails.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Email Compose Area */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 bg-purple-50 dark:bg-purple-900/20">
+                    <div className="p-6">
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              To
+                            </label>
+                            <input
+                              type="email"
+                              value={(() => {
+                                const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                                return currentItem?.email || "";
+                              })()}
+                              className="w-full border border-purple-200 dark:border-purple-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Subject
+                            </label>
+                            <input
+                              type="text"
+                              value={emailSubject}
+                              onChange={(e) => setEmailSubject(e.target.value)}
+                              placeholder="Email subject..."
+                              className="w-full border border-purple-200 dark:border-purple-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Message
+                          </label>
+                          <textarea
+                            value={emailMessage}
+                            onChange={(e) => setEmailMessage(e.target.value)}
+                            placeholder="Compose your email message..."
+                            className="w-full border border-purple-200 dark:border-purple-700 rounded-lg px-4 py-3 text-sm resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                            rows={4}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {(() => {
+                              const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                              return currentItem?.email ? "Email ready to send" : "No email address available";
+                            })()}
+                          </div>
+                          <button
+                            onClick={sendEmail}
+                            disabled={isEmailSending || !emailSubject.trim() || !emailMessage.trim() || !(() => {
+                              const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                              return currentItem?.email;
+                            })()}
+                            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            {isEmailSending ? "Sending..." : "Send Email"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
