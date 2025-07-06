@@ -678,6 +678,17 @@ const MondayBoard = () => {
     });
   };
 
+  const handleDeleteMainItem = (itemId) => {
+    if (confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+      setBoardItems((prev) => prev.filter((item) => item.id !== itemId));
+      setSelectedItems((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+    }
+  };
+
   const handleSelectToggle = (id) => {
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
@@ -1360,7 +1371,7 @@ const MondayBoard = () => {
                   ))}
 
                   {/* Updates column in group header */}
-                  <div className="w-12 px-2 py-3 flex items-center justify-center">
+                  <div className="w-16 px-2 py-3 flex items-center justify-center">
                     <span className="text-xs font-medium text-gray-500">
                       💬
                     </span>
@@ -1399,26 +1410,38 @@ const MondayBoard = () => {
                             </div>
                           ))}
                           {/* Updates icon for main item */}
-                          <div className="w-12 px-2 py-3 flex items-center justify-center">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openUpdatesModal(
-                                  "main",
-                                  item.id,
-                                  item.values.item || `Project #${item.id}`,
-                                );
-                              }}
-                              className="relative p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                              title="Add update"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                              {getUpdateCount("main", item.id) > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                                  {getUpdateCount("main", item.id)}
-                                </span>
-                              )}
-                            </button>
+                          <div className="w-16 px-2 py-3 flex items-center justify-center">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openUpdatesModal(
+                                    "main",
+                                    item.id,
+                                    item.values.item || `Project #${item.id}`,
+                                  );
+                                }}
+                                className="relative p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                title="Add update"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                                {getUpdateCount("main", item.id) > 0 && (
+                                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                                    {getUpdateCount("main", item.id)}
+                                  </span>
+                                )}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteMainItem(item.id);
+                                }}
+                                className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                title="Delete item"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
                           </div>
                         </div>
 
