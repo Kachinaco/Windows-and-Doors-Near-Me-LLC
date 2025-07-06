@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
+import { apiRequest } from "@/lib/queryClient";
 import {
   ChevronRight,
   ChevronDown,
@@ -350,32 +351,22 @@ const MondayBoard = () => {
     }));
 
     try {
-      const response = await fetch('/api/ai/generate-formula', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message,
-          availableColumns: columns.map(col => ({ id: col.id, name: col.name, type: col.type })),
-          currentFormula: formulaAssistant.currentFormula
-        })
+      const response = await apiRequest('POST', '/api/ai/generate-formula', {
+        message,
+        availableColumns: columns.map(col => ({ id: col.id, name: col.name, type: col.type })),
+        currentFormula: formulaAssistant.currentFormula
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setFormulaAssistant(prev => ({
-          ...prev,
-          isProcessing: false,
-          chatHistory: [...prev.chatHistory, { 
-            type: "assistant", 
-            message: data.explanation,
-            formula: data.formula
-          }]
-        }));
-      } else {
-        throw new Error('Failed to get AI response');
-      }
+      const data = await response.json();
+      setFormulaAssistant(prev => ({
+        ...prev,
+        isProcessing: false,
+        chatHistory: [...prev.chatHistory, { 
+          type: "assistant", 
+          message: data.explanation,
+          formula: data.formula
+        }]
+      }));
     } catch (error) {
       setFormulaAssistant(prev => ({
         ...prev,
