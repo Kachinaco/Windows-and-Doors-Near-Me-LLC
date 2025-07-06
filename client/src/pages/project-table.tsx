@@ -561,6 +561,17 @@ const MondayBoard = () => {
   };
 
   const handleDeleteColumn = (columnId) => {
+    console.log('Deleting column:', columnId);
+    
+    // Check if this is a sub-item column (contains folder info)
+    if (columnId.includes('folder-')) {
+      // This is a sub-item column, handle differently
+      console.log('Deleting sub-item column:', columnId);
+      setSubItemColumns(prev => prev.filter(col => col.id !== columnId));
+      return;
+    }
+    
+    // Handle main columns
     if (window.confirm("Are you sure you want to delete this column?")) {
       setColumns(prev => prev.filter(col => col.id !== columnId));
       // Clean up related state
@@ -656,23 +667,28 @@ const MondayBoard = () => {
   };
 
   const handleDeleteSubItem = (projectId, subItemId) => {
-    if (confirm('Are you sure you want to delete this sub-item? This action cannot be undone.')) {
-      setBoardItems((prev) =>
-        prev.map((item) =>
-          item.id === projectId
-            ? {
-                ...item,
-                folders: (item.folders || []).map((folder) => ({
-                  ...folder,
-                  subItems: (folder.subItems || []).filter(
-                    (subItem) => subItem.id !== subItemId,
-                  ),
-                })),
-              }
-            : item,
-        ),
-      );
-    }
+    console.log('Deleting sub-item:', { projectId, subItemId });
+    
+    setBoardItems((prev) => {
+      const updated = prev.map((item) => {
+        if (item.id === projectId) {
+          const updatedItem = {
+            ...item,
+            folders: (item.folders || []).map((folder) => ({
+              ...folder,
+              subItems: (folder.subItems || []).filter(
+                (subItem) => subItem.id !== subItemId,
+              ),
+            })),
+          };
+          console.log('Updated item after deletion:', updatedItem);
+          return updatedItem;
+        }
+        return item;
+      });
+      console.log('Updated board items:', updated);
+      return updated;
+    });
   };
 
   const handleDeleteItem = (itemId) => {
