@@ -1435,17 +1435,7 @@ const MondayBoard = () => {
                                   </div>
 
                                   {/* Dynamic Sub-item Column Headers */}
-
-
-
-
-
-
-
-
-
-                                  {/* Dynamic Sub-item Columns */}
-                                  {subItemColumns.map((column) => (
+                                  {expandedFolders.has(folder.id) && subItemColumns.map((column) => (
                                     <div
                                       key={column.id}
                                       className="px-3 py-2 border-r border-blue-200 relative"
