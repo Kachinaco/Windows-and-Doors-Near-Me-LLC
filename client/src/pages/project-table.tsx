@@ -1726,71 +1726,8 @@ const MondayBoard = () => {
                                         />
                                       </div>
 
-                                      <div
-                                        className="px-4 py-2 border-r border-blue-200 relative"
-                                        style={{
-                                          width: getColumnWidth("assignedTo"),
-                                        }}
-                                      >
-                                        <div className="flex items-center justify-between">
-                                          <select
-                                            value={subItem.assignedTo}
-                                            onChange={(e) =>
-                                              handleUpdateSubItem(
-                                                item.id,
-                                                subItem.id,
-                                                "assignedTo",
-                                                e.target.value,
-                                              )
-                                            }
-                                            className="text-xs border-none bg-transparent text-blue-700 outline-none cursor-pointer"
-                                          >
-                                            <option value="unassigned">
-                                              Unassigned
-                                            </option>
-                                            {teamMembers.map((member) => (
-                                              <option
-                                                key={member.id}
-                                                value={member.id.toString()}
-                                              >
-                                                {member.firstName}{" "}
-                                                {member.lastName}
-                                              </option>
-                                            ))}
-                                          </select>
-                                          <button
-                                            onClick={() =>
-                                              setColumnMenuOpen(
-                                                columnMenuOpen ===
-                                                  `subitem-${subItem.id}-people`
-                                                  ? null
-                                                  : `subitem-${subItem.id}-people`,
-                                              )
-                                            }
-                                            className="text-blue-400 hover:text-blue-600 p-1 hover:bg-blue-100 rounded opacity-0 group-hover:opacity-100 transition-opacity ml-1"
-                                          >
-                                            ⋯
-                                          </button>
-                                        </div>
-                                        <ColumnMenu
-                                          columnId="assignedTo"
-                                          columnName="People"
-                                          isOpen={
-                                            columnMenuOpen ===
-                                            `subitem-${subItem.id}-people`
-                                          }
-                                          onClose={() =>
-                                            setColumnMenuOpen(null)
-                                          }
-                                          isSubItem={true}
-                                          menuKey={`subitem-${subItem.id}-people`}
-                                        />
-                                        <AddColumnMenu
-                                          isOpen={addColumnMenuOpen === `subitem-${subItem.id}-people`}
-                                          onClose={() => setAddColumnMenuOpen(null)}
-                                          onSelectType={handleSelectSubItemColumnType}
-                                        />
-                                      </div>
+
+
 
 
 
@@ -1923,36 +1860,7 @@ const MondayBoard = () => {
                                         Add Sub Item
                                       </button>
                                     </div>
-                                    <div
-                                      className="px-4 py-1 border-r border-blue-200"
-                                      style={{
-                                        width: getColumnWidth("status"),
-                                      }}
-                                    />
-                                    <div
-                                      className="px-4 py-1 border-r border-blue-200"
-                                      style={{
-                                        width: getColumnWidth("assignedTo"),
-                                      }}
-                                    />
-                                    <div
-                                      className="px-4 py-1 border-r border-blue-200"
-                                      style={{
-                                        width: getColumnWidth("dueDate"),
-                                      }}
-                                    />
-                                    <div
-                                      className="px-4 py-1 border-r border-blue-200"
-                                      style={{
-                                        width: getColumnWidth("checkbox"),
-                                      }}
-                                    />
-                                    <div
-                                      className="px-4 py-1 border-r border-blue-200"
-                                      style={{
-                                        width: getColumnWidth("progress"),
-                                      }}
-                                    />
+
                                     {/* Dynamic Sub-item Column Spaces */}
                                     {subItemColumns.map((column) => (
                                       <div
