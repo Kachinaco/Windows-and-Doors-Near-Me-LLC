@@ -1519,7 +1519,7 @@ const MondayBoard = () => {
                                     <div
                                       key={column.id}
                                       className="px-3 py-2 border-r border-blue-200 relative"
-                                      style={{ width: column.width || 150 }}
+                                      style={{ width: getColumnWidth(column.type) }}
                                     >
                                       <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-1">
@@ -1802,8 +1802,8 @@ const MondayBoard = () => {
                                       {subItemColumns.map((column) => (
                                         <div
                                           key={column.id}
-                                          className="px-4 py-2 border-r border-blue-200 relative"
-                                          style={{ width: column.width || 150 }}
+                                          className="px-3 py-2 border-r border-blue-200 relative"
+                                          style={{ width: getColumnWidth(column.type) }}
                                         >
                                           <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-1 flex-1">
@@ -1957,8 +1957,8 @@ const MondayBoard = () => {
                                     {subItemColumns.map((column) => (
                                       <div
                                         key={column.id}
-                                        className="px-4 py-1 border-r border-blue-200"
-                                        style={{ width: column.width || 150 }}
+                                        className="px-3 py-1 border-r border-blue-200"
+                                        style={{ width: getColumnWidth(column.type) }}
                                       />
                                     ))}
                                     {/* Updates column space */}
