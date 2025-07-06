@@ -607,7 +607,8 @@ const MondayBoard = () => {
       id: `subcol_${Date.now()}`,
       name: name,
       type: type,
-      order: Math.max(...subItemColumns.map(col => col.order)) + 1
+      order: Math.max(...subItemColumns.map(col => col.order), 0) + 1,
+      width: 150
     };
     setSubItemColumns(prev => [...prev, newColumn]);
   };
@@ -1725,6 +1726,51 @@ const MondayBoard = () => {
                                     />
                                   </div>
 
+                                  {/* Dynamic Sub-item Columns */}
+                                  {subItemColumns.map((column) => (
+                                    <div
+                                      key={column.id}
+                                      className="px-3 py-2 border-r border-blue-200 relative"
+                                      style={{ width: column.width || 150 }}
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-1">
+                                          <div className="w-2 h-2 rounded-full bg-orange-500" />
+                                          <span className="text-xs font-medium text-blue-600 uppercase">
+                                            {column.name}
+                                          </span>
+                                        </div>
+                                        <button
+                                          onClick={() =>
+                                            setColumnMenuOpen(
+                                              columnMenuOpen === `folder-${folder.id}-${column.id}`
+                                                ? null
+                                                : `folder-${folder.id}-${column.id}`,
+                                            )
+                                          }
+                                          className="text-blue-400 hover:text-blue-600 p-1 hover:bg-blue-100 rounded"
+                                        >
+                                          ⋯
+                                        </button>
+                                      </div>
+                                      <ColumnMenu
+                                        columnId={column.id}
+                                        columnName={column.name}
+                                        isOpen={
+                                          columnMenuOpen === `folder-${folder.id}-${column.id}`
+                                        }
+                                        onClose={() => setColumnMenuOpen(null)}
+                                        isSubItem={true}
+                                        menuKey={`folder-${folder.id}-${column.id}`}
+                                      />
+                                      <AddColumnMenu
+                                        isOpen={addColumnMenuOpen === `folder-${folder.id}-${column.id}`}
+                                        onClose={() => setAddColumnMenuOpen(null)}
+                                        onSelectType={handleSelectSubItemColumnType}
+                                      />
+                                    </div>
+                                  ))}
+
                                   {/* Updates icon for folder */}
                                   <div className="w-12 px-2 py-2 flex items-center justify-center">
                                     <button
@@ -2110,6 +2156,81 @@ const MondayBoard = () => {
                                         />
                                       </div>
 
+                                      {/* Dynamic Sub-item Column Data */}
+                                      {subItemColumns.map((column) => (
+                                        <div
+                                          key={column.id}
+                                          className="px-4 py-2 border-r border-blue-200 relative"
+                                          style={{ width: column.width || 150 }}
+                                        >
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1 flex-1">
+                                              {/* Render based on column type */}
+                                              {column.type === 'text' && (
+                                                <input
+                                                  type="text"
+                                                  placeholder="Enter text..."
+                                                  className="w-full text-xs text-blue-600 bg-transparent border-none outline-none"
+                                                />
+                                              )}
+                                              {column.type === 'status' && (
+                                                <select className="w-full text-xs text-blue-600 bg-transparent border-none outline-none">
+                                                  <option>Not Started</option>
+                                                  <option>In Progress</option>
+                                                  <option>Completed</option>
+                                                </select>
+                                              )}
+                                              {column.type === 'people' && (
+                                                <select className="w-full text-xs text-blue-600 bg-transparent border-none outline-none">
+                                                  <option>Unassigned</option>
+                                                  <option>John Doe</option>
+                                                  <option>Jane Smith</option>
+                                                </select>
+                                              )}
+                                              {column.type === 'date' && (
+                                                <input
+                                                  type="date"
+                                                  className="w-full text-xs text-blue-600 bg-transparent border-none outline-none"
+                                                />
+                                              )}
+                                              {column.type === 'number' && (
+                                                <input
+                                                  type="number"
+                                                  placeholder="0"
+                                                  className="w-full text-xs text-blue-600 bg-transparent border-none outline-none"
+                                                />
+                                              )}
+                                              {column.type === 'checkbox' && (
+                                                <input
+                                                  type="checkbox"
+                                                  className="w-3 h-3 rounded border-blue-400 text-blue-600"
+                                                />
+                                              )}
+                                            </div>
+                                            <button
+                                              onClick={() =>
+                                                setColumnMenuOpen(
+                                                  columnMenuOpen === `subitem-${subItem.id}-${column.id}`
+                                                    ? null
+                                                    : `subitem-${subItem.id}-${column.id}`,
+                                                )
+                                              }
+                                              className="text-blue-400 hover:text-blue-600 p-1 hover:bg-blue-100 rounded opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+                                            >
+                                              ⋯
+                                            </button>
+                                          </div>
+                                          <ColumnMenu
+                                            columnId={column.id}
+                                            columnName={column.name}
+                                            isOpen={
+                                              columnMenuOpen === `subitem-${subItem.id}-${column.id}`
+                                            }
+                                            onClose={() => setColumnMenuOpen(null)}
+                                          />
+                                        </div>
+                                      ))}
+
                                       {/* Updates icon for sub-item */}
                                       <div className="w-12 px-2 py-2 flex items-center justify-center">
                                         <button
@@ -2190,6 +2311,14 @@ const MondayBoard = () => {
                                         width: getColumnWidth("progress"),
                                       }}
                                     />
+                                    {/* Dynamic Sub-item Column Spaces */}
+                                    {subItemColumns.map((column) => (
+                                      <div
+                                        key={column.id}
+                                        className="px-4 py-1 border-r border-blue-200"
+                                        style={{ width: column.width || 150 }}
+                                      />
+                                    ))}
                                     {/* Updates column space */}
                                     <div className="w-12 px-2 py-1"></div>
                                   </div>
