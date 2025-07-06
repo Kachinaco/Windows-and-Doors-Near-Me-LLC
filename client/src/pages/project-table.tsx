@@ -52,6 +52,11 @@ const MondayBoard = () => {
     { id: "dueDate", name: "Due Date", type: "date", order: 5 },
     { id: "checkbox", name: "Done", type: "checkbox", order: 6 },
     { id: "progress", name: "Progress", type: "progress", order: 7 },
+    { id: "cost", name: "Cost ($)", type: "number", order: 8 },
+    { id: "hoursBudget", name: "Hours Budget", type: "number", order: 9 },
+    { id: "hoursSpent", name: "Hours Spent", type: "number", order: 10 },
+    { id: "remainingHours", name: "Remaining Hours", type: "formula", order: 11, formula: "hoursBudget - hoursSpent" },
+    { id: "costPerHour", name: "Cost/Hour", type: "formula", order: 12, formula: "cost / hoursBudget" },
   ]);
 
   // Sub-item columns configuration (separate from main columns)
@@ -68,6 +73,21 @@ const MondayBoard = () => {
   const [boardItems, setBoardItems] = useState<any[]>([
     {
       id: 1,
+      values: {
+        item: "Kitchen Renovation Project",
+        status: "in progress",
+        assignedTo: "John Smith, Sarah Wilson",
+        dueDate: "2025-07-15",
+        checkbox: false,
+        progress: 65,
+        email: "client1@example.com",
+        phone: "(555) 123-4567",
+        location: "123 Main St, Anytown USA",
+        cost: 25000,
+        hoursBudget: 120,
+        hoursSpent: 78
+      },
+      // Legacy properties for backwards compatibility
       name: "Kitchen Renovation Project",
       status: { id: "in-progress", color: "#0066CC", label: "In Progress" },
       assignedTo: ["John Smith", "Sarah Wilson"],
@@ -222,6 +242,58 @@ const MondayBoard = () => {
   const [activeTab, setActiveTab] = useState("updates");
   const [emailSubject, setEmailSubject] = useState("");
   const [emailMessage, setEmailMessage] = useState("");
+
+  // Formula evaluation engine
+  const evaluateFormula = (formula, item) => {
+    if (!formula) return null;
+    
+    try {
+      // Replace column names with actual values
+      let expression = formula;
+      
+      // Get available column names and values
+      const columnNames = columns.map(col => col.id);
+      
+      // Replace column references with actual values
+      columnNames.forEach(columnId => {
+        const columnValue = item.values[columnId];
+        let numericValue = 0;
+        
+        // Convert different value types to numbers
+        if (columnValue !== undefined && columnValue !== null && columnValue !== "") {
+          if (typeof columnValue === 'number') {
+            numericValue = columnValue;
+          } else if (typeof columnValue === 'string') {
+            const parsed = parseFloat(columnValue);
+            numericValue = isNaN(parsed) ? 0 : parsed;
+          } else if (typeof columnValue === 'boolean') {
+            numericValue = columnValue ? 1 : 0;
+          }
+        }
+        
+        // Replace column references in the formula
+        const regex = new RegExp(`\\b${columnId}\\b`, 'g');
+        expression = expression.replace(regex, numericValue.toString());
+      });
+      
+      // Basic safety check - only allow numbers, operators, and parentheses
+      if (!/^[0-9+\-*/.() ]+$/.test(expression)) {
+        return "Invalid formula";
+      }
+      
+      // Evaluate the expression
+      const result = Function('"use strict"; return (' + expression + ')')();
+      
+      // Round to 2 decimal places if it's a decimal
+      if (typeof result === 'number') {
+        return Math.round(result * 100) / 100;
+      }
+      
+      return result;
+    } catch (error) {
+      return "Error";
+    }
+  };
   const [isEmailSending, setIsEmailSending] = useState(false);
 
   // Column menu state
@@ -268,8 +340,16 @@ const MondayBoard = () => {
 
   // Handle column type selection from AddColumnMenu
   const handleSelectColumnType = (type) => {
-    const columnName = prompt("Enter column name:") || "New Column";
-    handleAddColumn(type, columnName);
+    if (type === "formula") {
+      const columnName = prompt("Enter column name:") || "Formula Column";
+      const formula = prompt("Enter formula (e.g., 'progress * 100', 'dueDate - startDate'):");
+      if (formula) {
+        handleAddColumn(type, columnName, formula);
+      }
+    } else {
+      const columnName = prompt("Enter column name:") || "New Column";
+      handleAddColumn(type, columnName);
+    }
     setAddColumnMenuOpen(null);
   };
 
@@ -556,12 +636,13 @@ const MondayBoard = () => {
     }
   };
 
-  const handleAddColumn = (type, name = "New Column") => {
+  const handleAddColumn = (type, name = "New Column", formula = null) => {
     const newColumn = {
       id: `col_${Date.now()}`,
       name: name,
       type: type,
-      order: Math.max(...columns.map(col => col.order)) + 1
+      order: Math.max(...columns.map(col => col.order)) + 1,
+      formula: formula
     };
     setColumns(prev => [...prev, newColumn]);
     setIsAddingColumn(false);
@@ -832,6 +913,7 @@ const MondayBoard = () => {
       { type: "number", name: "Number", icon: "🔢", description: "Numeric values" },
       { type: "checkbox", name: "Checkbox", icon: "☑️", description: "True/false toggle" },
       { type: "progress", name: "Progress", icon: "📊", description: "Progress bar" },
+      { type: "formula", name: "Formula", icon: "🧮", description: "Calculate values from other columns" },
       { type: "email", name: "Email", icon: "📧", description: "Email addresses" },
       { type: "phone", name: "Phone", icon: "📞", description: "Phone numbers" },
       { type: "location", name: "Location", icon: "📍", description: "Address or location" },
@@ -1201,6 +1283,51 @@ const MondayBoard = () => {
               <Folder className="w-3 h-3" />
               <span>{totalSubItems} items</span>
             </button>
+          </div>
+        );
+
+      case "number":
+        const isEditingNumber =
+          editingCell?.projectId === item.id &&
+          editingCell?.field === column.id;
+
+        if (isEditingNumber) {
+          return (
+            <input
+              type="number"
+              value={value}
+              onChange={(e) =>
+                handleCellUpdate(item.id, column.id, parseFloat(e.target.value) || 0)
+              }
+              className="h-6 text-xs border-none bg-transparent text-gray-700 outline-none w-full"
+              autoFocus
+              onBlur={() => setEditingCell(null)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === "Escape") {
+                  setEditingCell(null);
+                }
+              }}
+            />
+          );
+        }
+
+        return (
+          <div
+            className="h-6 text-xs cursor-text hover:bg-gray-50 flex items-center px-2 rounded text-right"
+            onClick={() =>
+              setEditingCell({ projectId: item.id, field: column.id })
+            }
+          >
+            {typeof value === 'number' ? value.toLocaleString() : value || "0"}
+          </div>
+        );
+
+      case "formula":
+        // Calculate formula result
+        const formulaResult = evaluateFormula(column.formula, item);
+        return (
+          <div className="h-6 text-xs flex items-center px-2 text-purple-700 bg-purple-50 rounded font-medium">
+            {formulaResult !== null ? formulaResult : "Error"}
           </div>
         );
 
