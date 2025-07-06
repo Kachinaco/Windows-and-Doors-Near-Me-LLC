@@ -18,6 +18,11 @@ import {
   Undo2,
   Settings,
   UserPlus,
+  X,
+  Heart,
+  Paperclip,
+  Smile,
+  AtSign,
   MessageCircle,
   Save,
   Timer,
@@ -1968,94 +1973,176 @@ const MondayBoard = () => {
         </div>
       )}
 
-      {/* Updates Modal */}
+      {/* Enhanced Updates Modal */}
       {updatesModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-            <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium">Updates</h3>
-                <p className="text-xs text-gray-600">
-                  {updatesModal.itemType === "main"
-                    ? "Project: "
-                    : updatesModal.itemType === "folder"
-                      ? "Folder: "
-                      : "Sub-item: "}
-                  {updatesModal.itemName}
-                </p>
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200"
+          onClick={closeUpdatesModal}
+        >
+          <div 
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col animate-in slide-in-from-bottom-4 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Enhanced Header */}
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                    <MessageCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Updates & Discussion
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {updatesModal.itemType === "main" && "📋 Project: "}
+                      {updatesModal.itemType === "folder" && "📁 Folder: "}
+                      {updatesModal.itemType === "subitem" && "📌 Sub-item: "}
+                      <span className="font-medium">{updatesModal.itemName}</span>
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={closeUpdatesModal}
+                  className="w-8 h-8 rounded-full bg-white/80 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 transition-colors flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                onClick={closeUpdatesModal}
-                className="text-gray-600 hover:text-gray-900 p-1"
-              >
-                ✕
-              </button>
             </div>
 
-            <div className="p-4 max-h-96 overflow-auto">
-              {/* Existing updates */}
-              <div className="space-y-3 mb-4">
+            {/* Updates Feed */}
+            <div className="flex-1 overflow-auto px-6 py-4">
+              <div className="space-y-4">
                 {(() => {
                   const updateKey = `${updatesModal.itemType}-${updatesModal.itemId}`;
                   const updates = itemUpdates[updateKey] || [];
 
                   if (updates.length === 0) {
                     return (
-                      <div className="text-center py-6 text-gray-500 text-sm">
-                        No updates yet. Be the first to add one!
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 flex items-center justify-center">
+                          <MessageCircle className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+                        </div>
+                        <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                          Start the conversation
+                        </h4>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm">
+                          No updates yet. Be the first to share progress, ask questions, or provide feedback!
+                        </p>
                       </div>
                     );
                   }
 
-                  return updates.map((update) => (
-                    <div key={update.id} className="flex space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white font-medium">
-                        {update.author[0]}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-xs text-gray-600 mb-1">
-                          <span className="text-gray-900 font-medium">
-                            {update.author}
-                          </span>{" "}
-                          · {update.timestamp.toLocaleString()}
+                  return updates.map((update, index) => (
+                    <div key={update.id} className="group animate-in slide-in-from-left duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                      <div className="flex space-x-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium text-sm shadow-lg">
+                            {update.author[0].toUpperCase()}
+                          </div>
                         </div>
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <p className="text-sm">{update.content}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className="font-medium text-gray-900 dark:text-white text-sm">
+                              {update.author}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {new Date(update.timestamp).toLocaleString()}
+                            </span>
+                            <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button className="text-gray-400 hover:text-blue-500 transition-colors">
+                                <Heart className="w-3 h-3" />
+                              </button>
+                              <button className="text-gray-400 hover:text-blue-500 transition-colors">
+                                <MoreHorizontal className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                              {update.content}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   ));
                 })()}
               </div>
+            </div>
 
-              {/* Add new update */}
-              <div className="border-t border-gray-200 pt-4">
+            {/* Enhanced Compose Area */}
+            <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl">
+              <div className="p-6">
                 <div className="flex space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white font-medium">
-                    U
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white font-medium text-sm">
+                      U
+                    </div>
                   </div>
                   <div className="flex-1">
-                    <textarea
-                      value={newUpdate}
-                      onChange={(e) => setNewUpdate(e.target.value)}
-                      placeholder="Add an update..."
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none"
-                      rows={3}
-                    />
-                    <div className="flex justify-end mt-2 space-x-2">
-                      <button
-                        onClick={closeUpdatesModal}
-                        className="px-3 py-1 text-gray-600 hover:text-gray-800 text-sm"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={addUpdate}
-                        disabled={!newUpdate.trim()}
-                        className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Post Update
-                      </button>
+                    <div className="relative">
+                      <textarea
+                        value={newUpdate}
+                        onChange={(e) => setNewUpdate(e.target.value)}
+                        placeholder="Share an update, ask a question, or provide feedback..."
+                        className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        rows={3}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                            e.preventDefault();
+                            if (newUpdate.trim()) {
+                              addUpdate();
+                            }
+                          }
+                        }}
+                      />
+                      {newUpdate.trim() && (
+                        <div className="absolute bottom-2 right-2 text-xs text-gray-400">
+                          ⌘ + Enter to send
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center space-x-2">
+                        <button 
+                          className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                          title="Add attachment"
+                        >
+                          <Paperclip className="w-4 h-4" />
+                        </button>
+                        <button 
+                          className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                          title="Add emoji"
+                        >
+                          <Smile className="w-4 h-4" />
+                        </button>
+                        <button 
+                          className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                          title="Mention someone"
+                        >
+                          <AtSign className="w-4 h-4" />
+                        </button>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={closeUpdatesModal}
+                          className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-medium transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={addUpdate}
+                          disabled={!newUpdate.trim()}
+                          className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg disabled:shadow-none"
+                        >
+                          Post Update
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
