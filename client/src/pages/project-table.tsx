@@ -275,6 +275,7 @@ const MondayBoard = () => {
 
   // Column menu state
   const [columnMenuOpen, setColumnMenuOpen] = useState(null);
+  const [addColumnMenuOpen, setAddColumnMenuOpen] = useState(null);
 
   // Settings functionality state
   const [columnFilters, setColumnFilters] = useState({});
@@ -302,13 +303,22 @@ const MondayBoard = () => {
       if (columnMenuOpen && !event.target.closest(".relative")) {
         setColumnMenuOpen(null);
       }
+      if (addColumnMenuOpen && !event.target.closest(".relative")) {
+        setAddColumnMenuOpen(null);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [columnMenuOpen]);
+  }, [columnMenuOpen, addColumnMenuOpen]);
+
+  // Handle column type selection from AddColumnMenu
+  const handleSelectColumnType = (type) => {
+    const columnName = prompt("Enter column name:") || "New Column";
+    handleAddColumn(type, columnName);
+  };
 
   // Helper functions
   const getMemberDisplayName = (memberId) => {
@@ -740,6 +750,55 @@ const MondayBoard = () => {
   };
 
   // Column menu component
+  const AddColumnMenu = ({ isOpen, onClose, onSelectType }) => {
+    if (!isOpen) return null;
+
+    const columnTypes = [
+      { type: "text", name: "Text", icon: "📝", description: "Simple text field" },
+      { type: "status", name: "Status", icon: "🟡", description: "Status with colored labels" },
+      { type: "people", name: "People", icon: "👤", description: "Assign team members" },
+      { type: "date", name: "Date", icon: "📅", description: "Date picker" },
+      { type: "number", name: "Number", icon: "🔢", description: "Numeric values" },
+      { type: "checkbox", name: "Checkbox", icon: "☑️", description: "True/false toggle" },
+      { type: "progress", name: "Progress", icon: "📊", description: "Progress bar" },
+      { type: "email", name: "Email", icon: "📧", description: "Email addresses" },
+      { type: "phone", name: "Phone", icon: "📞", description: "Phone numbers" },
+      { type: "location", name: "Location", icon: "📍", description: "Address or location" },
+    ];
+
+    return (
+      <div className="absolute top-full left-0 z-50 mt-1 w-80 bg-gray-800 rounded-lg shadow-2xl border border-gray-700 text-white">
+        <div className="py-2">
+          <div className="px-4 py-2 text-sm text-gray-300 border-b border-gray-700">
+            <div className="flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Add Column
+            </div>
+          </div>
+
+          <div className="max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-2 gap-1 p-2">
+              {columnTypes.map((columnType) => (
+                <div
+                  key={columnType.type}
+                  onClick={() => {
+                    onSelectType(columnType.type);
+                    onClose();
+                  }}
+                  className="p-3 hover:bg-gray-700 cursor-pointer rounded-lg flex flex-col items-center text-center transition-all"
+                >
+                  <div className="text-2xl mb-1">{columnType.icon}</div>
+                  <div className="text-sm font-medium text-gray-200">{columnType.name}</div>
+                  <div className="text-xs text-gray-400 mt-1">{columnType.description}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const ColumnMenu = ({ columnId, columnName, isOpen, onClose }) => {
     if (!isOpen) return null;
 
@@ -782,31 +841,7 @@ const MondayBoard = () => {
             Filter
           </div>
 
-          <div 
-            onClick={() => {
-              const sortOptions = ["asc", "desc", "none"];
-              const currentSort = columnSortOrder[columnId] || "none";
-              const nextSort = sortOptions[(sortOptions.indexOf(currentSort) + 1) % sortOptions.length];
-              handleSortColumn(columnId, nextSort);
-              onClose();
-            }}
-            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
-          >
-            <div className="w-4 h-4">↕️</div>
-            Sort {columnSortOrder[columnId] ? `(${columnSortOrder[columnId]})` : ""}
-            <ChevronRight className="w-3 h-3 ml-auto" />
-          </div>
 
-          <div 
-            onClick={() => {
-              handleCollapseColumn(columnId);
-              onClose();
-            }}
-            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
-          >
-            <div className="w-4 h-4">↗️</div>
-            {collapsedColumns.has(columnId) ? "Expand" : "Collapse"}
-          </div>
 
           <div className="border-t border-gray-700 my-1"></div>
 
@@ -829,27 +864,10 @@ const MondayBoard = () => {
 
           <div 
             onClick={() => {
-              alert("AI column feature coming soon!");
+              setAddColumnMenuOpen(columnId);
               onClose();
             }}
-            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
-          >
-            <div className="w-4 h-4">🤖</div>
-            Add AI column to the right
-            <ChevronRight className="w-3 h-3 ml-auto" />
-          </div>
-
-          <div 
-            onClick={() => {
-              const columnTypes = ["text", "status", "people", "date", "number", "checkbox", "progress"];
-              const selectedType = prompt(`Select column type:\n${columnTypes.join(", ")}`);
-              if (selectedType && columnTypes.includes(selectedType)) {
-                const columnName = prompt("Enter column name:") || "New Column";
-                handleAddColumn(selectedType, columnName);
-                onClose();
-              }
-            }}
-            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2 relative"
           >
             <Plus className="w-4 h-4" />
             Add column to the right
@@ -874,19 +892,7 @@ const MondayBoard = () => {
             <ChevronRight className="w-3 h-3 ml-auto" />
           </div>
 
-          <div className="px-4 py-2 text-sm text-green-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
-            <div className="w-4 h-4">💎</div>
-            Save as managed column
-            <div className="w-4 h-4 ml-auto text-green-500">💎</div>
-          </div>
 
-          <div className="border-t border-gray-700 my-1"></div>
-
-          <div className="px-4 py-2 text-sm text-gray-500 flex items-center gap-2">
-            <div className="w-4 h-4">🔧</div>
-            Column extensions
-            <ChevronRight className="w-3 h-3 ml-auto" />
-          </div>
 
           <div className="border-t border-gray-700 my-1"></div>
 
@@ -1208,6 +1214,11 @@ const MondayBoard = () => {
                       columnName={column.name}
                       isOpen={columnMenuOpen === `main-${column.id}`}
                       onClose={() => setColumnMenuOpen(null)}
+                    />
+                    <AddColumnMenu
+                      isOpen={addColumnMenuOpen === `main-${column.id}`}
+                      onClose={() => setAddColumnMenuOpen(null)}
+                      onSelectType={handleSelectColumnType}
                     />
                     {index < columns.length - 1 && (
                       <div
