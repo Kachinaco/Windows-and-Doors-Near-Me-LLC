@@ -2192,6 +2192,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SendGrid email endpoint
+  app.post("/api/send-email", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { to, subject, message, projectName, itemType } = req.body;
+      
+      if (!to || !subject || !message) {
+        return res.status(400).json({ message: "Email recipient, subject, and message are required" });
+      }
+
+      // Check if SendGrid API key is configured
+      const sendgridApiKey = process.env.SENDGRID_API_KEY;
+      if (!sendgridApiKey) {
+        return res.status(500).json({ message: "SendGrid API key not configured" });
+      }
+
+      // Import SendGrid - we'll use the blueprint approach
+      const sgMail = require('@sendgrid/mail');
+      sgMail.setApiKey(sendgridApiKey);
+
+      const emailData = {
+        to: to,
+        from: 'noreply@yourproject.com', // Replace with your verified sender email
+        subject: subject,
+        text: message,
+        html: `
+          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <h2>Message from ${projectName || 'Project Management System'}</h2>
+            <p>${message.replace(/\n/g, '<br>')}</p>
+            <hr style="border: 1px solid #eee; margin: 20px 0;">
+            <p style="color: #666; font-size: 12px;">
+              This email was sent from your project management system regarding ${itemType || 'project'}: ${projectName || 'Unknown'}
+            </p>
+          </div>
+        `
+      };
+
+      await sgMail.send(emailData);
+      
+      res.json({ success: true, message: "Email sent successfully" });
+    } catch (error: any) {
+      console.error("Error sending email:", error);
+      
+      if (error.response) {
+        console.error("SendGrid error response:", error.response.body);
+        return res.status(500).json({ 
+          message: "Failed to send email",
+          error: error.response.body?.errors?.[0]?.message || "SendGrid API error"
+        });
+      }
+      
+      res.status(500).json({ message: "Failed to send email" });
+    }
+  });
+
   app.post("/api/log-call", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
       const { leadId, phoneNumber, notes, fromNumber } = req.body;
