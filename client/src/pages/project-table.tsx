@@ -52,11 +52,6 @@ const MondayBoard = () => {
     { id: "dueDate", name: "Due Date", type: "date", order: 5 },
     { id: "checkbox", name: "Done", type: "checkbox", order: 6 },
     { id: "progress", name: "Progress", type: "progress", order: 7 },
-    { id: "cost", name: "Cost ($)", type: "number", order: 8 },
-    { id: "hoursBudget", name: "Hours Budget", type: "number", order: 9 },
-    { id: "hoursSpent", name: "Hours Spent", type: "number", order: 10 },
-    { id: "remainingHours", name: "Remaining Hours", type: "formula", order: 11, formula: "hoursBudget - hoursSpent" },
-    { id: "costPerHour", name: "Cost/Hour", type: "formula", order: 12, formula: "cost / hoursBudget" },
   ]);
 
   // Sub-item columns configuration (separate from main columns)
@@ -2578,7 +2573,9 @@ const MondayBoard = () => {
                         minWidth: getColumnWidth(column.id)
                       }}
                     >
-                      {/* Empty space for group header row - no column names */}
+                      <span className="text-xs font-medium text-gray-500 uppercase">
+                        {column.name}
+                      </span>
                     </div>
                   ))}
 
