@@ -1537,6 +1537,8 @@ const MondayBoard = () => {
                                         `folder-${folder.id}-status`
                                       }
                                       onClose={() => setColumnMenuOpen(null)}
+                                      isSubItem={true}
+                                      menuKey={`folder-${folder.id}-status`}
                                     />
                                   </div>
 
@@ -1575,6 +1577,8 @@ const MondayBoard = () => {
                                         `folder-${folder.id}-people`
                                       }
                                       onClose={() => setColumnMenuOpen(null)}
+                                      isSubItem={true}
+                                      menuKey={`folder-${folder.id}-people`}
                                     />
                                   </div>
 
@@ -1611,6 +1615,8 @@ const MondayBoard = () => {
                                         `folder-${folder.id}-date`
                                       }
                                       onClose={() => setColumnMenuOpen(null)}
+                                      isSubItem={true}
+                                      menuKey={`folder-${folder.id}-date`}
                                     />
                                   </div>
 
@@ -1649,6 +1655,8 @@ const MondayBoard = () => {
                                         `folder-${folder.id}-done`
                                       }
                                       onClose={() => setColumnMenuOpen(null)}
+                                      isSubItem={true}
+                                      menuKey={`folder-${folder.id}-done`}
                                     />
                                   </div>
 
@@ -1687,6 +1695,8 @@ const MondayBoard = () => {
                                         `folder-${folder.id}-progress`
                                       }
                                       onClose={() => setColumnMenuOpen(null)}
+                                      isSubItem={true}
+                                      menuKey={`folder-${folder.id}-progress`}
                                     />
                                   </div>
 
