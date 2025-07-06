@@ -1291,18 +1291,13 @@ const MondayBoard = () => {
           {isFormulaColumn && (
             <div 
               onClick={() => {
-                setFormulaEditor({
-                  isOpen: true,
-                  columnId: columnId,
-                  currentFormula: column.formula || '',
-                  aiSuggestions: []
-                });
+                openFormulaAssistant(columnId, column?.formula || '');
                 onClose();
               }}
               className="px-4 py-2 text-sm text-purple-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
             >
               <div className="w-4 h-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded flex items-center justify-center text-xs">
-                ƒ
+                ✨
               </div>
               Formula Settings
             </div>
@@ -1310,7 +1305,7 @@ const MondayBoard = () => {
 
           <div 
             onClick={() => {
-              showToast("AI Autofill feature coming soon!", "info");
+              openFormulaAssistant(columnId, column?.formula || '');
               onClose();
             }}
             className="px-4 py-2 text-sm text-blue-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
