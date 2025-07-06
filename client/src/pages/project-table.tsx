@@ -1718,27 +1718,7 @@ const MondayBoard = () => {
                                                 />
                                               )}
                                             </div>
-                                            <button
-                                              onClick={() =>
-                                                setColumnMenuOpen(
-                                                  columnMenuOpen === `subitem-${subItem.id}-${column.id}`
-                                                    ? null
-                                                    : `subitem-${subItem.id}-${column.id}`,
-                                                )
-                                              }
-                                              className="text-blue-400 hover:text-blue-600 p-1 hover:bg-blue-100 rounded opacity-0 group-hover:opacity-100 transition-opacity ml-1"
-                                            >
-                                              ⋯
-                                            </button>
                                           </div>
-                                          <ColumnMenu
-                                            columnId={column.id}
-                                            columnName={column.name}
-                                            isOpen={
-                                              columnMenuOpen === `subitem-${subItem.id}-${column.id}`
-                                            }
-                                            onClose={() => setColumnMenuOpen(null)}
-                                          />
                                         </div>
                                       ))}
 
