@@ -101,7 +101,7 @@ const MondayBoard = () => {
 
   // Initial board data with folders
   // Initial board data with sample items for testing email functionality
-  const [boardItems, setBoardItems] = useState<any[]>([
+  const [boardItemsOld, setMainItemsOld] = useState<any[]>([
     {
       id: 1,
       values: {
@@ -954,7 +954,7 @@ const MondayBoard = () => {
 
   // Event handlers
   const handleCellUpdate = useCallback((projectId, field, value) => {
-    setBoardItems((prev) =>
+    setMainItems((prev) =>
       prev.map((item) =>
         item.id === projectId
           ? { ...item, values: { ...item.values, [field]: value } }
@@ -973,7 +973,7 @@ const MondayBoard = () => {
 
     // Force component re-render to recalculate formulas
     setTimeout(() => {
-      setBoardItems((prev) => [...prev]);
+      setMainItems((prev) => [...prev]);
     }, 50);
   }, []);
 
@@ -1002,7 +1002,7 @@ const MondayBoard = () => {
       folders: [],
     };
 
-    setBoardItems((prev) => [...prev, newItem]);
+    setMainItems((prev) => [...prev, newItem]);
     setNewItemCounter((prev) => prev + 1);
     setEditingCell({ projectId: newItemCounter, field: "item" });
   };
@@ -1015,7 +1015,7 @@ const MondayBoard = () => {
       subItems: [],
     };
 
-    setBoardItems((prev) =>
+    setMainItems((prev) =>
       prev.map((item) =>
         item.id === projectId
           ? { ...item, folders: [...(item.folders || []), newFolder] }
@@ -1040,7 +1040,7 @@ const MondayBoard = () => {
       values: {}
     };
 
-    setBoardItems((prev) =>
+    setMainItems((prev) =>
       prev.map((item) =>
         item.id === projectId
           ? {
@@ -1062,7 +1062,7 @@ const MondayBoard = () => {
   };
 
   const handleUpdateFolder = (projectId, folderId, newName) => {
-    setBoardItems((prev) =>
+    setMainItems((prev) =>
       prev.map((item) =>
         item.id === projectId
           ? {
@@ -1234,7 +1234,7 @@ const MondayBoard = () => {
   };
 
   const handleUpdateSubItem = (projectId, subItemId, field, value) => {
-    setBoardItems((prev) =>
+    setMainItems((prev) =>
       prev.map((item) =>
         item.id === projectId
           ? {
@@ -1261,7 +1261,7 @@ const MondayBoard = () => {
   };
 
   const handleDeleteFolder = (projectId, folderId) => {
-    setBoardItems((prev) =>
+    setMainItems((prev) =>
       prev.map((item) =>
         item.id === projectId
           ? {
@@ -1281,7 +1281,7 @@ const MondayBoard = () => {
   const handleDeleteSubItem = (projectId, subItemId) => {
     console.log('Deleting sub-item:', { projectId, subItemId });
     
-    setBoardItems((prev) => {
+    setMainItems((prev) => {
       const updated = prev.map((item) => {
         if (item.id === projectId) {
           const updatedItem = {
@@ -1304,7 +1304,7 @@ const MondayBoard = () => {
   };
 
   const handleDeleteItem = (itemId) => {
-    setBoardItems((prev) => prev.filter((item) => item.id !== itemId));
+    setMainItems((prev) => prev.filter((item) => item.id !== itemId));
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
       newSet.delete(itemId);
@@ -1319,7 +1319,7 @@ const MondayBoard = () => {
       message: "Are you sure you want to delete this item? This action cannot be undone.",
       callback: (confirmed) => {
         if (confirmed) {
-          setBoardItems((prev) => prev.filter((item) => item.id !== itemId));
+          setMainItems((prev) => prev.filter((item) => item.id !== itemId));
           setSelectedItems((prev) => {
             const newSet = new Set(prev);
             newSet.delete(itemId);
