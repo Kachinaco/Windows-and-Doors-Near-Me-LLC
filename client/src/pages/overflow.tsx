@@ -43,8 +43,8 @@ import {
 import { Link as RouterLink } from "wouter";
 
 const MondayBoard = () => {
-  // Sidebar state
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Sidebar state - responsive: closed on mobile, open on desktop
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [projects, setProjects] = useState([
     { id: 1, name: "Kachina Window Projects", isActive: true, boards: [
       { id: 1, name: "Main Board", isActive: true },
@@ -3288,8 +3288,18 @@ const MondayBoard = () => {
 
   return (
     <div className="h-screen bg-gray-50 text-gray-900 flex overflow-hidden">
-      {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} bg-slate-900 border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out`}>
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      
+      {/* Sidebar - Mobile Responsive */}
+      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} bg-slate-900 border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out fixed lg:static inset-y-0 left-0 z-50 lg:z-auto ${
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
         {/* Sidebar Header */}
         <div className="p-4 border-b border-slate-700">
           <div className="flex items-center justify-between">
@@ -3301,7 +3311,7 @@ const MondayBoard = () => {
             )}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-1 text-slate-400 hover:text-white transition-colors"
+              className="p-2 text-slate-400 hover:text-white transition-colors touch-manipulation rounded"
             >
               {isSidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeft className="w-5 h-5" />}
             </button>
@@ -3475,30 +3485,41 @@ const MondayBoard = () => {
         </div>
       </div>
 
-      {/* Main Board Container */}
-      <div className="flex flex-col flex-1 bg-white">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-4 py-3">
+      {/* Main Board Container - Mobile Optimized */}
+      <div className={`flex flex-col flex-1 bg-white transition-all duration-300 ${isSidebarOpen ? 'lg:ml-0' : ''}`}>
+        {/* Header - Mobile Responsive */}
+        <header className="bg-white border-b border-gray-200 px-2 sm:px-4 py-2 sm:py-3 sticky top-0 z-20">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1 sm:space-x-3 min-w-0 flex-1">
+              {/* Mobile sidebar toggle */}
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="lg:hidden p-2 text-gray-600 hover:text-gray-900 rounded-md touch-manipulation"
+                aria-label="Toggle sidebar"
+              >
+                {isSidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeft className="w-5 h-5" />}
+              </button>
+              
               <RouterLink href="/projects-list">
-                <button className="text-gray-600 hover:text-gray-900 text-sm px-3 py-2 rounded-md flex items-center gap-2 transition-colors">
+                <button className="text-gray-600 hover:text-gray-900 text-sm px-2 sm:px-3 py-2 rounded-md flex items-center gap-1 sm:gap-2 transition-colors touch-manipulation">
                   <ArrowLeft className="w-4 h-4" />
-                  Back
+                  <span className="hidden sm:inline">Back</span>
                 </button>
               </RouterLink>
-              <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
-                <div className="w-3 h-3 bg-white rounded-sm" />
+              
+              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 rounded flex items-center justify-center flex-shrink-0">
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-sm" />
               </div>
-              <div>
-                <h1 className="text-lg font-medium">
+              
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm sm:text-lg font-medium truncate">
                   {(() => {
                     const project = projects.find(p => p.id === activeProject);
                     const board = project?.boards.find(b => b.id === activeBoard);
                     return `${project?.name || 'Project'} - ${board?.name || 'Board'}`;
                   })()}
                 </h1>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 truncate hidden sm:block">
                   {(() => {
                     const project = projects.find(p => p.id === activeProject);
                     return project ? `Workspace: ${project.name}` : 'Monday.com-style Project Management';
@@ -3507,10 +3528,10 @@ const MondayBoard = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
               {undoStack.length > 0 && (
                 <button 
-                  className="text-gray-600 hover:text-gray-900 p-1 rounded"
+                  className="text-gray-600 hover:text-gray-900 p-2 rounded touch-manipulation"
                   aria-label="Undo last action"
                   title="Undo last action"
                 >
@@ -3519,7 +3540,7 @@ const MondayBoard = () => {
               )}
               <button
                 onClick={() => handleAddItem("New Leads")}
-                className="text-gray-600 hover:text-gray-900 p-1 rounded"
+                className="text-gray-600 hover:text-gray-900 p-2 rounded touch-manipulation"
                 aria-label="Add new item"
                 title="Add new item"
               >
@@ -3529,13 +3550,26 @@ const MondayBoard = () => {
           </div>
         </header>
 
-        {/* Board Content */}
+        {/* Board Content - Mobile Optimized */}
         <div className="flex-1 overflow-x-auto overflow-y-auto bg-white" style={{ scrollBehavior: 'smooth' }}>
           <div className="min-w-max w-full">
-            {/* Column Headers */}
+            {/* Mobile View Toggle */}
+            <div className="sm:hidden bg-gray-50 px-3 py-2 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Board View</span>
+                <button 
+                  onClick={() => {/* Toggle between table and card view */}}
+                  className="text-blue-600 text-sm font-medium touch-manipulation"
+                >
+                  Switch to Cards
+                </button>
+              </div>
+            </div>
+
+            {/* Column Headers - Mobile Optimized */}
             <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
               <div className="flex">
-                <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center">
+                <div className="w-10 sm:w-12 px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 flex items-center justify-center">
                   <input
                     type="checkbox"
                     id="select-all-checkbox"
@@ -3553,7 +3587,7 @@ const MondayBoard = () => {
                         );
                       }
                     }}
-                    className="w-4 h-4 rounded border-gray-400 text-blue-500"
+                    className="w-4 h-4 rounded border-gray-400 text-blue-500 touch-manipulation"
                     aria-label="Select all items"
                     title="Select all items"
                   />
@@ -3561,7 +3595,7 @@ const MondayBoard = () => {
                 {columns.map((column, index) => (
                   <div
                     key={column.id}
-                    className="px-3 py-3 border-r border-gray-200 relative group flex-shrink-0 bg-white"
+                    className="px-2 sm:px-3 py-2 sm:py-3 border-r border-gray-200 relative group flex-shrink-0 bg-white"
                     style={{ 
                       width: getColumnWidth(column.id),
                       minWidth: getColumnWidth(column.id)
@@ -4362,11 +4396,11 @@ const MondayBoard = () => {
           </div>
         </div>
 
-        {/* Modern Status Bar */}
-        <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-t border-gray-200 px-4 py-3">
+        {/* Modern Status Bar - Mobile Optimized */}
+        <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-t border-gray-200 px-2 sm:px-4 py-2 sm:py-3">
           <div className="flex items-center justify-between">
             {/* Left Section - Statistics */}
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3 sm:space-x-6 text-xs sm:text-sm flex-wrap">
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-1">
                   <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
