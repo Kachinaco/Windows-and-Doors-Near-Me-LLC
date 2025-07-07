@@ -1,0 +1,289 @@
+// Integration points for the Monday-style formula system
+
+// 1. Replace your existing evaluateFormula function with this:
+const evaluateFormula = (formula, item, columns) => {
+  return MondayFormulaEvaluator.evaluate(formula, item, columns);
+};
+
+// 2. Update the AI Formula Assistant component to use Monday-style UI
+const AIFormulaAssistant = () => {
+  const [localInput, setLocalInput] = React.useState("");
+  const chatContainerRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (formulaAssistant.isOpen) {
+      setLocalInput(formulaAssistant.currentFormula || "");
+    }
+  }, [formulaAssistant.isOpen]);
+
+  // Auto-scroll to bottom when new messages arrive
+  React.useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [formulaAssistant.chatHistory]);
+
+  if (!formulaAssistant.isOpen) return null;
+
+  const currentColumn = columns.find(col => col.id === formulaAssistant.columnId);
+  
+  // Get a sample row for preview
+  const sampleRow = boardItems[0] || { values: {} };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-2xl">✨</span>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">Formula Builder</h2>
+                <p className="text-purple-100 text-sm">
+                  Creating formula for "{currentColumn?.name || 'Formula'}" column
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={closeFormulaAssistant}
+              className="text-white/70 hover:text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex" style={{ height: 'calc(100% - 96px)' }}>
+          {/* Left Side - Formula Builder */}
+          <div className="flex-1 p-6 overflow-y-auto border-r border-gray-200 dark:border-gray-700">
+            <MondayFormulaBuilder
+              formula={localInput}
+              onChange={setLocalInput}
+              columns={columns}
+              sampleRow={sampleRow}
+            />
+            
+            {/* Save Button */}
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={closeFormulaAssistant}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  applyAIFormula(localInput.trim());
+                  closeFormulaAssistant();
+                }}
+                disabled={!localInput.trim()}
+                className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg transition-all"
+              >
+                Save Formula
+              </button>
+            </div>
+          </div>
+
+          {/* Right Side - AI Chat Assistant */}
+          <div className="w-96 bg-gray-50 dark:bg-gray-900 flex flex-col">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                <span className="text-xl">🤖</span>
+                AI Assistant
+              </h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Describe what you want to calculate in plain English
+              </p>
+            </div>
+            
+            {/* Chat Messages */}
+            <div 
+              ref={chatContainerRef}
+              className="flex-1 overflow-y-auto p-4 space-y-4"
+            >
+              {formulaAssistant.chatHistory.map((message, index) => (
+                <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-xs px-4 py-2 rounded-lg ${
+                    message.type === 'user' 
+                      ? 'bg-blue-500 text-white' 
+                      : message.type === 'system'
+                      ? 'bg-gradient-to-r from-purple-100 to-blue-100 text-gray-800 border border-purple-200'
+                      : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-white shadow-sm border border-gray-200 dark:border-gray-700'
+                  }`}>
+                    <p className="text-sm">{message.message}</p>
+                    {message.formula && (
+                      <div className="mt-2">
+                        <div className="p-2 bg-gray-900 dark:bg-gray-700 rounded text-green-400 font-mono text-xs">
+                          {message.formula}
+                        </div>
+                        <button
+                          onClick={() => setLocalInput(message.formula)}
+                          className="mt-2 w-full text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition-colors"
+                        >
+                          Use This Formula
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {formulaAssistant.isProcessing && (
+                <div className="flex justify-start">
+                  <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* AI Input Area */}
+            <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={aiInput}
+                  onChange={(e) => setAiInput(e.target.value)}
+                  placeholder="E.g., 'calculate profit margin' or 'sum all costs'"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !formulaAssistant.isProcessing && aiInput.trim()) {
+                      e.preventDefault();
+                      sendMessageToAI(aiInput);
+                      setAiInput("");
+                    }
+                  }}
+                  disabled={formulaAssistant.isProcessing}
+                />
+                <button
+                  onClick={() => {
+                    sendMessageToAI(aiInput);
+                    setAiInput("");
+                  }}
+                  disabled={formulaAssistant.isProcessing || !aiInput.trim()}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 3. Update the sendMessageToAI function to generate Monday-style formulas
+const sendMessageToAI = async (message) => {
+  if (!message.trim()) return;
+
+  const userMessage = message.trim();
+  
+  setFormulaAssistant(prev => ({
+    ...prev,
+    isProcessing: true,
+    userInput: "",
+    chatHistory: [...prev.chatHistory, { type: "user", message: userMessage }]
+  }));
+
+  try {
+    // Generate the prompt for Monday-style formulas
+    const prompt = generateMondayStylePrompt(userMessage, columns);
+    
+    const response = await apiRequest('POST', '/api/ai/generate-formula', {
+      message: prompt,
+      availableColumns: columns.map(col => ({ 
+        id: col.id, 
+        name: col.name, 
+        type: col.type,
+        mondayStyle: true // Flag to indicate we want Monday-style formulas
+      })),
+      currentFormula: formulaAssistant.currentFormula
+    });
+
+    const data = await response.json();
+    
+    // Extract just the formula from the response
+    let formula = data.formula || data.message || "";
+    
+    // Clean up the formula if AI added extra text
+    formula = formula.trim();
+    if (formula.includes('\n')) {
+      formula = formula.split('\n')[0].trim();
+    }
+    
+    setFormulaAssistant(prev => ({
+      ...prev,
+      isProcessing: false,
+      chatHistory: [...prev.chatHistory, { 
+        type: "assistant", 
+        message: `Here's a formula for "${userMessage}":`,
+        formula: formula
+      }]
+    }));
+  } catch (error) {
+    setFormulaAssistant(prev => ({
+      ...prev,
+      isProcessing: false,
+      chatHistory: [...prev.chatHistory, { 
+        type: "assistant", 
+        message: "I apologize, but I'm having trouble generating a formula right now. You can try writing it manually using the formula builder on the left."
+      }]
+    }));
+  }
+};
+
+// 4. Update the formula cell rendering to show Monday-style preview
+case "formula":
+  const columnFormula = column.formula || "";
+  const formulaResult = evaluateFormula(columnFormula, item, columns);
+  
+  return (
+    <div className="h-6 text-xs flex items-center justify-between px-2 text-purple-700 bg-purple-50 rounded font-medium group hover:bg-purple-100 transition-colors">
+      <span className="truncate">
+        {formulaResult !== null && formulaResult !== 'Error' ? (
+          // Format based on result type
+          typeof formulaResult === 'number' ? 
+            formulaResult.toLocaleString() : 
+            formulaResult
+        ) : columnFormula ? (
+          <span className="text-red-500">Error</span>
+        ) : (
+          <span className="text-gray-400">Set formula</span>
+        )}
+      </span>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          openFormulaAssistant(column.id, columnFormula);
+        }}
+        className="opacity-0 group-hover:opacity-100 text-purple-600 hover:text-purple-800 transition-all p-0.5 ml-2"
+        title="Edit Formula"
+      >
+        ✨
+      </button>
+    </div>
+  );
+
+// 5. Add formula column type to the column menu
+const columnTypes = [
+  { type: "text", name: "Text", icon: "📝", description: "Simple text field" },
+  { type: "status", name: "Status", icon: "🟡", description: "Status with colored labels" },
+  { type: "people", name: "People", icon: "👤", description: "Assign team members" },
+  { type: "date", name: "Date", icon: "📅", description: "Date picker" },
+  { type: "number", name: "Number", icon: "🔢", description: "Numeric values" },
+  { type: "checkbox", name: "Checkbox", icon: "☑️", description: "True/false toggle" },
+  { type: "progress", name: "Progress", icon: "📊", description: "Progress bar" },
+  { type: "formula", name: "Formula", icon: "✨", description: "Calculate values with formulas" },
+  { type: "email", name: "Email", icon: "📧", description: "Email addresses" },
+  { type: "phone", name: "Phone", icon: "📞", description: "Phone numbers" },
+  { type: "location", name: "Location", icon: "📍", description: "Address or location" },
+];

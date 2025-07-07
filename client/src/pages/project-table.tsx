@@ -339,81 +339,465 @@ const MondayBoard = () => {
     });
   };
 
-  // Fix the evaluateFormula function
-  const evaluateFormula = (formula, item) => {
-    if (!formula) return null;
-    
-    try {
-      // Replace column names with actual values
-      let expression = formula;
-      
-      // Get all column IDs (not just numeric ones)
-      columns.forEach(column => {
-        const columnId = column.id;
-        const columnValue = item.values?.[columnId];
-        let value = 0;
+  // Monday.com-style Formula Evaluator
+  const MondayFormulaEvaluator = {
+    evaluate: (formula, item, columns) => {
+      if (!formula || !formula.trim()) return null;
+
+      try {
+        let expression = formula.trim();
+        console.log('Evaluating Monday formula:', expression);
         
-        // Convert different value types to numbers
-        if (columnValue !== undefined && columnValue !== null && columnValue !== "") {
-          if (typeof columnValue === 'number') {
-            value = columnValue;
-          } else if (typeof columnValue === 'string') {
-            const parsed = parseFloat(columnValue);
-            value = isNaN(parsed) ? 0 : parsed;
-          } else if (typeof columnValue === 'boolean') {
-            value = columnValue ? 1 : 0;
-          } else if (column.type === 'checkbox') {
-            value = columnValue === true || columnValue === "true" ? 1 : 0;
+        // Replace column references with actual values using {Column Name} syntax
+        columns.forEach(col => {
+          const columnName = col.name;
+          const columnValue = item.values[col.id];
+          
+          // Parse the column value based on type
+          let parsedValue;
+          if (col.type === 'number') {
+            parsedValue = parseFloat(columnValue) || 0;
+          } else if (col.type === 'checkbox') {
+            parsedValue = columnValue === 'true' ? 1 : 0;
+          } else if (col.type === 'text' || col.type === 'status') {
+            parsedValue = `"${columnValue || ''}"`;
+          } else {
+            parsedValue = columnValue || 0;
           }
-        }
+          
+          // Replace {Column Name} references
+          const regex = new RegExp(`\\{${columnName}\\}`, 'gi');
+          expression = expression.replace(regex, parsedValue);
+        });
         
-        // Replace column ID references in the formula
-        // Use word boundaries to avoid partial matches
-        const regex = new RegExp(`\\b${columnId}\\b`, 'gi');
-        expression = expression.replace(regex, value.toString());
+        // Support Monday.com functions
+        expression = this.replaceFunctions(expression, item, columns);
+        
+        console.log('Expression after replacement:', expression);
+        
+        // Create a safe evaluation function
+        const safeEval = new Function('return ' + expression);
+        const result = safeEval();
+        
+        console.log('Formula result:', result);
+        
+        return result;
+      } catch (error) {
+        console.error('Formula evaluation error:', error);
+        return 'Error';
+      }
+    },
+
+    replaceFunctions: (expression, item, columns) => {
+      // Math functions
+      expression = expression.replace(/SUM\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `(${values.join(' + ')})`;
       });
       
-      // Also try replacing column names (not just IDs)
-      columns.forEach(column => {
-        const columnName = column.name.toLowerCase().replace(/\s+/g, '');
-        const columnValue = item.values?.[column.id];
-        let value = 0;
-        
-        if (columnValue !== undefined && columnValue !== null && columnValue !== "") {
-          if (typeof columnValue === 'number') {
-            value = columnValue;
-          } else if (typeof columnValue === 'string') {
-            const parsed = parseFloat(columnValue);
-            value = isNaN(parsed) ? 0 : parsed;
-          } else if (typeof columnValue === 'boolean' || column.type === 'checkbox') {
-            value = (columnValue === true || columnValue === "true") ? 1 : 0;
-          }
-        }
-        
-        const regex = new RegExp(`\\b${columnName}\\b`, 'gi');
-        expression = expression.replace(regex, value.toString());
+      expression = expression.replace(/AVERAGE\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `((${values.join(' + ')}) / ${values.length})`;
       });
       
-      // Basic safety check - only allow numbers, operators, and parentheses
-      if (!/^[0-9+\-*/.() ]+$/.test(expression)) {
-        console.error('Invalid formula expression:', expression);
-        return "Invalid formula";
-      }
+      expression = expression.replace(/MIN\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `Math.min(${values.join(', ')})`;
+      });
       
-      // Evaluate the expression
-      const result = Function('"use strict"; return (' + expression + ')')();
+      expression = expression.replace(/MAX\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `Math.max(${values.join(', ')})`;
+      });
       
-      // Round to 2 decimal places if it's a decimal
-      if (typeof result === 'number') {
-        return Math.round(result * 100) / 100;
-      }
+      expression = expression.replace(/ROUND\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `Math.round(${values[0]})`;
+      });
       
-      return result;
-    } catch (error) {
-      console.error('Formula evaluation error:', error);
-      return "Error";
+      expression = expression.replace(/ABS\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `Math.abs(${values[0]})`;
+      });
+      
+      expression = expression.replace(/POWER\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `Math.pow(${values[0]}, ${values[1]})`;
+      });
+      
+      expression = expression.replace(/SQRT\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `Math.sqrt(${values[0]})`;
+      });
+      
+      // Logical functions
+      expression = expression.replace(/IF\(([^)]+)\)/gi, (match, args) => {
+        const parts = args.split(',').map(s => s.trim());
+        return `(${parts[0]} ? ${parts[1]} : ${parts[2]})`;
+      });
+      
+      expression = expression.replace(/AND\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `(${values.join(' && ')})`;
+      });
+      
+      expression = expression.replace(/OR\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `(${values.join(' || ')})`;
+      });
+      
+      expression = expression.replace(/NOT\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `!(${values[0]})`;
+      });
+      
+      // Text functions
+      expression = expression.replace(/CONCATENATE\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `(${values.join(' + ')})`;
+      });
+      
+      expression = expression.replace(/LEN\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return `(${values[0]}).length`;
+      });
+      
+      // Date functions
+      expression = expression.replace(/TODAY\(\)/gi, 'new Date().toISOString().split("T")[0]');
+      expression = expression.replace(/NOW\(\)/gi, 'new Date().toISOString()');
+      
+      // Count functions
+      expression = expression.replace(/COUNT\(([^)]+)\)/gi, (match, args) => {
+        const values = this.parseArguments(args, item, columns);
+        return values.length.toString();
+      });
+      
+      return expression;
+    },
+
+    parseArguments: (args, item, columns) => {
+      return args.split(',').map(arg => {
+        const trimmed = arg.trim();
+        // Check if it's a column reference
+        const columnMatch = trimmed.match(/\{([^}]+)\}/);
+        if (columnMatch) {
+          const columnName = columnMatch[1];
+          const column = columns.find(col => col.name === columnName);
+          if (column) {
+            const value = item.values[column.id];
+            return col.type === 'number' ? (parseFloat(value) || 0) : value || 0;
+          }
+        }
+        return trimmed;
+      });
     }
   };
+
+  // Formula evaluation function
+  const evaluateFormula = (formula, item, columns) => {
+    return MondayFormulaEvaluator.evaluate(formula, item, columns);
+  };
+
+  // Monday.com-style Formula Builder Component
+  const MondayFormulaBuilder = React.memo(({ formula, onChange, columns, sampleRow }) => {
+    const [activeTab, setActiveTab] = React.useState('columns');
+    const [previewResult, setPreviewResult] = React.useState(null);
+
+    // Calculate live preview
+    React.useEffect(() => {
+      if (formula && sampleRow) {
+        const result = evaluateFormula(formula, sampleRow, columns);
+        setPreviewResult(result);
+      } else {
+        setPreviewResult(null);
+      }
+    }, [formula, sampleRow, columns]);
+
+    const tabs = [
+      { id: 'columns', name: 'Columns', icon: '📋' },
+      { id: 'math', name: 'Math', icon: '🔢' },
+      { id: 'logical', name: 'Logical', icon: '🔀' },
+      { id: 'text', name: 'Text', icon: '📝' },
+      { id: 'date', name: 'Date', icon: '📅' }
+    ];
+
+    const mathFunctions = [
+      { name: 'SUM', syntax: 'SUM({Column 1}, {Column 2})', desc: 'Add values together' },
+      { name: 'AVERAGE', syntax: 'AVERAGE({Column 1}, {Column 2})', desc: 'Calculate average' },
+      { name: 'MIN', syntax: 'MIN({Column 1}, {Column 2})', desc: 'Find minimum value' },
+      { name: 'MAX', syntax: 'MAX({Column 1}, {Column 2})', desc: 'Find maximum value' },
+      { name: 'ROUND', syntax: 'ROUND({Column})', desc: 'Round to nearest integer' },
+      { name: 'ABS', syntax: 'ABS({Column})', desc: 'Get absolute value' },
+      { name: 'POWER', syntax: 'POWER({Column}, 2)', desc: 'Raise to power' },
+      { name: 'SQRT', syntax: 'SQRT({Column})', desc: 'Square root' }
+    ];
+
+    const logicalFunctions = [
+      { name: 'IF', syntax: 'IF({Column} > 0, "Yes", "No")', desc: 'Conditional logic' },
+      { name: 'AND', syntax: 'AND({Column 1} > 0, {Column 2} > 0)', desc: 'All conditions true' },
+      { name: 'OR', syntax: 'OR({Column 1} > 0, {Column 2} > 0)', desc: 'Any condition true' },
+      { name: 'NOT', syntax: 'NOT({Column})', desc: 'Reverse true/false' }
+    ];
+
+    const textFunctions = [
+      { name: 'CONCATENATE', syntax: 'CONCATENATE({Column 1}, " - ", {Column 2})', desc: 'Join text' },
+      { name: 'LEN', syntax: 'LEN({Column})', desc: 'Text length' },
+      { name: 'UPPER', syntax: 'UPPER({Column})', desc: 'Uppercase text' },
+      { name: 'LOWER', syntax: 'LOWER({Column})', desc: 'Lowercase text' }
+    ];
+
+    const dateFunctions = [
+      { name: 'TODAY', syntax: 'TODAY()', desc: 'Current date' },
+      { name: 'NOW', syntax: 'NOW()', desc: 'Current date and time' },
+      { name: 'DAYS', syntax: 'DAYS({End Date}, {Start Date})', desc: 'Days between dates' }
+    ];
+
+    const insertAtCursor = (text) => {
+      const currentValue = formula || '';
+      const newValue = currentValue + text;
+      onChange(newValue);
+    };
+
+    const insertFunction = (func) => {
+      insertAtCursor(func.syntax);
+    };
+
+    const insertColumn = (column) => {
+      insertAtCursor(`{${column.name}}`);
+    };
+
+    const insertOperator = (operator) => {
+      insertAtCursor(` ${operator} `);
+    };
+
+    return (
+      <div className="space-y-4">
+        {/* Formula Input */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Formula
+          </label>
+          <div className="relative">
+            <textarea
+              value={formula || ''}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="Enter your formula here... e.g., SUM({Cost}, {Labor})"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none font-mono text-sm"
+              rows="3"
+            />
+            {previewResult !== null && (
+              <div className="absolute top-2 right-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded text-xs font-medium">
+                Preview: {previewResult}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Operators */}
+        <div className="flex flex-wrap gap-2">
+          {['+', '-', '*', '/', '(', ')'].map(op => (
+            <button
+              key={op}
+              onClick={() => insertOperator(op)}
+              className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-mono"
+            >
+              {op}
+            </button>
+          ))}
+        </div>
+
+        {/* Category Tabs */}
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="flex space-x-8">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                {tab.name}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        <div className="min-h-[300px]">
+          {activeTab === 'columns' && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Click any column to add it to your formula
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {columns.map(column => (
+                  <button
+                    key={column.id}
+                    onClick={() => insertColumn(column)}
+                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                  >
+                    <span className="text-lg">
+                      {column.type === 'number' ? '🔢' : 
+                       column.type === 'text' ? '📝' : 
+                       column.type === 'date' ? '📅' : 
+                       column.type === 'checkbox' ? '☑️' : 
+                       column.type === 'status' ? '🟡' : '📋'}
+                    </span>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                        {column.name}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                        {column.type}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'math' && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Mathematical Functions
+              </h3>
+              <div className="grid grid-cols-1 gap-2">
+                {mathFunctions.map(func => (
+                  <button
+                    key={func.name}
+                    onClick={() => insertFunction(func)}
+                    className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-left"
+                  >
+                    <div>
+                      <div className="font-medium text-blue-900 dark:text-blue-100">
+                        {func.name}
+                      </div>
+                      <div className="text-xs text-blue-600 dark:text-blue-300">
+                        {func.desc}
+                      </div>
+                    </div>
+                    <div className="text-xs font-mono text-blue-700 dark:text-blue-200 bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                      {func.syntax}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'logical' && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Logical Functions
+              </h3>
+              <div className="grid grid-cols-1 gap-2">
+                {logicalFunctions.map(func => (
+                  <button
+                    key={func.name}
+                    onClick={() => insertFunction(func)}
+                    className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-left"
+                  >
+                    <div>
+                      <div className="font-medium text-green-900 dark:text-green-100">
+                        {func.name}
+                      </div>
+                      <div className="text-xs text-green-600 dark:text-green-300">
+                        {func.desc}
+                      </div>
+                    </div>
+                    <div className="text-xs font-mono text-green-700 dark:text-green-200 bg-green-100 dark:bg-green-800 px-2 py-1 rounded">
+                      {func.syntax}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'text' && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Text Functions
+              </h3>
+              <div className="grid grid-cols-1 gap-2">
+                {textFunctions.map(func => (
+                  <button
+                    key={func.name}
+                    onClick={() => insertFunction(func)}
+                    className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors text-left"
+                  >
+                    <div>
+                      <div className="font-medium text-yellow-900 dark:text-yellow-100">
+                        {func.name}
+                      </div>
+                      <div className="text-xs text-yellow-600 dark:text-yellow-300">
+                        {func.desc}
+                      </div>
+                    </div>
+                    <div className="text-xs font-mono text-yellow-700 dark:text-yellow-200 bg-yellow-100 dark:bg-yellow-800 px-2 py-1 rounded">
+                      {func.syntax}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'date' && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Date Functions
+              </h3>
+              <div className="grid grid-cols-1 gap-2">
+                {dateFunctions.map(func => (
+                  <button
+                    key={func.name}
+                    onClick={() => insertFunction(func)}
+                    className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors text-left"
+                  >
+                    <div>
+                      <div className="font-medium text-purple-900 dark:text-purple-100">
+                        {func.name}
+                      </div>
+                      <div className="text-xs text-purple-600 dark:text-purple-300">
+                        {func.desc}
+                      </div>
+                    </div>
+                    <div className="text-xs font-mono text-purple-700 dark:text-purple-200 bg-purple-100 dark:bg-purple-800 px-2 py-1 rounded">
+                      {func.syntax}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Formula Examples */}
+        <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Example Formulas
+          </h4>
+          <div className="space-y-1 text-xs">
+            <div className="font-mono text-gray-600 dark:text-gray-400">
+              SUM({Cost}, {Labor}) - Calculate total cost
+            </div>
+            <div className="font-mono text-gray-600 dark:text-gray-400">
+              IF({Status} = "Complete", {Budget}, 0) - Budget if complete
+            </div>
+            <div className="font-mono text-gray-600 dark:text-gray-400">
+              ROUND({Hours} * 50) - Calculate payment at $50/hour
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  });
 
 
 
@@ -1432,7 +1816,7 @@ const MondayBoard = () => {
 
           <div 
             onClick={() => {
-              const columnTypes = ["text", "status", "people", "date", "number", "checkbox", "progress"];
+              const columnTypes = ["text", "status", "people", "date", "number", "checkbox", "progress", "formula", "email", "phone", "location"];
               setPromptModal({
                 isOpen: true,
                 title: "Change Column Type",
@@ -1672,18 +2056,30 @@ const MondayBoard = () => {
         );
 
       case "formula":
-        // Calculate formula result
-        const formulaResult = evaluateFormula(column.formula, item);
+        const columnFormula = column.formula || "";
+        const formulaResult = evaluateFormula(columnFormula, item, columns);
+        
         return (
           <div className="h-6 text-xs flex items-center justify-between px-2 text-purple-700 bg-purple-50 rounded font-medium group hover:bg-purple-100 transition-colors">
-            <span>{formulaResult !== null ? formulaResult : "Error"}</span>
+            <span className="truncate">
+              {formulaResult !== null && formulaResult !== 'Error' ? (
+                // Format based on result type
+                typeof formulaResult === 'number' ? 
+                  formulaResult.toLocaleString() : 
+                  formulaResult
+              ) : columnFormula ? (
+                <span className="text-red-500">Error</span>
+              ) : (
+                <span className="text-gray-400">Set formula</span>
+              )}
+            </span>
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                openFormulaAssistant(column.id, column.formula);
+                openFormulaAssistant(column.id, columnFormula);
               }}
-              className="opacity-0 group-hover:opacity-100 text-purple-600 hover:text-purple-800 transition-all p-0.5"
-              title="AI Formula Assistant"
+              className="opacity-0 group-hover:opacity-100 text-purple-600 hover:text-purple-800 transition-all p-0.5 ml-2"
+              title="Edit Formula"
             >
               ✨
             </button>
@@ -1749,9 +2145,10 @@ const MondayBoard = () => {
     }
   };
 
-  // AI Formula Assistant Component - Enhanced Interactive Version
+  // AI Formula Assistant Component
   const AIFormulaAssistant = React.memo(() => {
     const [localInput, setLocalInput] = React.useState("");
+    const chatContainerRef = React.useRef(null);
 
     React.useEffect(() => {
       if (formulaAssistant.isOpen) {
@@ -1778,23 +2175,32 @@ const MondayBoard = () => {
       }
     }, [formulaAssistant.isProcessing, aiInput]);
 
+    // Auto-scroll to bottom when new messages arrive
+    React.useEffect(() => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      }
+    }, [formulaAssistant.chatHistory]);
+
     if (!formulaAssistant.isOpen) return null;
 
     const currentColumn = columns.find(col => col.id === formulaAssistant.columnId);
-    const availableColumns = columns.filter(col => col.type === 'number' || col.type === 'progress');
+    
+    // Get a sample row for preview
+    const sampleRow = boardItems[0] || { values: {} };
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">🤖</span>
+                  <span className="text-2xl">✨</span>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">AI Formula Assistant</h2>
+                  <h2 className="text-xl font-bold">Formula Builder</h2>
                   <p className="text-purple-100 text-sm">
                     Creating formula for "{currentColumn?.name || 'Formula'}" column
                   </p>
@@ -1809,29 +2215,75 @@ const MondayBoard = () => {
             </div>
           </div>
 
-          {/* Chat Interface */}
-          <div className="flex" style={{ height: '500px' }}>
-            {/* Chat Messages */}
-            <div className="flex-1 flex flex-col">
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {/* Main Content Area */}
+          <div className="flex" style={{ height: 'calc(100% - 96px)' }}>
+            {/* Left Side - Formula Builder */}
+            <div className="flex-1 p-6 overflow-y-auto border-r border-gray-200 dark:border-gray-700">
+              <MondayFormulaBuilder
+                formula={localInput}
+                onChange={setLocalInput}
+                columns={columns}
+                sampleRow={sampleRow}
+              />
+              
+              {/* Save Button */}
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={closeFormulaAssistant}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    applyAIFormula(localInput.trim());
+                    closeFormulaAssistant();
+                  }}
+                  disabled={!localInput.trim()}
+                  className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg transition-all"
+                >
+                  Save Formula
+                </button>
+              </div>
+            </div>
+
+            {/* Right Side - AI Chat Assistant */}
+            <div className="w-96 bg-gray-50 dark:bg-gray-900 flex flex-col">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                  <span className="text-xl">🤖</span>
+                  AI Assistant
+                </h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Describe what you want to calculate in plain English
+                </p>
+              </div>
+              
+              {/* Chat Messages */}
+              <div 
+                ref={chatContainerRef}
+                className="flex-1 overflow-y-auto p-4 space-y-4"
+              >
                 {formulaAssistant.chatHistory.map((message, index) => (
                   <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    <div className={`max-w-xs px-4 py-2 rounded-lg ${
                       message.type === 'user' 
                         ? 'bg-blue-500 text-white' 
                         : message.type === 'system'
                         ? 'bg-gradient-to-r from-purple-100 to-blue-100 text-gray-800 border border-purple-200'
-                        : 'bg-gray-100 text-gray-800'
+                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-white shadow-sm border border-gray-200 dark:border-gray-700'
                     }`}>
                       <p className="text-sm">{message.message}</p>
                       {message.formula && (
-                        <div className="mt-2 p-2 bg-gray-800 rounded text-green-400 font-mono text-xs">
-                          {message.formula}
+                        <div className="mt-2">
+                          <div className="p-2 bg-gray-900 dark:bg-gray-700 rounded text-green-400 font-mono text-xs">
+                            {message.formula}
+                          </div>
                           <button
                             onClick={() => setLocalInput(message.formula)}
-                            className="ml-2 text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+                            className="mt-2 w-full text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition-colors"
                           >
-                            Copy to Builder
+                            Use This Formula
                           </button>
                         </div>
                       )}
@@ -1840,7 +2292,7 @@ const MondayBoard = () => {
                 ))}
                 {formulaAssistant.isProcessing && (
                   <div className="flex justify-start">
-                    <div className="bg-gray-100 px-4 py-2 rounded-lg">
+                    <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                       <div className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -1852,157 +2304,24 @@ const MondayBoard = () => {
               </div>
 
               {/* AI Input Area */}
-              <div className="border-t border-gray-200 p-4">
+              <div className="border-t border-gray-200 dark:border-gray-700 p-4">
                 <div className="flex space-x-2">
                   <input
                     type="text"
                     value={aiInput}
                     onChange={handleUserInputChange}
-                    placeholder="Ask me anything about formulas... (e.g., 'Calculate remaining budget')"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="E.g., 'calculate profit margin' or 'sum all costs'"
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
                     onKeyDown={handleKeyDown}
                     disabled={formulaAssistant.isProcessing}
-                    autoComplete="off"
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={formulaAssistant.isProcessing || !aiInput.trim()}
-                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    {formulaAssistant.isProcessing ? 'Thinking...' : 'Send'}
+                    Send
                   </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Formula Builder Sidebar */}
-            <div className="w-80 bg-green-50 dark:bg-green-900/20 border-l border-green-200 dark:border-green-700 flex flex-col">
-              <div className="p-4 border-b border-green-200 dark:border-green-700">
-                <h3 className="font-semibold text-gray-800 dark:text-white mb-1">Formula Builder</h3>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Build and save your formula for "{formulaAssistant.columnId ? columns.find(c => c.id === formulaAssistant.columnId)?.name : 'this column'}"
-                </p>
-              </div>
-              
-              <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-                {/* Formula Input */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Formula</label>
-                  <textarea
-                    value={localInput}
-                    onChange={(e) => setLocalInput(e.target.value)}
-                    placeholder="Enter your formula here..."
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white font-mono text-sm"
-                    rows={3}
-                  />
-                </div>
-
-                {/* Quick Formula Templates */}
-                <div>
-                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Quick Templates</h4>
-                  <div className="space-y-2">
-                    {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').length > 0 && (
-                      <>
-                        <button
-                          onClick={() => setLocalInput("SUM(" + columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').map(col => col.id).join(', ') + ")")}
-                          className="w-full text-left text-sm px-3 py-2 bg-white dark:bg-gray-800 rounded border hover:bg-green-50 dark:hover:bg-gray-600 transition-colors"
-                        >
-                          📊 Sum All Numbers
-                        </button>
-                        <button
-                          onClick={() => setLocalInput("AVG(" + columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').map(col => col.id).join(', ') + ")")}
-                          className="w-full text-left text-sm px-3 py-2 bg-white dark:bg-gray-800 rounded border hover:bg-green-50 dark:hover:bg-gray-600 transition-colors"
-                        >
-                          📈 Average
-                        </button>
-                        <button
-                          onClick={() => setLocalInput("MAX(" + columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').map(col => col.id).join(', ') + ")")}
-                          className="w-full text-left text-sm px-3 py-2 bg-white dark:bg-gray-800 rounded border hover:bg-green-50 dark:hover:bg-gray-600 transition-colors"
-                        >
-                          ⭐ Maximum Value
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Available Columns */}
-                <div>
-                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Available Columns</h4>
-                  <p className="text-xs text-gray-500 mb-2">Click to add to formula</p>
-                  <div className="space-y-1 max-h-32 overflow-y-auto">
-                    {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').map(col => (
-                      <button
-                        key={col.id}
-                        onClick={() => {
-                          const currentInput = localInput;
-                          const newInput = currentInput ? `${currentInput} + ${col.name}` : col.name;
-                          setLocalInput(newInput);
-                        }}
-                        className="w-full text-left text-xs px-2 py-1 bg-white dark:bg-gray-800 rounded border hover:bg-green-50 hover:border-green-300 transition-colors cursor-pointer"
-                      >
-                        <span className="text-green-600 dark:text-green-400">{col.name}</span>
-                      </button>
-                    ))}
-                    {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').length === 0 && (
-                      <div className="text-xs text-gray-500 italic">
-                        No numeric columns available yet. Add Number or Progress columns first.
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Quick Operators */}
-                <div>
-                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Quick Operators</h4>
-                  <div className="grid grid-cols-4 gap-1">
-                    {['+', '-', '*', '/', '(', ')', '%', '='].map(op => (
-                      <button
-                        key={op}
-                        onClick={() => {
-                          const currentInput = localInput;
-                          setLocalInput(currentInput + (currentInput && !currentInput.endsWith(' ') ? ' ' : '') + op + ' ');
-                        }}
-                        className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors font-mono"
-                      >
-                        {op}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Save Button */}
-                <div className="pt-4 border-t border-green-200 dark:border-green-700">
-                  <button
-                    onClick={() => {
-                      console.log("Save button clicked:", { 
-                        localInput, 
-                        columnId: formulaAssistant.columnId,
-                        formula: localInput.trim()
-                      });
-                      applyAIFormula(localInput.trim());
-                    }}
-                    disabled={!localInput.trim()}
-                    className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                  >
-                    Save Formula
-                  </button>
-                  {/* Debug info */}
-                  <div className="mt-2 text-xs text-gray-500">
-                    Column: {formulaAssistant.columnId || "None selected"}
-                    <br />
-                    Formula: {localInput || "Empty"}
-                  </div>
-                </div>
-
-                {/* Help Tips */}
-                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                  <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">💡 Tips</h4>
-                  <ul className="text-xs text-green-700 dark:text-green-300 space-y-1">
-                    <li>• Copy formulas from AI suggestions</li>
-                    <li>• Use column IDs in your formulas</li>
-                    <li>• Test with different operators</li>
-                  </ul>
                 </div>
               </div>
             </div>
