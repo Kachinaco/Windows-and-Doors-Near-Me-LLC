@@ -425,7 +425,6 @@ const MondayBoard = () => {
     setFormulaAssistant(prev => ({
       ...prev,
       isProcessing: true,
-      userInput: "",
       chatHistory: [...prev.chatHistory, { type: "user", message: userMessage }]
     }));
 
@@ -1761,24 +1760,23 @@ const MondayBoard = () => {
     }, [formulaAssistant.isOpen, formulaAssistant.currentFormula]);
 
     const handleUserInputChange = React.useCallback((e) => {
-      setFormulaAssistant(prev => ({
-        ...prev,
-        userInput: e.target.value
-      }));
+      setAiInput(e.target.value);
     }, []);
 
     const handleSendMessage = React.useCallback(() => {
-      if (formulaAssistant.userInput.trim()) {
-        sendMessageToAI(formulaAssistant.userInput);
+      if (aiInput.trim()) {
+        sendMessageToAI(aiInput);
+        setAiInput("");
       }
-    }, [formulaAssistant.userInput]);
+    }, [aiInput]);
 
     const handleKeyDown = React.useCallback((e) => {
-      if (e.key === 'Enter' && !formulaAssistant.isProcessing && formulaAssistant.userInput.trim()) {
+      if (e.key === 'Enter' && !formulaAssistant.isProcessing && aiInput.trim()) {
         e.preventDefault();
-        sendMessageToAI(formulaAssistant.userInput);
+        sendMessageToAI(aiInput);
+        setAiInput("");
       }
-    }, [formulaAssistant.isProcessing, formulaAssistant.userInput]);
+    }, [formulaAssistant.isProcessing, aiInput]);
 
     if (!formulaAssistant.isOpen) return null;
 
@@ -1858,7 +1856,7 @@ const MondayBoard = () => {
                 <div className="flex space-x-2">
                   <input
                     type="text"
-                    value={formulaAssistant.userInput || ""}
+                    value={aiInput}
                     onChange={handleUserInputChange}
                     placeholder="Ask me anything about formulas... (e.g., 'Calculate remaining budget')"
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -1868,7 +1866,7 @@ const MondayBoard = () => {
                   />
                   <button
                     onClick={handleSendMessage}
-                    disabled={formulaAssistant.isProcessing || !formulaAssistant.userInput?.trim()}
+                    disabled={formulaAssistant.isProcessing || !aiInput.trim()}
                     className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {formulaAssistant.isProcessing ? 'Thinking...' : 'Send'}
