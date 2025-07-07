@@ -47,13 +47,11 @@ const MondayBoard = () => {
   // Board columns configuration
   const [columns, setColumns] = useState([
     { id: "item", name: "Main Item", type: "text", order: 1 },
-    { id: "subitems", name: "Sub Items", type: "subitems", order: 2 },
-    { id: "status", name: "Status", type: "status", order: 3 },
-    { id: "priority", name: "Priority", type: "dropdown", order: 4, options: ["Low", "Medium", "High", "Critical"] },
-    { id: "assignedTo", name: "People", type: "people", order: 5 },
-    { id: "dueDate", name: "Due Date", type: "date", order: 6 },
-    { id: "checkbox", name: "Done", type: "checkbox", order: 7 },
-    { id: "progress", name: "Progress", type: "progress", order: 8 },
+    { id: "status", name: "Status", type: "status", order: 2 },
+    { id: "priority", name: "Priority", type: "dropdown", order: 3, options: ["Low", "Medium", "High", "Critical"] },
+    { id: "assignedTo", name: "People", type: "people", order: 4 },
+    { id: "dueDate", name: "Due Date", type: "date", order: 5 },
+    { id: "progress", name: "Progress", type: "progress", order: 6 },
   ]);
 
   // Sub-item columns configuration (separate from main columns)
