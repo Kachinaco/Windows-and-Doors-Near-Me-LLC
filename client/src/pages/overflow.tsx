@@ -101,7 +101,7 @@ const MondayBoard = () => {
 
   // Initial board data with folders
   // Initial board data with sample items for testing email functionality
-  const [boardItems, setBoardItems] = useState([
+  const [boardItems, setBoardItems] = useState<any[]>([
     {
       id: 1,
       values: {
@@ -2327,6 +2327,7 @@ const MondayBoard = () => {
           </div>
         );
     }
+  };
 
   // AI Formula Assistant Component - Enhanced Interactive Version
   const AIFormulaAssistant = () => {
@@ -3287,20 +3288,8 @@ const MondayBoard = () => {
 
   return (
     <div className="h-screen bg-gray-50 text-gray-900 flex overflow-hidden">
-      {/* Mobile Sidebar Overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-      
       {/* Sidebar */}
-      <div className={`${
-        isSidebarOpen ? 'w-64' : 'w-16'
-      } bg-slate-900 border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-50 lg:z-auto h-full ${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`}>
+      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} bg-slate-900 border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out`}>
         {/* Sidebar Header */}
         <div className="p-4 border-b border-slate-700">
           <div className="flex items-center justify-between">
@@ -3487,18 +3476,11 @@ const MondayBoard = () => {
       </div>
 
       {/* Main Board Container */}
-      <div className="flex flex-col flex-1 bg-white lg:ml-0 ml-0">
+      <div className="flex flex-col flex-1 bg-white">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-3 sm:px-4 py-3">
+        <header className="bg-white border-b border-gray-200 px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                className="lg:hidden p-2 text-gray-600 hover:text-gray-900 rounded-md"
-              >
-                <PanelLeft className="w-5 h-5" />
-              </button>
+            <div className="flex items-center space-x-3">
               <RouterLink href="/projects-list">
                 <button className="text-gray-600 hover:text-gray-900 text-sm px-3 py-2 rounded-md flex items-center gap-2 transition-colors">
                   <ArrowLeft className="w-4 h-4" />
@@ -3508,15 +3490,15 @@ const MondayBoard = () => {
               <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
                 <div className="w-3 h-3 bg-white rounded-sm" />
               </div>
-              <div className="min-w-0 flex-1 sm:flex-none">
-                <h1 className="text-sm sm:text-lg font-medium truncate">
+              <div>
+                <h1 className="text-lg font-medium">
                   {(() => {
                     const project = projects.find(p => p.id === activeProject);
                     const board = project?.boards.find(b => b.id === activeBoard);
                     return `${project?.name || 'Project'} - ${board?.name || 'Board'}`;
                   })()}
                 </h1>
-                <p className="text-xs text-gray-500 truncate hidden sm:block">
+                <p className="text-xs text-gray-500">
                   {(() => {
                     const project = projects.find(p => p.id === activeProject);
                     return project ? `Workspace: ${project.name}` : 'Monday.com-style Project Management';
@@ -3525,10 +3507,10 @@ const MondayBoard = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-1 sm:space-x-2">
+            <div className="flex items-center space-x-2">
               {undoStack.length > 0 && (
                 <button 
-                  className="text-gray-600 hover:text-gray-900 p-1 rounded hidden sm:block"
+                  className="text-gray-600 hover:text-gray-900 p-1 rounded"
                   aria-label="Undo last action"
                   title="Undo last action"
                 >
@@ -3549,103 +3531,7 @@ const MondayBoard = () => {
 
         {/* Board Content */}
         <div className="flex-1 overflow-x-auto overflow-y-auto bg-white" style={{ scrollBehavior: 'smooth' }}>
-          {/* Mobile Card Layout */}
-          <div className="block lg:hidden px-3 py-4 space-y-3">
-            {mainItems.map((item, index) => (
-              <div key={item.id} className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
-                {/* Item Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-2 flex-1 min-w-0">
-                    <input
-                      type="checkbox"
-                      checked={selectedItems.has(item.id)}
-                      onChange={(e) => {
-                        const newSelected = new Set(selectedItems);
-                        if (e.target.checked) {
-                          newSelected.add(item.id);
-                        } else {
-                          newSelected.delete(item.id);
-                        }
-                        setSelectedItems(newSelected);
-                      }}
-                      className="w-4 h-4 text-blue-600 rounded border-gray-300"
-                    />
-                    <h3 className="font-medium text-gray-900 truncate">
-                      {item.values?.item || 'Untitled Item'}
-                    </h3>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setSelectedMainItem(item.id);
-                      setSidePanelOpen(true);
-                    }}
-                    className="text-gray-400 hover:text-gray-600 p-1"
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Item Details Grid */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  {item.values?.status && (
-                    <div>
-                      <span className="text-gray-500">Status:</span>
-                      <div className="mt-1">
-                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          item.values.status === 'Working on it' ? 'bg-orange-100 text-orange-800' :
-                          item.values.status === 'Done' ? 'bg-green-100 text-green-800' :
-                          item.values.status === 'Stuck' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {item.values.status}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {item.values?.people && Array.isArray(item.values.people) && item.values.people.length > 0 && (
-                    <div>
-                      <span className="text-gray-500">Assigned:</span>
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {item.values.people.map((personId) => {
-                          const person = teamMembers.find(m => m.id === personId);
-                          return person ? (
-                            <span key={personId} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                              {person.firstName} {person.lastName}
-                            </span>
-                          ) : null;
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {item.values?.location && (
-                    <div className="col-span-2">
-                      <span className="text-gray-500">Location:</span>
-                      <div className="mt-1 text-gray-900">{item.values.location}</div>
-                    </div>
-                  )}
-                  
-                  {item.values?.phone && (
-                    <div>
-                      <span className="text-gray-500">Phone:</span>
-                      <div className="mt-1 text-gray-900">{item.values.phone}</div>
-                    </div>
-                  )}
-                  
-                  {item.values?.measure_date && (
-                    <div>
-                      <span className="text-gray-500">Measure:</span>
-                      <div className="mt-1 text-gray-900">{item.values.measure_date}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop Table Layout */}
-          <div className="hidden lg:block min-w-max w-full">
+          <div className="min-w-max w-full">
             {/* Column Headers */}
             <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
               <div className="flex">
@@ -4627,36 +4513,25 @@ const MondayBoard = () => {
 
       {/* Side Panel */}
       {sidePanelOpen && selectedMainItem && (
-        <div className="fixed lg:relative inset-0 lg:inset-auto z-50 lg:z-auto">
-          {/* Mobile Overlay */}
-          <div 
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-            onClick={() => {
-              setSidePanelOpen(false);
-              setSelectedMainItem(null);
-            }}
-          />
-          
-          {/* Side Panel */}
-          <div className="fixed lg:relative top-0 right-0 w-full lg:w-96 bg-white border-l border-gray-200 flex flex-col z-50 h-full lg:h-auto">
-            <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium">Project Updates</h3>
-                <p className="text-xs text-gray-600">
-                  {selectedMainItem.values.item ||
-                    `Project #${selectedMainItem.id}`}
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setSidePanelOpen(false);
-                  setSelectedMainItem(null);
-                }}
-                className="text-gray-600 hover:text-gray-900 p-1"
-              >
-                ✕
-              </button>
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium">Project Updates</h3>
+              <p className="text-xs text-gray-600">
+                {selectedMainItem.values.item ||
+                  `Project #${selectedMainItem.id}`}
+              </p>
             </div>
+            <button
+              onClick={() => {
+                setSidePanelOpen(false);
+                setSelectedMainItem(null);
+              }}
+              className="text-gray-600 hover:text-gray-900 p-1"
+            >
+              ✕
+            </button>
+          </div>
 
           <div className="flex-1 overflow-auto p-4">
             <div className="space-y-4">
@@ -4725,11 +4600,11 @@ const MondayBoard = () => {
       {/* Enhanced Communication Modal with Side Tabs */}
       {updatesModal.isOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center lg:justify-center justify-end z-50 animate-in fade-in duration-200"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200"
           onClick={closeUpdatesModal}
         >
           <div 
-            className="bg-white dark:bg-gray-900 rounded-t-2xl lg:rounded-2xl shadow-2xl w-full lg:max-w-4xl lg:mx-4 max-h-[85vh] lg:max-h-[85vh] h-full lg:h-auto flex flex-col animate-in slide-in-from-bottom-4 duration-300"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[85vh] flex flex-col animate-in slide-in-from-bottom-4 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Enhanced Header */}
@@ -4761,44 +4636,44 @@ const MondayBoard = () => {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 overflow-x-auto">
+            <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
               <button
                 onClick={() => setActiveTab("updates")}
-                className={`flex-1 px-3 sm:px-6 py-3 text-sm font-medium transition-colors min-w-0 ${
+                className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
                   activeTab === "updates"
                     ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-900"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                 }`}
               >
-                <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+                <div className="flex items-center justify-center space-x-2">
                   <MessageCircle className="w-4 h-4" />
-                  <span className="hidden sm:inline">Updates</span>
+                  <span>Updates</span>
                 </div>
               </button>
               <button
                 onClick={() => setActiveTab("sms")}
-                className={`flex-1 px-3 sm:px-6 py-3 text-sm font-medium transition-colors min-w-0 ${
+                className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
                   activeTab === "sms"
                     ? "border-b-2 border-green-500 text-green-600 dark:text-green-400 bg-white dark:bg-gray-900"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                 }`}
               >
-                <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+                <div className="flex items-center justify-center space-x-2">
                   <Phone className="w-4 h-4" />
-                  <span className="hidden sm:inline">SMS/Phone</span>
+                  <span>SMS/Phone</span>
                 </div>
               </button>
               <button
                 onClick={() => setActiveTab("email")}
-                className={`flex-1 px-3 sm:px-6 py-3 text-sm font-medium transition-colors min-w-0 ${
+                className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
                   activeTab === "email"
                     ? "border-b-2 border-purple-500 text-purple-600 dark:text-purple-400 bg-white dark:bg-gray-900"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                 }`}
               >
-                <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+                <div className="flex items-center justify-center space-x-2">
                   <Mail className="w-4 h-4" />
-                  <span className="hidden sm:inline">Email</span>
+                  <span>Email</span>
                 </div>
               </button>
             </div>
@@ -4808,7 +4683,7 @@ const MondayBoard = () => {
               {/* Updates Tab */}
               {activeTab === "updates" && (
                 <div className="h-full flex flex-col">
-                  <div className="flex-1 overflow-auto px-3 sm:px-6 py-4">
+                  <div className="flex-1 overflow-auto px-6 py-4">
                     <div className="space-y-4">
                       {(() => {
                         const updateKey = `${updatesModal.itemType}-${updatesModal.itemId}`;
@@ -5112,7 +4987,10 @@ const MondayBoard = () => {
                           </div>
                           <button
                             onClick={sendEmail}
-                            disabled={isEmailSending || !emailSubject.trim() || !emailMessage.trim() || !mainItems.find(item => item.id === updatesModal.itemId)?.values?.email}
+                            disabled={isEmailSending || !emailSubject.trim() || !emailMessage.trim() || !(() => {
+                              const currentItem = mainItems.find(item => item.id === updatesModal.itemId);
+                              return currentItem?.values?.email;
+                            })()}
                             className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
                           >
                             {isEmailSending ? "Sending..." : "Send Email"}
@@ -5127,33 +5005,6 @@ const MondayBoard = () => {
           </div>
         </div>
       )}
-
-      {/* Mobile Floating Action Button */}
-      <button
-        onClick={() => {
-          // Add new item functionality
-          const newItem = {
-            id: Date.now(),
-            groupName: "New Projects",
-            values: {
-              item: "New Item",
-              people: [],
-              status: "Working on it",
-              location: "",
-              phone: "",
-              measure_date: "",
-              delivery_date: "",
-              install_date: ""
-            },
-            subItems: [],
-            folders: []
-          };
-          setMainItems(prev => [...prev, newItem]);
-        }}
-        className="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center z-40 transition-all duration-200 hover:scale-105"
-      >
-        <Plus className="w-6 h-6" />
-      </button>
 
       {/* AI Formula Assistant */}
       <AIFormulaAssistant />
@@ -5175,10 +5026,6 @@ const MondayBoard = () => {
 
       {/* Edit Labels Modal */}
       <EditLabelsModal />
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
