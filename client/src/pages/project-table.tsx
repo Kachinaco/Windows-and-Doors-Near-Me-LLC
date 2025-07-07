@@ -519,6 +519,11 @@ const MondayBoard = () => {
   // Column menu state
   const [columnMenuOpen, setColumnMenuOpen] = useState(null);
   const [addColumnMenuOpen, setAddColumnMenuOpen] = useState(null);
+  
+  // Enhanced dropdown state
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [dropdownSearch, setDropdownSearch] = useState("");
+  const [editingDropdownColumn, setEditingDropdownColumn] = useState(null);
 
   // Settings functionality state
   const [columnFilters, setColumnFilters] = useState({});
@@ -550,13 +555,17 @@ const MondayBoard = () => {
       if (addColumnMenuOpen && !event.target.closest(".relative")) {
         setAddColumnMenuOpen(null);
       }
+      if (openDropdown && !event.target.closest(".relative")) {
+        setOpenDropdown(null);
+        setDropdownSearch("");
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [columnMenuOpen, addColumnMenuOpen]);
+  }, [columnMenuOpen, addColumnMenuOpen, openDropdown]);
 
   // Handle column type selection from AddColumnMenu
   const handleSelectColumnType = (type) => {
@@ -1532,6 +1541,114 @@ const MondayBoard = () => {
     );
   };
 
+  // Edit labels modal component
+  const EditLabelsModal = () => {
+    const [tempOptions, setTempOptions] = useState([]);
+    const [newLabel, setNewLabel] = useState("");
+    
+    useEffect(() => {
+      if (editingDropdownColumn) {
+        const column = columns.find(col => col.id === editingDropdownColumn);
+        setTempOptions(column?.options || []);
+      }
+    }, [editingDropdownColumn, columns]);
+
+    const handleAddLabel = () => {
+      if (newLabel.trim() && !tempOptions.includes(newLabel.trim())) {
+        setTempOptions(prev => [...prev, newLabel.trim()]);
+        setNewLabel("");
+      }
+    };
+
+    const handleRemoveLabel = (indexToRemove) => {
+      setTempOptions(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
+
+    const handleSave = () => {
+      setColumns(prev => prev.map(col => 
+        col.id === editingDropdownColumn 
+          ? { ...col, options: tempOptions }
+          : col
+      ));
+      setEditingDropdownColumn(null);
+      showToast("Labels updated successfully!", "success");
+    };
+
+    if (!editingDropdownColumn) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl">
+            <h3 className="text-lg font-semibold text-gray-900">Edit Labels</h3>
+            <p className="text-sm text-gray-600">Manage dropdown options</p>
+          </div>
+
+          <div className="p-6 max-h-96 overflow-y-auto">
+            {/* Add new label */}
+            <div className="mb-4">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newLabel}
+                  onChange={(e) => setNewLabel(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddLabel()}
+                  placeholder="Create or find labels"
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleAddLabel}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            {/* Existing labels */}
+            <div className="space-y-2">
+              {tempOptions.map((option, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded ${
+                      option === "Critical" ? "bg-red-500" :
+                      option === "High" ? "bg-orange-500" :
+                      option === "Medium" ? "bg-yellow-500" :
+                      option === "Low" ? "bg-green-500" :
+                      "bg-gray-400"
+                    }`}></div>
+                    <span className="text-sm text-gray-800">{option}</span>
+                  </div>
+                  <button
+                    onClick={() => handleRemoveLabel(index)}
+                    className="text-red-500 hover:text-red-700 p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+            <button
+              onClick={() => setEditingDropdownColumn(null)}
+              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCell = (item, column) => {
     const value = item.values[column.id] || "";
 
@@ -1570,31 +1687,107 @@ const MondayBoard = () => {
 
       case "dropdown":
         const options = column.options || ["Option 1", "Option 2", "Option 3"];
+        const dropdownId = `dropdown-${item.id}-${column.id}`;
+        const isDropdownOpen = openDropdown === dropdownId;
+        
         return (
-          <select
-            value={value}
-            onChange={(e) =>
-              handleCellUpdate(item.id, column.id, e.target.value)
-            }
-            className={`h-6 text-xs font-medium rounded-full px-2 border-none outline-none cursor-pointer ${
-              value === "Critical"
-                ? "bg-red-100 text-red-700"
-                : value === "High"
-                  ? "bg-orange-100 text-orange-700"
-                  : value === "Medium"
-                    ? "bg-yellow-100 text-yellow-700"
-                    : value === "Low"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-700"
-            }`}
-          >
-            <option value="">Select...</option>
-            {options.map((option, index) => (
-              <option key={index} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <div
+              onClick={() => setOpenDropdown(isDropdownOpen ? null : dropdownId)}
+              className={`h-6 text-xs font-medium rounded px-2 border cursor-pointer flex items-center justify-between ${
+                value === "Critical"
+                  ? "bg-red-100 text-red-700 border-red-200"
+                  : value === "High"
+                    ? "bg-orange-100 text-orange-700 border-orange-200"
+                    : value === "Medium"
+                      ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                      : value === "Low"
+                        ? "bg-green-100 text-green-700 border-green-200"
+                        : "bg-gray-100 text-gray-700 border-gray-200"
+              }`}
+            >
+              <span className="truncate">{value || "Select..."}</span>
+              <ChevronDown className="w-3 h-3 ml-1 flex-shrink-0" />
+            </div>
+            
+            {isDropdownOpen && (
+              <div className="absolute top-full left-0 z-50 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200">
+                <div className="p-3">
+                  <input
+                    type="text"
+                    placeholder="Create or find labels"
+                    value={dropdownSearch}
+                    onChange={(e) => setDropdownSearch(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    autoFocus
+                  />
+                </div>
+                
+                <div className="max-h-48 overflow-y-auto">
+                  {/* Filtered options */}
+                  {options
+                    .filter(option => 
+                      option.toLowerCase().includes(dropdownSearch.toLowerCase())
+                    )
+                    .map((option, index) => (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          handleCellUpdate(item.id, column.id, option);
+                          setOpenDropdown(null);
+                          setDropdownSearch("");
+                        }}
+                        className="px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer flex items-center gap-2"
+                      >
+                        <div className={`w-3 h-3 rounded ${
+                          option === "Critical" ? "bg-red-500" :
+                          option === "High" ? "bg-orange-500" :
+                          option === "Medium" ? "bg-yellow-500" :
+                          option === "Low" ? "bg-green-500" :
+                          "bg-gray-400"
+                        }`}></div>
+                        {option}
+                      </div>
+                    ))}
+                  
+                  {/* Create new option if search doesn't match existing */}
+                  {dropdownSearch && 
+                   !options.some(option => 
+                     option.toLowerCase() === dropdownSearch.toLowerCase()
+                   ) && (
+                    <div
+                      onClick={() => {
+                        const newOptions = [...options, dropdownSearch];
+                        setColumns(prev => prev.map(col => 
+                          col.id === column.id 
+                            ? { ...col, options: newOptions }
+                            : col
+                        ));
+                        handleCellUpdate(item.id, column.id, dropdownSearch);
+                        setOpenDropdown(null);
+                        setDropdownSearch("");
+                      }}
+                      className="px-4 py-2 text-sm hover:bg-blue-50 cursor-pointer text-blue-600 border-t border-gray-100"
+                    >
+                      + Create "{dropdownSearch}"
+                    </div>
+                  )}
+                </div>
+                
+                <div className="border-t border-gray-100 p-2">
+                  <button
+                    onClick={() => {
+                      setEditingDropdownColumn(column.id);
+                      setOpenDropdown(null);
+                    }}
+                    className="w-full text-sm text-gray-600 hover:text-gray-800 py-2 hover:bg-gray-50 rounded"
+                  >
+                    Edit labels
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         );
 
       case "people":
@@ -4144,6 +4337,9 @@ const MondayBoard = () => {
 
       {/* Generic Confirm Modal */}
       <ConfirmModal />
+
+      {/* Edit Labels Modal */}
+      <EditLabelsModal />
     </div>
   );
 };
