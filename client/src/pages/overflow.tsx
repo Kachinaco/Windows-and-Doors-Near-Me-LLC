@@ -70,6 +70,9 @@ const MondayBoard = () => {
   // Main items state for the board
   const [mainItems, setMainItems] = useState([]);
 
+  // Board data cache to persist data between board switches
+  const [boardDataCache, setBoardDataCache] = useState(new Map());
+
   // Mock team members
   const [teamMembers] = useState([
     { id: 1, firstName: "John", lastName: "Doe" },
@@ -265,6 +268,21 @@ const MondayBoard = () => {
   const [collapsedGroups, setCollapsedGroups] = useState({});
   const [editingCell, setEditingCell] = useState(null);
   const [editingFolder, setEditingFolder] = useState(null);
+
+  // Board cache helper functions
+  const saveBoardDataToCache = useCallback((boardId, data) => {
+    console.log(`Saving board ${boardId} data to cache`);
+    setBoardDataCache(prev => new Map(prev.set(boardId, data)));
+  }, []);
+
+  const loadBoardDataFromCache = useCallback((boardId) => {
+    if (boardDataCache.has(boardId)) {
+      console.log(`Loading board ${boardId} from cache`);
+      return boardDataCache.get(boardId);
+    }
+    console.log(`No cache found for board ${boardId}`);
+    return null;
+  }, [boardDataCache]);
   const [editingSubItem, setEditingSubItem] = useState(null);
   const [isResizing, setIsResizing] = useState(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -286,6 +304,18 @@ const MondayBoard = () => {
   };
 
   const selectBoard = (projectId, boardId) => {
+    // Step 4: Save current board data to cache before switching
+    if (activeBoard && mainItems.length > 0) {
+      console.log(`Saving current board ${activeBoard} data to cache before switching`);
+      const currentBoardData = {
+        items: mainItems,
+        columns,
+        subItems: subItems || [],
+        subItemFolders: subItemFolders || []
+      };
+      saveBoardToCache(activeBoard, currentBoardData);
+    }
+
     setActiveProject(projectId);
     setActiveBoard(boardId);
     
@@ -304,6 +334,20 @@ const MondayBoard = () => {
   };
 
   const loadBoardData = async (projectId, boardId) => {
+    console.log(`Loading board data for project ${projectId}, board ${boardId}`);
+    
+    // Step 3: Check if we have cached data first
+    const cachedData = loadBoardFromCache(boardId);
+    if (cachedData) {
+      console.log('Loading from cache');
+      setMainItems(cachedData.items || []);
+      setColumns(cachedData.columns || []);
+      setSubItems(cachedData.subItems || []);
+      setSubItemFolders(cachedData.subItemFolders || []);
+      return;
+    }
+
+    // If no cache, load from API
     try {
       const response = await fetch(`/api/boards/${boardId}/items`, {
         headers: {
@@ -313,9 +357,19 @@ const MondayBoard = () => {
       
       if (response.ok) {
         const items = await response.json();
+        console.log('Loading from API and caching');
         setMainItems(items);
+        // Step 4: Save to cache for future use
+        const boardData = {
+          items,
+          columns,
+          subItems: subItems || [],
+          subItemFolders: subItemFolders || []
+        };
+        saveBoardToCache(boardId, boardData);
       } else {
         // Fallback to default data for demo
+        console.log('Loading default data');
         loadDefaultBoardData(projectId, boardId);
       }
     } catch (error) {
@@ -336,7 +390,22 @@ const MondayBoard = () => {
         body: JSON.stringify({ [field]: value })
       });
       
-      if (!response.ok) {
+      if (response.ok) {
+        // Step 5: Update cache after successful database save
+        console.log('Saving cell change to cache for persistence');
+        const cachedData = loadBoardFromCache(selectedBoardId);
+        if (cachedData) {
+          // Update the specific item in cached data
+          const updatedItems = cachedData.items.map(item => 
+            item.id === itemId ? { ...item, [field]: value } : item
+          );
+          const updatedBoardData = {
+            ...cachedData,
+            items: updatedItems
+          };
+          saveBoardToCache(selectedBoardId, updatedBoardData);
+        }
+      } else {
         console.error('Failed to save item change:', await response.text());
       }
     } catch (error) {
@@ -619,6 +688,95 @@ const MondayBoard = () => {
     const formulaColumns = columns.filter(col => col.type === 'formula');
     console.log("Formula columns:", formulaColumns);
   }, [columns]);
+
+  // Step 7: Initialize periodic cache cleanup on mount
+  useEffect(() => {
+    // Clean up expired cache on component mount
+    cleanupExpiredCache();
+    
+    // Set up periodic cleanup every 5 minutes
+    const cleanupInterval = setInterval(cleanupExpiredCache, 5 * 60 * 1000);
+    
+    // Cleanup on unmount
+    return () => clearInterval(cleanupInterval);
+  }, [cleanupExpiredCache]);
+
+  // Step 2: Board cache helper functions
+  const saveBoardToCache = useCallback((boardId, boardData) => {
+    const cacheKey = `board_${boardId}`;
+    const cacheEntry = {
+      data: boardData,
+      timestamp: Date.now(),
+      lastModified: Date.now()
+    };
+    localStorage.setItem(cacheKey, JSON.stringify(cacheEntry));
+    console.log(`Saved board ${boardId} to cache`);
+  }, []);
+
+  const loadBoardFromCache = useCallback((boardId) => {
+    const cacheKey = `board_${boardId}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const cacheEntry = JSON.parse(cached);
+        const age = Date.now() - cacheEntry.timestamp;
+        // Cache expires after 30 minutes
+        if (age < 30 * 60 * 1000) {
+          console.log(`Loaded board ${boardId} from cache (age: ${Math.round(age/1000)}s)`);
+          return cacheEntry.data;
+        } else {
+          localStorage.removeItem(cacheKey);
+          console.log(`Cache expired for board ${boardId}, removed`);
+        }
+      } catch (error) {
+        console.error(`Error loading cache for board ${boardId}:`, error);
+        localStorage.removeItem(cacheKey);
+      }
+    }
+    return null;
+  }, []);
+
+  // Step 6: Cache invalidation system  
+  const invalidateBoardCache = useCallback((boardId) => {
+    const cacheKey = `board_${boardId}`;
+    localStorage.removeItem(cacheKey);
+    console.log(`Invalidated cache for board ${boardId}`);
+  }, []);
+
+  const clearAllBoardCache = useCallback(() => {
+    const keys = Object.keys(localStorage).filter(key => key.startsWith('board_'));
+    keys.forEach(key => localStorage.removeItem(key));
+    console.log(`Cleared ${keys.length} board cache entries`);
+  }, []);
+
+  // Step 7: Periodic cache cleanup
+  const cleanupExpiredCache = useCallback(() => {
+    const keys = Object.keys(localStorage).filter(key => key.startsWith('board_'));
+    let cleanedCount = 0;
+    
+    keys.forEach(key => {
+      try {
+        const cached = localStorage.getItem(key);
+        if (cached) {
+          const cacheEntry = JSON.parse(cached);
+          const age = Date.now() - cacheEntry.timestamp;
+          // Remove entries older than 30 minutes
+          if (age > 30 * 60 * 1000) {
+            localStorage.removeItem(key);
+            cleanedCount++;
+          }
+        }
+      } catch (error) {
+        // Remove corrupted cache entries
+        localStorage.removeItem(key);
+        cleanedCount++;
+      }
+    });
+    
+    if (cleanedCount > 0) {
+      console.log(`Cleaned up ${cleanedCount} expired cache entries`);
+    }
+  }, []);
 
   // Toast helper function
   const showToast = (message, type = "info") => {
@@ -1052,6 +1210,21 @@ const MondayBoard = () => {
 
       if (!response.ok) {
         throw new Error('Failed to save to database');
+      }
+      
+      // Step 5: Auto-save current board data to cache after successful cell update
+      if (currentBoard) {
+        const updatedBoardData = {
+          board: currentBoard,
+          columns: columns,
+          items: mainItems.map((item) =>
+            item.id === projectId
+              ? { ...item, values: { ...item.values, [field]: value } }
+              : item
+          ),
+        };
+        saveBoardToCache(currentBoard.id, updatedBoardData);
+        console.log(`Auto-saved board ${currentBoard.id} to cache after cell update`);
       }
     } catch (error) {
       console.error('Error saving cell update:', error);
