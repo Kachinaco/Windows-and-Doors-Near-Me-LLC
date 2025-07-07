@@ -383,7 +383,13 @@ const MondayBoard = () => {
   };
 
   const applyAIFormula = (formula) => {
-    if (!formulaAssistant.columnId || !formula) return;
+    if (!formulaAssistant.columnId || !formula) {
+      console.log("Cannot apply formula:", { columnId: formulaAssistant.columnId, formula });
+      showToast("Error: No column selected or formula is empty", "error");
+      return;
+    }
+
+    console.log("Applying formula:", { columnId: formulaAssistant.columnId, formula });
 
     setColumns(prev => prev.map(col => 
       col.id === formulaAssistant.columnId 
@@ -391,8 +397,8 @@ const MondayBoard = () => {
         : col
     ));
 
-    showToast("Formula applied successfully!", "success");
-    closeFormulaAssistant();
+    showToast("Formula saved successfully!", "success");
+    // Don't close the assistant, keep it open for further editing
   };
 
   // Formula evaluation engine
@@ -1927,12 +1933,25 @@ const MondayBoard = () => {
                 {/* Save Button */}
                 <div className="pt-4 border-t border-green-200 dark:border-green-700">
                   <button
-                    onClick={() => applyAIFormula(localInput)}
+                    onClick={() => {
+                      console.log("Save button clicked:", { 
+                        localInput, 
+                        columnId: formulaAssistant.columnId,
+                        formula: localInput.trim()
+                      });
+                      applyAIFormula(localInput.trim());
+                    }}
                     disabled={!localInput.trim()}
                     className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                   >
                     Save Formula
                   </button>
+                  {/* Debug info */}
+                  <div className="mt-2 text-xs text-gray-500">
+                    Column: {formulaAssistant.columnId || "None selected"}
+                    <br />
+                    Formula: {localInput || "Empty"}
+                  </div>
                 </div>
 
                 {/* Help Tips */}
