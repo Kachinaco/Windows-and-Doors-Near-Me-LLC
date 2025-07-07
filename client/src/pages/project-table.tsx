@@ -298,6 +298,12 @@ const MondayBoard = () => {
   // Separate state for AI input and formula builder
   const [aiInput, setAiInput] = useState("");
 
+  // Debug: Monitor column changes
+  useEffect(() => {
+    const formulaColumns = columns.filter(col => col.type === 'formula');
+    console.log("Formula columns:", formulaColumns);
+  }, [columns]);
+
   // Toast helper function
   const showToast = (message, type = "info") => {
     const id = Date.now();
@@ -389,16 +395,24 @@ const MondayBoard = () => {
       return;
     }
 
-    console.log("Applying formula:", { columnId: formulaAssistant.columnId, formula });
+    console.log("Applying formula:", { 
+      columnId: formulaAssistant.columnId, 
+      formula: formula,
+      columns: columns 
+    });
 
-    setColumns(prev => prev.map(col => 
-      col.id === formulaAssistant.columnId 
-        ? { ...col, formula }
-        : col
-    ));
+    // Update the column with the formula
+    setColumns(prev => {
+      const updated = prev.map(col => 
+        col.id === formulaAssistant.columnId 
+          ? { ...col, formula: formula.trim() }
+          : col
+      );
+      console.log("Updated columns:", updated);
+      return updated;
+    });
 
     showToast("Formula saved successfully!", "success");
-    // Don't close the assistant, keep it open for further editing
   };
 
   // Formula evaluation engine
@@ -554,9 +568,17 @@ const MondayBoard = () => {
         name: "Formula Column",
         type: "formula",
         order: Math.max(...columns.map(col => col.order)) + 1,
-        formula: ""
+        formula: "" // Make sure this property exists
       };
-      setColumns(prev => [...prev, newColumn]);
+      
+      console.log("Creating formula column:", newColumn);
+      
+      setColumns(prev => {
+        const updated = [...prev, newColumn];
+        console.log("Columns after adding formula column:", updated);
+        return updated;
+      });
+      
       setAddColumnMenuOpen(null);
       
       // Open AI Formula Assistant for the new column
@@ -1937,15 +1959,39 @@ const MondayBoard = () => {
                 <div className="pt-4 border-t border-green-200 dark:border-green-700">
                   <button
                     onClick={() => {
-                      console.log("Save button clicked:", { 
-                        localInput, 
-                        columnId: formulaAssistant.columnId,
-                        formula: localInput.trim()
-                      });
-                      applyAIFormula(localInput.trim());
+                      const formulaToSave = localInput.trim();
+                      if (formulaToSave && formulaAssistant.columnId) {
+                        console.log("Direct save - Column ID:", formulaAssistant.columnId);
+                        console.log("Direct save - Formula:", formulaToSave);
+                        console.log("Direct save - Current columns:", columns);
+                        
+                        // Directly update the columns
+                        setColumns(prevColumns => {
+                          const updated = prevColumns.map(col => 
+                            col.id === formulaAssistant.columnId 
+                              ? { ...col, formula: formulaToSave }
+                              : col
+                          );
+                          console.log("Direct save - Updated columns:", updated);
+                          return updated;
+                        });
+                        
+                        showToast("Formula saved!", "success");
+                        
+                        // Close after a short delay
+                        setTimeout(() => {
+                          closeFormulaAssistant();
+                        }, 500);
+                      } else {
+                        console.log("Direct save - Missing data:", { 
+                          formulaToSave, 
+                          columnId: formulaAssistant.columnId 
+                        });
+                        showToast("Error: Missing formula or column ID", "error");
+                      }
                     }}
                     disabled={!localInput.trim()}
-                    className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    className="w-full px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg transition-all"
                   >
                     Save Formula
                   </button>
