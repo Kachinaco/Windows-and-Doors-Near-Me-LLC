@@ -978,28 +978,10 @@ const MondayBoard = () => {
 
     const info = columnTypeInfo[type] || { name: "New Column", description: "Custom column" };
     
-    // For formula columns, directly create and open AI Formula Assistant
+    // For formula columns, use regular column creation modal (safer approach)
     if (type === "formula") {
-      const newColumn = {
-        id: `col_${Date.now()}`,
-        name: "Formula Column",
-        type: "formula",
-        order: Math.max(...columns.map(col => col.order)) + 1,
-        formula: ""
-      };
-      setColumns(prev => [...prev, newColumn]);
-      setAddColumnMenuOpen(null);
-      
-      // Open AI Formula Assistant for the new column after state has updated
-      setTimeout(() => {
-        console.log('Opening formula assistant for column:', newColumn.id);
-        try {
-          openFormulaAssistant(newColumn.id, "");
-        } catch (error) {
-          console.error('Error opening formula assistant:', error);
-        }
-      }, 200);
-      return;
+      console.log('Creating formula column via modal...');
+      // Use the same modal flow as other columns to avoid timing issues
     }
     
     setColumnCreationModal({
@@ -1008,12 +990,17 @@ const MondayBoard = () => {
       name: info.name,
       description: info.description,
       callback: (name, formula = null) => {
-        if (type === "formula" && formula) {
-          handleAddColumn(type, name, formula);
-        } else {
-          handleAddColumn(type, name);
+        try {
+          console.log('Column creation callback:', { type, name, formula });
+          if (type === "formula" && formula) {
+            handleAddColumn(type, name, formula);
+          } else {
+            handleAddColumn(type, name);
+          }
+          setAddColumnMenuOpen(null);
+        } catch (error) {
+          console.error('Error in column creation callback:', error);
         }
-        setAddColumnMenuOpen(null);
       },
       isSubItem: false
     });
@@ -1337,15 +1324,29 @@ const MondayBoard = () => {
   };
 
   const handleAddColumn = (type, name = "New Column", formula = null) => {
-    const newColumn = {
-      id: `col_${Date.now()}`,
-      name: name,
-      type: type,
-      order: Math.max(...columns.map(col => col.order)) + 1,
-      formula: formula
-    };
-    setColumns(prev => [...prev, newColumn]);
-    setIsAddingColumn(false);
+    try {
+      console.log('handleAddColumn called:', { type, name, formula });
+      const newColumn = {
+        id: `col_${Date.now()}`,
+        name: name,
+        type: type,
+        order: Math.max(...columns.map(col => col.order)) + 1,
+        formula: formula || ""
+      };
+      console.log('New column object:', newColumn);
+      
+      setColumns(prev => {
+        console.log('Previous columns before adding:', prev);
+        const updated = [...prev, newColumn];
+        console.log('Updated columns after adding:', updated);
+        return updated;
+      });
+      setIsAddingColumn(false);
+      
+      console.log('Column added successfully');
+    } catch (error) {
+      console.error('Error in handleAddColumn:', error);
+    }
   };
 
   const handleAddSubItemColumn = (type, name = "New Column") => {
