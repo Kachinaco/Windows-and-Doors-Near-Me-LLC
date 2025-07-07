@@ -303,7 +303,28 @@ const MondayBoard = () => {
     loadBoardData(projectId, boardId);
   };
 
-  const loadBoardData = (projectId, boardId) => {
+  const loadBoardData = async (projectId, boardId) => {
+    try {
+      const response = await fetch(`/api/boards/${boardId}/items`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const items = await response.json();
+        setMainItems(items);
+      } else {
+        // Fallback to default data for demo
+        loadDefaultBoardData(projectId, boardId);
+      }
+    } catch (error) {
+      console.error('Error loading board data:', error);
+      loadDefaultBoardData(projectId, boardId);
+    }
+  };
+
+  const loadDefaultBoardData = (projectId, boardId) => {
     // Get the project and board names for context
     const project = projects.find(p => p.id === projectId);
     const board = project?.boards.find(b => b.id === boardId);
