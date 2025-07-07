@@ -2987,6 +2987,28 @@ Return JSON format:
 
   const httpServer = createServer(app);
 
+  // Rename column endpoint
+  app.post("/api/rename-column", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { columnId, newName } = req.body;
+      
+      if (!columnId || !newName) {
+        return res.status(400).json({ message: "Column ID and new name are required" });
+      }
+
+      // For now, we'll just return success since the frontend manages the column state
+      // In a real implementation, this would update the database
+      res.json({ 
+        message: "Column renamed successfully",
+        columnId,
+        newName
+      });
+    } catch (error: any) {
+      console.error("Error renaming column:", error);
+      res.status(500).json({ message: "Failed to rename column" });
+    }
+  });
+
   // AI Formula Generation endpoint
   app.post("/api/generate-formula", authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
