@@ -3286,7 +3286,7 @@ const MondayBoard = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 text-gray-900 flex overflow-hidden">
+    <div className="h-screen bg-gray-50 text-gray-900 flex overflow-hidden">{
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
@@ -5175,7 +5175,7 @@ const MondayBoard = () => {
 
       {/* Edit Labels Modal */}
       <EditLabelsModal />
-    </div>
+    }</div>
   );
 };
 
