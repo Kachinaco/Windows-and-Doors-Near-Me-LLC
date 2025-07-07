@@ -47,7 +47,7 @@ const MondayBoard = () => {
   // Board columns configuration
   const [columns, setColumns] = useState([
     { id: "item", name: "Main Item", type: "text", order: 1 },
-    { id: "subitems", name: "Sub Items", type: "subitems", order: 2 },
+    { id: "subitems", name: "Folders", type: "subitems", order: 2 },
     { id: "status", name: "Status", type: "status", order: 3 },
     { id: "priority", name: "Priority", type: "dropdown", order: 4, options: ["Low", "Medium", "High", "Critical"] },
     { id: "assignedTo", name: "People", type: "people", order: 5 },
