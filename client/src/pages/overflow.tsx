@@ -5180,6 +5180,7 @@ const MondayBoard = () => {
       {/* Edit Labels Modal */}
       <EditLabelsModal />
     </div>
+  }
   );
 };
 
