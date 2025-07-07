@@ -847,24 +847,20 @@ const MondayBoard = () => {
     });
   };
 
-  const handleRenameColumn = async (columnId, newName) => {
-    try {
-      // Use the apiRequest function which handles authentication properly
-      await apiRequest('POST', '/api/rename-column', {
-        columnId,
-        newName
-      });
-
-      // Update the column name in the columns array
-      setColumns(prev => prev.map(col => 
-        col.id === columnId ? { ...col, name: newName } : col
-      ));
-      showToast(`Column renamed to "${newName}"`, "success");
-    } catch (error) {
-      console.error('Error renaming column:', error);
-      showToast("Error renaming column", "error");
+  const handleRenameColumn = (columnId, newName) => {
+    if (!newName || newName.trim() === "") {
+      showToast("Column name cannot be empty", "error");
+      return;
     }
+
+    // Update the column name in the columns array
+    setColumns(prev => prev.map(col => 
+      col.id === columnId ? { ...col, name: newName.trim() } : col
+    ));
     
+    showToast(`Column renamed to "${newName.trim()}"`, "success");
+    
+    // Reset the rename state
     setIsRenamingColumn(null);
     setNewColumnName("");
   };
@@ -2467,8 +2463,12 @@ const MondayBoard = () => {
         return;
       }
       
-      columnRenameModal.callback(name);
+      // Call the callback with the new name
+      if (columnRenameModal.callback) {
+        columnRenameModal.callback(columnRenameModal.columnId, name.trim());
+      }
       
+      // Close the modal
       setColumnRenameModal({
         isOpen: false,
         columnId: null,
