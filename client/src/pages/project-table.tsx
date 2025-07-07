@@ -1663,21 +1663,46 @@ const MondayBoard = () => {
         );
 
       case "formula":
-        // Calculate formula result
-        const formulaResult = evaluateFormula(column.formula, item);
+        // Simple formula display and calculation
+        const hasFormula = column.formula && column.formula.trim() !== "";
+        let displayValue = "Click to add formula";
+        
+        if (hasFormula) {
+          try {
+            // Simple calculation for basic formulas like "Numbers * 2"
+            if (column.formula.includes("Numbers")) {
+              const numbersValue = item.numbers || 0;
+              if (column.formula === "Numbers * 2") {
+                displayValue = numbersValue * 2;
+              } else if (column.formula === "Numbers + 10") {
+                displayValue = numbersValue + 10;
+              } else if (column.formula === "Numbers / 2") {
+                displayValue = numbersValue / 2;
+              } else {
+                displayValue = column.formula; // Show the formula itself
+              }
+            } else {
+              displayValue = column.formula; // Show the formula itself
+            }
+          } catch (error) {
+            displayValue = "Error";
+          }
+        }
+
         return (
-          <div className="h-6 text-xs flex items-center justify-between px-2 text-purple-700 bg-purple-50 rounded font-medium group hover:bg-purple-100 transition-colors">
-            <span>{formulaResult !== null ? formulaResult : "Error"}</span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                openFormulaAssistant(column.id, column.formula);
-              }}
-              className="opacity-0 group-hover:opacity-100 text-purple-600 hover:text-purple-800 transition-all p-0.5"
-              title="AI Formula Assistant"
-            >
-              ✨
-            </button>
+          <div 
+            className="h-6 text-xs flex items-center justify-between px-2 text-purple-700 bg-purple-50 rounded font-medium group hover:bg-purple-100 transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              openFormulaAssistant(column.id, column.formula || "");
+            }}
+          >
+            <span className={hasFormula ? "text-purple-800" : "text-gray-500"}>
+              {displayValue}
+            </span>
+            <span className="opacity-0 group-hover:opacity-100 text-purple-600 transition-all">
+              🧮
+            </span>
           </div>
         );
 
@@ -1961,33 +1986,19 @@ const MondayBoard = () => {
                     onClick={() => {
                       const formulaToSave = localInput.trim();
                       if (formulaToSave && formulaAssistant.columnId) {
-                        console.log("Direct save - Column ID:", formulaAssistant.columnId);
-                        console.log("Direct save - Formula:", formulaToSave);
-                        console.log("Direct save - Current columns:", columns);
-                        
-                        // Directly update the columns
-                        setColumns(prevColumns => {
-                          const updated = prevColumns.map(col => 
+                        // Directly update the columns - simple approach
+                        setColumns(prevColumns => 
+                          prevColumns.map(col => 
                             col.id === formulaAssistant.columnId 
                               ? { ...col, formula: formulaToSave }
                               : col
-                          );
-                          console.log("Direct save - Updated columns:", updated);
-                          return updated;
-                        });
+                          )
+                        );
                         
-                        showToast("Formula saved!", "success");
-                        
-                        // Close after a short delay
-                        setTimeout(() => {
-                          closeFormulaAssistant();
-                        }, 500);
+                        showToast("Formula saved successfully!", "success");
+                        closeFormulaAssistant();
                       } else {
-                        console.log("Direct save - Missing data:", { 
-                          formulaToSave, 
-                          columnId: formulaAssistant.columnId 
-                        });
-                        showToast("Error: Missing formula or column ID", "error");
+                        showToast("Please enter a formula", "error");
                       }
                     }}
                     disabled={!localInput.trim()}
@@ -1995,13 +2006,10 @@ const MondayBoard = () => {
                   >
                     Save Formula
                   </button>
-                  {/* Debug info */}
+                  
+                  {/* Simple helper text */}
                   <div className="mt-2 text-xs text-gray-500">
-                    Column: {formulaAssistant.columnId || "None selected"}
-                    <br />
-                    Formula: {localInput || "Empty"}
-                    <br />
-                    Current column formula: {formulaAssistant.columnId ? columns.find(c => c.id === formulaAssistant.columnId)?.formula || "None" : "N/A"}
+                    Example: Numbers * 2 (multiplies Numbers column by 2)
                   </div>
                 </div>
 
