@@ -312,20 +312,27 @@ const MondayBoard = () => {
 
   // AI Formula Assistant functions
   const openFormulaAssistant = (columnId, currentFormula = "") => {
+    console.log('Opening formula assistant for column:', columnId, 'Available columns:', columns.length);
     const column = columns.find(col => col.id === columnId);
-    setFormulaAssistant({
-      isOpen: true,
-      columnId,
-      currentFormula,
-      chatHistory: [
-        {
-          type: "system",
-          message: `Hello! I'm your AI Formula Assistant. I'll help you create a formula for the "${column?.name}" column. You can ask me in natural language like "Calculate the total cost" or "Find the percentage completion". Available columns: ${columns.map(col => col.name).join(", ")}`
-        }
-      ],
-      userInput: "",
-      isProcessing: false
-    });
+    console.log('Found column:', column);
+    
+    try {
+      setFormulaAssistant({
+        isOpen: true,
+        columnId,
+        currentFormula,
+        chatHistory: [
+          {
+            type: "system",
+            message: `Hello! I'm your AI Formula Assistant. I'll help you create a formula for the "${column?.name || 'this'}" column. You can ask me in natural language like "Calculate the total cost" or "Find the percentage completion". Available columns: ${columns.map(col => col.name).join(", ")}`
+          }
+        ],
+        userInput: "",
+        isProcessing: false
+      });
+    } catch (error) {
+      console.error('Error setting formula assistant state:', error);
+    }
   };
 
   const closeFormulaAssistant = () => {
@@ -505,11 +512,16 @@ const MondayBoard = () => {
 
     // Calculate live preview
     React.useEffect(() => {
-      if (formula && sampleRow) {
-        const result = evaluateFormula(formula, sampleRow, columns);
-        setPreviewResult(result);
-      } else {
-        setPreviewResult(null);
+      try {
+        if (formula && sampleRow && columns && columns.length > 0) {
+          const result = evaluateFormula(formula, sampleRow, columns);
+          setPreviewResult(result);
+        } else {
+          setPreviewResult(null);
+        }
+      } catch (error) {
+        console.error('Error in formula preview:', error);
+        setPreviewResult('Error');
       }
     }, [formula, sampleRow, columns]);
 
@@ -634,7 +646,7 @@ const MondayBoard = () => {
                 Click any column to add it to your formula
               </h3>
               <div className="grid grid-cols-2 gap-2">
-                {columns.map(column => (
+                {columns && columns.length > 0 ? columns.map(column => (
                   <button
                     key={column.id}
                     onClick={() => insertColumn(column)}
@@ -649,14 +661,18 @@ const MondayBoard = () => {
                     </span>
                     <div>
                       <div className="font-medium text-gray-900 dark:text-gray-100">
-                        {column.name}
+                        {column.name || 'Unnamed Column'}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                        {column.type}
+                        {column.type || 'unknown'}
                       </div>
                     </div>
                   </button>
-                ))}
+                )) : (
+                  <div className="col-span-2 text-center text-gray-500 dark:text-gray-400 py-4">
+                    No columns available yet
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -974,10 +990,15 @@ const MondayBoard = () => {
       setColumns(prev => [...prev, newColumn]);
       setAddColumnMenuOpen(null);
       
-      // Open AI Formula Assistant for the new column
+      // Open AI Formula Assistant for the new column after state has updated
       setTimeout(() => {
-        openFormulaAssistant(newColumn.id, "");
-      }, 100);
+        console.log('Opening formula assistant for column:', newColumn.id);
+        try {
+          openFormulaAssistant(newColumn.id, "");
+        } catch (error) {
+          console.error('Error opening formula assistant:', error);
+        }
+      }, 200);
       return;
     }
     
@@ -2186,8 +2207,15 @@ const MondayBoard = () => {
 
     const currentColumn = columns.find(col => col.id === formulaAssistant.columnId);
     
-    // Get a sample row for preview
-    const sampleRow = boardItems[0] || { values: {} };
+    // Get a sample row for preview - ensure it has some numeric data for testing
+    const sampleRow = boardItems[0] || { 
+      values: {
+        cost: 25000,
+        hoursBudget: 120,
+        hoursSpent: 78,
+        progress: 75
+      } 
+    };
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
