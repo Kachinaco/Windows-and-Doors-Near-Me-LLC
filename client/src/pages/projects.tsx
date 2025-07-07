@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertBoardSchema, insertProjectSchema, type InsertBoard, type InsertProject, type Board, type Project, type User } from "@shared/schema";
+import { insertProjectSchema, type InsertProject, type Project, type User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLayoutConfig } from "@/hooks/useLayoutConfig";
@@ -306,7 +306,7 @@ export default function ProjectsPage() {
     }
   }, [stageFilter]);
 
-  const { data: projects = [], isLoading } = useQuery<Board[]>({
+  const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
@@ -477,7 +477,7 @@ export default function ProjectsPage() {
   });
 
   const createProjectMutation = useMutation({
-    mutationFn: async (data: InsertBoard) => {
+    mutationFn: async (data: InsertProject) => {
       const response = await apiRequest("POST", "/api/projects", data);
       return response.json();
     },

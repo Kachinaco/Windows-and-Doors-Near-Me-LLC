@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import {
   ChevronRight,
@@ -68,87 +67,16 @@ const MondayBoard = () => {
   const [newProjectName, setNewProjectName] = useState("");
   const [newBoardName, setNewBoardName] = useState("");
 
-  const queryClient = useQueryClient();
-  
-  // Main items state for the board - use React Query data instead of manual state
-  const [subItems, setSubItems] = useState([]);
-  const [subItemFolders, setSubItemFolders] = useState([]);
+  // Main items state for the board
+  const [mainItems, setMainItems] = useState([]);
 
-  // Board data cache to persist data between board switches
-  const [boardDataCache, setBoardDataCache] = useState(new Map());
-
-  // Fetch board items from API
-  const { data: boardItems = [], isLoading: boardItemsLoading } = useQuery({
-    queryKey: [`/api/boards/${activeBoard}/items`],
-    enabled: !!activeBoard,
-  });
-
-  // Create board item mutation
-  const createBoardItemMutation = useMutation({
-    mutationFn: async (itemData: any) => {
-      const response = await apiRequest("POST", `/api/boards/${activeBoard}/items`, itemData);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/boards/${activeBoard}/items`] });
-    },
-  });
-
-  // Update board item mutation
-  const updateBoardItemMutation = useMutation({
-    mutationFn: async ({ itemId, updates }: { itemId: number; updates: any }) => {
-      const response = await apiRequest("PUT", `/api/boards/${activeBoard}/items/${itemId}`, updates);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/boards/${activeBoard}/items`] });
-    },
-  });
-
-  // Delete board item mutation
-  const deleteBoardItemMutation = useMutation({
-    mutationFn: async (itemId: number) => {
-      const response = await apiRequest("DELETE", `/api/boards/${activeBoard}/items/${itemId}`);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/boards/${activeBoard}/items`] });
-    },
-  });
-
-  // Fetch team members from API
-  const { data: teamMembers = [] } = useQuery({
-    queryKey: ["/api/employees"],
-  });
-
-  // Cache cleanup function - must be defined before useEffect that uses it
-  const cleanupExpiredCache = useCallback(() => {
-    const keys = Object.keys(localStorage).filter(key => key.startsWith('board_'));
-    let cleanedCount = 0;
-    
-    keys.forEach(key => {
-      try {
-        const cached = localStorage.getItem(key);
-        if (cached) {
-          const cacheEntry = JSON.parse(cached);
-          const age = Date.now() - cacheEntry.timestamp;
-          // Remove entries older than 30 minutes
-          if (age > 30 * 60 * 1000) {
-            localStorage.removeItem(key);
-            cleanedCount++;
-          }
-        }
-      } catch (error) {
-        // Remove corrupted cache entries
-        localStorage.removeItem(key);
-        cleanedCount++;
-      }
-    });
-    
-    if (cleanedCount > 0) {
-      console.log(`Cleaned up ${cleanedCount} expired cache entries`);
-    }
-  }, []);
+  // Mock team members
+  const [teamMembers] = useState([
+    { id: 1, firstName: "John", lastName: "Doe" },
+    { id: 2, firstName: "Jane", lastName: "Smith" },
+    { id: 3, firstName: "Bob", lastName: "Wilson" },
+    { id: 4, firstName: "Alice", lastName: "Johnson" },
+  ]);
 
   // Board columns configuration
   const [columns, setColumns] = useState([
@@ -171,33 +99,9 @@ const MondayBoard = () => {
     { id: "progress", name: "Progress", type: "progress", order: 6 },
   ]);
 
-  // Sync board items with API data
-  useEffect(() => {
-    if (boardItems && boardItems.length > 0) {
-      // Transform API data to match component structure
-      const transformedItems = boardItems.map(item => ({
-        id: item.id,
-        groupName: item.group_name || "Main Group",
-        values: item.values || {
-          item: item.name || `Item ${item.id}`,
-          status: "not-started",
-          priority: "Medium",
-          assignedTo: "unassigned",
-          dueDate: "",
-          checkbox: false,
-          progress: 0,
-          email: "",
-          phone: "",
-          location: "",
-        },
-        folders: item.folders || []
-      }));
-      // Items are automatically updated via React Query
-    }
-  }, [boardItems]);
-
-  // Initial board data with folders (fallback for when API is empty)
-  const [fallbackItems, setFallbackItems] = useState<any[]>([
+  // Initial board data with folders
+  // Initial board data with sample items for testing email functionality
+  const [boardItems, setBoardItems] = useState<any[]>([
     {
       id: 1,
       values: {
@@ -361,21 +265,6 @@ const MondayBoard = () => {
   const [collapsedGroups, setCollapsedGroups] = useState({});
   const [editingCell, setEditingCell] = useState(null);
   const [editingFolder, setEditingFolder] = useState(null);
-
-  // Board cache helper functions
-  const saveBoardDataToCache = useCallback((boardId, data) => {
-    console.log(`Saving board ${boardId} data to cache`);
-    setBoardDataCache(prev => new Map(prev.set(boardId, data)));
-  }, []);
-
-  const loadBoardDataFromCache = useCallback((boardId) => {
-    if (boardDataCache.has(boardId)) {
-      console.log(`Loading board ${boardId} from cache`);
-      return boardDataCache.get(boardId);
-    }
-    console.log(`No cache found for board ${boardId}`);
-    return null;
-  }, [boardDataCache]);
   const [editingSubItem, setEditingSubItem] = useState(null);
   const [isResizing, setIsResizing] = useState(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -397,18 +286,6 @@ const MondayBoard = () => {
   };
 
   const selectBoard = (projectId, boardId) => {
-    // Step 4: Save current board data to cache before switching
-    if (activeBoard && boardItems.length > 0) {
-      console.log(`Saving current board ${activeBoard} data to cache before switching`);
-      const currentBoardData = {
-        items: boardItems,
-        columns,
-        subItems: subItems || [],
-        subItemFolders: subItemFolders || []
-      };
-      saveBoardToCache(activeBoard, currentBoardData);
-    }
-
     setActiveProject(projectId);
     setActiveBoard(boardId);
     
@@ -422,125 +299,18 @@ const MondayBoard = () => {
       }))
     })));
 
-    // Board data will be loaded automatically by React Query based on activeBoard
+    // Load different data based on selected board
+    loadBoardData(projectId, boardId);
   };
 
-  const loadBoardData = async (projectId, boardId) => {
-    console.log(`Loading board data for project ${projectId}, board ${boardId}`);
-    
-    // Step 3: Check if we have cached data first
-    const cachedData = loadBoardFromCache(boardId);
-    if (cachedData) {
-      console.log('Loading from cache');
-      // Items handled by React Query cache
-      setColumns(cachedData.columns || []);
-      setSubItems(cachedData.subItems || []);
-      setSubItemFolders(cachedData.subItemFolders || []);
-      return;
-    }
-
-    // If no cache, load from API
-    try {
-      const response = await fetch(`/api/boards/${boardId}/items`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const items = await response.json();
-        console.log('Loading from API and caching');
-        // Items handled by React Query
-        // Step 4: Save to cache for future use
-        const boardData = {
-          items,
-          columns,
-          subItems: subItems || [],
-          subItemFolders: subItemFolders || []
-        };
-        saveBoardToCache(boardId, boardData);
-      } else {
-        // Fallback to default data for demo
-        console.log('Loading default data');
-        loadDefaultBoardData(projectId, boardId);
-      }
-    } catch (error) {
-      console.error('Error loading board data:', error);
-      loadDefaultBoardData(projectId, boardId);
-    }
-  };
-
-  // Save functions for database persistence
-  const saveItemChange = async (itemId, field, value) => {
-    try {
-      const response = await fetch(`/api/boards/items/${itemId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ [field]: value })
-      });
-      
-      if (response.ok) {
-        // Step 5: Update cache after successful database save
-        console.log('Saving cell change to cache for persistence');
-        const cachedData = loadBoardFromCache(selectedBoardId);
-        if (cachedData) {
-          // Update the specific item in cached data
-          const updatedItems = cachedData.items.map(item => 
-            item.id === itemId ? { ...item, [field]: value } : item
-          );
-          const updatedBoardData = {
-            ...cachedData,
-            items: updatedItems
-          };
-          saveBoardToCache(selectedBoardId, updatedBoardData);
-        }
-      } else {
-        console.error('Failed to save item change:', await response.text());
-      }
-    } catch (error) {
-      console.error('Error saving item:', error);
-    }
-  };
-
-  const createNewItem = async (boardId, groupName = "New Items") => {
-    try {
-      const response = await fetch(`/api/boards/${boardId}/items`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ 
-          board_id: boardId,
-          group_name: groupName,
-          order: boardItems.length + 1
-        })
-      });
-      
-      if (response.ok) {
-        const newItem = await response.json();
-        // Items handled by React Query mutations
-        return newItem;
-      } else {
-        console.error('Failed to create item:', await response.text());
-      }
-    } catch (error) {
-      console.error('Error creating item:', error);
-    }
-  };
-
-  const loadDefaultBoardData = (projectId, boardId) => {
+  const loadBoardData = (projectId, boardId) => {
     // Get the project and board names for context
     const project = projects.find(p => p.id === projectId);
     const board = project?.boards.find(b => b.id === boardId);
     
     if (boardId === 1) {
       // Main Board - Window Installation Projects
-      // Data handled by React Query - using fallback data structure
-      return [
+      setMainItems([
         {
           id: 1,
           groupName: "New Projects",
@@ -573,11 +343,10 @@ const MondayBoard = () => {
           subItems: [],
           folders: []
         }
-      ];
+      ]);
     } else if (boardId === 2) {
       // Sales Pipeline
-      // Data handled by React Query - using fallback data structure
-      return [
+      setMainItems([
         {
           id: 3,
           groupName: "Leads",
@@ -610,11 +379,10 @@ const MondayBoard = () => {
           subItems: [],
           folders: []
         }
-      ];
+      ]);
     } else if (boardId === 3) {
       // Lead Management
-      // Data handled by React Query - using fallback data structure
-      return [
+      setMainItems([
         {
           id: 5,
           groupName: "Hot Leads",
@@ -631,11 +399,10 @@ const MondayBoard = () => {
           subItems: [],
           folders: []
         }
-      ];
+      ]);
     } else {
       // Default or other boards - keep existing data structure
-      // Data handled by React Query - using fallback data structure
-      return [
+      setMainItems([
         {
           id: 100,
           groupName: "Sample Group",
@@ -652,7 +419,7 @@ const MondayBoard = () => {
           subItems: [],
           folders: []
         }
-      ];
+      ]);
     }
   };
 
@@ -691,16 +458,9 @@ const MondayBoard = () => {
     }
   };
 
-  // Initialize default board data - remove manual loading since React Query handles it
+  // Initialize default board data
   useEffect(() => {
-    // Clean up expired cache on mount
-    cleanupExpiredCache();
-    
-    // Set up periodic cleanup every 5 minutes
-    const cleanupInterval = setInterval(cleanupExpiredCache, 5 * 60 * 1000);
-    
-    // Cleanup on unmount
-    return () => clearInterval(cleanupInterval);
+    loadBoardData(activeProject, activeBoard);
   }, []);
 
   // Close dropdown when clicking outside
@@ -791,68 +551,6 @@ const MondayBoard = () => {
     const formulaColumns = columns.filter(col => col.type === 'formula');
     console.log("Formula columns:", formulaColumns);
   }, [columns]);
-
-  // Step 7: Initialize periodic cache cleanup on mount
-  useEffect(() => {
-    // Clean up expired cache on component mount
-    cleanupExpiredCache();
-    
-    // Set up periodic cleanup every 5 minutes
-    const cleanupInterval = setInterval(cleanupExpiredCache, 5 * 60 * 1000);
-    
-    // Cleanup on unmount
-    return () => clearInterval(cleanupInterval);
-  }, [cleanupExpiredCache]);
-
-  // Step 2: Board cache helper functions
-  const saveBoardToCache = useCallback((boardId, boardData) => {
-    const cacheKey = `board_${boardId}`;
-    const cacheEntry = {
-      data: boardData,
-      timestamp: Date.now(),
-      lastModified: Date.now()
-    };
-    localStorage.setItem(cacheKey, JSON.stringify(cacheEntry));
-    console.log(`Saved board ${boardId} to cache`);
-  }, []);
-
-  const loadBoardFromCache = useCallback((boardId) => {
-    const cacheKey = `board_${boardId}`;
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try {
-        const cacheEntry = JSON.parse(cached);
-        const age = Date.now() - cacheEntry.timestamp;
-        // Cache expires after 30 minutes
-        if (age < 30 * 60 * 1000) {
-          console.log(`Loaded board ${boardId} from cache (age: ${Math.round(age/1000)}s)`);
-          return cacheEntry.data;
-        } else {
-          localStorage.removeItem(cacheKey);
-          console.log(`Cache expired for board ${boardId}, removed`);
-        }
-      } catch (error) {
-        console.error(`Error loading cache for board ${boardId}:`, error);
-        localStorage.removeItem(cacheKey);
-      }
-    }
-    return null;
-  }, []);
-
-  // Step 6: Cache invalidation system  
-  const invalidateBoardCache = useCallback((boardId) => {
-    const cacheKey = `board_${boardId}`;
-    localStorage.removeItem(cacheKey);
-    console.log(`Invalidated cache for board ${boardId}`);
-  }, []);
-
-  const clearAllBoardCache = useCallback(() => {
-    const keys = Object.keys(localStorage).filter(key => key.startsWith('board_'));
-    keys.forEach(key => localStorage.removeItem(key));
-    console.log(`Cleared ${keys.length} board cache entries`);
-  }, []);
-
-  // Step 7: Periodic cache cleanup (moved above to fix hoisting issue)
 
   // Toast helper function
   const showToast = (message, type = "info") => {
@@ -978,7 +676,7 @@ const MondayBoard = () => {
       
       // Replace column references with actual values
       columnNames.forEach(columnId => {
-        const columnValue = item.values?.[columnId] || item[columnId] || "";
+        const columnValue = item.values[columnId];
         let numericValue = 0;
         
         // Convert different value types to numbers
@@ -1238,13 +936,12 @@ const MondayBoard = () => {
     }
   };
 
-  // Group items by group name using React Query data
-  const groupedItems = boardItems.reduce((groups, item) => {
-    const groupName = item.group_name || "Main Group";
-    if (!groups[groupName]) {
-      groups[groupName] = [];
+  // Group items by group name
+  const groupedItems = mainItems.reduce((groups, item) => {
+    if (!groups[item.groupName]) {
+      groups[item.groupName] = [];
     }
-    groups[groupName].push(item);
+    groups[item.groupName].push(item);
     return groups;
   }, {});
 
@@ -1256,9 +953,14 @@ const MondayBoard = () => {
   }));
 
   // Event handlers
-  const handleCellUpdate = useCallback(async (projectId, field, value) => {
-    // Update local state immediately for responsiveness
-    // Data updates are handled by React Query mutations now
+  const handleCellUpdate = useCallback((projectId, field, value) => {
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? { ...item, values: { ...item.values, [field]: value } }
+          : item,
+      ),
+    );
 
     setUndoStack((prev) => [
       ...prev.slice(-9),
@@ -1269,25 +971,40 @@ const MondayBoard = () => {
       },
     ]);
 
-    // Save to database using mutation
-    const updates = {
-      values: {
-        [field]: value,
-        lastUpdated: new Date().toISOString(),
-      },
-    };
-    
-    updateBoardItemMutation.mutate({ itemId: projectId, updates });
-  }, [updateBoardItemMutation]);
+    // Force component re-render to recalculate formulas
+    setTimeout(() => {
+      setBoardItems((prev) => [...prev]);
+    }, 50);
+  }, []);
 
   const handleAddItem = (groupName = "New Leads") => {
-    const itemData = {
-      group_name: groupName,
-      item: "",
+    const newItem = {
+      id: newItemCounter,
+      groupName,
+      values: {
+        item: "",
+        status:
+          groupName === "New Leads"
+            ? "new lead"
+            : groupName === "In Progress"
+              ? "in progress"
+              : groupName === "Complete"
+                ? "complete"
+                : "new lead",
+        assignedTo: "unassigned",
+        dueDate: "",
+        checkbox: false,
+        progress: 0,
+        email: "",
+        phone: "",
+        location: "",
+      },
+      folders: [],
     };
-    
-    createBoardItemMutation.mutate(itemData);
-    showToast("New item added successfully!", "success");
+
+    setBoardItems((prev) => [...prev, newItem]);
+    setNewItemCounter((prev) => prev + 1);
+    setEditingCell({ projectId: newItemCounter, field: "item" });
   };
 
   const handleAddFolder = (projectId) => {
@@ -1298,7 +1015,13 @@ const MondayBoard = () => {
       subItems: [],
     };
 
-    // Folder functionality needs API implementation
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? { ...item, folders: [...(item.folders || []), newFolder] }
+          : item,
+      ),
+    );
 
     setExpandedSubItems((prev) => new Set([...prev, projectId]));
     setExpandedFolders((prev) => new Set([...prev, newFolderCounter]));
@@ -1317,7 +1040,20 @@ const MondayBoard = () => {
       values: {}
     };
 
-    // Sub-item functionality needs API implementation
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? {
+              ...item,
+              folders: item.folders.map((folder) =>
+                folder.id === folderId
+                  ? { ...folder, subItems: [...folder.subItems, newSubItem] }
+                  : folder,
+              ),
+            }
+          : item,
+      ),
+    );
 
     setExpandedSubItems((prev) => new Set([...prev, projectId]));
     setExpandedFolders((prev) => new Set([...prev, folderId]));
@@ -1326,9 +1062,18 @@ const MondayBoard = () => {
   };
 
   const handleUpdateFolder = (projectId, folderId, newName) => {
-    // Data handled by React Query - folder updates need API implementation
-    console.log('Updating folder:', projectId, folderId, newName);
-    // TODO: Implement folder update API call
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? {
+              ...item,
+              folders: item.folders.map((folder) =>
+                folder.id === folderId ? { ...folder, name: newName } : folder,
+              ),
+            }
+          : item,
+      ),
+    );
   };
 
   // Settings functionality handlers
@@ -1489,16 +1234,43 @@ const MondayBoard = () => {
   };
 
   const handleUpdateSubItem = (projectId, subItemId, field, value) => {
-    // Data handled by React Query - sub-item updates need API implementation
-    console.log('Updating sub-item:', projectId, subItemId, field, value);
-    // TODO: Implement sub-item update API call
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? {
+              ...item,
+              folders: item.folders.map((folder) => ({
+                ...folder,
+                subItems: folder.subItems.map((subItem) =>
+                  subItem.id === subItemId
+                    ? { 
+                        ...subItem, 
+                        [field]: value,
+                        values: {
+                          ...subItem.values,
+                          [field]: value
+                        }
+                      }
+                    : subItem,
+                ),
+              })),
+            }
+          : item,
+      ),
+    );
   };
 
   const handleDeleteFolder = (projectId, folderId) => {
-    // Data handled by React Query - folder deletion needs API implementation  
-    console.log('Deleting folder:', projectId, folderId);
-    // TODO: Implement folder deletion API call
-    
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? {
+              ...item,
+              folders: item.folders.filter((folder) => folder.id !== folderId),
+            }
+          : item,
+      ),
+    );
     setExpandedFolders((prev) => {
       const newSet = new Set(prev);
       newSet.delete(folderId);
@@ -1509,15 +1281,30 @@ const MondayBoard = () => {
   const handleDeleteSubItem = (projectId, subItemId) => {
     console.log('Deleting sub-item:', { projectId, subItemId });
     
-    // Data handled by React Query - sub-item deletion needs API implementation
-    // TODO: Implement sub-item deletion API call
+    setBoardItems((prev) => {
+      const updated = prev.map((item) => {
+        if (item.id === projectId) {
+          const updatedItem = {
+            ...item,
+            folders: (item.folders || []).map((folder) => ({
+              ...folder,
+              subItems: (folder.subItems || []).filter(
+                (subItem) => subItem.id !== subItemId,
+              ),
+            })),
+          };
+          console.log('Updated item after deletion:', updatedItem);
+          return updatedItem;
+        }
+        return item;
+      });
+      console.log('Updated board items:', updated);
+      return updated;
+    });
   };
 
   const handleDeleteItem = (itemId) => {
-    // Data handled by React Query - item deletion needs API implementation
-    console.log('Deleting item:', itemId);
-    // TODO: Implement item deletion API call
-    
+    setBoardItems((prev) => prev.filter((item) => item.id !== itemId));
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
       newSet.delete(itemId);
@@ -1532,10 +1319,7 @@ const MondayBoard = () => {
       message: "Are you sure you want to delete this item? This action cannot be undone.",
       callback: (confirmed) => {
         if (confirmed) {
-          // Data handled by React Query - main item deletion needs API implementation
-          console.log('Deleting main item:', itemId);
-          // TODO: Implement main item deletion API call
-          
+          setBoardItems((prev) => prev.filter((item) => item.id !== itemId));
           setSelectedItems((prev) => {
             const newSet = new Set(prev);
             newSet.delete(itemId);
@@ -1614,7 +1398,7 @@ const MondayBoard = () => {
 
   // Email sending functionality
   const sendEmail = async () => {
-    const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+    const currentItem = mainItems.find(item => item.id === updatesModal.itemId);
     if (!currentItem?.values?.email || !emailSubject.trim() || !emailMessage.trim()) {
       showToast("Please fill in all email fields", "error");
       return;
@@ -2107,29 +1891,7 @@ const MondayBoard = () => {
   };
 
   const renderCell = (item, column) => {
-    // Handle API data structure - values may not exist
-    let value = "";
-    if (item.values && item.values[column.id] !== undefined) {
-      value = item.values[column.id];
-    } else {
-      // Map API fields to column IDs
-      switch (column.id) {
-        case "item":
-          value = item.name || `Item ${item.id}`;
-          break;
-        case "status":
-          value = item.status || "new lead";
-          break;
-        case "assignedTo":
-          value = item.assigned_to || "unassigned";
-          break;
-        case "dueDate":
-          value = item.due_date || "";
-          break;
-        default:
-          value = item[column.id] || "";
-      }
-    }
+    const value = item.values[column.id] || "";
 
     switch (column.type) {
       case "status":
@@ -2545,17 +2307,17 @@ const MondayBoard = () => {
             {column.id === "item" && (
               <div
                 className={`w-2 h-2 rounded-full mr-2 ${
-                  (item.values?.status || item.status) === "complete"
+                  item.values["status"] === "complete"
                     ? "bg-green-500"
-                    : (item.values?.status || item.status) === "in progress"
+                    : item.values["status"] === "in progress"
                       ? "bg-blue-500"
-                      : (item.values?.status || item.status) === "signed"
+                      : item.values["status"] === "signed"
                         ? "bg-emerald-500"
-                        : (item.values?.status || item.status) === "sent estimate"
+                        : item.values["status"] === "sent estimate"
                           ? "bg-purple-500"
-                          : (item.values?.status || item.status) === "need attention"
+                          : item.values["status"] === "need attention"
                             ? "bg-yellow-500"
-                            : (item.values?.status || item.status) === "new lead"
+                            : item.values["status"] === "new lead"
                               ? "bg-cyan-500"
                               : "bg-gray-500"
                 }`}
@@ -3525,7 +3287,7 @@ const MondayBoard = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 text-gray-900 flex">
+    <div className="h-screen bg-gray-50 text-gray-900 flex overflow-hidden">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
@@ -3723,8 +3485,8 @@ const MondayBoard = () => {
         </div>
       </div>
 
-      {/* Main Board Container - Fixed Layout */}
-      <div className="flex flex-col flex-1 bg-white overflow-hidden">
+      {/* Main Board Container - Mobile Optimized */}
+      <div className={`flex flex-col flex-1 bg-white transition-all duration-300 ${isSidebarOpen ? 'lg:ml-0' : ''}`}>
         {/* Header - Mobile Responsive */}
         <header className="bg-white border-b border-gray-200 px-2 sm:px-4 py-2 sm:py-3 sticky top-0 z-20">
           <div className="flex items-center justify-between">
@@ -3788,22 +3550,9 @@ const MondayBoard = () => {
           </div>
         </header>
 
-        {/* Board Content - Fixed Horizontal Scroll */}
-        <div className="flex-1 overflow-auto bg-white" style={{ scrollBehavior: 'smooth' }}>
-          {boardItemsLoading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-              <span className="ml-2 text-gray-600">Loading board data...</span>
-            </div>
-          )}
-          
-          {/* Use React Query data instead of manual state */}
-          {!boardItemsLoading && boardItems.length === 0 && (
-            <div className="flex items-center justify-center py-8">
-              <span className="text-gray-500">No items found. Click + to add your first item.</span>
-            </div>
-          )}
-          <div className="min-w-fit w-full" style={{ minWidth: '1200px' }}>
+        {/* Board Content - Mobile Optimized */}
+        <div className="flex-1 overflow-x-auto overflow-y-auto bg-white" style={{ scrollBehavior: 'smooth' }}>
+          <div className="min-w-max w-full">
             {/* Mobile View Toggle */}
             <div className="sm:hidden bg-gray-50 px-3 py-2 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -3817,9 +3566,9 @@ const MondayBoard = () => {
               </div>
             </div>
 
-            {/* Column Headers - Fixed Width */}
+            {/* Column Headers - Mobile Optimized */}
             <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
-              <div className="flex" style={{ minWidth: '1200px' }}>
+              <div className="flex">
                 <div className="w-10 sm:w-12 px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 flex items-center justify-center">
                   <input
                     type="checkbox"
@@ -3827,14 +3576,14 @@ const MondayBoard = () => {
                     name="select-all"
                     checked={
                       selectedItems.size > 0 &&
-                      selectedItems.size === boardItems.length
+                      selectedItems.size === mainItems.length
                     }
                     onChange={() => {
-                      if (selectedItems.size === boardItems.length) {
+                      if (selectedItems.size === mainItems.length) {
                         setSelectedItems(new Set());
                       } else {
                         setSelectedItems(
-                          new Set(boardItems.map((item) => item.id)),
+                          new Set(mainItems.map((item) => item.id)),
                         );
                       }
                     }}
@@ -4004,7 +3753,7 @@ const MondayBoard = () => {
                 {!group.collapsed && (
                   <>
                     {group.items.map((item) => (
-                      <div key={item.id}>
+                      <React.Fragment key={item.id}>
                         {/* Main Item Row */}
                         <div className="flex hover:bg-gray-50 border-b border-gray-200 group">
                           <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center">
@@ -4040,7 +3789,7 @@ const MondayBoard = () => {
                                   openUpdatesModal(
                                     "main",
                                     item.id,
-                                    (item.values?.item || item.name || `Project #${item.id}`),
+                                    item.values.item || `Project #${item.id}`,
                                   );
                                 }}
                                 className="relative p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
@@ -4072,7 +3821,7 @@ const MondayBoard = () => {
                           <>
                             {/* Render folders */}
                             {(item.folders || []).map((folder) => (
-                              <div key={folder.id}>
+                              <React.Fragment key={folder.id}>
                                 {/* Folder Header with Sub-item Column Headers */}
                                 <div className="flex hover:bg-blue-50 bg-blue-25 border-b border-blue-200 group">
                                   <div className="w-12 px-2 py-2 border-r border-blue-200 flex items-center justify-center">
@@ -4569,7 +4318,7 @@ const MondayBoard = () => {
                                     <div className="w-12 px-2 py-1"></div>
                                   </div>
                                 )}
-                              </div>
+                              </React.Fragment>
                             ))}
 
                             {/* Add Folder buttons */}
@@ -4612,7 +4361,7 @@ const MondayBoard = () => {
                             </div>
                           </>
                         )}
-                      </div>
+                      </React.Fragment>
                     ))}
 
                     {/* Add Item Button */}
@@ -4655,7 +4404,7 @@ const MondayBoard = () => {
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-1">
                   <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
-                  <span className="text-sm font-medium text-gray-700">{boardItems.length}</span>
+                  <span className="text-sm font-medium text-gray-700">{mainItems.length}</span>
                   <span className="text-xs text-gray-500">items</span>
                 </div>
               </div>
@@ -4681,7 +4430,7 @@ const MondayBoard = () => {
                 <div className="flex items-center space-x-1">
                   <div className="w-3 h-3 bg-orange-500 rounded-sm"></div>
                   <span className="text-sm font-medium text-gray-700">
-                    {boardItems.filter(item => (item.values?.status || item.status) === 'Working on it').length}
+                    {mainItems.filter(item => item.values?.status === 'Working on it').length}
                   </span>
                   <span className="text-xs text-gray-500">active</span>
                 </div>
@@ -4692,7 +4441,7 @@ const MondayBoard = () => {
                 <div className="flex items-center space-x-1">
                   <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
                   <span className="text-sm font-medium text-gray-700">
-                    {boardItems.filter(item => (item.values?.status || item.status) === 'Done').length}
+                    {mainItems.filter(item => item.values?.status === 'Done').length}
                   </span>
                   <span className="text-xs text-gray-500">done</span>
                 </div>
@@ -5124,7 +4873,7 @@ const MondayBoard = () => {
                             </h4>
                             <p className="text-sm text-green-700 dark:text-green-300">
                               {(() => {
-                                const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                                const currentItem = mainItems.find(item => item.id === updatesModal.itemId);
                                 return currentItem?.values?.phone || "No phone number available";
                               })()}
                             </p>
@@ -5197,7 +4946,7 @@ const MondayBoard = () => {
                             </h4>
                             <p className="text-sm text-purple-700 dark:text-purple-300">
                               {(() => {
-                                const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                                const currentItem = mainItems.find(item => item.id === updatesModal.itemId);
                                 return currentItem?.values?.email || "No email address available";
                               })()}
                             </p>
@@ -5231,7 +4980,7 @@ const MondayBoard = () => {
                             <input
                               type="email"
                               value={(() => {
-                                const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                                const currentItem = mainItems.find(item => item.id === updatesModal.itemId);
                                 return currentItem?.values?.email || "";
                               })()}
                               className="w-full border border-purple-200 dark:border-purple-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -5266,14 +5015,14 @@ const MondayBoard = () => {
                         <div className="flex items-center justify-between">
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             {(() => {
-                              const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                              const currentItem = mainItems.find(item => item.id === updatesModal.itemId);
                               return currentItem?.values?.email ? "Email ready to send" : "No email address available";
                             })()}
                           </div>
                           <button
                             onClick={sendEmail}
                             disabled={isEmailSending || !emailSubject.trim() || !emailMessage.trim() || !(() => {
-                              const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                              const currentItem = mainItems.find(item => item.id === updatesModal.itemId);
                               return currentItem?.values?.email;
                             })()}
                             className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"

@@ -1,7 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { createServer } from "http";
-import { setupRoutes } from "./routes-simplified";
-import { initializeDatabase } from "./database-setup";
+import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
@@ -39,10 +37,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize database
-  await initializeDatabase();
-  
-  setupRoutes(app);
+  const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -51,9 +46,6 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
     throw err;
   });
-
-  // Create server object
-  const server = createServer(app);
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
@@ -68,17 +60,11 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  server.listen(port, "0.0.0.0", () => {
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
     log(`serving on port ${port}`);
-  }).on('error', (err: any) => {
-    if (err.code === 'EADDRINUSE') {
-      console.log(`Port ${port} is busy, trying a different port...`);
-      server.listen(0, "0.0.0.0", () => {
-        const actualPort = (server.address() as any)?.port;
-        log(`serving on port ${actualPort}`);
-      });
-    } else {
-      console.error('Server error:', err);
-    }
   });
 })();
