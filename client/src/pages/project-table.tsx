@@ -3883,18 +3883,117 @@ const MondayBoard = () => {
           </div>
         </div>
 
-        {/* Status Bar */}
-        <div className="bg-gray-50 border-t border-gray-200 px-4 py-2 flex items-center justify-between text-xs text-gray-600">
-          <div className="flex items-center space-x-3">
-            <span>{boardItems.length} items</span>
-            <span>•</span>
-            <span>{columns.length} columns</span>
-            <span>•</span>
-            <span>{boardGroups.length} groups</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>Live</span>
+        {/* Modern Status Bar */}
+        <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-t border-gray-200 px-4 py-3">
+          <div className="flex items-center justify-between">
+            {/* Left Section - Statistics */}
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
+                  <span className="text-sm font-medium text-gray-700">{boardItems.length}</span>
+                  <span className="text-xs text-gray-500">items</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
+                  <span className="text-sm font-medium text-gray-700">{columns.length}</span>
+                  <span className="text-xs text-gray-500">columns</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-sm"></div>
+                  <span className="text-sm font-medium text-gray-700">{boardGroups.length}</span>
+                  <span className="text-xs text-gray-500">groups</span>
+                </div>
+              </div>
+
+              {/* Active Tasks */}
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-orange-500 rounded-sm"></div>
+                  <span className="text-sm font-medium text-gray-700">
+                    {boardItems.filter(item => item.status === 'in_progress').length}
+                  </span>
+                  <span className="text-xs text-gray-500">active</span>
+                </div>
+              </div>
+
+              {/* Completed Tasks */}
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                  <span className="text-sm font-medium text-gray-700">
+                    {boardItems.filter(item => item.status === 'complete').length}
+                  </span>
+                  <span className="text-xs text-gray-500">done</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Center Section - Current Activity */}
+            <div className="flex items-center space-x-3">
+              {editingCell && (
+                <div className="flex items-center space-x-2 bg-blue-50 px-3 py-1 rounded-full">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-medium text-blue-700">
+                    Editing {columns.find(c => c.id === editingCell.column)?.name}
+                  </span>
+                </div>
+              )}
+              
+              {selectedItems.size > 0 && (
+                <div className="flex items-center space-x-2 bg-purple-50 px-3 py-1 rounded-full">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-xs font-medium text-purple-700">
+                    {selectedItems.size} selected
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Right Section - Connection & Actions */}
+            <div className="flex items-center space-x-4">
+              {/* Auto-save Status */}
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-xs text-gray-600 font-medium">Auto-saved</span>
+              </div>
+
+              {/* Collaboration Status */}
+              <div className="flex items-center space-x-2 bg-emerald-50 px-3 py-1 rounded-full">
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-medium text-emerald-700">Live</span>
+                </div>
+                {Object.keys(collaborationState).length > 0 && (
+                  <div className="flex items-center space-x-1">
+                    <span className="text-xs text-emerald-600">•</span>
+                    <span className="text-xs text-emerald-600 font-medium">
+                      {Object.keys(collaborationState).length} online
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Zoom Level */}
+              <div className="flex items-center space-x-1">
+                <span className="text-xs text-gray-500">100%</span>
+              </div>
+
+              {/* Keyboard Shortcuts Hint */}
+              <div className="hidden lg:flex items-center space-x-1 text-xs text-gray-400">
+                <span>Press</span>
+                <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl</kbd>
+                <span>+</span>
+                <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">?</kbd>
+                <span>for shortcuts</span>
+              </div>
+            </div>
           </div>
         </div>
 
