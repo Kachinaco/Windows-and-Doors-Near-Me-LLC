@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { createServer } from "http";
 import { setupRoutes } from "./routes-simplified";
+import { initializeDatabase } from "./database-setup";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
@@ -38,6 +39,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize database
+  await initializeDatabase();
+  
   setupRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
