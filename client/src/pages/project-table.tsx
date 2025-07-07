@@ -49,19 +49,21 @@ const MondayBoard = () => {
     { id: "item", name: "Main Item", type: "text", order: 1 },
     { id: "subitems", name: "Sub Items", type: "subitems", order: 2 },
     { id: "status", name: "Status", type: "status", order: 3 },
-    { id: "assignedTo", name: "People", type: "people", order: 4 },
-    { id: "dueDate", name: "Due Date", type: "date", order: 5 },
-    { id: "checkbox", name: "Done", type: "checkbox", order: 6 },
-    { id: "progress", name: "Progress", type: "progress", order: 7 },
+    { id: "priority", name: "Priority", type: "dropdown", order: 4, options: ["Low", "Medium", "High", "Critical"] },
+    { id: "assignedTo", name: "People", type: "people", order: 5 },
+    { id: "dueDate", name: "Due Date", type: "date", order: 6 },
+    { id: "checkbox", name: "Done", type: "checkbox", order: 7 },
+    { id: "progress", name: "Progress", type: "progress", order: 8 },
   ]);
 
   // Sub-item columns configuration (separate from main columns)
   const [subItemColumns, setSubItemColumns] = useState([
     { id: "status", name: "Status", type: "status", order: 1 },
-    { id: "assignedTo", name: "People", type: "people", order: 2 },
-    { id: "dueDate", name: "Due Date", type: "date", order: 3 },
-    { id: "checkbox", name: "Done", type: "checkbox", order: 4 },
-    { id: "progress", name: "Progress", type: "progress", order: 5 },
+    { id: "priority", name: "Priority", type: "dropdown", order: 2, options: ["Low", "Medium", "High", "Critical"] },
+    { id: "assignedTo", name: "People", type: "people", order: 3 },
+    { id: "dueDate", name: "Due Date", type: "date", order: 4 },
+    { id: "checkbox", name: "Done", type: "checkbox", order: 5 },
+    { id: "progress", name: "Progress", type: "progress", order: 6 },
   ]);
 
   // Initial board data with folders
@@ -72,6 +74,7 @@ const MondayBoard = () => {
       values: {
         item: "Kitchen Renovation Project",
         status: "in progress",
+        priority: "High",
         assignedTo: "John Smith, Sarah Wilson",
         dueDate: "2025-07-15",
         checkbox: false,
@@ -137,6 +140,18 @@ const MondayBoard = () => {
     },
     {
       id: 2,
+      values: {
+        item: "Bathroom Remodel",
+        status: "not started",
+        priority: "Medium",
+        assignedTo: "Mike Johnson",
+        dueDate: "2025-08-01",
+        checkbox: false,
+        progress: 0,
+        email: "client2@example.com",
+        phone: "(555) 987-6543",
+        location: "456 Oak Ave, Somewhere City"
+      },
       name: "Bathroom Remodel",
       status: { id: "not-started", color: "#C4C4C4", label: "Not Started" },
       assignedTo: ["Mike Johnson"],
@@ -548,6 +563,7 @@ const MondayBoard = () => {
     const columnTypeInfo = {
       text: { name: "Text Column", description: "Simple text field for notes and descriptions" },
       status: { name: "Status Column", description: "Status with colored labels" },
+      dropdown: { name: "Dropdown Column", description: "Select from predefined options" },
       people: { name: "People Column", description: "Assign team members" },
       date: { name: "Date Column", description: "Date picker for deadlines and schedules" },
       number: { name: "Number Column", description: "Numeric values for costs, quantities, etc." },
@@ -610,6 +626,7 @@ const MondayBoard = () => {
     const columnTypeInfo = {
       text: { name: "Text Column", description: "Simple text field for notes and descriptions" },
       status: { name: "Status Column", description: "Status with colored labels" },
+      dropdown: { name: "Dropdown Column", description: "Select from predefined options" },
       people: { name: "People Column", description: "Assign team members" },
       date: { name: "Date Column", description: "Date picker for deadlines and schedules" },
       number: { name: "Number Column", description: "Numeric values for costs, quantities, etc." },
@@ -650,6 +667,8 @@ const MondayBoard = () => {
     switch (type) {
       case "status":
         return <div className="w-2 h-2 rounded-full bg-emerald-500" />;
+      case "dropdown":
+        return <ChevronDown className="w-3 h-3 text-blue-400" />;
       case "people":
         return <User className="w-3 h-3 text-purple-400" />;
       case "date":
@@ -944,6 +963,12 @@ const MondayBoard = () => {
       order: Math.max(...columns.map(col => col.order)) + 1,
       formula: formula
     };
+
+    // Add default options for dropdown columns
+    if (type === "dropdown") {
+      newColumn.options = ["Option 1", "Option 2", "Option 3"];
+    }
+
     setColumns(prev => [...prev, newColumn]);
     setIsAddingColumn(false);
   };
@@ -956,6 +981,12 @@ const MondayBoard = () => {
       order: Math.max(...subItemColumns.map(col => col.order), 0) + 1,
       width: 150
     };
+
+    // Add default options for dropdown columns
+    if (type === "dropdown") {
+      newColumn.options = ["Option 1", "Option 2", "Option 3"];
+    }
+
     setSubItemColumns(prev => [...prev, newColumn]);
   };
 
@@ -1215,6 +1246,7 @@ const MondayBoard = () => {
     const columnTypes = [
       { type: "text", name: "Text", icon: "📝", description: "Simple text field" },
       { type: "status", name: "Status", icon: "🟡", description: "Status with colored labels" },
+      { type: "dropdown", name: "Dropdown", icon: "📋", description: "Select from predefined options" },
       { type: "people", name: "People", icon: "👤", description: "Assign team members" },
       { type: "date", name: "Date", icon: "📅", description: "Date picker" },
       { type: "number", name: "Number", icon: "🔢", description: "Numeric values" },
@@ -1533,6 +1565,35 @@ const MondayBoard = () => {
             <option value="signed">Signed</option>
             <option value="in progress">In Progress</option>
             <option value="complete">Complete</option>
+          </select>
+        );
+
+      case "dropdown":
+        const options = column.options || ["Option 1", "Option 2", "Option 3"];
+        return (
+          <select
+            value={value}
+            onChange={(e) =>
+              handleCellUpdate(item.id, column.id, e.target.value)
+            }
+            className={`h-6 text-xs font-medium rounded-full px-2 border-none outline-none cursor-pointer ${
+              value === "Critical"
+                ? "bg-red-100 text-red-700"
+                : value === "High"
+                  ? "bg-orange-100 text-orange-700"
+                  : value === "Medium"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : value === "Low"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-gray-100 text-gray-700"
+            }`}
+          >
+            <option value="">Select...</option>
+            {options.map((option, index) => (
+              <option key={index} value={option}>
+                {option}
+              </option>
+            ))}
           </select>
         );
 
