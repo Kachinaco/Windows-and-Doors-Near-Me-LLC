@@ -241,6 +241,18 @@ const MondayBoard = () => {
   const [newFolderCounter, setNewFolderCounter] = useState(4000);
   const [newSubItemCounter, setNewSubItemCounter] = useState(40000);
   const [collaborationState, setCollaborationState] = useState({});
+  const [dropdownOpen, setDropdownOpen] = useState(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownOpen && !event.target.closest('.status-dropdown')) {
+        setDropdownOpen(null);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [dropdownOpen]);
 
   // Updates modal state
   const [updatesModal, setUpdatesModal] = useState({
@@ -1663,35 +1675,72 @@ const MondayBoard = () => {
 
     switch (column.type) {
       case "status":
+        const statusOptions = [
+          { value: "new lead", label: "New Lead", color: "bg-cyan-500", lightColor: "bg-cyan-50", textColor: "text-cyan-700" },
+          { value: "need attention", label: "Need Attention", color: "bg-yellow-500", lightColor: "bg-yellow-50", textColor: "text-yellow-700" },
+          { value: "sent estimate", label: "Sent Estimate", color: "bg-purple-500", lightColor: "bg-purple-50", textColor: "text-purple-700" },
+          { value: "signed", label: "Signed", color: "bg-emerald-500", lightColor: "bg-emerald-50", textColor: "text-emerald-700" },
+          { value: "in progress", label: "In Progress", color: "bg-blue-500", lightColor: "bg-blue-50", textColor: "text-blue-700" },
+          { value: "complete", label: "Complete", color: "bg-green-500", lightColor: "bg-green-50", textColor: "text-green-700" }
+        ];
+        
+        const currentStatus = statusOptions.find(opt => opt.value === value) || statusOptions[0];
+        const statusDropdownKey = `status-${item.id}-${column.id}`;
+        const isStatusOpen = dropdownOpen === statusDropdownKey;
+        
         return (
-          <select
-            value={value}
-            onChange={(e) =>
-              handleCellUpdate(item.id, column.id, e.target.value)
-            }
-            className={`h-6 text-xs font-medium rounded-full px-2 border-none outline-none cursor-pointer ${
-              value === "complete"
-                ? "bg-green-100 text-green-700"
-                : value === "in progress"
-                  ? "bg-blue-100 text-blue-700"
-                  : value === "signed"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : value === "sent estimate"
-                      ? "bg-purple-100 text-purple-700"
-                      : value === "need attention"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : value === "new lead"
-                          ? "bg-cyan-100 text-cyan-700"
-                          : "bg-gray-100 text-gray-700"
-            }`}
-          >
-            <option value="new lead">New Lead</option>
-            <option value="need attention">Need Attention</option>
-            <option value="sent estimate">Sent Estimate</option>
-            <option value="signed">Signed</option>
-            <option value="in progress">In Progress</option>
-            <option value="complete">Complete</option>
-          </select>
+          <div className="relative status-dropdown">
+            <div
+              onClick={() => setDropdownOpen(isStatusOpen ? null : statusDropdownKey)}
+              className={`h-7 px-3 py-1 rounded-full cursor-pointer flex items-center justify-between text-xs font-medium transition-all duration-200 hover:shadow-md ${currentStatus.lightColor} ${currentStatus.textColor} border border-transparent hover:border-gray-200`}
+            >
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${currentStatus.color}`}></div>
+                <span className="truncate">{currentStatus.label}</span>
+              </div>
+              <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform duration-200 ${isStatusOpen ? 'rotate-180' : ''}`} />
+            </div>
+            
+            {isStatusOpen && (
+              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white rounded-lg shadow-xl border border-gray-200" style={{ minWidth: '200px' }}>
+                <div className="p-2">
+                  {statusOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      onClick={() => {
+                        handleCellUpdate(item.id, column.id, option.value);
+                        setDropdownOpen(null);
+                      }}
+                      className={`px-3 py-2 rounded-md cursor-pointer hover:bg-gray-50 flex items-center space-x-3 transition-colors duration-150 ${
+                        value === option.value ? 'bg-blue-50 border-l-3 border-blue-500' : ''
+                      }`}
+                    >
+                      <div className={`w-3 h-3 rounded-full ${option.color}`}></div>
+                      <span className="text-sm font-medium text-gray-700">{option.label}</span>
+                      {value === option.value && (
+                        <Check className="w-3 h-3 text-blue-500 ml-auto" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Status Management Section */}
+                <div className="border-t border-gray-100 p-2">
+                  <div className="px-3 py-2 text-xs text-gray-500 font-medium uppercase tracking-wide">
+                    Status Settings
+                  </div>
+                  <div className="px-3 py-2 rounded-md cursor-pointer hover:bg-gray-50 flex items-center space-x-3 text-sm text-gray-600">
+                    <Settings className="w-3 h-3" />
+                    <span>Edit Status Labels</span>
+                  </div>
+                  <div className="px-3 py-2 rounded-md cursor-pointer hover:bg-gray-50 flex items-center space-x-3 text-sm text-gray-600">
+                    <Plus className="w-3 h-3" />
+                    <span>Add New Status</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         );
 
       case "dropdown":
