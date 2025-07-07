@@ -7,7 +7,6 @@ import {
   Folder,
   Trash2,
   User,
-  Users,
   Calendar,
   Hash,
   Tag,
@@ -34,7 +33,6 @@ import {
   MoreHorizontal,
   Edit,
   Copy,
-  Clock,
 } from "lucide-react";
 
 const MondayBoard = () => {
@@ -243,36 +241,6 @@ const MondayBoard = () => {
   const [newSubItemCounter, setNewSubItemCounter] = useState(40000);
   const [collaborationState, setCollaborationState] = useState({});
   const [dropdownOpen, setDropdownOpen] = useState(null);
-  const [activeView, setActiveView] = useState('table');
-
-  // Analytics data
-  const analyticsData = {
-    totalProjects: boardItems.length,
-    completedProjects: boardItems.filter(item => item.values?.status === 'complete' || item.status?.id === 'complete').length,
-    inProgressProjects: boardItems.filter(item => item.values?.status === 'in progress' || item.status?.id === 'in-progress').length,
-    totalRevenue: 125000,
-    avgProjectTime: 14,
-    teamUtilization: 78,
-    projectStatusDistribution: [
-      { name: 'New Lead', count: boardItems.filter(item => item.group === 'New Leads').length, color: 'bg-gray-500' },
-      { name: 'In Progress', count: boardItems.filter(item => item.group === 'Active Projects').length, color: 'bg-orange-500' },
-      { name: 'Scheduled', count: boardItems.filter(item => item.group === 'Scheduled Work').length, color: 'bg-blue-500' },
-      { name: 'Complete', count: boardItems.filter(item => item.group === 'Completed').length, color: 'bg-green-500' },
-    ],
-    recentActivity: [
-      { action: 'Project updated', project: 'Kitchen Renovation Project', time: '2 hours ago' },
-      { action: 'Task completed', project: 'Window Installation', time: '4 hours ago' },
-      { action: 'New project added', project: 'Bathroom Remodel', time: '1 day ago' }
-    ],
-    monthlyRevenue: [
-      { month: 'Jan', revenue: 45000 },
-      { month: 'Feb', revenue: 52000 },
-      { month: 'Mar', revenue: 48000 },
-      { month: 'Apr', revenue: 61000 },
-      { month: 'May', revenue: 55000 },
-      { month: 'Jun', revenue: 67000 }
-    ]
-  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -3098,316 +3066,47 @@ const MondayBoard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Dashboard Header */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">W</span>
+    <div className="h-screen bg-white text-gray-900 flex overflow-hidden">
+      {/* Main Board Container */}
+      <div className="flex flex-col flex-1">
+        {/* Header */}
+        <header className="bg-white border-b border-gray-200 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <button className="text-gray-600 hover:text-gray-900 text-sm px-3 py-2 rounded-md flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </button>
+              <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
+                <div className="w-3 h-3 bg-white rounded-sm" />
               </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Windows & Doors Projects
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Manage your installation projects and teams
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {boardItems.length} project{boardItems.length !== 1 ? 's' : ''}
-            </div>
-            <button
-              onClick={() => handleAddItem("New Leads")}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              New Project
-            </button>
-            <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors">
-              Automate
-            </button>
-            <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
-              Share
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Navigation Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700 px-6 bg-white dark:bg-gray-800">
-        <nav className="flex space-x-8">
-          <button
-            onClick={() => setActiveView('table')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeView === 'table'
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            Table
-          </button>
-          <button
-            onClick={() => setActiveView('kanban')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeView === 'kanban'
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            Kanban
-          </button>
-          <button
-            onClick={() => setActiveView('gantt')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeView === 'gantt'
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            Gantt
-          </button>
-          <button
-            onClick={() => setActiveView('calendar')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeView === 'calendar'
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            Calendar
-          </button>
-          <button
-            onClick={() => setActiveView('dashboard')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeView === 'dashboard'
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            Dashboard
-          </button>
-        </nav>
-      </div>
-
-      {/* Dashboard Stats */}
-      <div className="px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="grid grid-cols-4 gap-4">
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                <Hash className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Projects</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{boardItems.length}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                <Check className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {boardItems.filter(item => item.values?.status === 'complete' || item.status?.id === 'complete').length}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">In Progress</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {boardItems.filter(item => item.values?.status === 'in progress' || item.status?.id === 'in-progress').length}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Team Members</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{teamMembers.length}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Container */}
-      <div className="flex flex-col flex-1 px-6 py-4">
-        {activeView === 'table' ? (
-          // Monday.com Table View
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        ) : activeView === 'dashboard' ? (
-          // Analytics Dashboard View
-          <div className="space-y-6">
-            {/* Analytics Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Projects</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{analyticsData.totalProjects}</p>
-                  </div>
-                  <BarChart3 className="h-8 w-8 text-blue-500" />
-                </div>
-              </div>
-              
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
-                    <p className="text-2xl font-bold text-green-600">{analyticsData.completedProjects}</p>
-                  </div>
-                  <Check className="h-8 w-8 text-green-500" />
-                </div>
-              </div>
-              
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">In Progress</p>
-                    <p className="text-2xl font-bold text-orange-600">{analyticsData.inProgressProjects}</p>
-                  </div>
-                  <Clock className="h-8 w-8 text-orange-500" />
-                </div>
-              </div>
-              
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Team Members</p>
-                    <p className="text-2xl font-bold text-purple-600">{teamMembers.length}</p>
-                  </div>
-                  <Users className="h-8 w-8 text-purple-500" />
-                </div>
-              </div>
+              <h1 className="text-lg font-medium">Project Board</h1>
             </div>
 
-            {/* Charts and Analytics */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Project Status Distribution */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Project Status Distribution</h3>
-                <div className="space-y-3">
-                  {analyticsData.projectStatusDistribution.map((status, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${status.color}`} />
-                        <span className="text-gray-700 dark:text-gray-300">{status.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-600 dark:text-gray-400">{status.count} projects</span>
-                        <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div 
-                            className={`h-2 rounded-full ${status.color}`}
-                            style={{ width: `${status.count > 0 ? (status.count / analyticsData.totalProjects) * 100 : 0}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
-                <div className="space-y-4">
-                  {analyticsData.recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                      <div>
-                        <p className="text-gray-900 dark:text-white font-medium">{activity.action}</p>
-                        <p className="text-gray-600 dark:text-gray-400">{activity.project}</p>
-                        <p className="text-gray-500 dark:text-gray-500 text-sm">{activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Revenue Trends */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Monthly Revenue Trend</h3>
-              <div className="space-y-3">
-                {analyticsData.monthlyRevenue.map((month, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <span className="text-gray-700 dark:text-gray-300 w-12">{month.month}</span>
-                    <div className="flex-1 mx-4">
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div 
-                          className="h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full"
-                          style={{ width: `${(month.revenue / 70000) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                    <span className="text-gray-900 dark:text-white font-medium">
-                      ${month.revenue.toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          // Other views (Kanban, Gantt, Calendar)
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden p-16 text-center">
-            <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              {activeView.charAt(0).toUpperCase() + activeView.slice(1)} View
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">Coming soon...</p>
-          </div>
-        )}
-
-        {activeView === 'table' && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          {/* Board Header */}
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Project Management Board</h2>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Track progress and manage team assignments
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {undoStack.length > 0 && (
-                  <button 
-                    className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    aria-label="Undo last action"
-                    title="Undo last action"
-                  >
-                    <Undo2 className="w-4 h-4" />
-                  </button>
-                )}
-                <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                  <Settings className="w-4 h-4" />
+            <div className="flex items-center space-x-2">
+              {undoStack.length > 0 && (
+                <button 
+                  className="text-gray-600 hover:text-gray-900 p-1 rounded"
+                  aria-label="Undo last action"
+                  title="Undo last action"
+                >
+                  <Undo2 className="w-4 h-4" />
                 </button>
-              </div>
+              )}
+              <button
+                onClick={() => handleAddItem("New Leads")}
+                className="text-gray-600 hover:text-gray-900 p-1 rounded"
+                aria-label="Add new item"
+                title="Add new item"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
             </div>
           </div>
+        </header>
 
-          {/* Board Content */}
-          <div className="overflow-x-auto overflow-y-auto" style={{ scrollBehavior: 'smooth' }}>
+        {/* Board Content */}
+        <div className="flex-1 overflow-x-auto overflow-y-auto bg-white" style={{ scrollBehavior: 'smooth' }}>
           <div className="min-w-max w-full">
             {/* Column Headers */}
             <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
@@ -4386,8 +4085,9 @@ const MondayBoard = () => {
             </div>
           </div>
         )}
+      </div>
 
-        {/* Side Panel */}
+      {/* Side Panel */}
       {sidePanelOpen && selectedMainItem && (
         <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
@@ -4880,7 +4580,7 @@ const MondayBoard = () => {
             </div>
           </div>
         </div>
-        )}
+      )}
 
       {/* AI Formula Assistant */}
       <AIFormulaAssistant />
