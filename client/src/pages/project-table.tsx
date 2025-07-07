@@ -3150,31 +3150,37 @@ const MondayBoard = () => {
                           {column.name}
                         </span>
                       </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setColumnMenuOpen(
-                            columnMenuOpen === `main-${column.id}`
-                              ? null
-                              : `main-${column.id}`,
-                          );
-                        }}
-                        className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded opacity-100 transition-opacity"
-                      >
-                        ⋯
-                      </button>
+                      {column.id !== "item" && column.id !== "subitems" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setColumnMenuOpen(
+                              columnMenuOpen === `main-${column.id}`
+                                ? null
+                                : `main-${column.id}`,
+                            );
+                          }}
+                          className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded opacity-100 transition-opacity"
+                        >
+                          ⋯
+                        </button>
+                      )}
                     </div>
-                    <ColumnMenu
-                      columnId={column.id}
-                      columnName={column.name}
-                      isOpen={columnMenuOpen === `main-${column.id}`}
-                      onClose={() => setColumnMenuOpen(null)}
-                    />
-                    <AddColumnMenu
-                      isOpen={addColumnMenuOpen === `main-${column.id}`}
-                      onClose={() => setAddColumnMenuOpen(null)}
-                      onSelectType={handleSelectColumnType}
-                    />
+                    {column.id !== "item" && column.id !== "subitems" && (
+                      <ColumnMenu
+                        columnId={column.id}
+                        columnName={column.name}
+                        isOpen={columnMenuOpen === `main-${column.id}`}
+                        onClose={() => setColumnMenuOpen(null)}
+                      />
+                    )}
+                    {column.id !== "item" && column.id !== "subitems" && (
+                      <AddColumnMenu
+                        isOpen={addColumnMenuOpen === `main-${column.id}`}
+                        onClose={() => setAddColumnMenuOpen(null)}
+                        onSelectType={handleSelectColumnType}
+                      />
+                    )}
                     {index < columns.length - 1 && (
                       <div
                         className="absolute right-0 top-0 bottom-0 w-3 cursor-col-resize flex items-center justify-center hover:bg-blue-100"
