@@ -1719,7 +1719,7 @@ const MondayBoard = () => {
             </div>
             
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 z-50 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200">
+              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white rounded-lg shadow-xl border border-gray-200" style={{ minWidth: '200px' }}>
                 <div className="p-3">
                   <input
                     type="text"
@@ -3586,7 +3586,7 @@ const MondayBoard = () => {
                                                   </div>
                                                   
                                                   {openDropdown === `subitem-${subItem.id}-${column.id}` && (
-                                                    <div className="absolute top-full left-0 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-[100] mt-1">
+                                                    <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-[100] mt-1" style={{ minWidth: '150px' }}>
                                                       <div className="p-2 border-b border-gray-100">
                                                         <input
                                                           type="text"
