@@ -52,6 +52,39 @@ export function setupRoutes(app: Express): void {
     }
   });
 
+  // Update item values endpoint
+  app.put("/api/boards/:boardId/items/:itemId", async (req, res) => {
+    try {
+      const itemId = parseInt(req.params.itemId);
+      const { field, value } = req.body;
+      
+      // Check if item_values record exists
+      const existingValue = await queryDatabase(
+        "SELECT * FROM item_values WHERE item_id = $1 AND column_id = $2",
+        [itemId, field]
+      );
+
+      if (existingValue.length > 0) {
+        // Update existing value
+        await queryDatabase(
+          "UPDATE item_values SET value = $1 WHERE item_id = $2 AND column_id = $3",
+          [JSON.stringify(value), itemId, field]
+        );
+      } else {
+        // Insert new value
+        await queryDatabase(
+          "INSERT INTO item_values (item_id, column_id, value) VALUES ($1, $2, $3)",
+          [itemId, field, JSON.stringify(value)]
+        );
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Failed to update item value:", error);
+      res.status(500).json({ error: "Failed to update item value" });
+    }
+  });
+
   // Project routes (boards)
   app.get("/api/projects", async (req, res) => {
     try {

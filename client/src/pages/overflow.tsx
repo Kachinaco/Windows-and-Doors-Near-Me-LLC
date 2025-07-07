@@ -324,6 +324,53 @@ const MondayBoard = () => {
     }
   };
 
+  // Save functions for database persistence
+  const saveItemChange = async (itemId, field, value) => {
+    try {
+      const response = await fetch(`/api/boards/items/${itemId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ [field]: value })
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to save item change:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error saving item:', error);
+    }
+  };
+
+  const createNewItem = async (boardId, groupName = "New Items") => {
+    try {
+      const response = await fetch(`/api/boards/${boardId}/items`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ 
+          board_id: boardId,
+          group_name: groupName,
+          order: mainItems.length + 1
+        })
+      });
+      
+      if (response.ok) {
+        const newItem = await response.json();
+        setMainItems(prev => [...prev, newItem]);
+        return newItem;
+      } else {
+        console.error('Failed to create item:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error creating item:', error);
+    }
+  };
+
   const loadDefaultBoardData = (projectId, boardId) => {
     // Get the project and board names for context
     const project = projects.find(p => p.id === projectId);
@@ -974,7 +1021,8 @@ const MondayBoard = () => {
   }));
 
   // Event handlers
-  const handleCellUpdate = useCallback((projectId, field, value) => {
+  const handleCellUpdate = useCallback(async (projectId, field, value) => {
+    // Update local state immediately for responsiveness
     setMainItems((prev) =>
       prev.map((item) =>
         item.id === projectId
@@ -991,6 +1039,24 @@ const MondayBoard = () => {
         timestamp: Date.now(),
       },
     ]);
+
+    // Save to database
+    try {
+      const response = await fetch(`/api/boards/1/items/${projectId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ field, value }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save to database');
+      }
+    } catch (error) {
+      console.error('Error saving cell update:', error);
+      // TODO: Show error message to user and possibly revert local changes
+    }
 
     // Force component re-render to recalculate formulas
     setTimeout(() => {
