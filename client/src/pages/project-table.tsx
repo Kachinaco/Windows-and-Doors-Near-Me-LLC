@@ -1669,20 +1669,30 @@ const MondayBoard = () => {
         
         if (hasFormula) {
           try {
-            // Simple calculation for basic formulas like "Numbers * 2"
-            if (column.formula.includes("Numbers")) {
-              const numbersValue = item.numbers || 0;
-              if (column.formula === "Numbers * 2") {
-                displayValue = numbersValue * 2;
-              } else if (column.formula === "Numbers + 10") {
-                displayValue = numbersValue + 10;
-              } else if (column.formula === "Numbers / 2") {
-                displayValue = numbersValue / 2;
+            // Enhanced formula evaluation with proper column references
+            let expression = column.formula;
+            
+            // Replace column references like {Numbers} with actual values
+            const columnMatches = expression.match(/\{([^}]+)\}/g);
+            if (columnMatches) {
+              columnMatches.forEach(match => {
+                const columnName = match.slice(1, -1); // Remove { and }
+                const columnValue = item[columnName.toLowerCase()] || 0;
+                expression = expression.replace(match, columnValue);
+              });
+              
+              // Evaluate the mathematical expression
+              if (/^[0-9+\-*/.() ]+$/.test(expression)) {
+                displayValue = Function('"use strict"; return (' + expression + ')')();
+                // Round to 2 decimal places if needed
+                if (typeof displayValue === 'number') {
+                  displayValue = Math.round(displayValue * 100) / 100;
+                }
               } else {
-                displayValue = column.formula; // Show the formula itself
+                displayValue = "Invalid formula";
               }
             } else {
-              displayValue = column.formula; // Show the formula itself
+              displayValue = column.formula; // Show the formula itself if no column references
             }
           } catch (error) {
             displayValue = "Error";
@@ -1945,12 +1955,12 @@ const MondayBoard = () => {
                         key={col.id}
                         onClick={() => {
                           const currentInput = localInput;
-                          const newInput = currentInput ? `${currentInput} + ${col.name}` : col.name;
+                          const newInput = currentInput ? `${currentInput} + {${col.name}}` : `{${col.name}}`;
                           setLocalInput(newInput);
                         }}
                         className="w-full text-left text-xs px-2 py-1 bg-white dark:bg-gray-800 rounded border hover:bg-green-50 hover:border-green-300 transition-colors cursor-pointer"
                       >
-                        <span className="text-green-600 dark:text-green-400">{col.name}</span>
+                        <span className="text-green-600 dark:text-green-400">{"{" + col.name + "}"}</span>
                       </button>
                     ))}
                     {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').length === 0 && (
@@ -2009,7 +2019,7 @@ const MondayBoard = () => {
                   
                   {/* Simple helper text */}
                   <div className="mt-2 text-xs text-gray-500">
-                    Example: Numbers * 2 (multiplies Numbers column by 2)
+                    Example: {"{Numbers}"} * 2 (multiplies Numbers column by 2)
                   </div>
                 </div>
 
