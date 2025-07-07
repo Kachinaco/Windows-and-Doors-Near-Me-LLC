@@ -401,15 +401,6 @@ export default function NavigationPage() {
       category: "Communication",
       requiresAuth: true
     },
-    {
-      title: "Analytics Dashboard",
-      description: "Project analytics, charts, and performance metrics",
-      path: "/analytics",
-      icon: BarChart3,
-      category: "Analytics",
-      requiresAuth: true,
-      badge: "New"
-    },
 
     // Customer Pages
     {

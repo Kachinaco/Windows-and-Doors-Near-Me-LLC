@@ -51,10 +51,9 @@ import CrmDashboard from "@/pages/crm-dashboard";
 import DashboardOld from "@/pages/dashboard-old";
 import ExcelProjectManager from "@/pages/excel-project-manager";
 import ProjectPanelClean from "@/pages/project-panel-clean";
-import ProjectTable from "@/pages/project-table-minimal";
+import ProjectTable from "@/pages/project-table";
 import QuoteBroken from "@/pages/quote-broken";
 import SettingsBroken from "@/pages/settings-broken";
-import Analytics from "@/pages/analytics";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -144,7 +143,6 @@ function Router() {
           <Route path="/customer-orders" component={CustomerOrdersPage} />
           <Route path="/customer-delivery" component={CustomerDeliveryPage} />
           <Route path="/customer-settings" component={CustomerSettingsPage} />
-          <Route path="/analytics" component={Analytics} />
         </>
       ) : (
         <>
