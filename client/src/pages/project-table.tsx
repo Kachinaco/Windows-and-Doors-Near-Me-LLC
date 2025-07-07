@@ -1471,8 +1471,8 @@ const MondayBoard = () => {
                 isOpen: true,
                 columnId: columnId,
                 currentName: columnName,
-                callback: (newName) => {
-                  handleRenameColumn(columnId, newName);
+                callback: (colId, newName) => {
+                  handleRenameColumn(colId, newName);
                   onClose();
                 }
               });
