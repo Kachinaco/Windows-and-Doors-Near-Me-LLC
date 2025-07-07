@@ -77,59 +77,79 @@ const MondayBoard = () => {
   // Board data cache to persist data between board switches
   const [boardDataCache, setBoardDataCache] = useState(new Map());
 
-  // Fetch board items from API
-  const { data: boardItems = [], isLoading: boardItemsLoading } = useQuery({
-    queryKey: [`/api/boards/${activeBoard}/items`],
-    enabled: !!activeBoard,
-  });
-
-  // Create board item mutation
-  const createBoardItemMutation = useMutation({
-    mutationFn: async (itemData: any) => {
-      console.log('Making API request to create item:', itemData);
-      const response = await apiRequest("POST", `/api/boards/${activeBoard}/items`, itemData);
-      console.log('API response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API error response:', errorText);
-        throw new Error(`Failed to create item: ${response.status} ${errorText}`);
-      }
-      
-      const result = await response.json();
-      console.log('API response data:', result);
-      return result;
-    },
-    onSuccess: (data) => {
-      console.log('Mutation success, invalidating cache for board:', activeBoard);
-      queryClient.invalidateQueries({ queryKey: [`/api/boards/${activeBoard}/items`] });
-    },
-    onError: (error) => {
-      console.error('Mutation error:', error);
+  // Local storage for board items - simple and immediate
+  const [boardItems, setBoardItems] = useState(() => {
+    const saved = localStorage.getItem(`board-${activeBoard}-items`);
+    if (saved) {
+      return JSON.parse(saved);
     }
+    
+    // Initialize with sample data if empty
+    const defaultItems = [
+      {
+        id: 1,
+        board_id: activeBoard,
+        group_name: "New Projects",
+        values: {
+          item: "Welcome to your board!",
+          people: "",
+          location: "Sample Location",
+          phone: "",
+          status: "working-on-it",
+          measure_date: "",
+          delivery_date: "",
+          install_date: ""
+        },
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    ];
+    
+    return defaultItems;
   });
 
-  // Update board item mutation
-  const updateBoardItemMutation = useMutation({
-    mutationFn: async ({ itemId, updates }: { itemId: number; updates: any }) => {
-      const response = await apiRequest("PUT", `/api/boards/${activeBoard}/items/${itemId}`, updates);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/boards/${activeBoard}/items`] });
-    },
-  });
+  // Save to localStorage whenever boardItems changes
+  useEffect(() => {
+    localStorage.setItem(`board-${activeBoard}-items`, JSON.stringify(boardItems));
+  }, [boardItems, activeBoard]);
 
-  // Delete board item mutation
-  const deleteBoardItemMutation = useMutation({
-    mutationFn: async (itemId: number) => {
-      const response = await apiRequest("DELETE", `/api/boards/${activeBoard}/items/${itemId}`);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/boards/${activeBoard}/items`] });
-    },
-  });
+  // Simple item creation - no API needed
+  const createNewItem = (itemData) => {
+    const newItem = {
+      id: Date.now(),
+      board_id: activeBoard,
+      group_name: itemData.group_name,
+      values: {
+        item: `New Item ${boardItems.length + 1}`,
+        people: "",
+        location: "",
+        phone: "",
+        status: "not-started",
+        measure_date: "",
+        delivery_date: "",
+        install_date: ""
+      },
+      created_at: new Date(),
+      updated_at: new Date()
+    };
+    
+    setBoardItems(prev => [...prev, newItem]);
+    return newItem;
+  };
+
+  // Simple local update function
+  const updateBoardItem = (itemId, updates) => {
+    setBoardItems(prev => prev.map(item => 
+      item.id === itemId 
+        ? { ...item, ...updates, updated_at: new Date() }
+        : item
+    ));
+  };
+
+  // Simple local delete function
+  const deleteBoardItem = (itemId) => {
+    setBoardItems(prev => prev.filter(item => item.id !== itemId));
+  };
 
   // Fetch team members from API
   const { data: teamMembers = [] } = useQuery({
@@ -520,32 +540,7 @@ const MondayBoard = () => {
     }
   };
 
-  const createNewItem = async (boardId, groupName = "New Items") => {
-    try {
-      const response = await fetch(`/api/boards/${boardId}/items`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ 
-          board_id: boardId,
-          group_name: groupName,
-          order: boardItems.length + 1
-        })
-      });
-      
-      if (response.ok) {
-        const newItem = await response.json();
-        // Items handled by React Query mutations
-        return newItem;
-      } else {
-        console.error('Failed to create item:', await response.text());
-      }
-    } catch (error) {
-      console.error('Error creating item:', error);
-    }
-  };
+  // Removed duplicate API-based createNewItem function
 
   const loadDefaultBoardData = (projectId, boardId) => {
     // Get the project and board names for context
@@ -1292,8 +1287,8 @@ const MondayBoard = () => {
       },
     };
     
-    updateBoardItemMutation.mutate({ itemId: projectId, updates });
-  }, [updateBoardItemMutation]);
+    updateBoardItem(projectId, updates);
+  }, []);
 
   const handleAddItem = (groupName = "New Leads") => {
     console.log('Creating new item with group:', groupName);
@@ -1302,16 +1297,14 @@ const MondayBoard = () => {
       group_name: groupName,
     };
     
-    createBoardItemMutation.mutate(itemData, {
-      onSuccess: (data) => {
-        console.log('Item created successfully:', data);
-        showToast("New item added successfully!", "success");
-      },
-      onError: (error) => {
-        console.error('Failed to create item:', error);
-        showToast("Failed to create item. Please try again.", "error");
-      }
-    });
+    try {
+      const newItem = createNewItem(itemData);
+      console.log('Item created successfully:', newItem);
+      showToast("New item added successfully!", "success");
+    } catch (error) {
+      console.error('Failed to create item:', error);
+      showToast("Failed to create item. Please try again.", "error");
+    }
   };
 
   const handleAddFolder = (projectId) => {
@@ -3814,15 +3807,8 @@ const MondayBoard = () => {
 
         {/* Board Content - Fixed Horizontal Scroll */}
         <div className="flex-1 overflow-auto bg-white" style={{ scrollBehavior: 'smooth' }}>
-          {boardItemsLoading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-              <span className="ml-2 text-gray-600">Loading board data...</span>
-            </div>
-          )}
-          
-          {/* Use React Query data instead of manual state */}
-          {!boardItemsLoading && boardItems.length === 0 && (
+          {/* No loading state needed for localStorage */}
+          {boardItems.length === 0 && (
             <div className="flex items-center justify-center py-8">
               <span className="text-gray-500">No items found. Click + to add your first item.</span>
             </div>
