@@ -3337,5 +3337,90 @@ Return only the formula, no explanation:`;
     });
   });
   
+  // Board API routes for multi-tenant system
+  app.get("/api/boards/:boardId/data", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const boardId = parseInt(req.params.boardId);
+      const user = req.user;
+      
+      if (!user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      // Mock board data for now - will be shared per admin account
+      const mockData = {
+        items: [
+          {
+            id: 1,
+            board_id: boardId,
+            group_name: "New Leads", 
+            order: 0,
+            values: {
+              1: "Project Alpha",
+              2: "John Smith", 
+              3: "In Progress",
+              4: "2024-01-15"
+            }
+          }
+        ],
+        columns: [
+          { id: 1, name: "Name", type: "text", order: 0 },
+          { id: 2, name: "Person", type: "people", order: 1 },
+          { id: 3, name: "Status", type: "status", order: 2 },
+          { id: 4, name: "Date", type: "date", order: 3 }
+        ]
+      };
+      
+      res.json(mockData);
+    } catch (error) {
+      console.error("Error fetching board data:", error);
+      res.status(500).json({ error: "Failed to fetch board data" });
+    }
+  });
+  
+  app.post("/api/boards/:boardId/items", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const boardId = parseInt(req.params.boardId);
+      const { groupName } = req.body;
+      const user = req.user;
+      
+      if (!user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      // Mock response - shared per admin account
+      const newItem = {
+        id: Date.now(),
+        board_id: boardId,
+        group_name: groupName || "Main Group",
+        order: 0,
+        values: {}
+      };
+      
+      res.json(newItem);
+    } catch (error) {
+      console.error("Error creating board item:", error);
+      res.status(500).json({ error: "Failed to create board item" });
+    }
+  });
+  
+  app.post("/api/boards/items/:itemId/values", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    try {
+      const itemId = parseInt(req.params.itemId);
+      const { columnId, value } = req.body;
+      const user = req.user;
+      
+      if (!user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      // Mock response - updates shared per admin account
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating board item value:", error);
+      res.status(500).json({ error: "Failed to update board item value" });
+    }
+  });
+
   return httpServer;
 }

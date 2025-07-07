@@ -9,6 +9,7 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   password_hash: text('password_hash').notNull(),
   role: text('role').default('customer'),
+  admin_id: integer('admin_id').references(() => users.id), // References the admin user
   first_name: text('first_name'),
   last_name: text('last_name'),
   created_at: timestamp('created_at').defaultNow(),
@@ -19,6 +20,7 @@ export const boards = pgTable('boards', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   description: text('description'),
+  admin_id: integer('admin_id').references(() => users.id), // All data belongs to admin account
   created_by: integer('created_by').references(() => users.id),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),
