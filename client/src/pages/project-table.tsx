@@ -3460,7 +3460,7 @@ const MondayBoard = () => {
                                   folder.subItems.map((subItem) => (
                                     <div
                                       key={subItem.id}
-                                      className="flex hover:bg-blue-50 bg-blue-25 border-b border-blue-200 group"
+                                      className="flex hover:bg-blue-50 bg-blue-25 border-b border-blue-200 group relative"
                                     >
                                       <div className="w-12 px-2 py-2 border-r border-blue-200 flex items-center justify-center">
                                         <button
@@ -3542,7 +3542,7 @@ const MondayBoard = () => {
                                       {subItemColumns.map((column) => (
                                         <div
                                           key={column.id}
-                                          className="px-3 py-2 border-r border-blue-200 relative"
+                                          className="px-3 py-2 border-r border-blue-200 relative overflow-visible"
                                           style={{ width: getColumnWidth(column.type) }}
                                         >
                                           <div className="flex items-center justify-between">
@@ -3566,6 +3566,7 @@ const MondayBoard = () => {
                                                 <div className="relative flex-1">
                                                   <div
                                                     className="w-full text-xs text-blue-600 bg-transparent border-none outline-none cursor-pointer px-2 py-1 rounded hover:bg-blue-50 min-h-[20px] flex items-center"
+                                                    data-dropdown-trigger={`subitem-${subItem.id}-${column.id}`}
                                                     onClick={() => {
                                                       const dropdownKey = `subitem-${subItem.id}-${column.id}`;
                                                       setOpenDropdown(openDropdown === dropdownKey ? null : dropdownKey);
@@ -3585,7 +3586,7 @@ const MondayBoard = () => {
                                                   </div>
                                                   
                                                   {openDropdown === `subitem-${subItem.id}-${column.id}` && (
-                                                    <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 mt-1">
+                                                    <div className="absolute top-full left-0 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-[100] mt-1">
                                                       <div className="p-2 border-b border-gray-100">
                                                         <input
                                                           type="text"
