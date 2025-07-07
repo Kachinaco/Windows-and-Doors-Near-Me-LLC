@@ -3287,7 +3287,7 @@ const MondayBoard = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 text-gray-900 flex overflow-hidden">
+    <div className="h-screen bg-gray-50 text-gray-900 flex">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
@@ -3485,8 +3485,8 @@ const MondayBoard = () => {
         </div>
       </div>
 
-      {/* Main Board Container - Mobile Optimized */}
-      <div className={`flex flex-col flex-1 bg-white transition-all duration-300 ${isSidebarOpen ? 'lg:ml-0' : ''}`}>
+      {/* Main Board Container - Fixed Layout */}
+      <div className="flex flex-col flex-1 bg-white overflow-hidden">
         {/* Header - Mobile Responsive */}
         <header className="bg-white border-b border-gray-200 px-2 sm:px-4 py-2 sm:py-3 sticky top-0 z-20">
           <div className="flex items-center justify-between">
@@ -3550,9 +3550,9 @@ const MondayBoard = () => {
           </div>
         </header>
 
-        {/* Board Content - Mobile Optimized */}
-        <div className="flex-1 overflow-x-auto overflow-y-auto bg-white" style={{ scrollBehavior: 'smooth' }}>
-          <div className="min-w-max w-full">
+        {/* Board Content - Fixed Horizontal Scroll */}
+        <div className="flex-1 overflow-auto bg-white" style={{ scrollBehavior: 'smooth' }}>
+          <div className="min-w-fit w-full" style={{ minWidth: '1200px' }}>
             {/* Mobile View Toggle */}
             <div className="sm:hidden bg-gray-50 px-3 py-2 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -3566,9 +3566,9 @@ const MondayBoard = () => {
               </div>
             </div>
 
-            {/* Column Headers - Mobile Optimized */}
+            {/* Column Headers - Fixed Width */}
             <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
-              <div className="flex">
+              <div className="flex" style={{ minWidth: '1200px' }}>
                 <div className="w-10 sm:w-12 px-1 sm:px-2 py-2 sm:py-3 border-r border-gray-200 flex items-center justify-center">
                   <input
                     type="checkbox"
@@ -3753,7 +3753,7 @@ const MondayBoard = () => {
                 {!group.collapsed && (
                   <>
                     {group.items.map((item) => (
-                      <React.Fragment key={item.id}>
+                      <div key={item.id}>
                         {/* Main Item Row */}
                         <div className="flex hover:bg-gray-50 border-b border-gray-200 group">
                           <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center">
@@ -3821,7 +3821,7 @@ const MondayBoard = () => {
                           <>
                             {/* Render folders */}
                             {(item.folders || []).map((folder) => (
-                              <React.Fragment key={folder.id}>
+                              <div key={folder.id}>
                                 {/* Folder Header with Sub-item Column Headers */}
                                 <div className="flex hover:bg-blue-50 bg-blue-25 border-b border-blue-200 group">
                                   <div className="w-12 px-2 py-2 border-r border-blue-200 flex items-center justify-center">
@@ -4318,7 +4318,7 @@ const MondayBoard = () => {
                                     <div className="w-12 px-2 py-1"></div>
                                   </div>
                                 )}
-                              </React.Fragment>
+                              </div>
                             ))}
 
                             {/* Add Folder buttons */}
@@ -4361,7 +4361,7 @@ const MondayBoard = () => {
                             </div>
                           </>
                         )}
-                      </React.Fragment>
+                      </div>
                     ))}
 
                     {/* Add Item Button */}
