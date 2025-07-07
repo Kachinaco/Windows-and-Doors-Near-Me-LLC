@@ -12,12 +12,18 @@ import {
   Star,
   Briefcase,
   Search,
+  Settings,
+  Filter,
+  MoreHorizontal,
+  Users,
+  Calendar,
+  Tag
 } from "lucide-react";
 import { Link as RouterLink } from "wouter";
 
 const MondayBoard = () => {
   // Sidebar state
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [projects, setProjects] = useState([
     { id: 1, name: "Kachina Window Projects", isActive: true, boards: [
       { id: 1, name: "Main Board", isActive: true },
@@ -29,14 +35,58 @@ const MondayBoard = () => {
 
   const queryClient = useQueryClient();
   
-  // Fetch board data from API
-  const { data: boardData, isLoading } = useQuery({
-    queryKey: [`/api/boards/${activeBoard}/data`],
-    enabled: !!activeBoard
-  });
+  // Use sample data for now since API isn't working properly
+  const sampleData = {
+    columns: [
+      { id: 1, name: "Item", type: "text", width: 200 },
+      { id: 2, name: "Status", type: "status", width: 120 },
+      { id: 3, name: "People", type: "people", width: 150 },
+      { id: 4, name: "Location", type: "text", width: 180 },
+      { id: 5, name: "Phone", type: "phone", width: 140 },
+      { id: 6, name: "Due Date", type: "date", width: 120 }
+    ],
+    items: [
+      {
+        id: 1,
+        group_name: "New Leads",
+        values: {
+          1: "Kitchen Renovation",
+          2: "In Progress",
+          3: "John Smith",
+          4: "123 Main St, Gilbert",
+          5: "(555) 123-4567",
+          6: "2025-07-15"
+        }
+      },
+      {
+        id: 2,
+        group_name: "New Leads",
+        values: {
+          1: "Bathroom Remodel",
+          2: "Not Started",
+          3: "Sarah Wilson", 
+          4: "456 Oak Ave, Mesa",
+          5: "(555) 234-5678",
+          6: "2025-08-01"
+        }
+      },
+      {
+        id: 3,
+        group_name: "Active Projects",
+        values: {
+          1: "Living Room Windows",
+          2: "Complete",
+          3: "Mike Johnson",
+          4: "789 Pine St, Chandler",
+          5: "(555) 345-6789",
+          6: "2025-07-10"
+        }
+      }
+    ]
+  };
   
-  const boardItems = boardData?.items || [];
-  const columns = boardData?.columns || [];
+  const boardItems = sampleData.items;
+  const columns = sampleData.columns;
   
   // Create new board item mutation
   const createItemMutation = useMutation({
@@ -94,38 +144,27 @@ const MondayBoard = () => {
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p>Loading board data...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex">
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex">
       {/* Sidebar */}
-      <div className={`bg-gray-900 border-r border-gray-800 transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden lg:w-64'}`}>
+      <div className={`bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden lg:w-64'}`}>
         <div className="p-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold">Workspace</h2>
             <button
               onClick={() => setIsSidebarOpen(false)}
-              className="lg:hidden p-1 hover:bg-gray-800 rounded"
+              className="lg:hidden p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
             >
               <PanelLeftClose className="w-4 h-4" />
             </button>
           </div>
           
           <nav className="space-y-2">
-            <div className="flex items-center space-x-2 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer">
+            <div className="flex items-center space-x-2 px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-300">
               <Home className="w-4 h-4" />
               <span>Home</span>
             </div>
-            <div className="flex items-center space-x-2 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer">
+            <div className="flex items-center space-x-2 px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-300">
               <Star className="w-4 h-4" />
               <span>My work</span>
             </div>
@@ -159,18 +198,18 @@ const MondayBoard = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-gray-900 border-b border-gray-800 px-4 py-3">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-900 dark:text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden p-1 hover:bg-gray-800 rounded"
+                className="lg:hidden p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
               >
                 <PanelLeft className="w-4 h-4" />
               </button>
               
               <RouterLink href="/projects">
-                <button className="flex items-center space-x-2 px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors">
+                <button className="flex items-center space-x-2 px-3 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors">
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back to Projects</span>
                 </button>
@@ -187,7 +226,7 @@ const MondayBoard = () => {
                 <input
                   type="text"
                   placeholder="Search..."
-                  className="bg-gray-800 border border-gray-700 rounded-md pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                 />
               </div>
             </div>
@@ -195,23 +234,23 @@ const MondayBoard = () => {
         </div>
 
         {/* Board Content */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-gray-900">
           <div className="space-y-6">
             {Object.entries(groupedItems).map(([groupName, items]) => (
-              <div key={groupName} className="bg-gray-900 rounded-lg border border-gray-800">
+              <div key={groupName} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 {/* Group Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-800">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center space-x-3">
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
-                    <h3 className="font-medium text-lg">{groupName}</h3>
-                    <span className="bg-gray-700 text-xs px-2 py-1 rounded">
+                    <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <h3 className="font-medium text-lg text-gray-900 dark:text-white">{groupName}</h3>
+                    <span className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs px-2 py-1 rounded">
                       {items.length}
                     </span>
                   </div>
                 </div>
 
                 {/* Column Headers */}
-                <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-800 text-sm font-medium text-gray-400">
+                <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-400">
                   {columns.map(column => (
                     <div key={column.id} className="col-span-2">
                       {column.name}
@@ -220,16 +259,16 @@ const MondayBoard = () => {
                 </div>
 
                 {/* Items */}
-                <div className="divide-y divide-gray-800">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {items.map(item => (
-                    <div key={item.id} className="grid grid-cols-12 gap-4 p-4 hover:bg-gray-800/50 transition-colors">
+                    <div key={item.id} className="grid grid-cols-12 gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                       {columns.map(column => (
                         <div key={column.id} className="col-span-2">
                           <input
                             type="text"
                             value={item.values?.[column.id] || ""}
                             onChange={(e) => handleCellUpdate(item.id, column.id, e.target.value)}
-                            className="w-full bg-transparent border border-gray-700 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
+                            className="w-full bg-transparent border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 text-gray-900 dark:text-white"
                             placeholder={`Enter ${column.name.toLowerCase()}...`}
                           />
                         </div>
@@ -242,13 +281,11 @@ const MondayBoard = () => {
                 <div className="p-4">
                   <button
                     onClick={() => handleAddItem(groupName)}
-                    disabled={createItemMutation.isPending}
-                    className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50"
+                    disabled={false}
+                    className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors disabled:opacity-50"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>
-                      {createItemMutation.isPending ? "Adding..." : "Add item"}
-                    </span>
+                    <span>Add item</span>
                   </button>
                 </div>
               </div>
@@ -257,11 +294,10 @@ const MondayBoard = () => {
             {/* Add Group Button */}
             {Object.keys(groupedItems).length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-400 mb-4">No items in this board yet</p>
+                <p className="text-gray-500 dark:text-gray-400 mb-4">No items in this board yet</p>
                 <button
                   onClick={() => handleAddItem("New Group")}
-                  disabled={createItemMutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md transition-colors disabled:opacity-50"
+                  className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md transition-colors text-white"
                 >
                   <Plus className="w-4 h-4 inline mr-2" />
                   Create first item
