@@ -28,6 +28,7 @@ import {
   Save,
   Timer,
   Globe,
+  Link,
   FolderPlus,
   MoreHorizontal,
   Edit,
@@ -226,7 +227,39 @@ const MondayBoard = () => {
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [expandedSubItems, setExpandedSubItems] = useState(new Set());
   const [expandedFolders, setExpandedFolders] = useState(new Set());
+  const [collapsedGroups, setCollapsedGroups] = useState({});
+  const [editingCell, setEditingCell] = useState(null);
+  const [editingFolder, setEditingFolder] = useState(null);
+  const [editingSubItem, setEditingSubItem] = useState(null);
+  const [isResizing, setIsResizing] = useState(null);
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
+  const [selectedMainItem, setSelectedMainItem] = useState(null);
+  const [undoStack, setUndoStack] = useState([]);
+  const [newItemCounter, setNewItemCounter] = useState(4);
+  const [newFolderCounter, setNewFolderCounter] = useState(4000);
+  const [newSubItemCounter, setNewSubItemCounter] = useState(40000);
+  const [collaborationState, setCollaborationState] = useState({});
   const [dropdownOpen, setDropdownOpen] = useState(null);
+
+  // Column menu state
+  const [columnMenuOpen, setColumnMenuOpen] = useState(null);
+  const [addColumnMenuOpen, setAddColumnMenuOpen] = useState(null);
+  
+  // Enhanced dropdown state
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [dropdownSearch, setDropdownSearch] = useState("");
+  const [editingDropdownColumn, setEditingDropdownColumn] = useState(null);
+
+  // Settings functionality state
+  const [columnFilters, setColumnFilters] = useState({});
+  const [columnSortOrder, setColumnSortOrder] = useState({});
+  const [collapsedColumns, setCollapsedColumns] = useState(new Set());
+  const [showColumnSummary, setShowColumnSummary] = useState(new Set());
+  const [isRenamingColumn, setIsRenamingColumn] = useState(null);
+  const [newColumnName, setNewColumnName] = useState("");
+  const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [newColumnType, setNewColumnType] = useState("text");
+  const [openMenus, setOpenMenus] = useState({});
 
   // Status options
   const statusOptions = [
@@ -251,10 +284,24 @@ const MondayBoard = () => {
       if (dropdownOpen && !event.target.closest('.status-dropdown')) {
         setDropdownOpen(null);
       }
+      if (columnMenuOpen && !event.target.closest(".relative")) {
+        setColumnMenuOpen(null);
+      }
+      if (addColumnMenuOpen && !event.target.closest(".relative")) {
+        setAddColumnMenuOpen(null);
+      }
+      if (openDropdown && !event.target.closest(".relative")) {
+        setOpenDropdown(null);
+        setDropdownSearch("");
+      }
     };
     document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [dropdownOpen]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownOpen, columnMenuOpen, addColumnMenuOpen, openDropdown]);
 
   // Helper functions
   const getStatusColor = (status) => {
@@ -288,6 +335,37 @@ const MondayBoard = () => {
 
   const isFolderExpanded = (itemId, folderId) => {
     return expandedFolders.has(`${itemId}-${folderId}`);
+  };
+
+  const getColumnIcon = (type) => {
+    switch (type) {
+      case "status":
+        return <div className="w-2 h-2 rounded-full bg-emerald-500" />;
+      case "dropdown":
+        return <ChevronDown className="w-3 h-3 text-blue-400" />;
+      case "people":
+        return <User className="w-3 h-3 text-purple-400" />;
+      case "date":
+        return <Calendar className="w-3 h-3 text-orange-400" />;
+      case "number":
+        return <Hash className="w-3 h-3 text-yellow-400" />;
+      case "tags":
+        return <Tag className="w-3 h-3 text-red-400" />;
+      case "subitems":
+        return <Folder className="w-3 h-3 text-blue-400" />;
+      case "checkbox":
+        return <Check className="w-3 h-3 text-green-400" />;
+      case "progress":
+        return <BarChart3 className="w-3 h-3 text-green-400" />;
+      case "email":
+        return <Mail className="w-3 h-3 text-blue-400" />;
+      case "phone":
+        return <Phone className="w-3 h-3 text-green-400" />;
+      case "location":
+        return <MapPin className="w-3 h-3 text-red-400" />;
+      default:
+        return <Hash className="w-3 h-3 text-gray-400" />;
+    }
   };
 
   // Render status cell
@@ -380,6 +458,69 @@ const MondayBoard = () => {
     );
   };
 
+  // Three-dot menu component for column headers
+  const ColumnHeaderMenu = ({ column, isSubItem = false }) => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const protectedColumns = ['item', 'subitems'];
+    const isProtected = protectedColumns.includes(column.id);
+
+    if (isProtected) {
+      return null; // Don't show three-dot menu for protected columns
+    }
+
+    return (
+      <div className="relative">
+        <button
+          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-all duration-200"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsMenuOpen(!isMenuOpen);
+          }}
+        >
+          <MoreHorizontal className="w-3 h-3" />
+        </button>
+
+        {isMenuOpen && (
+          <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 min-w-[200px]">
+            <div className="p-1">
+              <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 rounded flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Settings
+              </button>
+              <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 rounded flex items-center gap-2">
+                <Hash className="w-4 h-4" />
+                Filter
+              </button>
+              <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 rounded flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Sort
+              </button>
+              <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+              <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 rounded flex items-center gap-2">
+                <Copy className="w-4 h-4" />
+                Duplicate column
+              </button>
+              <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 rounded flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Add column to the right
+              </button>
+              <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+              <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 rounded flex items-center gap-2">
+                <Edit className="w-4 h-4" />
+                Rename
+              </button>
+              <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 rounded flex items-center gap-2 text-red-600">
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="w-full bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Header */}
@@ -421,15 +562,15 @@ const MondayBoard = () => {
               {columns.map(column => (
                 <th
                   key={column.id}
-                  className="text-left p-3 text-sm font-medium text-gray-700 dark:text-gray-300 border-l border-gray-200 dark:border-gray-700"
+                  className="text-left p-3 text-sm font-medium text-gray-700 dark:text-gray-300 border-l border-gray-200 dark:border-gray-700 group"
                   style={{ width: columnWidths[column.id] || 'auto' }}
                 >
-                  <div className="flex items-center gap-2">
-                    {column.type === 'people' && <User className="w-4 h-4" />}
-                    {column.type === 'status' && <Hash className="w-4 h-4" />}
-                    {column.type === 'date' && <Calendar className="w-4 h-4" />}
-                    {column.type === 'progress' && <BarChart3 className="w-4 h-4" />}
-                    {column.name}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {getColumnIcon(column.type)}
+                      {column.name}
+                    </div>
+                    <ColumnHeaderMenu column={column} />
                   </div>
                 </th>
               ))}
