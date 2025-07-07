@@ -72,6 +72,8 @@ const MondayBoard = () => {
   
   // Main items state for the board
   const [mainItems, setMainItems] = useState([]);
+  const [subItems, setSubItems] = useState([]);
+  const [subItemFolders, setSubItemFolders] = useState([]);
 
   // Board data cache to persist data between board switches
   const [boardDataCache, setBoardDataCache] = useState(new Map());
@@ -120,6 +122,35 @@ const MondayBoard = () => {
     queryKey: ["/api/employees"],
   });
 
+  // Cache cleanup function - must be defined before useEffect that uses it
+  const cleanupExpiredCache = useCallback(() => {
+    const keys = Object.keys(localStorage).filter(key => key.startsWith('board_'));
+    let cleanedCount = 0;
+    
+    keys.forEach(key => {
+      try {
+        const cached = localStorage.getItem(key);
+        if (cached) {
+          const cacheEntry = JSON.parse(cached);
+          const age = Date.now() - cacheEntry.timestamp;
+          // Remove entries older than 30 minutes
+          if (age > 30 * 60 * 1000) {
+            localStorage.removeItem(key);
+            cleanedCount++;
+          }
+        }
+      } catch (error) {
+        // Remove corrupted cache entries
+        localStorage.removeItem(key);
+        cleanedCount++;
+      }
+    });
+    
+    if (cleanedCount > 0) {
+      console.log(`Cleaned up ${cleanedCount} expired cache entries`);
+    }
+  }, []);
+
   // Board columns configuration
   const [columns, setColumns] = useState([
     { id: "item", name: "Main Item", type: "text", order: 1 },
@@ -144,7 +175,28 @@ const MondayBoard = () => {
   // Sync board items with API data
   useEffect(() => {
     if (boardItems && boardItems.length > 0) {
-      setMainItems(boardItems);
+      // Transform API data to match component structure
+      const transformedItems = boardItems.map(item => ({
+        id: item.id,
+        groupName: item.group_name || "Main Group",
+        values: item.values || {
+          item: item.name || `Item ${item.id}`,
+          status: "not-started",
+          priority: "Medium",
+          assignedTo: "unassigned",
+          dueDate: "",
+          checkbox: false,
+          progress: 0,
+          email: "",
+          phone: "",
+          location: "",
+        },
+        folders: item.folders || []
+      }));
+      setMainItems(transformedItems);
+    } else if (boardItems && boardItems.length === 0) {
+      // If API returns empty array, clear the items
+      setMainItems([]);
     }
   }, [boardItems]);
 
@@ -640,10 +692,10 @@ const MondayBoard = () => {
     }
   };
 
-  // Initialize default board data
+  // Initialize default board data - fix infinite re-render by adding proper dependencies
   useEffect(() => {
     loadBoardData(activeProject, activeBoard);
-  }, []);
+  }, [activeProject, activeBoard]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -794,34 +846,7 @@ const MondayBoard = () => {
     console.log(`Cleared ${keys.length} board cache entries`);
   }, []);
 
-  // Step 7: Periodic cache cleanup
-  const cleanupExpiredCache = useCallback(() => {
-    const keys = Object.keys(localStorage).filter(key => key.startsWith('board_'));
-    let cleanedCount = 0;
-    
-    keys.forEach(key => {
-      try {
-        const cached = localStorage.getItem(key);
-        if (cached) {
-          const cacheEntry = JSON.parse(cached);
-          const age = Date.now() - cacheEntry.timestamp;
-          // Remove entries older than 30 minutes
-          if (age > 30 * 60 * 1000) {
-            localStorage.removeItem(key);
-            cleanedCount++;
-          }
-        }
-      } catch (error) {
-        // Remove corrupted cache entries
-        localStorage.removeItem(key);
-        cleanedCount++;
-      }
-    });
-    
-    if (cleanedCount > 0) {
-      console.log(`Cleaned up ${cleanedCount} expired cache entries`);
-    }
-  }, []);
+  // Step 7: Periodic cache cleanup (moved above to fix hoisting issue)
 
   // Toast helper function
   const showToast = (message, type = "info") => {
@@ -3809,6 +3834,12 @@ const MondayBoard = () => {
 
         {/* Board Content - Fixed Horizontal Scroll */}
         <div className="flex-1 overflow-auto bg-white" style={{ scrollBehavior: 'smooth' }}>
+          {boardItemsLoading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+              <span className="ml-2 text-gray-600">Loading board data...</span>
+            </div>
+          )}
           <div className="min-w-fit w-full" style={{ minWidth: '1200px' }}>
             {/* Mobile View Toggle */}
             <div className="sm:hidden bg-gray-50 px-3 py-2 border-b border-gray-200">
