@@ -1751,7 +1751,7 @@ const MondayBoard = () => {
   };
 
   // AI Formula Assistant Component - Enhanced Interactive Version
-  const AIFormulaAssistant = () => {
+  const AIFormulaAssistant = React.memo(() => {
     const [localInput, setLocalInput] = React.useState("");
 
     React.useEffect(() => {
@@ -1759,6 +1759,26 @@ const MondayBoard = () => {
         setLocalInput(formulaAssistant.currentFormula || "");
       }
     }, [formulaAssistant.isOpen, formulaAssistant.currentFormula]);
+
+    const handleUserInputChange = React.useCallback((e) => {
+      setFormulaAssistant(prev => ({
+        ...prev,
+        userInput: e.target.value
+      }));
+    }, []);
+
+    const handleSendMessage = React.useCallback(() => {
+      if (formulaAssistant.userInput.trim()) {
+        sendMessageToAI(formulaAssistant.userInput);
+      }
+    }, [formulaAssistant.userInput]);
+
+    const handleKeyDown = React.useCallback((e) => {
+      if (e.key === 'Enter' && !formulaAssistant.isProcessing && formulaAssistant.userInput.trim()) {
+        e.preventDefault();
+        sendMessageToAI(formulaAssistant.userInput);
+      }
+    }, [formulaAssistant.isProcessing, formulaAssistant.userInput]);
 
     if (!formulaAssistant.isOpen) return null;
 
@@ -1838,31 +1858,17 @@ const MondayBoard = () => {
                 <div className="flex space-x-2">
                   <input
                     type="text"
-                    value={formulaAssistant.userInput}
-                    onChange={(e) => {
-                      setFormulaAssistant(prev => ({
-                        ...prev,
-                        userInput: e.target.value
-                      }));
-                    }}
+                    value={formulaAssistant.userInput || ""}
+                    onChange={handleUserInputChange}
                     placeholder="Ask me anything about formulas... (e.g., 'Calculate remaining budget')"
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !formulaAssistant.isProcessing && formulaAssistant.userInput.trim()) {
-                        e.preventDefault();
-                        sendMessageToAI(formulaAssistant.userInput);
-                      }
-                    }}
+                    onKeyDown={handleKeyDown}
                     disabled={formulaAssistant.isProcessing}
                     autoComplete="off"
                   />
                   <button
-                    onClick={() => {
-                      if (formulaAssistant.userInput.trim()) {
-                        sendMessageToAI(formulaAssistant.userInput);
-                      }
-                    }}
-                    disabled={formulaAssistant.isProcessing || !formulaAssistant.userInput.trim()}
+                    onClick={handleSendMessage}
+                    disabled={formulaAssistant.isProcessing || !formulaAssistant.userInput?.trim()}
                     className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {formulaAssistant.isProcessing ? 'Thinking...' : 'Send'}
@@ -2006,7 +2012,7 @@ const MondayBoard = () => {
         </div>
       </div>
     );
-  };
+  });
 
   // Formula Editor Component
   const FormulaEditor = () => {
