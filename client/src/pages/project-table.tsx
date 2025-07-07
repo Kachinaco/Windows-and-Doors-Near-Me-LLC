@@ -804,6 +804,7 @@ const MondayBoard = () => {
       assignedTo: "unassigned",
       priority: 1,
       folderId: folderId,
+      values: {}
     };
 
     setBoardItems((prev) =>
@@ -1009,7 +1010,14 @@ const MondayBoard = () => {
                 ...folder,
                 subItems: folder.subItems.map((subItem) =>
                   subItem.id === subItemId
-                    ? { ...subItem, [field]: value }
+                    ? { 
+                        ...subItem, 
+                        [field]: value,
+                        values: {
+                          ...subItem.values,
+                          [field]: value
+                        }
+                      }
                     : subItem,
                 ),
               })),
@@ -3553,6 +3561,105 @@ const MondayBoard = () => {
                                                   <option>In Progress</option>
                                                   <option>Completed</option>
                                                 </select>
+                                              )}
+                                              {column.type === 'dropdown' && (
+                                                <div className="relative flex-1">
+                                                  <div
+                                                    className="w-full text-xs text-blue-600 bg-transparent border-none outline-none cursor-pointer px-2 py-1 rounded hover:bg-blue-50 min-h-[20px] flex items-center"
+                                                    onClick={() => {
+                                                      const dropdownKey = `subitem-${subItem.id}-${column.id}`;
+                                                      setOpenDropdown(openDropdown === dropdownKey ? null : dropdownKey);
+                                                      setDropdownSearch("");
+                                                    }}
+                                                  >
+                                                    <span className="flex items-center gap-1">
+                                                      <div className={`w-2 h-2 rounded ${
+                                                        (subItem.values && subItem.values[column.id]) === "Critical" ? "bg-red-500" :
+                                                        (subItem.values && subItem.values[column.id]) === "High" ? "bg-orange-500" :
+                                                        (subItem.values && subItem.values[column.id]) === "Medium" ? "bg-yellow-500" :
+                                                        (subItem.values && subItem.values[column.id]) === "Low" ? "bg-green-500" :
+                                                        "bg-gray-300"
+                                                      }`}></div>
+                                                      {(subItem.values && subItem.values[column.id]) || "Select..."}
+                                                    </span>
+                                                  </div>
+                                                  
+                                                  {openDropdown === `subitem-${subItem.id}-${column.id}` && (
+                                                    <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 mt-1">
+                                                      <div className="p-2 border-b border-gray-100">
+                                                        <input
+                                                          type="text"
+                                                          value={dropdownSearch}
+                                                          onChange={(e) => setDropdownSearch(e.target.value)}
+                                                          placeholder="Create or find labels"
+                                                          className="w-full text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                        />
+                                                      </div>
+                                                      
+                                                      <div className="max-h-32 overflow-y-auto">
+                                                        {(column.options || [])
+                                                          .filter(option => 
+                                                            option.toLowerCase().includes(dropdownSearch.toLowerCase())
+                                                          )
+                                                          .map((option, index) => (
+                                                            <div
+                                                              key={index}
+                                                              onClick={() => {
+                                                                handleUpdateSubItem(item.id, subItem.id, column.id, option);
+                                                                setOpenDropdown(null);
+                                                                setDropdownSearch("");
+                                                              }}
+                                                              className="px-3 py-2 text-xs hover:bg-gray-50 cursor-pointer flex items-center gap-2"
+                                                            >
+                                                              <div className={`w-2 h-2 rounded ${
+                                                                option === "Critical" ? "bg-red-500" :
+                                                                option === "High" ? "bg-orange-500" :
+                                                                option === "Medium" ? "bg-yellow-500" :
+                                                                option === "Low" ? "bg-green-500" :
+                                                                "bg-gray-400"
+                                                              }`}></div>
+                                                              {option}
+                                                            </div>
+                                                          ))}
+                                                        
+                                                        {/* Create new option if search doesn't match existing */}
+                                                        {dropdownSearch && 
+                                                         !(column.options || []).some(option => 
+                                                           option.toLowerCase() === dropdownSearch.toLowerCase()
+                                                         ) && (
+                                                          <div
+                                                            onClick={() => {
+                                                              const newOptions = [...(column.options || []), dropdownSearch];
+                                                              setSubItemColumns(prev => prev.map(col => 
+                                                                col.id === column.id 
+                                                                  ? { ...col, options: newOptions }
+                                                                  : col
+                                                              ));
+                                                              handleUpdateSubItem(item.id, subItem.id, column.id, dropdownSearch);
+                                                              setOpenDropdown(null);
+                                                              setDropdownSearch("");
+                                                            }}
+                                                            className="px-3 py-2 text-xs hover:bg-blue-50 cursor-pointer text-blue-600 border-t border-gray-100"
+                                                          >
+                                                            + Create "{dropdownSearch}"
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                      
+                                                      <div className="border-t border-gray-100 p-2">
+                                                        <button
+                                                          onClick={() => {
+                                                            setEditingDropdownColumn(column.id);
+                                                            setOpenDropdown(null);
+                                                          }}
+                                                          className="text-xs text-blue-600 hover:text-blue-800"
+                                                        >
+                                                          Edit labels
+                                                        </button>
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                                </div>
                                               )}
                                               {column.type === 'people' && (
                                                 <select className="w-full text-xs text-blue-600 bg-transparent border-none outline-none">
