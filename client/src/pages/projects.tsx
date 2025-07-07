@@ -80,7 +80,7 @@ import {
   UniqueIdentifier,
   useDroppable,
 } from '@dnd-kit/core';
-import MondayBoard from "@/components/MondayBoard";
+import FullMondayBoard from "@/pages/project-table";
 import {
   SortableContext,
   useSortable,
@@ -1233,7 +1233,7 @@ export default function ProjectsPage() {
           {viewMode === 'table' ? (
             // Monday.com Table View
             <div className="w-full">
-              <MondayBoard />
+              <FullMondayBoard />
             </div>
           ) : stageFilter ? (
             // Stage-filtered view
