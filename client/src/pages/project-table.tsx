@@ -2471,8 +2471,15 @@ const MondayBoard = () => {
     }, [columnRenameModal.currentName]);
 
     const handleSubmit = () => {
-      if (!name.trim() || name === columnRenameModal.currentName) return;
+      console.log('handleSubmit called with name:', name);
+      console.log('columnRenameModal.currentName:', columnRenameModal.currentName);
       
+      if (!name.trim() || name === columnRenameModal.currentName) {
+        console.log('Submit blocked - name empty or unchanged');
+        return;
+      }
+      
+      console.log('Calling callback with name:', name);
       columnRenameModal.callback(name);
       
       setColumnRenameModal({
