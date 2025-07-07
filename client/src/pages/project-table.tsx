@@ -2470,6 +2470,9 @@ const MondayBoard = () => {
       setName(columnRenameModal.currentName);
     }, [columnRenameModal.currentName]);
 
+    const isDisabled = !name.trim() || name === columnRenameModal.currentName;
+    console.log('Modal debug - name:', name, 'currentName:', columnRenameModal.currentName, 'isDisabled:', isDisabled);
+
     const handleSubmit = () => {
       console.log('handleSubmit called with name:', name);
       console.log('columnRenameModal.currentName:', columnRenameModal.currentName);
@@ -2563,8 +2566,11 @@ const MondayBoard = () => {
                 Cancel
               </button>
               <button
-                onClick={handleSubmit}
-                disabled={!name.trim() || name === columnRenameModal.currentName}
+                onClick={() => {
+                  console.log('Rename button clicked!');
+                  handleSubmit();
+                }}
+                disabled={isDisabled}
                 className="px-6 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
               >
                 Rename
