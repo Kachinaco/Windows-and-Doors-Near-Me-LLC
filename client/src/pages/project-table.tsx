@@ -339,6 +339,82 @@ const MondayBoard = () => {
     });
   };
 
+  // Fix the evaluateFormula function
+  const evaluateFormula = (formula, item) => {
+    if (!formula) return null;
+    
+    try {
+      // Replace column names with actual values
+      let expression = formula;
+      
+      // Get all column IDs (not just numeric ones)
+      columns.forEach(column => {
+        const columnId = column.id;
+        const columnValue = item.values?.[columnId];
+        let value = 0;
+        
+        // Convert different value types to numbers
+        if (columnValue !== undefined && columnValue !== null && columnValue !== "") {
+          if (typeof columnValue === 'number') {
+            value = columnValue;
+          } else if (typeof columnValue === 'string') {
+            const parsed = parseFloat(columnValue);
+            value = isNaN(parsed) ? 0 : parsed;
+          } else if (typeof columnValue === 'boolean') {
+            value = columnValue ? 1 : 0;
+          } else if (column.type === 'checkbox') {
+            value = columnValue === true || columnValue === "true" ? 1 : 0;
+          }
+        }
+        
+        // Replace column ID references in the formula
+        // Use word boundaries to avoid partial matches
+        const regex = new RegExp(`\\b${columnId}\\b`, 'gi');
+        expression = expression.replace(regex, value.toString());
+      });
+      
+      // Also try replacing column names (not just IDs)
+      columns.forEach(column => {
+        const columnName = column.name.toLowerCase().replace(/\s+/g, '');
+        const columnValue = item.values?.[column.id];
+        let value = 0;
+        
+        if (columnValue !== undefined && columnValue !== null && columnValue !== "") {
+          if (typeof columnValue === 'number') {
+            value = columnValue;
+          } else if (typeof columnValue === 'string') {
+            const parsed = parseFloat(columnValue);
+            value = isNaN(parsed) ? 0 : parsed;
+          } else if (typeof columnValue === 'boolean' || column.type === 'checkbox') {
+            value = (columnValue === true || columnValue === "true") ? 1 : 0;
+          }
+        }
+        
+        const regex = new RegExp(`\\b${columnName}\\b`, 'gi');
+        expression = expression.replace(regex, value.toString());
+      });
+      
+      // Basic safety check - only allow numbers, operators, and parentheses
+      if (!/^[0-9+\-*/.() ]+$/.test(expression)) {
+        console.error('Invalid formula expression:', expression);
+        return "Invalid formula";
+      }
+      
+      // Evaluate the expression
+      const result = Function('"use strict"; return (' + expression + ')')();
+      
+      // Round to 2 decimal places if it's a decimal
+      if (typeof result === 'number') {
+        return Math.round(result * 100) / 100;
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Formula evaluation error:', error);
+      return "Error";
+    }
+  };
+
 
 
   const sendMessageToAI = async (message) => {
@@ -391,67 +467,23 @@ const MondayBoard = () => {
 
     console.log("Applying formula:", { columnId: formulaAssistant.columnId, formula });
 
+    // Update the column with the formula
     setColumns(prev => prev.map(col => 
       col.id === formulaAssistant.columnId 
-        ? { ...col, formula }
+        ? { ...col, formula: formula.trim() }
         : col
     ));
 
     showToast("Formula saved successfully!", "success");
-    // Don't close the assistant, keep it open for further editing
+    
+    // Keep the assistant open for further editing
+    setFormulaAssistant(prev => ({
+      ...prev,
+      currentFormula: formula.trim()
+    }));
   };
 
-  // Formula evaluation engine
-  const evaluateFormula = (formula, item) => {
-    if (!formula) return null;
-    
-    try {
-      // Replace column names with actual values
-      let expression = formula;
-      
-      // Get available column names and values
-      const columnNames = columns.map(col => col.id);
-      
-      // Replace column references with actual values
-      columnNames.forEach(columnId => {
-        const columnValue = item.values[columnId];
-        let numericValue = 0;
-        
-        // Convert different value types to numbers
-        if (columnValue !== undefined && columnValue !== null && columnValue !== "") {
-          if (typeof columnValue === 'number') {
-            numericValue = columnValue;
-          } else if (typeof columnValue === 'string') {
-            const parsed = parseFloat(columnValue);
-            numericValue = isNaN(parsed) ? 0 : parsed;
-          } else if (typeof columnValue === 'boolean') {
-            numericValue = columnValue ? 1 : 0;
-          }
-        }
-        
-        // Replace column references in the formula
-        const regex = new RegExp(`\\b${columnId}\\b`, 'g');
-        expression = expression.replace(regex, numericValue.toString());
-      });
-      
-      // Basic safety check - only allow numbers, operators, and parentheses
-      if (!/^[0-9+\-*/.() ]+$/.test(expression)) {
-        return "Invalid formula";
-      }
-      
-      // Evaluate the expression
-      const result = Function('"use strict"; return (' + expression + ')')();
-      
-      // Round to 2 decimal places if it's a decimal
-      if (typeof result === 'number') {
-        return Math.round(result * 100) / 100;
-      }
-      
-      return result;
-    } catch (error) {
-      return "Error";
-    }
-  };
+
 
   // AI Formula Assistant
   const generateFormulaWithAI = async (description) => {
