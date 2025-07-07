@@ -1721,6 +1721,7 @@ const MondayBoard = () => {
   // AI Formula Assistant Component - Enhanced Interactive Version
   const AIFormulaAssistant = () => {
     const [localInput, setLocalInput] = React.useState("");
+    const [localAiInput, setLocalAiInput] = React.useState("");
 
     React.useEffect(() => {
       if (formulaAssistant.isOpen) {
@@ -1806,31 +1807,29 @@ const MondayBoard = () => {
                 <div className="flex space-x-2">
                   <input
                     type="text"
-                    value={aiInput}
-                    onChange={(e) => {
-                      console.log("AI Input changed:", e.target.value);
-                      setAiInput(e.target.value);
-                    }}
-                    placeholder="Ask me anything about formulas... (e.g., 'Calculate remaining budget')"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    value={localAiInput}
+                    onChange={(e) => setLocalAiInput(e.target.value)}
+                    placeholder="E.g., 'calculate profit margin' or 'sum all costs'"
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
                     onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !formulaAssistant.isProcessing && aiInput.trim()) {
+                      if (e.key === 'Enter' && !formulaAssistant.isProcessing && localAiInput.trim()) {
                         e.preventDefault();
-                        sendMessageToAI(aiInput);
-                        setAiInput("");
+                        sendMessageToAI(localAiInput);
+                        setLocalAiInput("");
                       }
                     }}
                     disabled={formulaAssistant.isProcessing}
                     autoComplete="off"
-                    autoFocus={false}
                   />
                   <button
                     onClick={() => {
-                      sendMessageToAI(aiInput);
-                      setAiInput("");
+                      if (localAiInput.trim() && !formulaAssistant.isProcessing) {
+                        sendMessageToAI(localAiInput);
+                        setLocalAiInput("");
+                      }
                     }}
-                    disabled={formulaAssistant.isProcessing || !aiInput.trim()}
-                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    disabled={formulaAssistant.isProcessing || !localAiInput.trim()}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {formulaAssistant.isProcessing ? 'Thinking...' : 'Send'}
                   </button>
@@ -1955,6 +1954,8 @@ const MondayBoard = () => {
                     Column: {formulaAssistant.columnId || "None selected"}
                     <br />
                     Formula: {localInput || "Empty"}
+                    <br />
+                    Current column formula: {formulaAssistant.columnId ? columns.find(c => c.id === formulaAssistant.columnId)?.formula || "None" : "N/A"}
                   </div>
                 </div>
 
