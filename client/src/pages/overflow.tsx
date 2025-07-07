@@ -1300,6 +1300,12 @@ const MondayBoard = () => {
     try {
       const newItem = createNewItem(itemData);
       console.log('Item created successfully:', newItem);
+      
+      // Automatically start editing the new item's name
+      setTimeout(() => {
+        setEditingCell({ itemId: newItem.id, column: 'item' });
+      }, 100);
+      
       showToast("New item added successfully!", "success");
     } catch (error) {
       console.error('Failed to create item:', error);
@@ -1310,23 +1316,32 @@ const MondayBoard = () => {
   const handleAddFolder = (projectId) => {
     const newFolder = {
       id: newFolderCounter,
-      name: "",
+      name: "New Folder",
       collapsed: false,
       subItems: [],
     };
 
-    // Folder functionality needs API implementation
+    // Update localStorage for folders
+    const folderKey = `board-${activeBoard}-folders-${projectId}`;
+    const existingFolders = JSON.parse(localStorage.getItem(folderKey) || '[]');
+    const updatedFolders = [...existingFolders, newFolder];
+    localStorage.setItem(folderKey, JSON.stringify(updatedFolders));
 
+    // Update local state
+    setSubItems((prev) => ({ ...prev, [projectId]: [...(prev[projectId] || []), newFolder] }));
     setExpandedSubItems((prev) => new Set([...prev, projectId]));
     setExpandedFolders((prev) => new Set([...prev, newFolderCounter]));
     setEditingFolder(newFolderCounter);
     setNewFolderCounter((prev) => prev + 1);
+    
+    console.log('Folder created successfully:', newFolder);
+    showToast("New folder added successfully!", "success");
   };
 
   const handleAddSubItem = (projectId, folderId) => {
     const newSubItem = {
       id: newSubItemCounter,
-      name: "",
+      name: `Sub-item ${newSubItemCounter}`,
       status: "not_started",
       assignedTo: "unassigned",
       priority: 1,
@@ -1334,12 +1349,30 @@ const MondayBoard = () => {
       values: {}
     };
 
-    // Sub-item functionality needs API implementation
+    // Update localStorage for sub-items
+    const subItemKey = `board-${activeBoard}-subitems-${projectId}-${folderId}`;
+    const existingSubItems = JSON.parse(localStorage.getItem(subItemKey) || '[]');
+    const updatedSubItems = [...existingSubItems, newSubItem];
+    localStorage.setItem(subItemKey, JSON.stringify(updatedSubItems));
+
+    // Update local state
+    setSubItems((prev) => {
+      const projectFolders = prev[projectId] || [];
+      const updatedFolders = projectFolders.map(folder => 
+        folder.id === folderId 
+          ? { ...folder, subItems: [...(folder.subItems || []), newSubItem] }
+          : folder
+      );
+      return { ...prev, [projectId]: updatedFolders };
+    });
 
     setExpandedSubItems((prev) => new Set([...prev, projectId]));
     setExpandedFolders((prev) => new Set([...prev, folderId]));
     setEditingSubItem(newSubItemCounter);
     setNewSubItemCounter((prev) => prev + 1);
+    
+    console.log('Sub-item created successfully:', newSubItem);
+    showToast("New sub-item added successfully!", "success");
   };
 
   const handleUpdateFolder = (projectId, folderId, newName) => {
