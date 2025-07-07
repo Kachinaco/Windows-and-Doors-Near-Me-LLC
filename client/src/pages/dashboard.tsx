@@ -591,13 +591,13 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Enhanced Board - New Monday.com-style Interface */}
+            {/* Overflow Board - Monday.com Workspace */}
             <div className="relative group">
-              <Link href="/enhanced-board">
-                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800 ring-2 ring-blue-300/50">
+              <Link href="/overflow">
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/20 dark:to-slate-800/20 border-slate-200 dark:border-slate-800 ring-2 ring-slate-300/50">
                   <CardContent className="p-3 sm:p-6">
                     <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                      <div className="p-2 sm:p-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl sm:rounded-2xl shadow-lg">
+                      <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-600 to-slate-700 rounded-xl sm:rounded-2xl shadow-lg">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 bg-white rounded-full"></div>
                           <div className="w-2 h-2 bg-white rounded-full"></div>
@@ -605,11 +605,11 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Enhanced Board</p>
+                        <p className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Overflow Board</p>
                         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-                          Advanced project collaboration
+                          Complete workspace management
                         </p>
-                        <Badge variant="secondary" className="mt-2 text-xs bg-blue-100 text-blue-800">NEW</Badge>
+                        <Badge variant="secondary" className="mt-2 text-xs bg-slate-100 text-slate-800">WORKSPACE</Badge>
                       </div>
                     </div>
                   </CardContent>
@@ -630,10 +630,10 @@ export default function Dashboard() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Column Management</DropdownMenuItem>
-                    <DropdownMenuItem>Board Settings</DropdownMenuItem>
+                    <DropdownMenuItem>Workspace Settings</DropdownMenuItem>
+                    <DropdownMenuItem>Board Management</DropdownMenuItem>
                     <DropdownMenuItem>Team Collaboration</DropdownMenuItem>
-                    <DropdownMenuItem>Real-time Sync</DropdownMenuItem>
+                    <DropdownMenuItem>Project Switching</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
