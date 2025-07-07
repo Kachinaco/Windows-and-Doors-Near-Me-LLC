@@ -850,21 +850,16 @@ const MondayBoard = () => {
   const handleRenameColumn = async (columnId, newName) => {
     try {
       // Use the apiRequest function which handles authentication properly
-      const response = await apiRequest('POST', '/api/rename-column', {
+      await apiRequest('POST', '/api/rename-column', {
         columnId,
         newName
       });
 
-      if (response.ok) {
-        // Update the column name in the columns array
-        setColumns(prev => prev.map(col => 
-          col.id === columnId ? { ...col, name: newName } : col
-        ));
-        showToast(`Column renamed to "${newName}"`, "success");
-      } else {
-        const errorData = await response.json();
-        showToast(`Failed to rename column: ${errorData.message}`, "error");
-      }
+      // Update the column name in the columns array
+      setColumns(prev => prev.map(col => 
+        col.id === columnId ? { ...col, name: newName } : col
+      ));
+      showToast(`Column renamed to "${newName}"`, "success");
     } catch (error) {
       console.error('Error renaming column:', error);
       showToast("Error renaming column", "error");
@@ -2779,13 +2774,19 @@ const MondayBoard = () => {
 
             <div className="flex items-center space-x-2">
               {undoStack.length > 0 && (
-                <button className="text-gray-600 hover:text-gray-900 p-1 rounded">
+                <button 
+                  className="text-gray-600 hover:text-gray-900 p-1 rounded"
+                  aria-label="Undo last action"
+                  title="Undo last action"
+                >
                   <Undo2 className="w-4 h-4" />
                 </button>
               )}
               <button
                 onClick={() => handleAddItem("New Leads")}
                 className="text-gray-600 hover:text-gray-900 p-1 rounded"
+                aria-label="Add new item"
+                title="Add new item"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -2802,6 +2803,8 @@ const MondayBoard = () => {
                 <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center">
                   <input
                     type="checkbox"
+                    id="select-all-checkbox"
+                    name="select-all"
                     checked={
                       selectedItems.size > 0 &&
                       selectedItems.size === boardItems.length
@@ -2816,6 +2819,8 @@ const MondayBoard = () => {
                       }
                     }}
                     className="w-4 h-4 rounded border-gray-400 text-blue-500"
+                    aria-label="Select all items"
+                    title="Select all items"
                   />
                 </div>
                 {columns.map((column, index) => (
@@ -2900,7 +2905,11 @@ const MondayBoard = () => {
                   <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center">
                     <input
                       type="checkbox"
+                      id={`group-checkbox-${group.name}`}
+                      name={`group-${group.name}`}
                       className="w-4 h-4 rounded border-gray-400 text-blue-500"
+                      aria-label={`Select all items in ${group.name} group`}
+                      title={`Select all items in ${group.name} group`}
                     />
                   </div>
 
