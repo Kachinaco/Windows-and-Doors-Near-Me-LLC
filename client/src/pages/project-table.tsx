@@ -1677,6 +1677,11 @@ const MondayBoard = () => {
             // Enhanced formula evaluation with proper column references
             let expression = column.formula;
             
+            // Debug: Log the item structure
+            console.log('Formula Debug - Item:', item);
+            console.log('Formula Debug - Column:', column);
+            console.log('Formula Debug - Expression:', expression);
+            
             // Replace column references like {Numbers} with actual values
             const columnMatches = expression.match(/\{([^}]+)\}/g);
             if (columnMatches) {
@@ -1684,18 +1689,17 @@ const MondayBoard = () => {
                 const columnName = match.slice(1, -1); // Remove { and }
                 let columnValue = 0;
                 
-                // Map column names to actual data fields
-                if (columnName === 'Numbers') {
-                  columnValue = item.values?.numbers || parseFloat(item.values?.Numbers) || 0;
-                } else if (columnName === 'Progress') {
-                  columnValue = item.values?.progress || parseFloat(item.values?.Progress) || 0;
-                } else {
-                  // Try to find the value in item.values using the column name
-                  columnValue = item.values?.[columnName] || item.values?.[columnName.toLowerCase()] || 0;
+                // Find the column in the columns array to get the correct ID
+                const targetColumn = columns.find(col => col.name === columnName);
+                if (targetColumn) {
+                  columnValue = parseFloat(item.values?.[targetColumn.id]) || 0;
+                  console.log(`Formula Debug - Column ${columnName} (ID: ${targetColumn.id}) value:`, columnValue);
                 }
                 
                 expression = expression.replace(match, columnValue);
               });
+              
+              console.log('Formula Debug - Final expression:', expression);
               
               // Evaluate the mathematical expression
               if (/^[0-9+\-*/.() ]+$/.test(expression)) {
@@ -1704,6 +1708,7 @@ const MondayBoard = () => {
                 if (typeof displayValue === 'number') {
                   displayValue = Math.round(displayValue * 100) / 100;
                 }
+                console.log('Formula Debug - Result:', displayValue);
               } else {
                 displayValue = "Invalid formula";
               }
@@ -1711,6 +1716,7 @@ const MondayBoard = () => {
               displayValue = column.formula; // Show the formula itself if no column references
             }
           } catch (error) {
+            console.error('Formula Error:', error);
             displayValue = "Error";
           }
         }
