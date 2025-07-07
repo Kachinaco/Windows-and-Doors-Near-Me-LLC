@@ -101,7 +101,7 @@ const MondayBoard = () => {
 
   // Initial board data with folders
   // Initial board data with sample items for testing email functionality
-  const [boardItems, setBoardItems] = useState<any[]>([
+  const [boardItems, setBoardItems] = useState([
     {
       id: 1,
       values: {
