@@ -1,1193 +1,4609 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { type Project } from "@shared/schema";
-import { useToast } from "@/hooks/use-toast";
-import { 
-  Plus,
-  Search,
-  Phone,
-  FileText,
-  Calendar,
-  MapPin,
-  Users,
-  Edit,
-  Eye,
-  Filter,
-  RefreshCw,
-  ArrowUpDown,
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { apiRequest } from "@/lib/queryClient";
+import {
+  ChevronRight,
   ChevronDown,
+  Plus,
+  Folder,
   Trash2,
-  Archive,
-  RotateCcw,
-  MoreHorizontal,
-  Settings,
-  Copy,
-  Download,
-  Upload,
-  Save,
-  X,
+  User,
+  Calendar,
+  Hash,
+  Tag,
   Check,
-  Columns,
-  SortAsc,
-  SortDesc,
-  Grid3X3,
-  Calculator,
-  PaintBucket,
-  Lock,
-  Unlock
+  Mail,
+  Phone,
+  MapPin,
+  BarChart3,
+  ArrowLeft,
+  Undo2,
+  Settings,
+  UserPlus,
+  X,
+  Heart,
+  Paperclip,
+  Smile,
+  AtSign,
+  MessageCircle,
+  Save,
+  Timer,
+  Globe,
+  Link,
+  FolderPlus,
+  MoreHorizontal,
+  Edit,
+  Copy,
 } from "lucide-react";
-import { Link } from "wouter";
 
-// Status color mapping
-const getStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
-    case 'complete':
-    case 'completed':
-      return 'bg-green-500 text-white';
-    case 'on order':
-    case 'ordered':
-      return 'bg-yellow-500 text-black';
-    case 'in progress':
-      return 'bg-blue-500 text-white';
-    case 'new lead':
-      return 'bg-purple-500 text-white';
-    case 'scheduled':
-      return 'bg-orange-500 text-white';
-    default:
-      return 'bg-gray-500 text-white';
-  }
-};
-
-// Format date helper
-const formatDate = (date: Date | string | null) => {
-  if (!date) return '';
-  const d = new Date(date);
-  return d.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric' 
-  });
-};
-
-export default function ProjectTable() {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProjects, setSelectedProjects] = useState<number[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [editingCell, setEditingCell] = useState<{row: number, column: string} | null>(null);
-  const [editValue, setEditValue] = useState<string>("");
-  const [visibleColumns, setVisibleColumns] = useState([
-    'name', 'people', 'location', 'phone', 'status', 'measureDate', 'deliveryDate', 'installDate'
+const MondayBoard = () => {
+  // Mock team members
+  const [teamMembers] = useState([
+    { id: 1, firstName: "John", lastName: "Doe" },
+    { id: 2, firstName: "Jane", lastName: "Smith" },
+    { id: 3, firstName: "Bob", lastName: "Wilson" },
+    { id: 4, firstName: "Alice", lastName: "Johnson" },
   ]);
-  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({
-    name: 200,
-    people: 150,
-    location: 180,
-    phone: 130,
-    status: 120,
-    measureDate: 130,
-    deliveryDate: 130,
-    installDate: 130
-  });
-  const [resizing, setResizing] = useState<string | null>(null);
-  const [startX, setStartX] = useState(0);
-  const [startWidth, setStartWidth] = useState(0);
-  const [selectedRange, setSelectedRange] = useState<{start: number, end: number} | null>(null);
-  const [frozenColumns, setFrozenColumns] = useState<string[]>(['name']);
-  const [showFormulas, setShowFormulas] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
-  const [groupBy, setGroupBy] = useState<string>('');
-  const tableRef = useRef<HTMLDivElement>(null);
 
-  const { data: projects = [], isLoading } = useQuery<Project[]>({
-    queryKey: ['/api/projects'],
-    enabled: !!user,
-  });
+  // Board columns configuration
+  const [columns, setColumns] = useState([
+    { id: "item", name: "Main Item", type: "text", order: 1 },
+    { id: "subitems", name: "Folders", type: "subitems", order: 2 },
+    { id: "status", name: "Status", type: "status", order: 3 },
+    { id: "priority", name: "Priority", type: "dropdown", order: 4, options: ["Low", "Medium", "High", "Critical"] },
+    { id: "assignedTo", name: "People", type: "people", order: 5 },
+    { id: "dueDate", name: "Due Date", type: "date", order: 6 },
+    { id: "progress", name: "Progress", type: "progress", order: 7 },
+  ]);
 
-  const { data: employees = [] } = useQuery<any[]>({
-    queryKey: ['/api/employees'],
-    enabled: !!user,
-  });
+  // Sub-item columns configuration (separate from main columns)
+  const [subItemColumns, setSubItemColumns] = useState([
+    { id: "status", name: "Status", type: "status", order: 1 },
+    { id: "priority", name: "Priority", type: "dropdown", order: 2, options: ["Low", "Medium", "High", "Critical"] },
+    { id: "assignedTo", name: "People", type: "people", order: 3 },
+    { id: "dueDate", name: "Due Date", type: "date", order: 4 },
+    { id: "checkbox", name: "Done", type: "checkbox", order: 5 },
+    { id: "progress", name: "Progress", type: "progress", order: 6 },
+  ]);
 
-  // Excel-like column definitions
-  const columns = [
-    { key: 'name', label: 'Project Name', type: 'text', width: columnWidths.name, frozen: frozenColumns.includes('name') },
-    { key: 'people', label: 'Assigned People', type: 'people', width: columnWidths.people },
-    { key: 'location', label: 'Location', type: 'text', width: columnWidths.location },
-    { key: 'phone', label: 'Phone', type: 'phone', width: columnWidths.phone },
-    { key: 'status', label: 'Status', type: 'select', width: columnWidths.status, options: ['New Lead', 'In Progress', 'On Order', 'Scheduled', 'Complete'] },
-    { key: 'measureDate', label: 'Measure Date', type: 'date', width: columnWidths.measureDate },
-    { key: 'deliveryDate', label: 'Delivery Date', type: 'date', width: columnWidths.deliveryDate },
-    { key: 'installDate', label: 'Install Date', type: 'date', width: columnWidths.installDate },
-  ].filter(col => visibleColumns.includes(col.key));
-
-  // Column resizing functionality
-  const handleMouseDown = (e: React.MouseEvent, columnKey: string) => {
-    setResizing(columnKey);
-    setStartX(e.clientX);
-    setStartWidth(columnWidths[columnKey]);
-    e.preventDefault();
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (resizing) {
-        const diff = e.clientX - startX;
-        const newWidth = Math.max(80, startWidth + diff);
-        setColumnWidths(prev => ({ ...prev, [resizing]: newWidth }));
-      }
-    };
-
-    const handleMouseUp = () => {
-      setResizing(null);
-    };
-
-    if (resizing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [resizing, startX, startWidth]);
-
-  const archiveProject = useMutation({
-    mutationFn: async (id: number) => {
-      const response = await fetch(`/api/projects/${id}/archive`, {
-        method: 'PUT',
-      });
-      if (!response.ok) throw new Error('Failed to archive project');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({
-        title: "Project archived",
-        description: "The project has been moved to archive.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to archive project.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const trashProject = useMutation({
-    mutationFn: async (id: number) => {
-      const response = await fetch(`/api/projects/${id}/trash`, {
-        method: 'PUT',
-      });
-      if (!response.ok) throw new Error('Failed to move project to trash');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({
-        title: "Project moved to trash",
-        description: "The project will be permanently deleted in 30 days.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to move project to trash.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const restoreProject = useMutation({
-    mutationFn: async (id: number) => {
-      const response = await fetch(`/api/projects/${id}/restore`, {
-        method: 'PUT',
-      });
-      if (!response.ok) throw new Error('Failed to restore project');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({
-        title: "Project restored",
-        description: "The project has been restored to active status.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to restore project.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Filter and sort projects
-  const filteredProjects = useMemo(() => {
-    let filtered = projects;
-    
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter((project) =>
-        project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.status.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    // Apply status filter
-    if (statusFilter) {
-      filtered = filtered.filter((project) => 
-        project.status.toLowerCase() === statusFilter.toLowerCase()
-      );
-    }
-    
-    // Apply sorting
-    const sorted = [...filtered].sort((a, b) => {
-      let aValue: any = "";
-      let bValue: any = "";
-      
-      switch (sortBy) {
-        case "name":
-          aValue = a.name;
-          bValue = b.name;
-          break;
-        case "status":
-          aValue = a.status;
-          bValue = b.status;
-          break;
-        case "startDate":
-          aValue = a.startDate ? new Date(a.startDate) : new Date(0);
-          bValue = b.startDate ? new Date(b.startDate) : new Date(0);
-          break;
-        case "endDate":
-          aValue = a.endDate ? new Date(a.endDate) : new Date(0);
-          bValue = b.endDate ? new Date(b.endDate) : new Date(0);
-          break;
-        default:
-          aValue = a.name;
-          bValue = b.name;
-      }
-      
-      if (typeof aValue === "string") {
-        return sortOrder === "asc" 
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-      
-      return sortOrder === "asc" 
-        ? aValue - bValue
-        : bValue - aValue;
-    });
-    
-    return sorted;
-  }, [projects, searchTerm, statusFilter, sortBy, sortOrder]);
-
-  // Handle row selection
-  const handleRowSelect = (projectId: number, checked: boolean) => {
-    if (checked) {
-      setSelectedProjects(prev => [...prev, projectId]);
-    } else {
-      setSelectedProjects(prev => prev.filter(id => id !== projectId));
-    }
-  };
-
-  // Handle select all
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedProjects(filteredProjects.map((p: Project) => p.id));
-    } else {
-      setSelectedProjects([]);
-    }
-  };
-
-  // Inline editing functions
-  const handleCellClick = (projectId: number, column: string, currentValue: string) => {
-    setEditingCell({ row: projectId, column });
-    setEditValue(currentValue || '');
-  };
-
-  const handleCellSave = async () => {
-    if (!editingCell) return;
-    
-    try {
-      const response = await fetch(`/api/projects/${editingCell.row}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+  // Initial board data with folders
+  // Initial board data with sample items for testing email functionality
+  const [boardItems, setBoardItems] = useState<any[]>([
+    {
+      id: 1,
+      values: {
+        item: "Kitchen Renovation Project",
+        status: "in progress",
+        priority: "High",
+        assignedTo: "John Smith, Sarah Wilson",
+        dueDate: "2025-07-15",
+        checkbox: false,
+        progress: 65,
+        email: "client1@example.com",
+        phone: "(555) 123-4567",
+        location: "123 Main St, Anytown USA",
+        cost: 25000,
+        hoursBudget: 120,
+        hoursSpent: 78
+      },
+      // Legacy properties for backwards compatibility
+      name: "Kitchen Renovation Project",
+      status: { id: "in-progress", color: "#0066CC", label: "In Progress" },
+      assignedTo: ["John Smith", "Sarah Wilson"],
+      dueDate: "2025-07-15",
+      email: "client1@example.com",
+      phone: "(555) 123-4567",
+      location: "123 Main St, Anytown USA",
+      checkbox: false,
+      progress: 65,
+      group: "Active Projects",
+      folders: [
+        {
+          id: 3001,
+          name: "Design Phase",
+          expanded: false,
+          items: [
+            {
+              id: 30001,
+              status: { id: "complete", color: "#00C875", label: "Complete" },
+              assignedTo: ["Design Team"],
+              dueDate: "2025-07-10",
+              checkbox: true,
+              progress: 100
+            },
+            {
+              id: 30002,
+              status: { id: "in-progress", color: "#0066CC", label: "In Progress" },
+              assignedTo: ["Sarah Wilson"],
+              dueDate: "2025-07-12",
+              checkbox: false,
+              progress: 80
+            }
+          ]
         },
-        body: JSON.stringify({
-          [editingCell.column]: editValue
-        })
-      });
-
-      if (response.ok) {
-        queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-        toast({
-          title: "Updated",
-          description: "Project updated successfully"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update project",
-        variant: "destructive"
-      });
+        {
+          id: 3002,
+          name: "Installation Phase",
+          expanded: false,
+          items: [
+            {
+              id: 30003,
+              status: { id: "not-started", color: "#C4C4C4", label: "Not Started" },
+              assignedTo: ["Installation Team"],
+              dueDate: "2025-07-20",
+              checkbox: false,
+              progress: 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: 2,
+      values: {
+        item: "Bathroom Remodel",
+        status: "not started",
+        priority: "Medium",
+        assignedTo: "Mike Johnson",
+        dueDate: "2025-08-01",
+        checkbox: false,
+        progress: 0,
+        email: "client2@example.com",
+        phone: "(555) 987-6543",
+        location: "456 Oak Ave, Somewhere City"
+      },
+      name: "Bathroom Remodel",
+      status: { id: "not-started", color: "#C4C4C4", label: "Not Started" },
+      assignedTo: ["Mike Johnson"],
+      dueDate: "2025-08-01",
+      email: "client2@example.com",
+      phone: "(555) 987-6543",
+      location: "456 Oak Ave, Somewhere City",
+      checkbox: false,
+      progress: 0,
+      group: "Scheduled Work",
+      folders: [
+        {
+          id: 3003,
+          name: "Planning Phase",
+          expanded: false,
+          items: [
+            {
+              id: 30004,
+              status: { id: "not-started", color: "#C4C4C4", label: "Not Started" },
+              assignedTo: ["Planning Team"],
+              dueDate: "2025-07-25",
+              checkbox: false,
+              progress: 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: 3,
+      name: "Window Installation",
+      status: { id: "complete", color: "#00C875", label: "Complete" },
+      assignedTo: ["Alex Brown"],
+      dueDate: "2025-06-30",
+      email: "client3@example.com",
+      phone: "(555) 456-7890",
+      location: "789 Pine St, Demo Town",
+      checkbox: true,
+      progress: 100,
+      group: "Completed",
+      folders: [
+        {
+          id: 3004,
+          name: "Installation Complete",
+          expanded: false,
+          items: [
+            {
+              id: 30005,
+              status: { id: "complete", color: "#00C875", label: "Complete" },
+              assignedTo: ["Alex Brown"],
+              dueDate: "2025-06-30",
+              checkbox: true,
+              progress: 100
+            }
+          ]
+        }
+      ]
     }
+  ]);
+
+  // State management
+  const [columnWidths, setColumnWidths] = useState({
+    item: 250,
+    subitems: 150,
+    status: 130,
+    assignedTo: 150,
+    dueDate: 130,
+    checkbox: 80,
+    progress: 150,
+    email: 180,
+    phone: 140,
+    location: 200,
+  });
+
+  const [selectedItems, setSelectedItems] = useState(new Set());
+  const [expandedSubItems, setExpandedSubItems] = useState(new Set());
+  const [expandedFolders, setExpandedFolders] = useState(new Set());
+  const [collapsedGroups, setCollapsedGroups] = useState({});
+  const [editingCell, setEditingCell] = useState(null);
+  const [editingFolder, setEditingFolder] = useState(null);
+  const [editingSubItem, setEditingSubItem] = useState(null);
+  const [isResizing, setIsResizing] = useState(null);
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
+  const [selectedMainItem, setSelectedMainItem] = useState(null);
+  const [undoStack, setUndoStack] = useState([]);
+  const [newItemCounter, setNewItemCounter] = useState(4);
+  const [newFolderCounter, setNewFolderCounter] = useState(4000);
+  const [newSubItemCounter, setNewSubItemCounter] = useState(40000);
+  const [collaborationState, setCollaborationState] = useState({});
+  const [dropdownOpen, setDropdownOpen] = useState(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownOpen && !event.target.closest('.status-dropdown')) {
+        setDropdownOpen(null);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [dropdownOpen]);
+
+  // Updates modal state
+  const [updatesModal, setUpdatesModal] = useState({
+    isOpen: false,
+    itemType: null, // 'main', 'folder', 'subitem'
+    itemId: null,
+    itemName: "",
+  });
+  const [itemUpdates, setItemUpdates] = useState({});
+  const [newUpdate, setNewUpdate] = useState("");
+  const [activeTab, setActiveTab] = useState("updates");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailMessage, setEmailMessage] = useState("");
+
+  // Formula editor state
+  const [formulaEditor, setFormulaEditor] = useState({
+    isOpen: false,
+    columnId: null,
+    currentFormula: "",
+    aiSuggestions: []
+  });
+
+  // Column creation modal state
+  const [columnCreationModal, setColumnCreationModal] = useState({
+    isOpen: false,
+    type: null,
+    name: "",
+    description: "",
+    callback: null,
+    isSubItem: false
+  });
+
+  // Column rename modal state
+  const [columnRenameModal, setColumnRenameModal] = useState({
+    isOpen: false,
+    columnId: null,
+    currentName: "",
+    callback: null
+  });
+
+  // Generic modal states for prompts and confirms
+  const [promptModal, setPromptModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    placeholder: "",
+    defaultValue: "",
+    callback: null
+  });
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    callback: null
+  });
+
+  // Toast notification state
+  const [toasts, setToasts] = useState([]);
+
+  // AI Formula Assistant state
+  const [formulaAssistant, setFormulaAssistant] = useState({
+    isOpen: false,
+    columnId: null,
+    currentFormula: "",
+    chatHistory: [],
+    userInput: "",
+    isProcessing: false
+  });
+
+  // Separate state for AI input and formula builder
+  const [aiInput, setAiInput] = useState("");
+
+  // Debug: Monitor column changes
+  useEffect(() => {
+    const formulaColumns = columns.filter(col => col.type === 'formula');
+    console.log("Formula columns:", formulaColumns);
+  }, [columns]);
+
+  // Toast helper function
+  const showToast = (message, type = "info") => {
+    const id = Date.now();
+    const newToast = { id, message, type };
+    setToasts(prev => [...prev, newToast]);
     
-    setEditingCell(null);
-    setEditValue('');
+    // Auto-remove toast after 3 seconds
+    setTimeout(() => {
+      setToasts(prev => prev.filter(toast => toast.id !== id));
+    }, 3000);
   };
 
-  const handleCellCancel = () => {
-    setEditingCell(null);
-    setEditValue('');
+  // AI Formula Assistant functions
+  const openFormulaAssistant = (columnId, currentFormula = "") => {
+    const column = columns.find(col => col.id === columnId);
+    setFormulaAssistant({
+      isOpen: true,
+      columnId,
+      currentFormula,
+      chatHistory: [
+        {
+          type: "system",
+          message: `Hello! I'm your AI Formula Assistant. I'll help you create a formula for the "${column?.name}" column. You can ask me in natural language like "Calculate the total cost" or "Find the percentage completion". Available columns: ${columns.map(col => col.name).join(", ")}`
+        }
+      ],
+      userInput: "",
+      isProcessing: false
+    });
   };
 
-  // Column visibility toggle
-  const toggleColumn = (column: string) => {
-    setVisibleColumns(prev => 
-      prev.includes(column) 
-        ? prev.filter(col => col !== column)
-        : [...prev, column]
-    );
+  const closeFormulaAssistant = () => {
+    setFormulaAssistant({
+      isOpen: false,
+      columnId: null,
+      currentFormula: "",
+      chatHistory: [],
+      userInput: "",
+      isProcessing: false
+    });
   };
 
-  // Delete project function
-  const handleDeleteProject = async (projectId: number) => {
-    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+
+
+  const sendMessageToAI = async (message) => {
+    if (!message.trim()) return;
+
+    const userMessage = message.trim();
+    
+    setFormulaAssistant(prev => ({
+      ...prev,
+      isProcessing: true,
+      userInput: "",
+      chatHistory: [...prev.chatHistory, { type: "user", message: userMessage }]
+    }));
+
+    try {
+      const response = await apiRequest('POST', '/api/ai/generate-formula', {
+        message,
+        availableColumns: columns.map(col => ({ id: col.id, name: col.name, type: col.type })),
+        currentFormula: formulaAssistant.currentFormula
+      });
+
+      const data = await response.json();
+      setFormulaAssistant(prev => ({
+        ...prev,
+        isProcessing: false,
+        chatHistory: [...prev.chatHistory, { 
+          type: "assistant", 
+          message: data.explanation,
+          formula: data.formula
+        }]
+      }));
+    } catch (error) {
+      setFormulaAssistant(prev => ({
+        ...prev,
+        isProcessing: false,
+        chatHistory: [...prev.chatHistory, { 
+          type: "assistant", 
+          message: "I apologize, but I'm having trouble processing your request right now. Please try rephrasing your question or check that the OpenAI API is properly configured."
+        }]
+      }));
+    }
+  };
+
+  const applyAIFormula = (formula) => {
+    if (!formulaAssistant.columnId || !formula) {
+      console.log("Cannot apply formula:", { columnId: formulaAssistant.columnId, formula });
+      showToast("Error: No column selected or formula is empty", "error");
       return;
     }
 
-    try {
-      const response = await fetch(`/api/projects/${projectId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-      });
+    console.log("Applying formula:", { 
+      columnId: formulaAssistant.columnId, 
+      formula: formula,
+      columns: columns 
+    });
 
-      if (response.ok) {
-        queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-        toast({
-          title: "Deleted",
-          description: "Project deleted successfully"
-        });
-        // Remove from selected projects if it was selected
-        setSelectedProjects(prev => prev.filter(id => id !== projectId));
-      } else {
-        throw new Error('Failed to delete project');
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete project",
-        variant: "destructive"
+    // Update the column with the formula
+    setColumns(prev => {
+      const updated = prev.map(col => 
+        col.id === formulaAssistant.columnId 
+          ? { ...col, formula: formula.trim() }
+          : col
+      );
+      console.log("Updated columns:", updated);
+      return updated;
+    });
+
+    showToast("Formula saved successfully!", "success");
+  };
+
+  // Formula evaluation engine
+  const evaluateFormula = (formula, item) => {
+    if (!formula) return null;
+    
+    try {
+      // Replace column names with actual values
+      let expression = formula;
+      
+      // Get available column names and values
+      const columnNames = columns.map(col => col.id);
+      
+      // Replace column references with actual values
+      columnNames.forEach(columnId => {
+        const columnValue = item.values[columnId];
+        let numericValue = 0;
+        
+        // Convert different value types to numbers
+        if (columnValue !== undefined && columnValue !== null && columnValue !== "") {
+          if (typeof columnValue === 'number') {
+            numericValue = columnValue;
+          } else if (typeof columnValue === 'string') {
+            const parsed = parseFloat(columnValue);
+            numericValue = isNaN(parsed) ? 0 : parsed;
+          } else if (typeof columnValue === 'boolean') {
+            numericValue = columnValue ? 1 : 0;
+          }
+        }
+        
+        // Replace column references in the formula
+        const regex = new RegExp(`\\b${columnId}\\b`, 'g');
+        expression = expression.replace(regex, numericValue.toString());
       });
+      
+      // Basic safety check - only allow numbers, operators, and parentheses
+      if (!/^[0-9+\-*/.() ]+$/.test(expression)) {
+        return "Invalid formula";
+      }
+      
+      // Evaluate the expression
+      const result = Function('"use strict"; return (' + expression + ')')();
+      
+      // Round to 2 decimal places if it's a decimal
+      if (typeof result === 'number') {
+        return Math.round(result * 100) / 100;
+      }
+      
+      return result;
+    } catch (error) {
+      return "Error";
     }
   };
 
-  // Get assigned employee
-  const getAssignedEmployee = (projectId: number) => {
-    return employees.find((emp: any) => emp.id === projectId) || null;
+  // AI Formula Assistant
+  const generateFormulaWithAI = async (description) => {
+    try {
+      const availableColumns = columns
+        .filter(col => col.type === 'number' || col.type === 'progress')
+        .map(col => `${col.id} (${col.name})`)
+        .join(', ');
+
+      const response = await fetch('/api/generate-formula', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          description,
+          availableColumns,
+          columnList: columns.map(col => ({ id: col.id, name: col.name, type: col.type }))
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.formula;
+      } else {
+        throw new Error('Failed to generate formula');
+      }
+    } catch (error) {
+      console.error('AI Formula generation error:', error);
+      return null;
+    }
   };
 
-  if (isLoading) {
+  const [isEmailSending, setIsEmailSending] = useState(false);
+
+  // Column menu state
+  const [columnMenuOpen, setColumnMenuOpen] = useState(null);
+  const [addColumnMenuOpen, setAddColumnMenuOpen] = useState(null);
+  
+  // Enhanced dropdown state
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [dropdownSearch, setDropdownSearch] = useState("");
+  const [editingDropdownColumn, setEditingDropdownColumn] = useState(null);
+
+  // Settings functionality state
+  const [columnFilters, setColumnFilters] = useState({});
+  const [columnSortOrder, setColumnSortOrder] = useState({});
+  const [collapsedColumns, setCollapsedColumns] = useState(new Set());
+  const [showColumnSummary, setShowColumnSummary] = useState(new Set());
+  const [isRenamingColumn, setIsRenamingColumn] = useState(null);
+  const [newColumnName, setNewColumnName] = useState("");
+  const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [newColumnType, setNewColumnType] = useState("text");
+  const [openMenus, setOpenMenus] = useState({});
+
+  // Groups configuration
+  const groupOrder = [
+    "New Leads",
+    "Need Attention",
+    "Sent Estimate",
+    "Signed",
+    "In Progress",
+    "Complete",
+  ];
+
+  // Close column menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (columnMenuOpen && !event.target.closest(".relative")) {
+        setColumnMenuOpen(null);
+      }
+      if (addColumnMenuOpen && !event.target.closest(".relative")) {
+        setAddColumnMenuOpen(null);
+      }
+      if (openDropdown && !event.target.closest(".relative")) {
+        setOpenDropdown(null);
+        setDropdownSearch("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [columnMenuOpen, addColumnMenuOpen, openDropdown]);
+
+  // Handle column type selection from AddColumnMenu
+  const handleSelectColumnType = (type) => {
+    const columnTypeInfo = {
+      text: { name: "Text Column", description: "Simple text field for notes and descriptions" },
+      status: { name: "Status Column", description: "Status with colored labels" },
+      dropdown: { name: "Dropdown Column", description: "Select from predefined options" },
+      people: { name: "People Column", description: "Assign team members" },
+      date: { name: "Date Column", description: "Date picker for deadlines and schedules" },
+      number: { name: "Number Column", description: "Numeric values for costs, quantities, etc." },
+      checkbox: { name: "Checkbox Column", description: "True/false toggle for completion" },
+      progress: { name: "Progress Column", description: "Progress bar for tracking completion" },
+      formula: { name: "Formula Column", description: "Calculate values from other columns" },
+      email: { name: "Email Column", description: "Email addresses for contacts" },
+      phone: { name: "Phone Column", description: "Phone numbers for communication" },
+      location: { name: "Location Column", description: "Addresses and locations" }
+    };
+
+    const info = columnTypeInfo[type] || { name: "New Column", description: "Custom column" };
+    
+    // For formula columns, directly create and open AI Formula Assistant
+    if (type === "formula") {
+      const newColumn = {
+        id: `col_${Date.now()}`,
+        name: "Formula Column",
+        type: "formula",
+        order: Math.max(...columns.map(col => col.order)) + 1,
+        formula: "" // Make sure this property exists
+      };
+      
+      console.log("Creating formula column:", newColumn);
+      
+      setColumns(prev => {
+        const updated = [...prev, newColumn];
+        console.log("Columns after adding formula column:", updated);
+        return updated;
+      });
+      
+      setAddColumnMenuOpen(null);
+      
+      // Open AI Formula Assistant for the new column
+      setTimeout(() => {
+        openFormulaAssistant(newColumn.id, "");
+      }, 100);
+      return;
+    }
+    
+    setColumnCreationModal({
+      isOpen: true,
+      type: type,
+      name: info.name,
+      description: info.description,
+      callback: (name, formula = null) => {
+        if (type === "formula" && formula) {
+          handleAddColumn(type, name, formula);
+        } else {
+          handleAddColumn(type, name);
+        }
+        setAddColumnMenuOpen(null);
+      },
+      isSubItem: false
+    });
+  };
+
+  // Handle sub-item column type selection from AddColumnMenu
+  const handleSelectSubItemColumnType = (type) => {
+    const columnTypeInfo = {
+      text: { name: "Text Column", description: "Simple text field for notes and descriptions" },
+      status: { name: "Status Column", description: "Status with colored labels" },
+      dropdown: { name: "Dropdown Column", description: "Select from predefined options" },
+      people: { name: "People Column", description: "Assign team members" },
+      date: { name: "Date Column", description: "Date picker for deadlines and schedules" },
+      number: { name: "Number Column", description: "Numeric values for costs, quantities, etc." },
+      checkbox: { name: "Checkbox Column", description: "True/false toggle for completion" },
+      progress: { name: "Progress Column", description: "Progress bar for tracking completion" }
+    };
+
+    const info = columnTypeInfo[type] || { name: "New Column", description: "Custom column" };
+    
+    setColumnCreationModal({
+      isOpen: true,
+      type: type,
+      name: info.name,
+      description: info.description,
+      callback: (name) => {
+        handleAddSubItemColumn(type, name);
+        setAddColumnMenuOpen(null);
+      },
+      isSubItem: true
+    });
+  };
+
+  // Helper functions
+  const getMemberDisplayName = (memberId) => {
+    if (!memberId || memberId === "" || memberId === "unassigned")
+      return "Unassigned";
+    const member = teamMembers.find(
+      (m) => m.id.toString() === memberId.toString(),
+    );
+    return member ? `${member.firstName} ${member.lastName}` : "Unassigned";
+  };
+
+  const getColumnWidth = (columnId) => {
+    return columnWidths[columnId] || 140;
+  };
+
+  const getColumnIcon = (type) => {
+    switch (type) {
+      case "status":
+        return <div className="w-2 h-2 rounded-full bg-emerald-500" />;
+      case "dropdown":
+        return <ChevronDown className="w-3 h-3 text-blue-400" />;
+      case "people":
+        return <User className="w-3 h-3 text-purple-400" />;
+      case "date":
+        return <Calendar className="w-3 h-3 text-orange-400" />;
+      case "number":
+        return <Hash className="w-3 h-3 text-yellow-400" />;
+      case "tags":
+        return <Tag className="w-3 h-3 text-red-400" />;
+      case "subitems":
+        return <Folder className="w-3 h-3 text-blue-400" />;
+      case "checkbox":
+        return <Check className="w-3 h-3 text-green-400" />;
+      case "progress":
+        return <BarChart3 className="w-3 h-3 text-green-400" />;
+      case "email":
+        return <Mail className="w-3 h-3 text-blue-400" />;
+      case "phone":
+        return <Phone className="w-3 h-3 text-green-400" />;
+      case "location":
+        return <MapPin className="w-3 h-3 text-red-400" />;
+      default:
+        return <Hash className="w-3 h-3 text-gray-400" />;
+    }
+  };
+
+  // Group items by group name
+  const groupedItems = boardItems.reduce((groups, item) => {
+    if (!groups[item.groupName]) {
+      groups[item.groupName] = [];
+    }
+    groups[item.groupName].push(item);
+    return groups;
+  }, {});
+
+  // Create board groups
+  const boardGroups = groupOrder.map((groupName) => ({
+    name: groupName,
+    items: groupedItems[groupName] || [],
+    collapsed: collapsedGroups[groupName] || false,
+  }));
+
+  // Event handlers
+  const handleCellUpdate = useCallback((projectId, field, value) => {
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? { ...item, values: { ...item.values, [field]: value } }
+          : item,
+      ),
+    );
+
+    setUndoStack((prev) => [
+      ...prev.slice(-9),
+      {
+        action: "update_cell",
+        data: { projectId, field, value },
+        timestamp: Date.now(),
+      },
+    ]);
+
+    // Force component re-render to recalculate formulas
+    setTimeout(() => {
+      setBoardItems((prev) => [...prev]);
+    }, 50);
+  }, []);
+
+  const handleAddItem = (groupName = "New Leads") => {
+    const newItem = {
+      id: newItemCounter,
+      groupName,
+      values: {
+        item: "",
+        status:
+          groupName === "New Leads"
+            ? "new lead"
+            : groupName === "In Progress"
+              ? "in progress"
+              : groupName === "Complete"
+                ? "complete"
+                : "new lead",
+        assignedTo: "unassigned",
+        dueDate: "",
+        checkbox: false,
+        progress: 0,
+        email: "",
+        phone: "",
+        location: "",
+      },
+      folders: [],
+    };
+
+    setBoardItems((prev) => [...prev, newItem]);
+    setNewItemCounter((prev) => prev + 1);
+    setEditingCell({ projectId: newItemCounter, field: "item" });
+  };
+
+  const handleAddFolder = (projectId) => {
+    const newFolder = {
+      id: newFolderCounter,
+      name: "",
+      collapsed: false,
+      subItems: [],
+    };
+
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? { ...item, folders: [...(item.folders || []), newFolder] }
+          : item,
+      ),
+    );
+
+    setExpandedSubItems((prev) => new Set([...prev, projectId]));
+    setExpandedFolders((prev) => new Set([...prev, newFolderCounter]));
+    setEditingFolder(newFolderCounter);
+    setNewFolderCounter((prev) => prev + 1);
+  };
+
+  const handleAddSubItem = (projectId, folderId) => {
+    const newSubItem = {
+      id: newSubItemCounter,
+      name: "",
+      status: "not_started",
+      assignedTo: "unassigned",
+      priority: 1,
+      folderId: folderId,
+      values: {}
+    };
+
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? {
+              ...item,
+              folders: item.folders.map((folder) =>
+                folder.id === folderId
+                  ? { ...folder, subItems: [...folder.subItems, newSubItem] }
+                  : folder,
+              ),
+            }
+          : item,
+      ),
+    );
+
+    setExpandedSubItems((prev) => new Set([...prev, projectId]));
+    setExpandedFolders((prev) => new Set([...prev, folderId]));
+    setEditingSubItem(newSubItemCounter);
+    setNewSubItemCounter((prev) => prev + 1);
+  };
+
+  const handleUpdateFolder = (projectId, folderId, newName) => {
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? {
+              ...item,
+              folders: item.folders.map((folder) =>
+                folder.id === folderId ? { ...folder, name: newName } : folder,
+              ),
+            }
+          : item,
+      ),
+    );
+  };
+
+  // Settings functionality handlers
+  const handleFilterColumn = (columnId, filterValue) => {
+    setColumnFilters(prev => ({ ...prev, [columnId]: filterValue }));
+  };
+
+  const handleSortColumn = (columnId, sortOrder) => {
+    setColumnSortOrder(prev => ({ ...prev, [columnId]: sortOrder }));
+  };
+
+  const handleCollapseColumn = (columnId) => {
+    setCollapsedColumns(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(columnId)) {
+        newSet.delete(columnId);
+      } else {
+        newSet.add(columnId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleToggleColumnSummary = (columnId) => {
+    setShowColumnSummary(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(columnId)) {
+        newSet.delete(columnId);
+      } else {
+        newSet.add(columnId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleRenameColumn = (columnId, newName) => {
+    if (!newName || newName.trim() === "") {
+      showToast("Column name cannot be empty", "error");
+      return;
+    }
+
+    // Update the column name in the columns array
+    setColumns(prev => prev.map(col => 
+      col.id === columnId ? { ...col, name: newName.trim() } : col
+    ));
+    
+    showToast(`Column renamed to "${newName.trim()}"`, "success");
+    
+    // Reset the rename state
+    setIsRenamingColumn(null);
+    setNewColumnName("");
+  };
+
+  const handleDeleteColumn = (columnId) => {
+    console.log('Deleting column:', columnId);
+    
+    // Check if this is a sub-item column (contains folder info)
+    if (columnId.includes('folder-')) {
+      // Extract the actual column ID from the folder-specific ID
+      // Format: "folder-{folderId}-{columnId}"
+      const parts = columnId.split('-');
+      const actualColumnId = parts.slice(2).join('-'); // Everything after "folder-{folderId}-"
+      console.log('Deleting sub-item column. Full ID:', columnId, 'Actual column ID:', actualColumnId);
+      
+      setConfirmModal({
+        isOpen: true,
+        title: "Delete Sub-Item Column",
+        message: "Are you sure you want to delete this sub-item column?",
+        callback: (confirmed) => {
+          if (confirmed) {
+            setSubItemColumns(prev => {
+              const filtered = prev.filter(col => col.id !== actualColumnId);
+              console.log('Previous sub-item columns:', prev);
+              console.log('Filtered sub-item columns:', filtered);
+              return filtered;
+            });
+          }
+        }
+      });
+      return;
+    }
+    
+    // Handle main columns
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Column",
+      message: "Are you sure you want to delete this column?",
+      callback: (confirmed) => {
+        if (confirmed) {
+          setColumns(prev => prev.filter(col => col.id !== columnId));
+          // Clean up related state
+          setColumnFilters(prev => {
+            const newFilters = { ...prev };
+            delete newFilters[columnId];
+            return newFilters;
+          });
+          setColumnSortOrder(prev => {
+            const newSort = { ...prev };
+            delete newSort[columnId];
+            return newSort;
+          });
+          setCollapsedColumns(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(columnId);
+            return newSet;
+          });
+        }
+      }
+    });
+  };
+
+  const handleDuplicateColumn = (columnId) => {
+    const originalColumn = columns.find(col => col.id === columnId);
+    if (originalColumn) {
+      const newColumn = {
+        ...originalColumn,
+        id: `${columnId}_copy_${Date.now()}`,
+        name: `${originalColumn.name} (Copy)`,
+        order: Math.max(...columns.map(col => col.order)) + 1
+      };
+      setColumns(prev => [...prev, newColumn]);
+    }
+  };
+
+  const handleAddColumn = (type, name = "New Column", formula = null) => {
+    const newColumn = {
+      id: `col_${Date.now()}`,
+      name: name,
+      type: type,
+      order: Math.max(...columns.map(col => col.order)) + 1,
+      formula: formula
+    };
+
+    // Add default options for dropdown columns
+    if (type === "dropdown") {
+      newColumn.options = ["Option 1", "Option 2", "Option 3"];
+    }
+
+    setColumns(prev => [...prev, newColumn]);
+    setIsAddingColumn(false);
+  };
+
+  const handleAddSubItemColumn = (type, name = "New Column") => {
+    const newColumn = {
+      id: `subcol_${Date.now()}`,
+      name: name,
+      type: type,
+      order: Math.max(...subItemColumns.map(col => col.order), 0) + 1,
+      width: 150
+    };
+
+    // Add default options for dropdown columns
+    if (type === "dropdown") {
+      newColumn.options = ["Option 1", "Option 2", "Option 3"];
+    }
+
+    setSubItemColumns(prev => [...prev, newColumn]);
+  };
+
+  const handleUpdateSubItem = (projectId, subItemId, field, value) => {
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? {
+              ...item,
+              folders: item.folders.map((folder) => ({
+                ...folder,
+                subItems: folder.subItems.map((subItem) =>
+                  subItem.id === subItemId
+                    ? { 
+                        ...subItem, 
+                        [field]: value,
+                        values: {
+                          ...subItem.values,
+                          [field]: value
+                        }
+                      }
+                    : subItem,
+                ),
+              })),
+            }
+          : item,
+      ),
+    );
+  };
+
+  const handleDeleteFolder = (projectId, folderId) => {
+    setBoardItems((prev) =>
+      prev.map((item) =>
+        item.id === projectId
+          ? {
+              ...item,
+              folders: item.folders.filter((folder) => folder.id !== folderId),
+            }
+          : item,
+      ),
+    );
+    setExpandedFolders((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(folderId);
+      return newSet;
+    });
+  };
+
+  const handleDeleteSubItem = (projectId, subItemId) => {
+    console.log('Deleting sub-item:', { projectId, subItemId });
+    
+    setBoardItems((prev) => {
+      const updated = prev.map((item) => {
+        if (item.id === projectId) {
+          const updatedItem = {
+            ...item,
+            folders: (item.folders || []).map((folder) => ({
+              ...folder,
+              subItems: (folder.subItems || []).filter(
+                (subItem) => subItem.id !== subItemId,
+              ),
+            })),
+          };
+          console.log('Updated item after deletion:', updatedItem);
+          return updatedItem;
+        }
+        return item;
+      });
+      console.log('Updated board items:', updated);
+      return updated;
+    });
+  };
+
+  const handleDeleteItem = (itemId) => {
+    setBoardItems((prev) => prev.filter((item) => item.id !== itemId));
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(itemId);
+      return newSet;
+    });
+  };
+
+  const handleDeleteMainItem = (itemId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Item",
+      message: "Are you sure you want to delete this item? This action cannot be undone.",
+      callback: (confirmed) => {
+        if (confirmed) {
+          setBoardItems((prev) => prev.filter((item) => item.id !== itemId));
+          setSelectedItems((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(itemId);
+            return newSet;
+          });
+        }
+      }
+    });
+  };
+
+  const handleSelectToggle = (id) => {
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handlePointerDown = (columnId, e) => {
+    e.preventDefault();
+    setIsResizing(columnId);
+
+    const startX = e.clientX;
+    const startWidth = columnWidths[columnId] || 140;
+
+    const handlePointerMove = (e) => {
+      const newWidth = Math.max(80, startWidth + (e.clientX - startX));
+      setColumnWidths((prev) => ({ ...prev, [columnId]: newWidth }));
+    };
+
+    const handlePointerUp = () => {
+      setIsResizing(null);
+      document.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("pointerup", handlePointerUp);
+    };
+
+    document.addEventListener("pointermove", handlePointerMove);
+    document.addEventListener("pointerup", handlePointerUp);
+  };
+
+  const toggleGroup = (groupName) => {
+    setCollapsedGroups((prev) => ({
+      ...prev,
+      [groupName]: !prev[groupName],
+    }));
+  };
+
+  const toggleFolder = (folderId) => {
+    setExpandedFolders((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(folderId)) {
+        newSet.delete(folderId);
+      } else {
+        newSet.add(folderId);
+      }
+      return newSet;
+    });
+  };
+
+  // Updates functionality
+  const openUpdatesModal = (itemType, itemId, itemName) => {
+    setUpdatesModal({
+      isOpen: true,
+      itemType,
+      itemId,
+      itemName,
+    });
+    setActiveTab("updates"); // Reset to updates tab when opening
+    setEmailSubject(""); // Clear email form
+    setEmailMessage("");
+  };
+
+  // Email sending functionality
+  const sendEmail = async () => {
+    const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+    if (!currentItem?.email || !emailSubject.trim() || !emailMessage.trim()) {
+      showToast("Please fill in all email fields", "error");
+      return;
+    }
+
+    setIsEmailSending(true);
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: currentItem.email,
+          subject: emailSubject,
+          message: emailMessage,
+          projectName: updatesModal.itemName,
+          itemType: updatesModal.itemType
+        }),
+      });
+
+      if (response.ok) {
+        // Add email to updates log
+        const updateKey = `${updatesModal.itemType}-${updatesModal.itemId}`;
+        setItemUpdates(prev => ({
+          ...prev,
+          [updateKey]: [
+            ...(prev[updateKey] || []),
+            {
+              id: Date.now(),
+              content: `📧 Email sent: "${emailSubject}"`,
+              author: "System",
+              timestamp: new Date(),
+              type: "email"
+            }
+          ]
+        }));
+
+        setEmailSubject("");
+        setEmailMessage("");
+        setActiveTab("updates"); // Switch back to updates tab
+        showToast("Email sent successfully!", "success");
+      } else {
+        const error = await response.json();
+        showToast(`Failed to send email: ${error.message}`, "error");
+      }
+    } catch (error) {
+      console.error('Email sending error:', error);
+      showToast("Failed to send email. Please check your connection and try again.", "error");
+    } finally {
+      setIsEmailSending(false);
+    }
+  };
+
+  const closeUpdatesModal = () => {
+    setUpdatesModal({
+      isOpen: false,
+      itemType: null,
+      itemId: null,
+      itemName: "",
+    });
+    setNewUpdate("");
+  };
+
+  const addUpdate = () => {
+    if (!newUpdate.trim()) return;
+
+    const updateKey = `${updatesModal.itemType}-${updatesModal.itemId}`;
+    const newUpdateObj = {
+      id: Date.now(),
+      content: newUpdate.trim(),
+      author: "You",
+      timestamp: new Date(),
+      type: updatesModal.itemType,
+    };
+
+    setItemUpdates((prev) => ({
+      ...prev,
+      [updateKey]: [...(prev[updateKey] || []), newUpdateObj],
+    }));
+
+    setNewUpdate("");
+    closeUpdatesModal();
+  };
+
+  const getUpdateCount = (itemType, itemId) => {
+    const updateKey = `${itemType}-${itemId}`;
+    return itemUpdates[updateKey]?.length || 0;
+  };
+
+  // Column menu component
+  const AddColumnMenu = ({ isOpen, onClose, onSelectType }) => {
+    if (!isOpen) return null;
+
+    const columnTypes = [
+      { type: "text", name: "Text", icon: "📝", description: "Simple text field" },
+      { type: "status", name: "Status", icon: "🟡", description: "Status with colored labels" },
+      { type: "dropdown", name: "Dropdown", icon: "📋", description: "Select from predefined options" },
+      { type: "people", name: "People", icon: "👤", description: "Assign team members" },
+      { type: "date", name: "Date", icon: "📅", description: "Date picker" },
+      { type: "number", name: "Number", icon: "🔢", description: "Numeric values" },
+      { type: "checkbox", name: "Checkbox", icon: "☑️", description: "True/false toggle" },
+      { type: "progress", name: "Progress", icon: "📊", description: "Progress bar" },
+      { type: "formula", name: "Formula", icon: "🧮", description: "Calculate values from other columns" },
+      { type: "email", name: "Email", icon: "📧", description: "Email addresses" },
+      { type: "phone", name: "Phone", icon: "📞", description: "Phone numbers" },
+      { type: "location", name: "Location", icon: "📍", description: "Address or location" },
+    ];
+
     return (
-      <div className="flex items-center justify-center h-96 bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-gray-600 text-lg">Loading projects...</p>
+      <div className="absolute top-full left-0 z-50 mt-1 w-80 bg-gray-800 rounded-lg shadow-2xl border border-gray-700 text-white">
+        <div className="py-2">
+          <div className="px-4 py-2 text-sm text-gray-300 border-b border-gray-700">
+            <div className="flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Add Column
+            </div>
+          </div>
+
+          <div className="max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-2 gap-1 p-2">
+              {columnTypes.map((columnType) => (
+                <div
+                  key={columnType.type}
+                  onClick={() => {
+                    onSelectType(columnType.type);
+                    onClose();
+                  }}
+                  className="p-3 hover:bg-gray-700 cursor-pointer rounded-lg flex flex-col items-center text-center transition-all"
+                >
+                  <div className="text-2xl mb-1">{columnType.icon}</div>
+                  <div className="text-sm font-medium text-gray-200">{columnType.name}</div>
+                  <div className="text-xs text-gray-400 mt-1">{columnType.description}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
-  }
+  };
 
-  const uniqueStatuses = Array.from(new Set(projects.map(p => p.status)));
+  const SubItemMenu = ({ subItemId, projectId, isOpen, onClose }) => {
+    if (!isOpen) return null;
 
-  return (
-    <div className="h-full flex flex-col bg-gray-50">
-      {/* Enhanced Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Project Management</h1>
-              <p className="text-gray-600 mt-1">Manage and track all your projects in one place</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => window.location.reload()}
-                className="text-gray-600"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </Button>
-              <Link href="/projects-list">
-                <Button className="bg-blue-600 hover:bg-blue-700 shadow-md">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Project
-                </Button>
-              </Link>
+    return (
+      <div className="absolute top-full right-0 mt-1 w-48 bg-gray-800 text-white rounded-lg shadow-xl border border-gray-700 z-50">
+        <div className="py-2">
+          <div className="px-4 py-2 text-sm text-gray-300 border-b border-gray-700">
+            <div className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Sub-item Options
             </div>
           </div>
-          
-          {/* Enhanced Search and filters */}
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="relative flex-1 min-w-80">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Search by name, description, or status..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-              />
+
+          <div 
+            onClick={() => {
+              setPromptModal({
+                isOpen: true,
+                title: "Rename Sub-Item",
+                message: "Enter a new name for this sub-item",
+                placeholder: "Enter new name...",
+                defaultValue: "",
+                callback: (newName) => {
+                  if (newName !== null && newName.trim()) {
+                    // Update sub-item name logic would go here
+                    showToast("Sub-item renamed successfully!", "success");
+                  }
+                }
+              });
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <Edit className="w-4 h-4" />
+            Rename
+          </div>
+
+          <div 
+            onClick={() => {
+              showToast("Duplicate functionality coming soon!", "info");
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <Copy className="w-4 h-4" />
+            Duplicate
+          </div>
+
+          <div className="border-t border-gray-700 my-1"></div>
+
+          <div 
+            onClick={() => {
+              handleDeleteSubItem(projectId, subItemId);
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-red-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete Sub-item
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ColumnMenu = ({ columnId, columnName, isOpen, onClose, isSubItem = false, menuKey = null }) => {
+    if (!isOpen) return null;
+
+    // Check if this is a formula column
+    const column = columns.find(col => col.id === columnId);
+    const isFormulaColumn = column?.type === 'formula';
+
+    return (
+      <div className="absolute top-full right-0 mt-1 w-64 bg-gray-800 text-white rounded-lg shadow-xl border border-gray-700 z-50">
+        <div className="py-2">
+          <div className="px-4 py-2 text-sm text-gray-300 border-b border-gray-700">
+            <div className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Settings
+            </div>
+          </div>
+
+          {isFormulaColumn && (
+            <div 
+              onClick={() => {
+                openFormulaAssistant(columnId, column?.formula || '');
+                onClose();
+              }}
+              className="px-4 py-2 text-sm text-purple-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+            >
+              <div className="w-4 h-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded flex items-center justify-center text-xs">
+                ✨
+              </div>
+              Formula Settings
+            </div>
+          )}
+
+          <div 
+            onClick={() => {
+              openFormulaAssistant(columnId, column?.formula || '');
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-blue-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <div className="w-4 h-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded flex items-center justify-center text-xs">
+              ✨
+            </div>
+            Autofill with AI
+          </div>
+
+          <div className="border-t border-gray-700 my-1"></div>
+
+          <div 
+            onClick={() => {
+              setPromptModal({
+                isOpen: true,
+                title: "Filter Column",
+                message: `Enter filter value for ${columnName}:`,
+                placeholder: "Enter filter value...",
+                defaultValue: "",
+                callback: (filterValue) => {
+                  if (filterValue !== null) {
+                    handleFilterColumn(columnId, filterValue);
+                  }
+                }
+              });
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <div className="w-4 h-4">🔍</div>
+            Filter
+          </div>
+
+
+
+          <div className="border-t border-gray-700 my-1"></div>
+
+          <div className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2">
+            <div className="w-4 h-4">📊</div>
+            Show Summary on Parent Item
+          </div>
+
+          <div 
+            onClick={() => {
+              if (isSubItem) {
+                handleAddSubItemColumn("text"); // Default to text type for duplication
+              } else {
+                handleDuplicateColumn(columnId);
+              }
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <div className="w-4 h-4">📋</div>
+            Duplicate column
+            <ChevronRight className="w-3 h-3 ml-auto" />
+          </div>
+
+          <div 
+            onClick={() => {
+              if (isSubItem && menuKey) {
+                // For sub-items, use the full menu key which contains the sub-item context
+                setAddColumnMenuOpen(menuKey);
+              } else {
+                // For main items, use the main- prefix to differentiate from sub-items
+                setAddColumnMenuOpen(`main-${columnId}`);
+              }
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2 relative"
+          >
+            <Plus className="w-4 h-4" />
+            Add column to the right
+            <ChevronRight className="w-3 h-3 ml-auto" />
+          </div>
+
+          <div 
+            onClick={() => {
+              const columnTypes = ["text", "status", "people", "date", "number", "checkbox", "progress"];
+              setPromptModal({
+                isOpen: true,
+                title: "Change Column Type",
+                message: `Available types: ${columnTypes.join(", ")}`,
+                placeholder: "Enter column type...",
+                defaultValue: "",
+                callback: (selectedType) => {
+                  if (selectedType && columnTypes.includes(selectedType.toLowerCase())) {
+                    setColumns(prev => prev.map(col => 
+                      col.id === columnId ? { ...col, type: selectedType.toLowerCase() } : col
+                    ));
+                  }
+                }
+              });
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <div className="w-4 h-4">🔄</div>
+            Change column type
+            <ChevronRight className="w-3 h-3 ml-auto" />
+          </div>
+
+
+
+          <div className="border-t border-gray-700 my-1"></div>
+
+          <div 
+            onClick={() => {
+              setColumnRenameModal({
+                isOpen: true,
+                columnId: columnId,
+                currentName: columnName,
+                callback: (colId, newName) => {
+                  handleRenameColumn(colId, newName);
+                  onClose();
+                }
+              });
+            }}
+            className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <div className="w-4 h-4">✏️</div>
+            Rename
+          </div>
+
+          <div 
+            onClick={() => {
+              // Use menuKey for sub-items, columnId for main items
+              const deleteId = isSubItem && menuKey ? menuKey : columnId;
+              handleDeleteColumn(deleteId);
+              onClose();
+            }}
+            className="px-4 py-2 text-sm text-red-400 hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Edit labels modal component
+  const EditLabelsModal = () => {
+    const [tempOptions, setTempOptions] = useState([]);
+    const [newLabel, setNewLabel] = useState("");
+    
+    useEffect(() => {
+      if (editingDropdownColumn) {
+        const column = columns.find(col => col.id === editingDropdownColumn);
+        setTempOptions(column?.options || []);
+      }
+    }, [editingDropdownColumn, columns]);
+
+    const handleAddLabel = () => {
+      if (newLabel.trim() && !tempOptions.includes(newLabel.trim())) {
+        setTempOptions(prev => [...prev, newLabel.trim()]);
+        setNewLabel("");
+      }
+    };
+
+    const handleRemoveLabel = (indexToRemove) => {
+      setTempOptions(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
+
+    const handleSave = () => {
+      setColumns(prev => prev.map(col => 
+        col.id === editingDropdownColumn 
+          ? { ...col, options: tempOptions }
+          : col
+      ));
+      setEditingDropdownColumn(null);
+      showToast("Labels updated successfully!", "success");
+    };
+
+    if (!editingDropdownColumn) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl">
+            <h3 className="text-lg font-semibold text-gray-900">Edit Labels</h3>
+            <p className="text-sm text-gray-600">Manage dropdown options</p>
+          </div>
+
+          <div className="p-6 max-h-96 overflow-y-auto">
+            {/* Add new label */}
+            <div className="mb-4">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newLabel}
+                  onChange={(e) => setNewLabel(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddLabel()}
+                  placeholder="Create or find labels"
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleAddLabel}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            {/* Existing labels */}
+            <div className="space-y-2">
+              {tempOptions.map((option, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded ${
+                      option === "Critical" ? "bg-red-500" :
+                      option === "High" ? "bg-orange-500" :
+                      option === "Medium" ? "bg-yellow-500" :
+                      option === "Low" ? "bg-green-500" :
+                      "bg-gray-400"
+                    }`}></div>
+                    <span className="text-sm text-gray-800">{option}</span>
+                  </div>
+                  <button
+                    onClick={() => handleRemoveLabel(index)}
+                    className="text-red-500 hover:text-red-700 p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+            <button
+              onClick={() => setEditingDropdownColumn(null)}
+              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCell = (item, column) => {
+    const value = item.values[column.id] || "";
+
+    switch (column.type) {
+      case "status":
+        const statusOptions = [
+          { value: "new lead", label: "New Lead", color: "bg-cyan-500", lightColor: "bg-cyan-50", textColor: "text-cyan-700" },
+          { value: "need attention", label: "Need Attention", color: "bg-yellow-500", lightColor: "bg-yellow-50", textColor: "text-yellow-700" },
+          { value: "sent estimate", label: "Sent Estimate", color: "bg-purple-500", lightColor: "bg-purple-50", textColor: "text-purple-700" },
+          { value: "signed", label: "Signed", color: "bg-emerald-500", lightColor: "bg-emerald-50", textColor: "text-emerald-700" },
+          { value: "in progress", label: "In Progress", color: "bg-blue-500", lightColor: "bg-blue-50", textColor: "text-blue-700" },
+          { value: "complete", label: "Complete", color: "bg-green-500", lightColor: "bg-green-50", textColor: "text-green-700" }
+        ];
+        
+        const currentStatus = statusOptions.find(opt => opt.value === value) || statusOptions[0];
+        const statusDropdownKey = `status-${item.id}-${column.id}`;
+        const isStatusOpen = dropdownOpen === statusDropdownKey;
+        
+        return (
+          <div className="relative status-dropdown">
+            <div
+              onClick={() => setDropdownOpen(isStatusOpen ? null : statusDropdownKey)}
+              className={`h-7 px-3 py-1 rounded-full cursor-pointer flex items-center justify-between text-xs font-medium transition-all duration-200 hover:shadow-md ${currentStatus.lightColor} ${currentStatus.textColor} border border-transparent hover:border-gray-200`}
+            >
+              <div className="flex items-center space-x-2">
+                <div className={`w-2 h-2 rounded-full ${currentStatus.color}`}></div>
+                <span className="truncate">{currentStatus.label}</span>
+              </div>
+              <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform duration-200 ${isStatusOpen ? 'rotate-180' : ''}`} />
             </div>
             
-            {/* Status Filter */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Filter className="w-4 h-4" />
-                  Status
-                  {statusFilter && (
-                    <Badge variant="secondary" className="ml-1 px-1 py-0 text-xs">
-                      {statusFilter}
-                    </Badge>
-                  )}
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => setStatusFilter("")}>
-                  All Statuses
-                </DropdownMenuItem>
-                {uniqueStatuses.map((status) => (
-                  <DropdownMenuItem 
-                    key={status} 
-                    onClick={() => setStatusFilter(status)}
-                  >
-                    <Badge className={`${getStatusColor(status)} mr-2`}>
-                      {status}
-                    </Badge>
-                    {status}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            {/* Sort Controls */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <ArrowUpDown className="w-4 h-4" />
-                  Sort
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => { setSortBy("name"); setSortOrder("asc"); }}>
-                  Name (A-Z)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => { setSortBy("name"); setSortOrder("desc"); }}>
-                  Name (Z-A)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => { setSortBy("status"); setSortOrder("asc"); }}>
-                  Status
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => { setSortBy("startDate"); setSortOrder("desc"); }}>
-                  Newest First
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => { setSortBy("startDate"); setSortOrder("asc"); }}>
-                  Oldest First
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            {/* Column Customization */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Users className="w-4 h-4" />
-                  Columns
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {[
-                  { key: 'name', label: 'Item' },
-                  { key: 'people', label: 'People' },
-                  { key: 'location', label: 'Location' },
-                  { key: 'phone', label: 'Phone' },
-                  { key: 'status', label: 'Status' },
-                  { key: 'measureDate', label: 'Measure Date' },
-                  { key: 'deliveryDate', label: 'Delivery Date' },
-                  { key: 'installDate', label: 'Install Date' }
-                ].map((column) => (
-                  <DropdownMenuItem 
-                    key={column.key}
-                    onClick={() => toggleColumn(column.key)}
-                    className="flex items-center justify-between"
-                  >
-                    {column.label}
-                    <Checkbox 
-                      checked={visibleColumns.includes(column.key)}
-                      className="ml-2"
-                    />
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            {/* Results summary and bulk actions */}
-            <div className="flex items-center gap-4 text-sm text-gray-500 ml-auto">
-              {selectedProjects.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                    {selectedProjects.length} selected
-                  </Badge>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-1">
-                        Bulk Actions
-                        <ChevronDown className="w-3 h-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem>
-                        Update Status
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        Assign Team Member
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        Set Dates
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        className="flex items-center gap-2"
-                        onClick={() => {
-                          selectedProjects.forEach(id => archiveProject.mutate(id));
-                          setSelectedProjects([]);
-                        }}
-                      >
-                        <Archive className="h-4 w-4" />
-                        Archive Selected
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        className="text-red-600 flex items-center gap-2"
-                        onClick={() => {
-                          selectedProjects.forEach(id => trashProject.mutate(id));
-                          setSelectedProjects([]);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Move to Trash
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedProjects([])}>
-                    Clear
-                  </Button>
+            {isStatusOpen && (
+              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white rounded-lg shadow-xl border border-gray-200" style={{ minWidth: '200px' }}>
+                <div className="p-2">
+                  {statusOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      onClick={() => {
+                        handleCellUpdate(item.id, column.id, option.value);
+                        setDropdownOpen(null);
+                      }}
+                      className={`px-3 py-2 rounded-md cursor-pointer hover:bg-gray-50 flex items-center space-x-3 transition-colors duration-150 ${
+                        value === option.value ? 'bg-blue-50 border-l-3 border-blue-500' : ''
+                      }`}
+                    >
+                      <div className={`w-3 h-3 rounded-full ${option.color}`}></div>
+                      <span className="text-sm font-medium text-gray-700">{option.label}</span>
+                      {value === option.value && (
+                        <Check className="w-3 h-3 text-blue-500 ml-auto" />
+                      )}
+                    </div>
+                  ))}
                 </div>
+                
+                {/* Status Management Section */}
+                <div className="border-t border-gray-100 p-2">
+                  <div className="px-3 py-2 text-xs text-gray-500 font-medium uppercase tracking-wide">
+                    Status Settings
+                  </div>
+                  <div className="px-3 py-2 rounded-md cursor-pointer hover:bg-gray-50 flex items-center space-x-3 text-sm text-gray-600">
+                    <Settings className="w-3 h-3" />
+                    <span>Edit Status Labels</span>
+                  </div>
+                  <div className="px-3 py-2 rounded-md cursor-pointer hover:bg-gray-50 flex items-center space-x-3 text-sm text-gray-600">
+                    <Plus className="w-3 h-3" />
+                    <span>Add New Status</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case "dropdown":
+        const options = column.options || ["Option 1", "Option 2", "Option 3"];
+        const dropdownId = `dropdown-${item.id}-${column.id}`;
+        const isDropdownOpen = openDropdown === dropdownId;
+        
+        return (
+          <div className="relative">
+            <div
+              onClick={() => setOpenDropdown(isDropdownOpen ? null : dropdownId)}
+              className={`h-6 text-xs font-medium rounded px-2 border cursor-pointer flex items-center justify-between ${
+                value === "Critical"
+                  ? "bg-red-100 text-red-700 border-red-200"
+                  : value === "High"
+                    ? "bg-orange-100 text-orange-700 border-orange-200"
+                    : value === "Medium"
+                      ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                      : value === "Low"
+                        ? "bg-green-100 text-green-700 border-green-200"
+                        : "bg-gray-100 text-gray-700 border-gray-200"
+              }`}
+            >
+              <span className="truncate">{value || "Select..."}</span>
+              <ChevronDown className="w-3 h-3 ml-1 flex-shrink-0" />
+            </div>
+            
+            {isDropdownOpen && (
+              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white rounded-lg shadow-xl border border-gray-200" style={{ minWidth: '200px' }}>
+                <div className="p-3">
+                  <input
+                    type="text"
+                    placeholder="Create or find labels"
+                    value={dropdownSearch}
+                    onChange={(e) => setDropdownSearch(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    autoFocus
+                  />
+                </div>
+                
+                <div className="max-h-48 overflow-y-auto">
+                  {/* Filtered options */}
+                  {options
+                    .filter(option => 
+                      option.toLowerCase().includes(dropdownSearch.toLowerCase())
+                    )
+                    .map((option, index) => (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          handleCellUpdate(item.id, column.id, option);
+                          setOpenDropdown(null);
+                          setDropdownSearch("");
+                        }}
+                        className="px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer flex items-center gap-2"
+                      >
+                        <div className={`w-3 h-3 rounded ${
+                          option === "Critical" ? "bg-red-500" :
+                          option === "High" ? "bg-orange-500" :
+                          option === "Medium" ? "bg-yellow-500" :
+                          option === "Low" ? "bg-green-500" :
+                          "bg-gray-400"
+                        }`}></div>
+                        {option}
+                      </div>
+                    ))}
+                  
+                  {/* Create new option if search doesn't match existing */}
+                  {dropdownSearch && 
+                   !options.some(option => 
+                     option.toLowerCase() === dropdownSearch.toLowerCase()
+                   ) && (
+                    <div
+                      onClick={() => {
+                        const newOptions = [...options, dropdownSearch];
+                        setColumns(prev => prev.map(col => 
+                          col.id === column.id 
+                            ? { ...col, options: newOptions }
+                            : col
+                        ));
+                        handleCellUpdate(item.id, column.id, dropdownSearch);
+                        setOpenDropdown(null);
+                        setDropdownSearch("");
+                      }}
+                      className="px-4 py-2 text-sm hover:bg-blue-50 cursor-pointer text-blue-600 border-t border-gray-100"
+                    >
+                      + Create "{dropdownSearch}"
+                    </div>
+                  )}
+                </div>
+                
+                <div className="border-t border-gray-100 p-2">
+                  <button
+                    onClick={() => {
+                      setEditingDropdownColumn(column.id);
+                      setOpenDropdown(null);
+                    }}
+                    className="w-full text-sm text-gray-600 hover:text-gray-800 py-2 hover:bg-gray-50 rounded"
+                  >
+                    Edit labels
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case "people":
+        return (
+          <select
+            value={value}
+            onChange={(e) =>
+              handleCellUpdate(item.id, column.id, e.target.value)
+            }
+            className="h-6 text-xs border-none bg-transparent text-gray-700 outline-none cursor-pointer"
+          >
+            <option value="unassigned">Unassigned</option>
+            {teamMembers.map((member) => (
+              <option key={member.id} value={member.id.toString()}>
+                {member.firstName} {member.lastName}
+              </option>
+            ))}
+          </select>
+        );
+
+      case "date":
+        return (
+          <input
+            type="date"
+            value={value}
+            onChange={(e) =>
+              handleCellUpdate(item.id, column.id, e.target.value)
+            }
+            className="h-6 text-xs border-none bg-transparent text-gray-700 outline-none"
+          />
+        );
+
+      case "checkbox":
+        return (
+          <div className="flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={value === true || value === "true"}
+              onChange={(e) =>
+                handleCellUpdate(item.id, column.id, e.target.checked)
+              }
+              className="w-4 h-4 rounded border-gray-400 text-blue-500"
+            />
+          </div>
+        );
+
+      case "progress":
+        const progressValue = parseInt(value) || 0;
+        return (
+          <div className="flex items-center gap-2 w-full">
+            <div className="flex-1 bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-green-500 h-2 rounded-full transition-all"
+                style={{
+                  width: `${Math.min(100, Math.max(0, progressValue))}%`,
+                }}
+              />
+            </div>
+            <span className="text-xs text-gray-600 w-8">{progressValue}%</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={progressValue}
+              onChange={(e) =>
+                handleCellUpdate(item.id, column.id, parseInt(e.target.value))
+              }
+              className="w-12 h-1 cursor-pointer"
+            />
+          </div>
+        );
+
+      case "subitems":
+        const isExpanded = expandedSubItems.has(item.id);
+        const totalSubItems = (item.folders || []).reduce(
+          (total, folder) => total + folder.subItems.length,
+          0,
+        );
+
+        return (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setExpandedSubItems((prev) => {
+                  const newSet = new Set(prev);
+                  if (newSet.has(item.id)) {
+                    newSet.delete(item.id);
+                  } else {
+                    newSet.add(item.id);
+                  }
+                  return newSet;
+                });
+              }}
+              className="flex items-center gap-1 hover:bg-gray-100 px-2 py-1 rounded text-xs text-gray-600"
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-3 h-3" />
+              ) : (
+                <ChevronRight className="w-3 h-3" />
               )}
-              <span className="font-medium text-gray-700">
-                {filteredProjects.length} of {projects.length} projects
-              </span>
+              <Folder className="w-3 h-3" />
+              <span>{totalSubItems} items</span>
+            </button>
+          </div>
+        );
+
+      case "number":
+        const isEditingNumber =
+          editingCell?.projectId === item.id &&
+          editingCell?.field === column.id;
+
+        if (isEditingNumber) {
+          return (
+            <input
+              type="number"
+              value={value}
+              onChange={(e) =>
+                handleCellUpdate(item.id, column.id, parseFloat(e.target.value) || 0)
+              }
+              className="h-6 text-xs border-none bg-transparent text-gray-700 outline-none w-full"
+              autoFocus
+              onBlur={() => setEditingCell(null)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === "Escape") {
+                  setEditingCell(null);
+                }
+              }}
+            />
+          );
+        }
+
+        return (
+          <div
+            className="h-6 text-xs cursor-text hover:bg-gray-50 flex items-center px-2 rounded text-right"
+            onClick={() =>
+              setEditingCell({ projectId: item.id, field: column.id })
+            }
+          >
+            {typeof value === 'number' ? value.toLocaleString() : value || "0"}
+          </div>
+        );
+
+      case "formula":
+        // Simple formula display and calculation
+        const hasFormula = column.formula && column.formula.trim() !== "";
+        let displayValue = "Click to add formula";
+        
+        if (hasFormula) {
+          try {
+            // Enhanced formula evaluation with proper column references
+            let expression = column.formula;
+            
+            // Replace column references like {Numbers} with actual values
+            const columnMatches = expression.match(/\{([^}]+)\}/g);
+            if (columnMatches) {
+              columnMatches.forEach(match => {
+                const columnName = match.slice(1, -1); // Remove { and }
+                let columnValue = 0;
+                
+                // Find the column in the columns array to get the correct ID
+                const targetColumn = columns.find(col => col.name === columnName);
+                if (targetColumn) {
+                  columnValue = parseFloat(item.values?.[targetColumn.id]) || 0;
+                }
+                
+                expression = expression.replace(match, columnValue);
+              });
+              
+              // Evaluate the mathematical expression
+              if (/^[0-9+\-*/.() ]+$/.test(expression)) {
+                displayValue = Function('"use strict"; return (' + expression + ')')();
+                // Round to 2 decimal places if needed
+                if (typeof displayValue === 'number') {
+                  displayValue = Math.round(displayValue * 100) / 100;
+                }
+              } else {
+                displayValue = "Invalid formula";
+              }
+            } else {
+              displayValue = column.formula; // Show the formula itself if no column references
+            }
+          } catch (error) {
+            console.error('Formula Error:', error);
+            displayValue = "Error";
+          }
+        }
+
+        return (
+          <div 
+            className="h-6 text-xs flex items-center justify-between px-2 text-purple-700 bg-purple-50 rounded font-medium group hover:bg-purple-100 transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              openFormulaAssistant(column.id, column.formula || "");
+            }}
+          >
+            <span className={hasFormula ? "text-purple-800" : "text-gray-500"}>
+              {displayValue}
+            </span>
+            <span className="opacity-0 group-hover:opacity-100 text-purple-600 transition-all">
+              🧮
+            </span>
+          </div>
+        );
+
+      default:
+        const isEditing =
+          editingCell?.projectId === item.id &&
+          editingCell?.field === column.id;
+
+        if (isEditing) {
+          return (
+            <input
+              value={value}
+              onChange={(e) =>
+                handleCellUpdate(item.id, column.id, e.target.value)
+              }
+              className="h-6 text-xs border-none bg-transparent text-gray-700 outline-none w-full"
+              placeholder={
+                column.id === "item" ? "Enter project name" : "Enter text"
+              }
+              autoFocus
+              onBlur={() => setEditingCell(null)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === "Escape") {
+                  setEditingCell(null);
+                }
+              }}
+            />
+          );
+        }
+
+        return (
+          <div
+            className="h-6 text-xs cursor-text hover:bg-gray-50 flex items-center px-2 rounded"
+            onClick={() =>
+              setEditingCell({ projectId: item.id, field: column.id })
+            }
+          >
+            {column.id === "item" && (
+              <div
+                className={`w-2 h-2 rounded-full mr-2 ${
+                  item.values["status"] === "complete"
+                    ? "bg-green-500"
+                    : item.values["status"] === "in progress"
+                      ? "bg-blue-500"
+                      : item.values["status"] === "signed"
+                        ? "bg-emerald-500"
+                        : item.values["status"] === "sent estimate"
+                          ? "bg-purple-500"
+                          : item.values["status"] === "need attention"
+                            ? "bg-yellow-500"
+                            : item.values["status"] === "new lead"
+                              ? "bg-cyan-500"
+                              : "bg-gray-500"
+                }`}
+              />
+            )}
+            {value || <span className="text-gray-400">Click to add...</span>}
+          </div>
+        );
+    }
+  };
+
+  // AI Formula Assistant Component - Enhanced Interactive Version
+  const AIFormulaAssistant = () => {
+    const [localInput, setLocalInput] = React.useState("");
+    const [localAiInput, setLocalAiInput] = React.useState("");
+
+    React.useEffect(() => {
+      if (formulaAssistant.isOpen) {
+        setLocalInput("");
+      }
+    }, [formulaAssistant.isOpen]);
+
+    if (!formulaAssistant.isOpen) return null;
+
+    const currentColumn = columns.find(col => col.id === formulaAssistant.columnId);
+    const availableColumns = columns.filter(col => col.type === 'number' || col.type === 'progress');
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">🤖</span>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">AI Formula Assistant</h2>
+                  <p className="text-purple-100 text-sm">
+                    Creating formula for "{currentColumn?.name || 'Formula'}" column
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={closeFormulaAssistant}
+                className="text-white/70 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Chat Interface */}
+          <div className="flex" style={{ height: '500px' }}>
+            {/* Chat Messages */}
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {formulaAssistant.chatHistory.map((message, index) => (
+                  <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      message.type === 'user' 
+                        ? 'bg-blue-500 text-white' 
+                        : message.type === 'system'
+                        ? 'bg-gradient-to-r from-purple-100 to-blue-100 text-gray-800 border border-purple-200'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      <p className="text-sm">{message.message}</p>
+                      {message.formula && (
+                        <div className="mt-2 p-2 bg-gray-800 rounded text-green-400 font-mono text-xs">
+                          {message.formula}
+                          <button
+                            onClick={() => setLocalInput(message.formula)}
+                            className="ml-2 text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+                          >
+                            Copy to Builder
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {formulaAssistant.isProcessing && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-100 px-4 py-2 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* AI Input Area */}
+              <div className="border-t border-gray-200 p-4">
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={localAiInput}
+                    onChange={(e) => setLocalAiInput(e.target.value)}
+                    placeholder="E.g., 'calculate profit margin' or 'sum all costs'"
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !formulaAssistant.isProcessing && localAiInput.trim()) {
+                        e.preventDefault();
+                        sendMessageToAI(localAiInput);
+                        setLocalAiInput("");
+                      }
+                    }}
+                    disabled={formulaAssistant.isProcessing}
+                    autoComplete="off"
+                  />
+                  <button
+                    onClick={() => {
+                      if (localAiInput.trim() && !formulaAssistant.isProcessing) {
+                        sendMessageToAI(localAiInput);
+                        setLocalAiInput("");
+                      }
+                    }}
+                    disabled={formulaAssistant.isProcessing || !localAiInput.trim()}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {formulaAssistant.isProcessing ? 'Thinking...' : 'Send'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Formula Builder Sidebar */}
+            <div className="w-80 bg-green-50 dark:bg-green-900/20 border-l border-green-200 dark:border-green-700 flex flex-col">
+              <div className="p-4 border-b border-green-200 dark:border-green-700">
+                <h3 className="font-semibold text-gray-800 dark:text-white mb-1">Formula Builder</h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  Build and save your formula for "{formulaAssistant.columnId ? columns.find(c => c.id === formulaAssistant.columnId)?.name : 'this column'}"
+                </p>
+              </div>
+              
+              <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+                {/* Formula Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Formula</label>
+                  <textarea
+                    value={localInput}
+                    onChange={(e) => setLocalInput(e.target.value)}
+                    placeholder="Enter your formula here..."
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white font-mono text-sm"
+                    rows={3}
+                  />
+                </div>
+
+                {/* Quick Formula Templates */}
+                <div>
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Quick Templates</h4>
+                  <div className="space-y-2">
+                    {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').length > 0 && (
+                      <>
+                        <button
+                          onClick={() => setLocalInput("SUM(" + columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').map(col => col.id).join(', ') + ")")}
+                          className="w-full text-left text-sm px-3 py-2 bg-white dark:bg-gray-800 rounded border hover:bg-green-50 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          📊 Sum All Numbers
+                        </button>
+                        <button
+                          onClick={() => setLocalInput("AVG(" + columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').map(col => col.id).join(', ') + ")")}
+                          className="w-full text-left text-sm px-3 py-2 bg-white dark:bg-gray-800 rounded border hover:bg-green-50 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          📈 Average
+                        </button>
+                        <button
+                          onClick={() => setLocalInput("MAX(" + columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').map(col => col.id).join(', ') + ")")}
+                          className="w-full text-left text-sm px-3 py-2 bg-white dark:bg-gray-800 rounded border hover:bg-green-50 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          ⭐ Maximum Value
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Available Columns */}
+                <div>
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Available Columns</h4>
+                  <p className="text-xs text-gray-500 mb-2">Click to add to formula</p>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').map(col => (
+                      <button
+                        key={col.id}
+                        onClick={() => {
+                          const currentInput = localInput;
+                          const newInput = currentInput ? `${currentInput} + {${col.name}}` : `{${col.name}}`;
+                          setLocalInput(newInput);
+                        }}
+                        className="w-full text-left text-xs px-2 py-1 bg-white dark:bg-gray-800 rounded border hover:bg-green-50 hover:border-green-300 transition-colors cursor-pointer"
+                      >
+                        <span className="text-green-600 dark:text-green-400">{"{" + col.name + "}"}</span>
+                      </button>
+                    ))}
+                    {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').length === 0 && (
+                      <div className="text-xs text-gray-500 italic">
+                        No numeric columns available yet. Add Number or Progress columns first.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick Operators */}
+                <div>
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Quick Operators</h4>
+                  <div className="grid grid-cols-4 gap-1">
+                    {['+', '-', '*', '/', '(', ')', '%', '='].map(op => (
+                      <button
+                        key={op}
+                        onClick={() => {
+                          const currentInput = localInput;
+                          setLocalInput(currentInput + (currentInput && !currentInput.endsWith(' ') ? ' ' : '') + op + ' ');
+                        }}
+                        className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 rounded hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors font-mono"
+                      >
+                        {op}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Save Button */}
+                <div className="pt-4 border-t border-green-200 dark:border-green-700">
+                  <button
+                    onClick={() => {
+                      const formulaToSave = localInput.trim();
+                      if (formulaToSave && formulaAssistant.columnId) {
+                        // Directly update the columns - simple approach
+                        setColumns(prevColumns => 
+                          prevColumns.map(col => 
+                            col.id === formulaAssistant.columnId 
+                              ? { ...col, formula: formulaToSave }
+                              : col
+                          )
+                        );
+                        
+                        showToast("Formula saved successfully!", "success");
+                        closeFormulaAssistant();
+                      } else {
+                        showToast("Please enter a formula", "error");
+                      }
+                    }}
+                    disabled={!localInput.trim()}
+                    className="w-full px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg transition-all"
+                  >
+                    Save Formula
+                  </button>
+                  
+                  {/* Simple helper text */}
+                  <div className="mt-2 text-xs text-gray-500">
+                    Example: {"{Numbers}"} * 2 (multiplies Numbers column by 2)
+                  </div>
+                </div>
+
+                {/* Help Tips */}
+                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                  <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">💡 Tips</h4>
+                  <ul className="text-xs text-green-700 dark:text-green-300 space-y-1">
+                    <li>• Copy formulas from AI suggestions</li>
+                    <li>• Use column IDs in your formulas</li>
+                    <li>• Test with different operators</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+    );
+  };
 
-      {/* Enhanced Table */}
-      <div className="flex-1 overflow-auto bg-white shadow-inner">
-        <table className="w-full border-collapse">
-          <thead className="bg-gradient-to-r from-gray-800 to-gray-900 text-white sticky top-0 z-10">
-            <tr>
-              <th className="w-12 p-4 text-left border-r border-gray-700">
-                <Checkbox
-                  checked={selectedProjects.length === filteredProjects.length && filteredProjects.length > 0}
-                  onCheckedChange={handleSelectAll}
-                  className="border-gray-300 data-[state=checked]:bg-white data-[state=checked]:text-gray-900"
+  // Formula Editor Component
+  const FormulaEditor = () => {
+    const [formula, setFormula] = useState(formulaEditor.currentFormula);
+    const [aiPrompt, setAiPrompt] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [suggestions, setSuggestions] = useState([]);
+    const [previewResult, setPreviewResult] = useState('');
+
+    const availableColumns = columns.filter(col => col.type === 'number' || col.type === 'progress');
+
+    // Calculate preview result in real-time
+    useEffect(() => {
+      if (formula && formula.trim()) {
+        const sampleItem = projects[0] || {};
+        const result = evaluateFormula(formula, sampleItem);
+        setPreviewResult(result);
+      } else {
+        setPreviewResult('');
+      }
+    }, [formula]);
+
+    const handleAIGeneration = async () => {
+      if (!aiPrompt.trim()) return;
+      
+      setIsGenerating(true);
+      try {
+        const generatedFormula = await generateFormulaWithAI(aiPrompt);
+        if (generatedFormula) {
+          setFormula(generatedFormula);
+          setSuggestions(prev => [generatedFormula, ...prev.slice(0, 4)]);
+        }
+      } catch (error) {
+        console.error('AI generation failed:', error);
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
+    const handleSave = () => {
+      // Find the column and update its formula
+      const currentColumn = columns.find(col => col.id === formulaEditor.columnId);
+      if (currentColumn) {
+        setColumns(prev => prev.map(col => 
+          col.id === formulaEditor.columnId 
+            ? { ...col, formula: formula }
+            : col
+        ));
+      }
+      
+      setFormulaEditor({ isOpen: false, columnId: null, currentFormula: "", aiSuggestions: [] });
+    };
+
+    const insertColumnReference = (columnId) => {
+      setFormula(prev => prev + columnId);
+    };
+
+    if (!formulaEditor.isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                  ✨
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Formula Editor</h2>
+                  <p className="text-purple-100 text-sm">Build powerful calculations with AI assistance</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setFormulaEditor({ isOpen: false, columnId: null, currentFormula: "", aiSuggestions: [] })}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* AI Assistant Section */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-5 border border-blue-100">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded flex items-center justify-center text-white text-xs">
+                  🤖
+                </div>
+                <h3 className="font-semibold text-gray-800">AI Formula Assistant</h3>
+              </div>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  placeholder="Describe what you want to calculate... (e.g., 'remaining budget after expenses')"
+                  className="flex-1 px-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAIGeneration()}
                 />
-              </th>
-              {visibleColumns.map((column) => {
-                const columnConfig = {
-                  name: { label: 'Item', icon: FileText, width: 'min-w-[200px]' },
-                  people: { label: 'People', icon: Users, width: 'min-w-[150px]' },
-                  location: { label: 'Location', icon: MapPin, width: 'min-w-[200px]' },
-                  phone: { label: 'Phone', icon: Phone, width: 'min-w-[140px]' },
-                  status: { label: 'Status', icon: null, width: 'min-w-[120px]' },
-                  measureDate: { label: 'Measure Date', icon: Calendar, width: 'min-w-[120px]' },
-                  deliveryDate: { label: 'Delivery Date', icon: Calendar, width: 'min-w-[120px]' },
-                  installDate: { label: 'Install Date', icon: Calendar, width: 'min-w-[120px]' }
-                }[column];
-                
-                const IconComponent = columnConfig?.icon;
-                
-                return (
-                  <th key={column} className={`p-4 text-left font-semibold tracking-wide border-r border-gray-700 ${columnConfig?.width} group relative`}>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        {IconComponent && <IconComponent className="w-4 h-4" />}
-                        {columnConfig?.label}
-                      </div>
-                      
-                      {/* Three-dot menu */}
-                      <div className="opacity-0 group-hover:opacity-100 transition-all duration-200">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-6 w-6 p-0 hover:bg-white/90 rounded-full"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
-                            >
-                              <MoreHorizontal className="h-3 w-3 text-gray-600" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuItem>
-                              <Filter className="mr-2 h-4 w-4" />
-                              Settings
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Filter className="mr-2 h-4 w-4" />
-                              Filter
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <ArrowUpDown className="mr-2 h-4 w-4" />
-                              Sort
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Collapse
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Users className="mr-2 h-4 w-4" />
-                              Group by
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Plus className="mr-2 h-4 w-4" />
-                              Duplicate column
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <RefreshCw className="mr-2 h-4 w-4" />
-                              Add AI column
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Plus className="mr-2 h-4 w-4" />
-                              Add column to the right
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Change column type
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Plus className="mr-2 h-4 w-4" />
-                              Column extensions
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Rename
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-                  </th>
-                );
-              })}
-              <th className="p-4 text-left font-semibold tracking-wide min-w-[80px] group relative">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    Actions
+                <button
+                  onClick={handleAIGeneration}
+                  disabled={isGenerating || !aiPrompt.trim()}
+                  className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                >
+                  {isGenerating ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      ✨ Generate
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Formula Input */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-semibold text-gray-700">Formula</label>
+                {previewResult && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-500">Preview:</span>
+                    <span className="font-mono bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                      {previewResult}
+                    </span>
                   </div>
-                  
-                  {/* Three-dot menu */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-all duration-200">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-6 w-6 p-0 hover:bg-white/90 rounded-full"
+                )}
+              </div>
+              <textarea
+                value={formula}
+                onChange={(e) => setFormula(e.target.value)}
+                placeholder="Enter your formula here..."
+                className="w-full h-32 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm resize-none"
+              />
+            </div>
+
+            {/* Available Columns */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-gray-700">Available Columns</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {availableColumns.map(col => (
+                  <button
+                    key={col.id}
+                    onClick={() => insertColumnReference(col.id)}
+                    className="px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-left text-sm transition-colors flex items-center gap-2"
+                  >
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    <span className="font-mono text-blue-600">{col.id}</span>
+                    <span className="text-gray-500">({col.name})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Functions */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-gray-700">Quick Functions</h4>
+              <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+                {['+', '-', '*', '/', '(', ')', 'MAX', 'MIN', 'ABS', 'ROUND', 'SUM', 'AVG'].map(func => (
+                  <button
+                    key={func}
+                    onClick={() => setFormula(prev => prev + func)}
+                    className="px-3 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg text-sm font-mono text-purple-700 transition-colors"
+                  >
+                    {func}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent AI Suggestions */}
+            {suggestions.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-gray-700">Recent AI Suggestions</h4>
+                <div className="space-y-2">
+                  {suggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setFormula(suggestion)}
+                      className="w-full px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 border border-blue-200 rounded-lg text-left text-sm font-mono transition-colors"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="bg-gray-50 px-6 py-4 flex justify-between items-center">
+            <div className="text-sm text-gray-500">
+              Use column IDs in your formulas (e.g., cost + hoursBudget * 2)
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setFormulaEditor({ isOpen: false, columnId: null, currentFormula: "", aiSuggestions: [] })}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Save Formula
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Column Creation Modal Component
+  const ColumnCreationModal = () => {
+    const [name, setName] = useState(columnCreationModal.name);
+    const [formula, setFormula] = useState('');
+    const [showFormulaEditor, setShowFormulaEditor] = useState(false);
+
+    const handleSubmit = () => {
+      if (!name.trim()) return;
+      
+      if (columnCreationModal.type === 'formula') {
+        if (!formula.trim()) {
+          setShowFormulaEditor(true);
+          return;
+        }
+        columnCreationModal.callback(name, formula);
+      } else {
+        columnCreationModal.callback(name);
+      }
+      
+      setColumnCreationModal({
+        isOpen: false,
+        type: null,
+        name: "",
+        description: "",
+        callback: null,
+        isSubItem: false
+      });
+    };
+
+    const handleClose = () => {
+      setColumnCreationModal({
+        isOpen: false,
+        type: null,
+        name: "",
+        description: "",
+        callback: null,
+        isSubItem: false
+      });
+    };
+
+    if (!columnCreationModal.isOpen) return null;
+
+    const getColumnIcon = (type) => {
+      const icons = {
+        text: "📝",
+        status: "🟡",
+        people: "👤",
+        date: "📅",
+        number: "🔢",
+        checkbox: "☑️",
+        progress: "📊",
+        formula: "🧮",
+        email: "📧",
+        phone: "📞",
+        location: "📍"
+      };
+      return icons[type] || "📝";
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 animate-in slide-in-from-bottom-4 duration-300">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-lg">
+                  {getColumnIcon(columnCreationModal.type)}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Create New Column
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {columnCreationModal.description}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleClose}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-6">
+            {/* Column Name */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Column Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                placeholder="Enter column name..."
+                autoFocus
+              />
+            </div>
+
+            {/* Formula Editor for Formula Type */}
+            {columnCreationModal.type === 'formula' && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Formula
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formula}
+                    onChange={(e) => setFormula(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                    placeholder="e.g., progress * 100, cost / hours"
+                  />
+                  <button
+                    onClick={() => setShowFormulaEditor(true)}
+                    className="absolute right-3 top-3 px-3 py-1.5 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-lg text-xs hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+                  >
+                    Advanced
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Use column IDs like 'progress', 'cost', 'hours' with math operators (+, -, *, /, %)
+                </p>
+              </div>
+            )}
+
+            {/* Column Type Badge */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500 dark:text-gray-400">Type:</span>
+              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
+                {columnCreationModal.type}
+              </span>
+              {columnCreationModal.isSubItem && (
+                <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-sm font-medium">
+                  Sub-item
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={handleClose}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!name.trim()}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
+              >
+                Create Column
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Column Rename Modal Component
+  const ColumnRenameModal = () => {
+    const [name, setName] = useState(columnRenameModal.currentName);
+
+    useEffect(() => {
+      setName(columnRenameModal.currentName);
+    }, [columnRenameModal.currentName]);
+
+    const isDisabled = !name.trim() || name === columnRenameModal.currentName;
+
+    const handleSubmit = () => {
+      if (!name.trim() || name === columnRenameModal.currentName) {
+        return;
+      }
+      
+      // Call the callback with the new name
+      if (columnRenameModal.callback) {
+        columnRenameModal.callback(columnRenameModal.columnId, name.trim());
+      }
+      
+      // Close the modal
+      setColumnRenameModal({
+        isOpen: false,
+        columnId: null,
+        currentName: "",
+        callback: null
+      });
+    };
+
+    const handleClose = () => {
+      setColumnRenameModal({
+        isOpen: false,
+        columnId: null,
+        currentName: "",
+        callback: null
+      });
+    };
+
+    if (!columnRenameModal.isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-in slide-in-from-bottom-4 duration-300">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-lg">
+                  ✏️
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Rename Column
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Change the column name
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleClose}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Column Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  } else if (e.key === 'Escape') {
+                    handleClose();
+                  }
+                }}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                placeholder="Enter new column name..."
+                autoFocus
+              />
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={handleClose}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={isDisabled}
+                className="px-6 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
+              >
+                Rename
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Generic Prompt Modal Component
+  const PromptModal = () => {
+    const [value, setValue] = useState(promptModal.defaultValue);
+
+    useEffect(() => {
+      setValue(promptModal.defaultValue);
+    }, [promptModal.defaultValue]);
+
+    const handleSubmit = () => {
+      if (promptModal.callback) {
+        promptModal.callback(value);
+      }
+      
+      setPromptModal({
+        isOpen: false,
+        title: "",
+        message: "",
+        placeholder: "",
+        defaultValue: "",
+        callback: null
+      });
+    };
+
+    const handleClose = () => {
+      if (promptModal.callback) {
+        promptModal.callback(null);
+      }
+      
+      setPromptModal({
+        isOpen: false,
+        title: "",
+        message: "",
+        placeholder: "",
+        defaultValue: "",
+        callback: null
+      });
+    };
+
+    if (!promptModal.isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-in slide-in-from-bottom-4 duration-300">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-lg">
+                  💬
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {promptModal.title}
+                  </h3>
+                  {promptModal.message && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {promptModal.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={handleClose}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-4">
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  } else if (e.key === 'Escape') {
+                    handleClose();
+                  }
+                }}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                placeholder={promptModal.placeholder}
+                autoFocus
+              />
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={handleClose}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Generic Confirm Modal Component
+  const ConfirmModal = () => {
+    const handleConfirm = () => {
+      if (confirmModal.callback) {
+        confirmModal.callback(true);
+      }
+      
+      setConfirmModal({
+        isOpen: false,
+        title: "",
+        message: "",
+        callback: null
+      });
+    };
+
+    const handleCancel = () => {
+      if (confirmModal.callback) {
+        confirmModal.callback(false);
+      }
+      
+      setConfirmModal({
+        isOpen: false,
+        title: "",
+        message: "",
+        callback: null
+      });
+    };
+
+    if (!confirmModal.isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-in slide-in-from-bottom-4 duration-300">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center text-lg">
+                  ⚠️
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {confirmModal.title}
+                  </h3>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6">
+            <p className="text-gray-700 dark:text-gray-300">
+              {confirmModal.message}
+            </p>
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-2xl">
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={handleCancel}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirm}
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="h-screen bg-white text-gray-900 flex overflow-hidden">
+      {/* Main Board Container */}
+      <div className="flex flex-col flex-1">
+        {/* Header */}
+        <header className="bg-white border-b border-gray-200 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <button className="text-gray-600 hover:text-gray-900 text-sm px-3 py-2 rounded-md flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </button>
+              <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
+                <div className="w-3 h-3 bg-white rounded-sm" />
+              </div>
+              <h1 className="text-lg font-medium">Project Board</h1>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              {undoStack.length > 0 && (
+                <button 
+                  className="text-gray-600 hover:text-gray-900 p-1 rounded"
+                  aria-label="Undo last action"
+                  title="Undo last action"
+                >
+                  <Undo2 className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={() => handleAddItem("New Leads")}
+                className="text-gray-600 hover:text-gray-900 p-1 rounded"
+                aria-label="Add new item"
+                title="Add new item"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Board Content */}
+        <div className="flex-1 overflow-x-auto overflow-y-auto bg-white" style={{ scrollBehavior: 'smooth' }}>
+          <div className="min-w-max w-full">
+            {/* Column Headers */}
+            <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
+              <div className="flex">
+                <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center">
+                  <input
+                    type="checkbox"
+                    id="select-all-checkbox"
+                    name="select-all"
+                    checked={
+                      selectedItems.size > 0 &&
+                      selectedItems.size === boardItems.length
+                    }
+                    onChange={() => {
+                      if (selectedItems.size === boardItems.length) {
+                        setSelectedItems(new Set());
+                      } else {
+                        setSelectedItems(
+                          new Set(boardItems.map((item) => item.id)),
+                        );
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-gray-400 text-blue-500"
+                    aria-label="Select all items"
+                    title="Select all items"
+                  />
+                </div>
+                {columns.map((column, index) => (
+                  <div
+                    key={column.id}
+                    className="px-3 py-3 border-r border-gray-200 relative group flex-shrink-0 bg-white"
+                    style={{ 
+                      width: getColumnWidth(column.id),
+                      minWidth: getColumnWidth(column.id)
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        {getColumnIcon(column.type)}
+                        <span className="font-medium text-sm text-gray-700">
+                          {column.name}
+                        </span>
+                      </div>
+                      {column.id !== "item" && column.id !== "subitems" && (
+                        <button
                           onClick={(e) => {
-                            e.preventDefault();
                             e.stopPropagation();
+                            setColumnMenuOpen(
+                              columnMenuOpen === `main-${column.id}`
+                                ? null
+                                : `main-${column.id}`,
+                            );
                           }}
+                          className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded opacity-100 transition-opacity"
                         >
-                          <MoreHorizontal className="h-3 w-3 text-gray-600" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuItem>
-                          <Filter className="mr-2 h-4 w-4" />
-                          Settings
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Filter className="mr-2 h-4 w-4" />
-                          Filter
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <ArrowUpDown className="mr-2 h-4 w-4" />
-                          Sort
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          Collapse
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Users className="mr-2 h-4 w-4" />
-                          Group by
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Duplicate column
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          Add AI column
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add column to the right
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Change column type
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Column extensions
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Rename
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          ⋯
+                        </button>
+                      )}
+                    </div>
+                    {column.id !== "item" && column.id !== "subitems" && (
+                      <ColumnMenu
+                        columnId={column.id}
+                        columnName={column.name}
+                        isOpen={columnMenuOpen === `main-${column.id}`}
+                        onClose={() => setColumnMenuOpen(null)}
+                      />
+                    )}
+                    {column.id !== "item" && column.id !== "subitems" && (
+                      <AddColumnMenu
+                        isOpen={addColumnMenuOpen === `main-${column.id}`}
+                        onClose={() => setAddColumnMenuOpen(null)}
+                        onSelectType={handleSelectColumnType}
+                      />
+                    )}
+                    {index < columns.length - 1 && (
+                      <div
+                        className="absolute right-0 top-0 bottom-0 w-3 cursor-col-resize flex items-center justify-center hover:bg-blue-100"
+                        onPointerDown={(e) => handlePointerDown(column.id, e)}
+                      >
+                        <div className="w-0.5 h-4 bg-gray-400 hover:bg-blue-500 rounded-full"></div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {/* Updates column header */}
+                <div className="w-12 px-2 py-3 flex items-center justify-center">
+                  <MessageCircle className="w-4 h-4 text-gray-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Groups and Items */}
+            {boardGroups.map((group) => (
+              <div key={group.name} className="border-b border-gray-200">
+                {/* Group Header */}
+                <div
+                  className={`flex border-b border-gray-200 hover:bg-gray-50 ${
+                    group.name === "New Leads"
+                      ? "bg-cyan-50"
+                      : group.name === "Need Attention"
+                        ? "bg-yellow-50"
+                        : group.name === "Sent Estimate"
+                          ? "bg-purple-50"
+                          : group.name === "Signed"
+                            ? "bg-emerald-50"
+                            : group.name === "In Progress"
+                              ? "bg-blue-50"
+                              : group.name === "Complete"
+                                ? "bg-green-50"
+                                : "bg-gray-50"
+                  }`}
+                >
+                  <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      id={`group-checkbox-${group.name}`}
+                      name={`group-${group.name}`}
+                      className="w-4 h-4 rounded border-gray-400 text-blue-500"
+                      aria-label={`Select all items in ${group.name} group`}
+                      title={`Select all items in ${group.name} group`}
+                    />
+                  </div>
+
+                  <div
+                    className="px-4 py-3 border-r border-gray-200 flex items-center space-x-2 cursor-pointer"
+                    style={{ 
+                      width: getColumnWidth("item"),
+                      minWidth: getColumnWidth("item")
+                    }}
+                    onClick={() => toggleGroup(group.name)}
+                  >
+                    {group.collapsed ? (
+                      <ChevronRight className="w-3 h-3 text-gray-500" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3 text-gray-500" />
+                    )}
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        group.name === "New Leads"
+                          ? "bg-cyan-500"
+                          : group.name === "Need Attention"
+                            ? "bg-yellow-500"
+                            : group.name === "Sent Estimate"
+                              ? "bg-purple-500"
+                              : group.name === "Signed"
+                                ? "bg-emerald-500"
+                                : group.name === "In Progress"
+                                  ? "bg-blue-500"
+                                  : group.name === "Complete"
+                                    ? "bg-green-500"
+                                    : "bg-gray-500"
+                      }`}
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      {group.name}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      ({group.items.length})
+                    </span>
+                  </div>
+
+                  {columns.slice(1).map((column) => (
+                    <div
+                      key={column.id}
+                      className="px-3 py-3 border-r border-gray-200"
+                      style={{ 
+                        width: getColumnWidth(column.id),
+                        minWidth: getColumnWidth(column.id)
+                      }}
+                    >
+                      <span className="text-xs font-medium text-gray-500 uppercase">
+                        {column.name}
+                      </span>
+                    </div>
+                  ))}
+
+                  {/* Updates column in group header */}
+                  <div className="w-16 px-2 py-3 flex items-center justify-center">
+                    <span className="text-xs font-medium text-gray-500">
+                      💬
+                    </span>
                   </div>
                 </div>
-              </th>
-              <th className="p-4 text-center font-semibold tracking-wide w-[60px]">
-                <Trash2 className="w-4 h-4 mx-auto text-red-400" />
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {filteredProjects.map((project, index: number) => {
-              const assignedEmployee = getAssignedEmployee(project.assignedTo || 0);
-              const isSelected = selectedProjects.includes(project.id);
-              
-              const EditableCell = ({ field, value, displayValue, className = "" }: {
-                field: string;
-                value: any;
-                displayValue?: React.ReactNode;
-                className?: string;
-              }) => {
-                const isEditing = editingCell?.row === project.id && editingCell?.column === field;
-                
-                if (isEditing) {
-                  return (
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleCellSave();
-                          if (e.key === 'Escape') handleCellCancel();
-                        }}
-                        onBlur={handleCellSave}
-                        autoFocus
-                        className="h-8 text-sm border-blue-500 focus:border-blue-600"
-                      />
-                    </div>
-                  );
-                }
-                
-                return (
-                  <div 
-                    className={`cursor-pointer hover:bg-blue-50 p-2 rounded transition-colors ${className}`}
-                    onClick={() => handleCellClick(project.id, field, value?.toString() || '')}
-                    title="Click to edit"
-                  >
-                    {displayValue || value || '—'}
-                  </div>
-                );
-              };
-              
-              return (
-                <tr 
-                  key={project.id}
-                  className={`group transition-all duration-200 ${
-                    isSelected 
-                      ? 'bg-blue-50 border-l-4 border-l-blue-500' 
-                      : index % 2 === 0 
-                        ? 'bg-white hover:bg-gray-50' 
-                        : 'bg-gray-50/50 hover:bg-gray-100'
-                  } hover:shadow-sm`}
-                >
-                  {/* Checkbox */}
-                  <td className="p-4 border-r border-gray-100">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={(checked) => handleRowSelect(project.id, checked as boolean)}
-                      className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                    />
-                  </td>
-                  
-                  {visibleColumns.map((column) => (
-                    <td key={column} className="p-2 border-r border-gray-100">
-                      {(() => {
-                        switch (column) {
-                          case 'name':
-                            return (
-                              <div className="space-y-1">
-                                <EditableCell 
-                                  field="name" 
-                                  value={project.name}
-                                  className="font-semibold text-gray-900 text-sm"
-                                />
-                                {project.description && (
-                                  <EditableCell 
-                                    field="description" 
-                                    value={project.description}
-                                    className="text-xs text-gray-500"
-                                  />
+
+                {/* Group Items */}
+                {!group.collapsed && (
+                  <>
+                    {group.items.map((item) => (
+                      <React.Fragment key={item.id}>
+                        {/* Main Item Row */}
+                        <div className="flex hover:bg-gray-50 border-b border-gray-200 group">
+                          <div className="w-12 px-2 py-3 border-r border-gray-200 flex items-center justify-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedItems.has(item.id)}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handleSelectToggle(item.id);
+                              }}
+                              className="w-4 h-4 rounded border-gray-400 text-blue-500"
+                            />
+                          </div>
+                          {columns.map((column) => (
+                            <div
+                              key={`${item.id}-${column.id}`}
+                              className="px-4 py-3 border-r border-gray-200 flex items-center relative"
+                              style={{ 
+                                width: getColumnWidth(column.id),
+                                minWidth: getColumnWidth(column.id)
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {renderCell(item, column)}
+                            </div>
+                          ))}
+                          {/* Updates icon for main item */}
+                          <div className="w-16 px-2 py-3 flex items-center justify-center">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openUpdatesModal(
+                                    "main",
+                                    item.id,
+                                    item.values.item || `Project #${item.id}`,
+                                  );
+                                }}
+                                className="relative p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                title="Add update"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                                {getUpdateCount("main", item.id) > 0 && (
+                                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                                    {getUpdateCount("main", item.id)}
+                                  </span>
                                 )}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteMainItem(item.id);
+                                }}
+                                className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                title="Delete item"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Folders and Sub-Items */}
+                        {expandedSubItems.has(item.id) && (
+                          <>
+                            {/* Render folders */}
+                            {(item.folders || []).map((folder) => (
+                              <React.Fragment key={folder.id}>
+                                {/* Folder Header with Sub-item Column Headers */}
+                                <div className="flex hover:bg-blue-50 bg-blue-25 border-b border-blue-200 group">
+                                  <div className="w-12 px-2 py-2 border-r border-blue-200 flex items-center justify-center">
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteFolder(item.id, folder.id)
+                                      }
+                                      className="text-red-500 hover:text-red-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  </div>
+
+                                  <div
+                                    className="px-4 py-2 border-r border-blue-200 flex items-center overflow-hidden"
+                                    style={{ 
+                                      width: getColumnWidth("item"),
+                                      minWidth: getColumnWidth("item")
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-2 text-sm w-full overflow-hidden">
+                                      <div className="w-4 h-px bg-blue-400"></div>
+                                      <button
+                                        onClick={() => toggleFolder(folder.id)}
+                                        className="p-0.5 hover:bg-blue-100 rounded"
+                                      >
+                                        <ChevronRight
+                                          className={`w-3 h-3 text-blue-600 transition-transform ${
+                                            expandedFolders.has(folder.id)
+                                              ? "rotate-90"
+                                              : ""
+                                          }`}
+                                        />
+                                      </button>
+                                      <span className="text-blue-600 text-xs bg-blue-100 px-1.5 rounded">
+                                        ({folder.subItems.length})
+                                      </span>
+                                      <Folder className="w-4 h-4 text-blue-600" />
+
+                                      {editingFolder === folder.id ? (
+                                        <input
+                                          type="text"
+                                          value={folder.name}
+                                          onChange={(e) =>
+                                            handleUpdateFolder(
+                                              item.id,
+                                              folder.id,
+                                              e.target.value,
+                                            )
+                                          }
+                                          onBlur={() => setEditingFolder(null)}
+                                          onKeyDown={(e) => {
+                                            if (
+                                              e.key === "Enter" ||
+                                              e.key === "Escape"
+                                            ) {
+                                              setEditingFolder(null);
+                                            }
+                                          }}
+                                          className="bg-white text-blue-900 text-sm px-2 py-1 border border-blue-300 rounded w-32 max-w-full"
+                                          autoFocus
+                                          placeholder="Folder name"
+                                        />
+                                      ) : (
+                                        <span
+                                          className="text-blue-900 text-sm font-medium cursor-pointer hover:text-blue-700 truncate"
+                                          onClick={() =>
+                                            setEditingFolder(folder.id)
+                                          }
+                                        >
+                                          {folder.name || "Untitled Folder"}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Dynamic Sub-item Column Headers */}
+                                  {expandedFolders.has(folder.id) && subItemColumns.map((column) => (
+                                    <div
+                                      key={column.id}
+                                      className="px-3 py-2 border-r border-blue-200 relative"
+                                      style={{ width: getColumnWidth(column.type) }}
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-1">
+                                          <div className="w-2 h-2 rounded-full bg-orange-500" />
+                                          <span className="text-xs font-medium text-blue-600 uppercase">
+                                            {column.name}
+                                          </span>
+                                        </div>
+                                        <button
+                                          onClick={() =>
+                                            setColumnMenuOpen(
+                                              columnMenuOpen === `folder-${folder.id}-${column.id}`
+                                                ? null
+                                                : `folder-${folder.id}-${column.id}`,
+                                            )
+                                          }
+                                          className="text-blue-400 hover:text-blue-600 p-1 hover:bg-blue-100 rounded"
+                                        >
+                                          ⋯
+                                        </button>
+                                      </div>
+                                      <ColumnMenu
+                                        columnId={column.id}
+                                        columnName={column.name}
+                                        isOpen={
+                                          columnMenuOpen === `folder-${folder.id}-${column.id}`
+                                        }
+                                        onClose={() => setColumnMenuOpen(null)}
+                                        isSubItem={true}
+                                        menuKey={`folder-${folder.id}-${column.id}`}
+                                      />
+                                      <AddColumnMenu
+                                        isOpen={addColumnMenuOpen === `folder-${folder.id}-${column.id}`}
+                                        onClose={() => setAddColumnMenuOpen(null)}
+                                        onSelectType={handleSelectSubItemColumnType}
+                                      />
+                                    </div>
+                                  ))}
+
+                                  {/* Updates icon for folder */}
+                                  <div className="w-12 px-2 py-2 flex items-center justify-center">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openUpdatesModal(
+                                          "folder",
+                                          folder.id,
+                                          folder.name || "Untitled Folder",
+                                        );
+                                      }}
+                                      className="relative p-1 text-blue-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                      title="Add update to folder"
+                                    >
+                                      <MessageCircle className="w-3 h-3" />
+                                      {getUpdateCount("folder", folder.id) >
+                                        0 && (
+                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center text-[10px]">
+                                          {getUpdateCount("folder", folder.id)}
+                                        </span>
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Sub-items in this folder */}
+                                {expandedFolders.has(folder.id) &&
+                                  folder.subItems.map((subItem) => (
+                                    <div
+                                      key={subItem.id}
+                                      className="flex hover:bg-blue-50 bg-blue-25 border-b border-blue-200 group relative"
+                                    >
+                                      <div className="w-12 px-2 py-2 border-r border-blue-200 flex items-center justify-center">
+                                        <button
+                                          onClick={() =>
+                                            handleDeleteSubItem(
+                                              item.id,
+                                              subItem.id,
+                                            )
+                                          }
+                                          className="text-red-500 hover:text-red-700 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                          <Trash2 className="w-2.5 h-2.5" />
+                                        </button>
+                                      </div>
+
+                                      <div
+                                        className="px-4 py-2 border-r border-blue-200 flex items-center"
+                                        style={{
+                                          width: getColumnWidth("item"),
+                                        }}
+                                      >
+                                        <div className="flex items-center gap-2 text-sm w-full">
+                                          <div className="w-6 h-px bg-blue-400"></div>
+                                          <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+
+                                          {editingSubItem === subItem.id ? (
+                                            <input
+                                              type="text"
+                                              value={subItem.name}
+                                              onChange={(e) =>
+                                                handleUpdateSubItem(
+                                                  item.id,
+                                                  subItem.id,
+                                                  "name",
+                                                  e.target.value,
+                                                )
+                                              }
+                                              onBlur={() =>
+                                                setEditingSubItem(null)
+                                              }
+                                              onKeyDown={(e) => {
+                                                if (
+                                                  e.key === "Enter" ||
+                                                  e.key === "Escape"
+                                                ) {
+                                                  setEditingSubItem(null);
+                                                }
+                                              }}
+                                              className="bg-white text-gray-900 text-sm px-2 py-1 border border-gray-300 rounded flex-1"
+                                              autoFocus
+                                              placeholder="Sub-item name"
+                                            />
+                                          ) : (
+                                            <span
+                                              className="cursor-pointer hover:text-blue-700 text-blue-800 text-sm font-medium flex-1"
+                                              onClick={() =>
+                                                setEditingSubItem(subItem.id)
+                                              }
+                                            >
+                                              {subItem.name ||
+                                                "Untitled Sub-item"}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+
+
+
+
+
+
+
+
+
+
+
+
+                                      {/* Dynamic Sub-item Column Data */}
+                                      {subItemColumns.map((column) => (
+                                        <div
+                                          key={column.id}
+                                          className="px-3 py-2 border-r border-blue-200 relative overflow-visible"
+                                          style={{ width: getColumnWidth(column.type) }}
+                                        >
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1 flex-1">
+                                              {/* Render based on column type */}
+                                              {column.type === 'text' && (
+                                                <input
+                                                  type="text"
+                                                  placeholder="Enter text..."
+                                                  className="w-full text-xs text-blue-600 bg-transparent border-none outline-none"
+                                                />
+                                              )}
+                                              {column.type === 'status' && (
+                                                <select className="w-full text-xs text-blue-600 bg-transparent border-none outline-none">
+                                                  <option>Not Started</option>
+                                                  <option>In Progress</option>
+                                                  <option>Completed</option>
+                                                </select>
+                                              )}
+                                              {column.type === 'dropdown' && (
+                                                <div className="relative flex-1">
+                                                  <div
+                                                    className="w-full text-xs text-blue-600 bg-transparent border-none outline-none cursor-pointer px-2 py-1 rounded hover:bg-blue-50 min-h-[20px] flex items-center"
+                                                    data-dropdown-trigger={`subitem-${subItem.id}-${column.id}`}
+                                                    onClick={() => {
+                                                      const dropdownKey = `subitem-${subItem.id}-${column.id}`;
+                                                      setOpenDropdown(openDropdown === dropdownKey ? null : dropdownKey);
+                                                      setDropdownSearch("");
+                                                    }}
+                                                  >
+                                                    <span className="flex items-center gap-1">
+                                                      <div className={`w-2 h-2 rounded ${
+                                                        (subItem.values && subItem.values[column.id]) === "Critical" ? "bg-red-500" :
+                                                        (subItem.values && subItem.values[column.id]) === "High" ? "bg-orange-500" :
+                                                        (subItem.values && subItem.values[column.id]) === "Medium" ? "bg-yellow-500" :
+                                                        (subItem.values && subItem.values[column.id]) === "Low" ? "bg-green-500" :
+                                                        "bg-gray-300"
+                                                      }`}></div>
+                                                      {(subItem.values && subItem.values[column.id]) || "Select..."}
+                                                    </span>
+                                                  </div>
+                                                  
+                                                  {openDropdown === `subitem-${subItem.id}-${column.id}` && (
+                                                    <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-[100] mt-1" style={{ minWidth: '150px' }}>
+                                                      <div className="p-2 border-b border-gray-100">
+                                                        <input
+                                                          type="text"
+                                                          value={dropdownSearch}
+                                                          onChange={(e) => setDropdownSearch(e.target.value)}
+                                                          placeholder="Create or find labels"
+                                                          className="w-full text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                        />
+                                                      </div>
+                                                      
+                                                      <div className="max-h-32 overflow-y-auto">
+                                                        {(column.options || [])
+                                                          .filter(option => 
+                                                            option.toLowerCase().includes(dropdownSearch.toLowerCase())
+                                                          )
+                                                          .map((option, index) => (
+                                                            <div
+                                                              key={index}
+                                                              onClick={() => {
+                                                                handleUpdateSubItem(item.id, subItem.id, column.id, option);
+                                                                setOpenDropdown(null);
+                                                                setDropdownSearch("");
+                                                              }}
+                                                              className="px-3 py-2 text-xs hover:bg-gray-50 cursor-pointer flex items-center gap-2"
+                                                            >
+                                                              <div className={`w-2 h-2 rounded ${
+                                                                option === "Critical" ? "bg-red-500" :
+                                                                option === "High" ? "bg-orange-500" :
+                                                                option === "Medium" ? "bg-yellow-500" :
+                                                                option === "Low" ? "bg-green-500" :
+                                                                "bg-gray-400"
+                                                              }`}></div>
+                                                              {option}
+                                                            </div>
+                                                          ))}
+                                                        
+                                                        {/* Create new option if search doesn't match existing */}
+                                                        {dropdownSearch && 
+                                                         !(column.options || []).some(option => 
+                                                           option.toLowerCase() === dropdownSearch.toLowerCase()
+                                                         ) && (
+                                                          <div
+                                                            onClick={() => {
+                                                              const newOptions = [...(column.options || []), dropdownSearch];
+                                                              setSubItemColumns(prev => prev.map(col => 
+                                                                col.id === column.id 
+                                                                  ? { ...col, options: newOptions }
+                                                                  : col
+                                                              ));
+                                                              handleUpdateSubItem(item.id, subItem.id, column.id, dropdownSearch);
+                                                              setOpenDropdown(null);
+                                                              setDropdownSearch("");
+                                                            }}
+                                                            className="px-3 py-2 text-xs hover:bg-blue-50 cursor-pointer text-blue-600 border-t border-gray-100"
+                                                          >
+                                                            + Create "{dropdownSearch}"
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                      
+                                                      <div className="border-t border-gray-100 p-2">
+                                                        <button
+                                                          onClick={() => {
+                                                            setEditingDropdownColumn(column.id);
+                                                            setOpenDropdown(null);
+                                                          }}
+                                                          className="text-xs text-blue-600 hover:text-blue-800"
+                                                        >
+                                                          Edit labels
+                                                        </button>
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              )}
+                                              {column.type === 'people' && (
+                                                <select className="w-full text-xs text-blue-600 bg-transparent border-none outline-none">
+                                                  <option>Unassigned</option>
+                                                  <option>John Doe</option>
+                                                  <option>Jane Smith</option>
+                                                </select>
+                                              )}
+                                              {column.type === 'date' && (
+                                                <input
+                                                  type="date"
+                                                  className="w-full text-xs text-blue-600 bg-transparent border-none outline-none"
+                                                />
+                                              )}
+                                              {column.type === 'number' && (
+                                                <input
+                                                  type="number"
+                                                  placeholder="0"
+                                                  className="w-full text-xs text-blue-600 bg-transparent border-none outline-none"
+                                                />
+                                              )}
+                                              {column.type === 'checkbox' && (
+                                                <input
+                                                  type="checkbox"
+                                                  className="w-3 h-3 rounded border-blue-400 text-blue-600"
+                                                />
+                                              )}
+                                              {column.type === 'progress' && (
+                                                <div className="flex items-center gap-2 w-full group">
+                                                  <div className="flex-1 bg-gray-200 rounded-full h-2 relative cursor-pointer">
+                                                    <div 
+                                                      className="bg-green-500 h-2 rounded-full transition-all duration-200"
+                                                      style={{ width: '75%' }}
+                                                    ></div>
+                                                    <input
+                                                      type="range"
+                                                      min="0"
+                                                      max="100"
+                                                      defaultValue="75"
+                                                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                      onChange={(e) => {
+                                                        const progressBar = e.target.previousElementSibling;
+                                                        const percentageSpan = e.target.parentElement.nextElementSibling;
+                                                        if (progressBar && percentageSpan) {
+                                                          progressBar.style.width = `${e.target.value}%`;
+                                                          percentageSpan.textContent = `${e.target.value}%`;
+                                                        }
+                                                      }}
+                                                    />
+                                                  </div>
+                                                  <span className="text-xs text-blue-600 font-medium min-w-[30px]">75%</span>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+
+                                      {/* Actions for sub-item */}
+                                      <div className="w-12 px-2 py-2 flex items-center justify-center">
+                                        <div className="flex items-center gap-1">
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              openUpdatesModal(
+                                                "subitem",
+                                                subItem.id,
+                                                subItem.name ||
+                                                  "Untitled Sub-item",
+                                              );
+                                            }}
+                                            className="relative p-1 text-blue-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                            title="Add update to sub-item"
+                                          >
+                                            <MessageCircle className="w-3 h-3" />
+                                            {getUpdateCount(
+                                              "subitem",
+                                              subItem.id,
+                                            ) > 0 && (
+                                              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center text-[10px]">
+                                                {getUpdateCount(
+                                                  "subitem",
+                                                  subItem.id,
+                                                )}
+                                              </span>
+                                            )}
+                                          </button>
+                                          <div className="relative">
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenMenus(prev => ({
+                                                  ...prev,
+                                                  [`subitem-${subItem.id}`]: !prev[`subitem-${subItem.id}`]
+                                                }));
+                                              }}
+                                              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                              title="Sub-item options"
+                                            >
+                                              <MoreHorizontal className="w-3 h-3" />
+                                            </button>
+                                            <SubItemMenu
+                                              subItemId={subItem.id}
+                                              projectId={item.id}
+                                              isOpen={openMenus[`subitem-${subItem.id}`] || false}
+                                              onClose={() => setOpenMenus(prev => ({ ...prev, [`subitem-${subItem.id}`]: false }))}
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+
+                                {/* Add Sub Item button for this folder */}
+                                {expandedFolders.has(folder.id) && (
+                                  <div className="flex bg-blue-50 border-b border-blue-200">
+                                    <div className="w-12 px-2 py-1 border-r border-blue-200"></div>
+                                    <div
+                                      className="px-4 py-1 border-r border-blue-200"
+                                      style={{ width: getColumnWidth("item") }}
+                                    >
+                                      <button
+                                        onClick={() =>
+                                          handleAddSubItem(item.id, folder.id)
+                                        }
+                                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-2 border border-blue-300 px-2 py-1 rounded"
+                                      >
+                                        <Plus className="w-3 h-3" />
+                                        Add Sub Item
+                                      </button>
+                                    </div>
+
+                                    {/* Dynamic Sub-item Column Spaces */}
+                                    {subItemColumns.map((column) => (
+                                      <div
+                                        key={column.id}
+                                        className="px-3 py-1 border-r border-blue-200"
+                                        style={{ width: getColumnWidth(column.type) }}
+                                      />
+                                    ))}
+                                    {/* Updates column space */}
+                                    <div className="w-12 px-2 py-1"></div>
+                                  </div>
+                                )}
+                              </React.Fragment>
+                            ))}
+
+                            {/* Add Folder buttons */}
+                            <div className="flex bg-blue-50 border-b border-blue-200">
+                              <div className="w-12 px-2 py-2 border-r border-blue-200"></div>
+                              <div
+                                className="px-4 py-2 border-r border-blue-200 flex gap-2"
+                                style={{ width: getColumnWidth("item") }}
+                              >
+                                <button
+                                  onClick={() => handleAddFolder(item.id)}
+                                  className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-2 border border-blue-300 px-3 py-1 rounded"
+                                >
+                                  <Folder className="w-3 h-3" />
+                                  Add Folder
+                                </button>
                               </div>
-                            );
-                          case 'people':
-                            return (
-                              <div className="flex items-center gap-2">
-                                <Avatar className="w-8 h-8">
-                                  <AvatarFallback className="bg-gradient-to-br from-pink-500 to-purple-600 text-white text-xs">
-                                    {assignedEmployee ? `${assignedEmployee.firstName?.[0]}${assignedEmployee.lastName?.[0]}` : 'U'}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <EditableCell 
-                                  field="assignedTo" 
-                                  value={project.assignedTo}
-                                  displayValue={assignedEmployee ? `${assignedEmployee.firstName} ${assignedEmployee.lastName}` : 'Unassigned'}
-                                  className="text-sm font-medium text-gray-900"
-                                />
-                              </div>
-                            );
-                          case 'location':
-                            return (
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                <EditableCell 
-                                  field="projectAddress" 
-                                  value={project.projectAddress}
-                                  displayValue={project.projectAddress || 'Click to add location'}
-                                  className="text-sm text-gray-900"
-                                />
-                              </div>
-                            );
-                          case 'phone':
-                            return (
-                              <div className="flex items-center gap-2">
-                                <Phone className="w-4 h-4 text-green-600 flex-shrink-0" />
-                                <EditableCell 
-                                  field="clientPhone" 
-                                  value={project.clientPhone}
-                                  displayValue={project.clientPhone || 'Click to add phone'}
-                                  className="text-sm text-gray-900"
-                                />
-                              </div>
-                            );
-                          case 'status':
-                            return (
-                              <div className="cursor-pointer hover:bg-blue-50 p-2 rounded transition-colors"
-                                   onClick={() => handleCellClick(project.id, 'status', project.status)}
-                                   title="Click to edit">
-                                <Badge className={`${getStatusColor(project.status)} px-2 py-1 text-xs font-semibold`}>
-                                  {project.status}
-                                </Badge>
-                              </div>
-                            );
-                          case 'measureDate':
-                            return (
-                              <EditableCell 
-                                field="startDate" 
-                                value={project.startDate}
-                                displayValue={formatDate(project.startDate) || 'Click to set date'}
-                                className="text-sm text-gray-900"
+                              <div
+                                className="px-4 py-2 border-r border-blue-200"
+                                style={{ width: getColumnWidth("status") }}
                               />
-                            );
-                          case 'deliveryDate':
-                            return (
-                              <EditableCell 
-                                field="endDate" 
-                                value={project.endDate}
-                                displayValue={formatDate(project.endDate) || 'Click to set date'}
-                                className="text-sm text-gray-900"
+                              <div
+                                className="px-4 py-2 border-r border-blue-200"
+                                style={{ width: getColumnWidth("assignedTo") }}
                               />
-                            );
-                          case 'installDate':
-                            return (
-                              <EditableCell 
-                                field="createdAt" 
-                                value={project.createdAt}
-                                displayValue={formatDate(project.createdAt) || 'Click to set date'}
-                                className="text-sm text-gray-900"
+                              <div
+                                className="px-4 py-2 border-r border-blue-200"
+                                style={{ width: getColumnWidth("dueDate") }}
                               />
-                            );
-                          default:
-                            return <span>—</span>;
-                        }
-                      })()}
-                    </td>
-                  ))}
-                  
-                  {/* Actions */}
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <Link href={`/projects/${project.id}`}>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600 transition-colors"
-                          title="View Project"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                      <Link href={`/projects/${project.id}/detail`}>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-8 p-0 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Edit Project"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </td>
-                  
-                  {/* Archive/Trash Actions - Separate Column */}
-                  <td className="p-4 text-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-8 p-0 hover:bg-gray-100 opacity-60 hover:opacity-100 transition-all"
-                          title="More Actions"
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem 
-                          className="flex items-center gap-2"
-                          onClick={() => archiveProject.mutate(project.id)}
-                        >
-                          <Archive className="h-4 w-4" />
-                          Archive Project
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-orange-600 flex items-center gap-2"
-                          onClick={() => trashProject.mutate(project.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Move to Trash
-                        </DropdownMenuItem>
-                        {(project.projectStatus === 'archived' || project.projectStatus === 'trashed') && (
-                          <DropdownMenuItem 
-                            className="text-green-600 flex items-center gap-2"
-                            onClick={() => restoreProject.mutate(project.id)}
-                          >
-                            <RotateCcw className="h-4 w-4" />
-                            Restore Project
-                          </DropdownMenuItem>
+                              <div
+                                className="px-4 py-2 border-r border-blue-200"
+                                style={{ width: getColumnWidth("checkbox") }}
+                              />
+                              <div
+                                className="px-4 py-2 border-r border-blue-200"
+                                style={{ width: getColumnWidth("progress") }}
+                              />
+                              {/* Updates column space */}
+                              <div className="w-12 px-2 py-2"></div>
+                            </div>
+                          </>
                         )}
-                        <div className="border-t my-1"></div>
-                        <DropdownMenuItem 
-                          className="text-red-600 flex items-center gap-2"
-                          onClick={() => handleDeleteProject(project.id)}
+                      </React.Fragment>
+                    ))}
+
+                    {/* Add Item Button */}
+                    <div className="flex">
+                      <div className="w-12 px-2 py-2 border-r border-gray-200"></div>
+                      <div
+                        className="px-4 py-2 border-r border-gray-200"
+                        style={{ width: getColumnWidth("item") }}
+                      >
+                        <button
+                          onClick={() => handleAddItem(group.name)}
+                          className="text-gray-600 hover:text-blue-600 text-sm flex items-center gap-2"
                         >
-                          <Trash2 className="h-4 w-4" />
-                          Delete Permanently
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
-              );
-            })}
-            
-            {/* Add new row */}
-            <tr className="bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all duration-200">
-              <td colSpan={10} className="p-6">
-                <Link href="/projects-list">
-                  <Button 
-                    variant="ghost" 
-                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 w-full justify-center py-3 border-2 border-dashed border-blue-200 hover:border-blue-300 rounded-lg transition-all duration-200"
-                  >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Add New Project
-                  </Button>
-                </Link>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-        {filteredProjects.length === 0 && (
-          <div className="text-center py-20 bg-gray-50">
-            <div className="max-w-md mx-auto">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No projects found</h3>
-              <p className="text-gray-500 mb-6">
-                {searchTerm || statusFilter 
-                  ? "Try adjusting your search or filter criteria" 
-                  : "Get started by creating your first project"}
-              </p>
-              <div className="flex gap-3 justify-center">
-                {(searchTerm || statusFilter) && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      setSearchTerm("");
-                      setStatusFilter("");
-                    }}
-                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                  >
-                    Clear filters
-                  </Button>
+                          <Plus className="w-4 h-4" />
+                          Add item
+                        </button>
+                      </div>
+                      {columns.slice(1).map((column) => (
+                        <div
+                          key={column.id}
+                          className="px-4 py-2 border-r border-gray-200"
+                          style={{ width: getColumnWidth(column.id) }}
+                        />
+                      ))}
+                      {/* Updates column space */}
+                      <div className="w-12 px-2 py-2"></div>
+                    </div>
+                  </>
                 )}
-                <Link href="/projects-list">
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Project
-                  </Button>
-                </Link>
               </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Modern Status Bar */}
+        <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-t border-gray-200 px-4 py-3">
+          <div className="flex items-center justify-between">
+            {/* Left Section - Statistics */}
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
+                  <span className="text-sm font-medium text-gray-700">{boardItems.length}</span>
+                  <span className="text-xs text-gray-500">items</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
+                  <span className="text-sm font-medium text-gray-700">{columns.length}</span>
+                  <span className="text-xs text-gray-500">columns</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-sm"></div>
+                  <span className="text-sm font-medium text-gray-700">{boardGroups.length}</span>
+                  <span className="text-xs text-gray-500">groups</span>
+                </div>
+              </div>
+
+              {/* Active Tasks */}
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-orange-500 rounded-sm"></div>
+                  <span className="text-sm font-medium text-gray-700">
+                    {boardItems.filter(item => item.status === 'in_progress').length}
+                  </span>
+                  <span className="text-xs text-gray-500">active</span>
+                </div>
+              </div>
+
+              {/* Completed Tasks */}
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                  <span className="text-sm font-medium text-gray-700">
+                    {boardItems.filter(item => item.status === 'complete').length}
+                  </span>
+                  <span className="text-xs text-gray-500">done</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Center Section - Current Activity */}
+            <div className="flex items-center space-x-3">
+              {editingCell && (
+                <div className="flex items-center space-x-2 bg-blue-50 px-3 py-1 rounded-full">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-medium text-blue-700">
+                    Editing {columns.find(c => c.id === editingCell.field)?.name}
+                  </span>
+                </div>
+              )}
+              
+              {selectedItems.size > 0 && (
+                <div className="flex items-center space-x-2 bg-purple-50 px-3 py-1 rounded-full">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-xs font-medium text-purple-700">
+                    {selectedItems.size} selected
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Right Section - Connection & Actions */}
+            <div className="flex items-center space-x-4">
+              {/* Auto-save Status */}
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-xs text-gray-600 font-medium">Auto-saved</span>
+              </div>
+
+              {/* Collaboration Status */}
+              <div className="flex items-center space-x-2 bg-emerald-50 px-3 py-1 rounded-full">
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-medium text-emerald-700">Live</span>
+                </div>
+                {Object.keys(collaborationState).length > 0 && (
+                  <div className="flex items-center space-x-1">
+                    <span className="text-xs text-emerald-600">•</span>
+                    <span className="text-xs text-emerald-600 font-medium">
+                      {Object.keys(collaborationState).length} online
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Zoom Level */}
+              <div className="flex items-center space-x-1">
+                <span className="text-xs text-gray-500">100%</span>
+              </div>
+
+              {/* Keyboard Shortcuts Hint */}
+              <div className="hidden lg:flex items-center space-x-1 text-xs text-gray-400">
+                <span>Press</span>
+                <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl</kbd>
+                <span>+</span>
+                <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">?</kbd>
+                <span>for shortcuts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bulk Operations */}
+        {selectedItems.size > 0 && (
+          <div className="fixed bottom-4 left-4 right-4 bg-gray-900 text-white rounded-lg px-4 py-3 flex items-center justify-between shadow-lg z-50">
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-xs font-medium">
+                {selectedItems.size}
+              </div>
+              <span className="text-sm">
+                {selectedItems.size} items selected
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => {
+                  Array.from(selectedItems).forEach((id) =>
+                    handleDeleteItem(id),
+                  );
+                  setSelectedItems(new Set());
+                }}
+                className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setSelectedItems(new Set())}
+                className="px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded text-sm"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         )}
       </div>
-      
-      {/* Enhanced Footer with summary */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg">
-        <div className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              {/* Team avatars */}
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-300">Active Team:</span>
-                <div className="flex items-center -space-x-2">
-                  {employees.slice(0, 4).map((emp: any, idx: number) => (
-                    <Avatar key={emp.id} className="w-8 h-8 ring-2 ring-gray-700 shadow-md">
-                      <AvatarFallback className="bg-gradient-to-br from-pink-500 to-purple-600 text-white text-xs">
-                        {emp.firstName?.[0]}{emp.lastName?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                  ))}
-                  {employees.length > 4 && (
-                    <div className="w-8 h-8 rounded-full bg-gray-600 ring-2 ring-gray-700 flex items-center justify-center">
-                      <span className="text-xs text-gray-300">+{employees.length - 4}</span>
-                    </div>
-                  )}
+
+      {/* Side Panel */}
+      {sidePanelOpen && selectedMainItem && (
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium">Project Updates</h3>
+              <p className="text-xs text-gray-600">
+                {selectedMainItem.values.item ||
+                  `Project #${selectedMainItem.id}`}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setSidePanelOpen(false);
+                setSelectedMainItem(null);
+              }}
+              className="text-gray-600 hover:text-gray-900 p-1"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-auto p-4">
+            <div className="space-y-4">
+              <div className="flex space-x-3">
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white font-medium">
+                  JD
+                </div>
+                <div className="flex-1">
+                  <div className="text-xs text-gray-600 mb-1">
+                    <span className="text-gray-900 font-medium">John Doe</span>{" "}
+                    · 2 hours ago
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-sm">
+                      Project kickoff meeting scheduled for tomorrow at 10 AM.
+                      All stakeholders have been notified.
+                    </p>
+                  </div>
                 </div>
               </div>
-              
-              {/* Status summary */}
-              <div className="flex items-center gap-4">
-                {uniqueStatuses.slice(0, 3).map((status) => {
-                  const count = projects.filter(p => p.status === status).length;
-                  return (
-                    <div key={status} className="flex items-center gap-2">
-                      <Badge className={`${getStatusColor(status)} px-2 py-1 text-xs`}>
-                        {status}
-                      </Badge>
-                      <span className="text-sm text-gray-300">{count}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              
-              {/* Date info */}
-              <div className="text-sm text-gray-300">
-                Last updated: {new Date().toLocaleDateString()}
+
+              <div className="flex space-x-3">
+                <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-xs text-white font-medium">
+                  JS
+                </div>
+                <div className="flex-1">
+                  <div className="text-xs text-gray-600 mb-1">
+                    <span className="text-gray-900 font-medium">
+                      Jane Smith
+                    </span>{" "}
+                    · 1 day ago
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-sm">
+                      Initial requirements document has been reviewed and
+                      approved by the client.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-            
-            {/* Summary stats */}
-            <div className="flex items-center gap-6 text-sm">
-              <div className="text-center">
-                <div className="text-xl font-bold text-white">{projects.length}</div>
-                <div className="text-xs text-gray-400">Total Projects</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-green-400">
-                  {projects.filter(p => p.status.toLowerCase().includes('complete')).length}
+
+            <div className="border-t border-gray-200 pt-4 mt-6">
+              <div className="flex space-x-3">
+                <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white font-medium">
+                  U
                 </div>
-                <div className="text-xs text-gray-400">Completed</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-blue-400">
-                  {projects.filter(p => p.status.toLowerCase().includes('progress')).length}
+                <div className="flex-1">
+                  <textarea
+                    placeholder="Add an update..."
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none"
+                    rows={3}
+                  />
+                  <div className="flex justify-end mt-2">
+                    <button className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                      Post Update
+                    </button>
+                  </div>
                 </div>
-                <div className="text-xs text-gray-400">In Progress</div>
               </div>
-              {selectedProjects.length > 0 && (
-                <div className="text-center">
-                  <div className="text-xl font-bold text-yellow-400">{selectedProjects.length}</div>
-                  <div className="text-xs text-gray-400">Selected</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enhanced Communication Modal with Side Tabs */}
+      {updatesModal.isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200"
+          onClick={closeUpdatesModal}
+        >
+          <div 
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[85vh] flex flex-col animate-in slide-in-from-bottom-4 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Enhanced Header */}
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                    <MessageCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      Customer Communication Hub
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {updatesModal.itemType === "main" && "📋 Project: "}
+                      {updatesModal.itemType === "folder" && "📁 Folder: "}
+                      {updatesModal.itemType === "subitem" && "📌 Sub-item: "}
+                      <span className="font-medium">{updatesModal.itemName}</span>
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={closeUpdatesModal}
+                  className="w-8 h-8 rounded-full bg-white/80 dark:bg-gray-700 hover:bg-white dark:hover:bg-gray-600 transition-colors flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <button
+                onClick={() => setActiveTab("updates")}
+                className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "updates"
+                    ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-900"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                }`}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Updates</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("sms")}
+                className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "sms"
+                    ? "border-b-2 border-green-500 text-green-600 dark:text-green-400 bg-white dark:bg-gray-900"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                }`}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <Phone className="w-4 h-4" />
+                  <span>SMS/Phone</span>
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("email")}
+                className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "email"
+                    ? "border-b-2 border-purple-500 text-purple-600 dark:text-purple-400 bg-white dark:bg-gray-900"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                }`}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <Mail className="w-4 h-4" />
+                  <span>Email</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            <div className="flex-1 overflow-hidden">
+              {/* Updates Tab */}
+              {activeTab === "updates" && (
+                <div className="h-full flex flex-col">
+                  <div className="flex-1 overflow-auto px-6 py-4">
+                    <div className="space-y-4">
+                      {(() => {
+                        const updateKey = `${updatesModal.itemType}-${updatesModal.itemId}`;
+                        const updates = itemUpdates[updateKey] || [];
+
+                        if (updates.length === 0) {
+                          return (
+                            <div className="text-center py-12">
+                              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 flex items-center justify-center">
+                                <MessageCircle className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+                              </div>
+                              <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                Start the conversation
+                              </h4>
+                              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                                No updates yet. Be the first to share progress, ask questions, or provide feedback!
+                              </p>
+                            </div>
+                          );
+                        }
+
+                        return updates.map((update, index) => (
+                          <div key={update.id} className="group animate-in slide-in-from-left duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                            <div className="flex space-x-3">
+                              <div className="flex-shrink-0">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium text-sm shadow-lg">
+                                  {update.author[0].toUpperCase()}
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span className="font-medium text-gray-900 dark:text-white text-sm">
+                                    {update.author}
+                                  </span>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    {new Date(update.timestamp).toLocaleString()}
+                                  </span>
+                                  <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button className="text-gray-400 hover:text-blue-500 transition-colors">
+                                      <Heart className="w-3 h-3" />
+                                    </button>
+                                    <button className="text-gray-400 hover:text-blue-500 transition-colors">
+                                      <MoreHorizontal className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                    {update.content}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Updates Compose Area */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                    <div className="p-6">
+                      <div className="flex space-x-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white font-medium text-sm">
+                            U
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="relative">
+                            <textarea
+                              value={newUpdate}
+                              onChange={(e) => setNewUpdate(e.target.value)}
+                              placeholder="Share an update, ask a question, or provide feedback..."
+                              className="w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                              rows={3}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                  e.preventDefault();
+                                  if (newUpdate.trim()) {
+                                    addUpdate();
+                                  }
+                                }
+                              }}
+                            />
+                            {newUpdate.trim() && (
+                              <div className="absolute bottom-2 right-2 text-xs text-gray-400">
+                                ⌘ + Enter to send
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Action Buttons */}
+                          <div className="flex items-center justify-between mt-3">
+                            <div className="flex items-center space-x-2">
+                              <button 
+                                className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                title="Add attachment"
+                              >
+                                <Paperclip className="w-4 h-4" />
+                              </button>
+                              <button 
+                                className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                title="Add emoji"
+                              >
+                                <Smile className="w-4 h-4" />
+                              </button>
+                              <button 
+                                className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                title="Mention someone"
+                              >
+                                <AtSign className="w-4 h-4" />
+                              </button>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={closeUpdatesModal}
+                                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-medium transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={addUpdate}
+                                disabled={!newUpdate.trim()}
+                                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg disabled:shadow-none"
+                              >
+                                Post Update
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SMS/Phone Tab */}
+              {activeTab === "sms" && (
+                <div className="h-full flex flex-col">
+                  <div className="flex-1 overflow-auto px-6 py-4">
+                    <div className="space-y-4">
+                      {/* Customer Phone Info */}
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                            <Phone className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-green-900 dark:text-green-100">
+                              Customer Phone
+                            </h4>
+                            <p className="text-sm text-green-700 dark:text-green-300">
+                              {(() => {
+                                const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                                return currentItem?.phone || "No phone number available";
+                              })()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* SMS Conversation */}
+                      <div className="space-y-3">
+                        <h4 className="font-medium text-gray-900 dark:text-white">SMS Conversation</h4>
+                        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 min-h-[200px]">
+                          <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-8">
+                            <Phone className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                            <p>SMS integration coming soon!</p>
+                            <p className="text-xs mt-1">Connect with OpenPhone to send and receive text messages.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SMS Compose Area */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 bg-green-50 dark:bg-green-900/20">
+                    <div className="p-6">
+                      <div className="flex space-x-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-medium text-sm">
+                            <Phone className="w-4 h-4" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <textarea
+                            placeholder="Type your SMS message here..."
+                            className="w-full border border-green-200 dark:border-green-700 rounded-xl px-4 py-3 text-sm resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                            rows={3}
+                            disabled
+                          />
+                          <div className="flex items-center justify-between mt-3">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              Requires OpenPhone integration
+                            </div>
+                            <button
+                              disabled
+                              className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium opacity-50 cursor-not-allowed"
+                            >
+                              Send SMS
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Email Tab */}
+              {activeTab === "email" && (
+                <div className="h-full flex flex-col">
+                  <div className="flex-1 overflow-auto px-6 py-4">
+                    <div className="space-y-4">
+                      {/* Customer Email Info */}
+                      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center">
+                            <Mail className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-purple-900 dark:text-purple-100">
+                              Customer Email
+                            </h4>
+                            <p className="text-sm text-purple-700 dark:text-purple-300">
+                              {(() => {
+                                const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                                return currentItem?.email || "No email address available";
+                              })()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Email Thread */}
+                      <div className="space-y-3">
+                        <h4 className="font-medium text-gray-900 dark:text-white">Email Thread</h4>
+                        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 min-h-[200px]">
+                          <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-8">
+                            <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                            <p>Email integration ready!</p>
+                            <p className="text-xs mt-1">Connect with SendGrid to send professional emails.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Email Compose Area */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 bg-purple-50 dark:bg-purple-900/20">
+                    <div className="p-6">
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              To
+                            </label>
+                            <input
+                              type="email"
+                              value={(() => {
+                                const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                                return currentItem?.email || "";
+                              })()}
+                              className="w-full border border-purple-200 dark:border-purple-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Subject
+                            </label>
+                            <input
+                              type="text"
+                              value={emailSubject}
+                              onChange={(e) => setEmailSubject(e.target.value)}
+                              placeholder="Email subject..."
+                              className="w-full border border-purple-200 dark:border-purple-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Message
+                          </label>
+                          <textarea
+                            value={emailMessage}
+                            onChange={(e) => setEmailMessage(e.target.value)}
+                            placeholder="Compose your email message..."
+                            className="w-full border border-purple-200 dark:border-purple-700 rounded-lg px-4 py-3 text-sm resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                            rows={4}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {(() => {
+                              const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                              return currentItem?.email ? "Email ready to send" : "No email address available";
+                            })()}
+                          </div>
+                          <button
+                            onClick={sendEmail}
+                            disabled={isEmailSending || !emailSubject.trim() || !emailMessage.trim() || !(() => {
+                              const currentItem = boardItems.find(item => item.id === updatesModal.itemId);
+                              return currentItem?.email;
+                            })()}
+                            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            {isEmailSending ? "Sending..." : "Send Email"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* AI Formula Assistant */}
+      <AIFormulaAssistant />
+
+      {/* Formula Editor */}
+      <FormulaEditor />
+
+      {/* Column Creation Modal */}
+      <ColumnCreationModal />
+
+      {/* Column Rename Modal */}
+      <ColumnRenameModal />
+
+      {/* Generic Prompt Modal */}
+      <PromptModal />
+
+      {/* Generic Confirm Modal */}
+      <ConfirmModal />
+
+      {/* Edit Labels Modal */}
+      <EditLabelsModal />
     </div>
   );
-}
+};
+
+export default MondayBoard;
