@@ -847,11 +847,34 @@ const MondayBoard = () => {
     });
   };
 
-  const handleRenameColumn = (columnId, newName) => {
-    // Update the column name in the columns array
-    setColumns(prev => prev.map(col => 
-      col.id === columnId ? { ...col, name: newName } : col
-    ));
+  const handleRenameColumn = async (columnId, newName) => {
+    try {
+      // Update the column name in the backend
+      const response = await fetch('/api/rename-column', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          columnId,
+          newName
+        })
+      });
+
+      if (response.ok) {
+        // Update the column name in the columns array
+        setColumns(prev => prev.map(col => 
+          col.id === columnId ? { ...col, name: newName } : col
+        ));
+        showToast(`Column renamed to "${newName}"`, "success");
+      } else {
+        showToast("Failed to rename column", "error");
+      }
+    } catch (error) {
+      console.error('Error renaming column:', error);
+      showToast("Error renaming column", "error");
+    }
+    
     setIsRenamingColumn(null);
     setNewColumnName("");
   };
@@ -1677,11 +1700,6 @@ const MondayBoard = () => {
             // Enhanced formula evaluation with proper column references
             let expression = column.formula;
             
-            // Debug: Log the item structure
-            console.log('Formula Debug - Item:', item);
-            console.log('Formula Debug - Column:', column);
-            console.log('Formula Debug - Expression:', expression);
-            
             // Replace column references like {Numbers} with actual values
             const columnMatches = expression.match(/\{([^}]+)\}/g);
             if (columnMatches) {
@@ -1693,13 +1711,10 @@ const MondayBoard = () => {
                 const targetColumn = columns.find(col => col.name === columnName);
                 if (targetColumn) {
                   columnValue = parseFloat(item.values?.[targetColumn.id]) || 0;
-                  console.log(`Formula Debug - Column ${columnName} (ID: ${targetColumn.id}) value:`, columnValue);
                 }
                 
                 expression = expression.replace(match, columnValue);
               });
-              
-              console.log('Formula Debug - Final expression:', expression);
               
               // Evaluate the mathematical expression
               if (/^[0-9+\-*/.() ]+$/.test(expression)) {
@@ -1708,7 +1723,6 @@ const MondayBoard = () => {
                 if (typeof displayValue === 'number') {
                   displayValue = Math.round(displayValue * 100) / 100;
                 }
-                console.log('Formula Debug - Result:', displayValue);
               } else {
                 displayValue = "Invalid formula";
               }
