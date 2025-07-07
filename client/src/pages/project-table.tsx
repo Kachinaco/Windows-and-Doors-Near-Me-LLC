@@ -849,20 +849,10 @@ const MondayBoard = () => {
 
   const handleRenameColumn = async (columnId, newName) => {
     try {
-      // Get the token from localStorage for authentication
-      const token = localStorage.getItem('token');
-      
-      // Update the column name in the backend
-      const response = await fetch('/api/rename-column', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          columnId,
-          newName
-        })
+      // Use the apiRequest function which handles authentication properly
+      const response = await apiRequest('POST', '/api/rename-column', {
+        columnId,
+        newName
       });
 
       if (response.ok) {
