@@ -1807,7 +1807,10 @@ const MondayBoard = () => {
                   <input
                     type="text"
                     value={aiInput}
-                    onChange={(e) => setAiInput(e.target.value)}
+                    onChange={(e) => {
+                      console.log("AI Input changed:", e.target.value);
+                      setAiInput(e.target.value);
+                    }}
                     placeholder="Ask me anything about formulas... (e.g., 'Calculate remaining budget')"
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     onKeyPress={(e) => {
@@ -1819,6 +1822,7 @@ const MondayBoard = () => {
                     }}
                     disabled={formulaAssistant.isProcessing}
                     autoComplete="off"
+                    autoFocus={false}
                   />
                   <button
                     onClick={() => {
