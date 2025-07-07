@@ -86,12 +86,27 @@ const MondayBoard = () => {
   // Create board item mutation
   const createBoardItemMutation = useMutation({
     mutationFn: async (itemData: any) => {
+      console.log('Making API request to create item:', itemData);
       const response = await apiRequest("POST", `/api/boards/${activeBoard}/items`, itemData);
-      return response.json();
+      console.log('API response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API error response:', errorText);
+        throw new Error(`Failed to create item: ${response.status} ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('API response data:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Mutation success, invalidating cache for board:', activeBoard);
       queryClient.invalidateQueries({ queryKey: [`/api/boards/${activeBoard}/items`] });
     },
+    onError: (error) => {
+      console.error('Mutation error:', error);
+    }
   });
 
   // Update board item mutation
