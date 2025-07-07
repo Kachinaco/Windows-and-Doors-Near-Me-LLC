@@ -120,7 +120,7 @@ const MondayBoard = () => {
       board_id: activeBoard,
       group_name: itemData.group_name,
       values: {
-        item: `New Item ${boardItems.length + 1}`,
+        item: "", // Start with empty name so user can type it
         people: "",
         location: "",
         phone: "",
@@ -1303,8 +1303,9 @@ const MondayBoard = () => {
       
       // Automatically start editing the new item's name
       setTimeout(() => {
-        setEditingCell({ itemId: newItem.id, column: 'item' });
-      }, 100);
+        setEditingCell({ projectId: newItem.id, field: 'item' });
+        console.log('Setting editing cell for new item:', newItem.id);
+      }, 200);
       
       showToast("New item added successfully!", "success");
     } catch (error) {
