@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import {
   ChevronRight,
@@ -67,19 +68,57 @@ const MondayBoard = () => {
   const [newProjectName, setNewProjectName] = useState("");
   const [newBoardName, setNewBoardName] = useState("");
 
+  const queryClient = useQueryClient();
+  
   // Main items state for the board
   const [mainItems, setMainItems] = useState([]);
 
   // Board data cache to persist data between board switches
   const [boardDataCache, setBoardDataCache] = useState(new Map());
 
-  // Mock team members
-  const [teamMembers] = useState([
-    { id: 1, firstName: "John", lastName: "Doe" },
-    { id: 2, firstName: "Jane", lastName: "Smith" },
-    { id: 3, firstName: "Bob", lastName: "Wilson" },
-    { id: 4, firstName: "Alice", lastName: "Johnson" },
-  ]);
+  // Fetch board items from API
+  const { data: boardItems = [], isLoading: boardItemsLoading } = useQuery({
+    queryKey: [`/api/boards/${activeBoard}/items`],
+    enabled: !!activeBoard,
+  });
+
+  // Create board item mutation
+  const createBoardItemMutation = useMutation({
+    mutationFn: async (itemData: any) => {
+      const response = await apiRequest("POST", `/api/boards/${activeBoard}/items`, itemData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/boards/${activeBoard}/items`] });
+    },
+  });
+
+  // Update board item mutation
+  const updateBoardItemMutation = useMutation({
+    mutationFn: async ({ itemId, updates }: { itemId: number; updates: any }) => {
+      const response = await apiRequest("PUT", `/api/boards/${activeBoard}/items/${itemId}`, updates);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/boards/${activeBoard}/items`] });
+    },
+  });
+
+  // Delete board item mutation
+  const deleteBoardItemMutation = useMutation({
+    mutationFn: async (itemId: number) => {
+      const response = await apiRequest("DELETE", `/api/boards/${activeBoard}/items/${itemId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/boards/${activeBoard}/items`] });
+    },
+  });
+
+  // Fetch team members from API
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ["/api/employees"],
+  });
 
   // Board columns configuration
   const [columns, setColumns] = useState([
@@ -102,8 +141,14 @@ const MondayBoard = () => {
     { id: "progress", name: "Progress", type: "progress", order: 6 },
   ]);
 
-  // Initial board data with folders
-  // Initial board data with sample items for testing email functionality
+  // Sync board items with API data
+  useEffect(() => {
+    if (boardItems && boardItems.length > 0) {
+      setMainItems(boardItems);
+    }
+  }, [boardItems]);
+
+  // Initial board data with folders (fallback for when API is empty)
   const [boardItemsOld, setMainItemsOld] = useState<any[]>([
     {
       id: 1,
@@ -1198,73 +1243,25 @@ const MondayBoard = () => {
       },
     ]);
 
-    // Save to database
-    try {
-      const response = await fetch(`/api/boards/1/items/${projectId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ field, value }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save to database');
-      }
-      
-      // Step 5: Auto-save current board data to cache after successful cell update
-      if (currentBoard) {
-        const updatedBoardData = {
-          board: currentBoard,
-          columns: columns,
-          items: mainItems.map((item) =>
-            item.id === projectId
-              ? { ...item, values: { ...item.values, [field]: value } }
-              : item
-          ),
-        };
-        saveBoardToCache(currentBoard.id, updatedBoardData);
-        console.log(`Auto-saved board ${currentBoard.id} to cache after cell update`);
-      }
-    } catch (error) {
-      console.error('Error saving cell update:', error);
-      // TODO: Show error message to user and possibly revert local changes
-    }
-
-    // Force component re-render to recalculate formulas
-    setTimeout(() => {
-      setMainItems((prev) => [...prev]);
-    }, 50);
-  }, []);
+    // Save to database using mutation
+    const updates = {
+      values: {
+        [field]: value,
+        lastUpdated: new Date().toISOString(),
+      },
+    };
+    
+    updateBoardItemMutation.mutate({ itemId: projectId, updates });
+  }, [updateBoardItemMutation]);
 
   const handleAddItem = (groupName = "New Leads") => {
-    const newItem = {
-      id: newItemCounter,
-      groupName,
-      values: {
-        item: "",
-        status:
-          groupName === "New Leads"
-            ? "new lead"
-            : groupName === "In Progress"
-              ? "in progress"
-              : groupName === "Complete"
-                ? "complete"
-                : "new lead",
-        assignedTo: "unassigned",
-        dueDate: "",
-        checkbox: false,
-        progress: 0,
-        email: "",
-        phone: "",
-        location: "",
-      },
-      folders: [],
+    const itemData = {
+      group_name: groupName,
+      item: "",
     };
-
-    setMainItems((prev) => [...prev, newItem]);
-    setNewItemCounter((prev) => prev + 1);
-    setEditingCell({ projectId: newItemCounter, field: "item" });
+    
+    createBoardItemMutation.mutate(itemData);
+    showToast("New item added successfully!", "success");
   };
 
   const handleAddFolder = (projectId) => {
