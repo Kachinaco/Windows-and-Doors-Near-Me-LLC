@@ -2327,7 +2327,6 @@ const MondayBoard = () => {
           </div>
         );
     }
-  };
 
   // AI Formula Assistant Component - Enhanced Interactive Version
   const AIFormulaAssistant = () => {
@@ -5113,10 +5112,7 @@ const MondayBoard = () => {
                           </div>
                           <button
                             onClick={sendEmail}
-                            disabled={isEmailSending || !emailSubject.trim() || !emailMessage.trim() || !(() => {
-                              const currentItem = mainItems.find(item => item.id === updatesModal.itemId);
-                              return currentItem?.values?.email;
-                            })()}
+                            disabled={isEmailSending || !emailSubject.trim() || !emailMessage.trim() || !mainItems.find(item => item.id === updatesModal.itemId)?.values?.email}
                             className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
                           >
                             {isEmailSending ? "Sending..." : "Send Email"}
@@ -5180,7 +5176,6 @@ const MondayBoard = () => {
       {/* Edit Labels Modal */}
       <EditLabelsModal />
     </div>
-  }
   );
 };
 
