@@ -3315,13 +3315,13 @@ const MondayBoard = () => {
                                   </div>
 
                                   <div
-                                    className="px-4 py-2 border-r border-blue-200 flex items-center"
+                                    className="px-4 py-2 border-r border-blue-200 flex items-center overflow-hidden"
                                     style={{ 
                                       width: getColumnWidth("item"),
                                       minWidth: getColumnWidth("item")
                                     }}
                                   >
-                                    <div className="flex items-center gap-2 text-sm w-full">
+                                    <div className="flex items-center gap-2 text-sm w-full overflow-hidden">
                                       <div className="w-4 h-px bg-blue-400"></div>
                                       <button
                                         onClick={() => toggleFolder(folder.id)}
@@ -3360,13 +3360,13 @@ const MondayBoard = () => {
                                               setEditingFolder(null);
                                             }
                                           }}
-                                          className="bg-white text-blue-900 text-sm px-2 py-1 border border-blue-300 rounded flex-1"
+                                          className="bg-white text-blue-900 text-sm px-2 py-1 border border-blue-300 rounded w-32 max-w-full"
                                           autoFocus
                                           placeholder="Folder name"
                                         />
                                       ) : (
                                         <span
-                                          className="text-blue-900 text-sm font-medium cursor-pointer hover:text-blue-700 flex-1"
+                                          className="text-blue-900 text-sm font-medium cursor-pointer hover:text-blue-700 truncate"
                                           onClick={() =>
                                             setEditingFolder(folder.id)
                                           }
