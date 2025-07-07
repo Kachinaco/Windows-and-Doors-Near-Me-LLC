@@ -13,6 +13,7 @@ import { storage } from "./storage";
 import { Resend } from 'resend';
 import { googleCalendarService } from "./google-calendar";
 import { crmSync } from "./crm-sync";
+import OpenAI from 'openai';
 import {
   insertUserSchema,
   loginSchema,
@@ -41,6 +42,11 @@ interface AuthenticatedRequest extends Request {
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // Real-time collaboration state
 interface CollaborationSession {
@@ -3036,6 +3042,64 @@ Return only the formula, no explanation:`;
     } catch (error: any) {
       console.error("OpenAI API error:", error);
       res.status(500).json({ message: "Failed to generate formula" });
+    }
+  });
+
+  // AI Formula Generation API endpoint for Simple Builder
+  app.post("/api/ai/generate-formula", async (req: Request, res: Response) => {
+    try {
+      const { message, availableColumns, currentFormula } = req.body;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ 
+          message: "OpenAI API key not configured", 
+          formula: "" 
+        });
+      }
+
+      // Create a system prompt for formula generation
+      const systemPrompt = `You are an expert at creating Excel/Monday.com style formulas. 
+      
+Available columns: ${availableColumns.map(col => `${col.name} (${col.type})`).join(", ")}
+
+Rules:
+1. Use {Column Name} syntax for column references
+2. Return ONLY the formula, no explanations
+3. Use functions like: SUM(), AVERAGE(), IF(), ROUND(), ABS(), POWER(), SQRT(), AND(), OR(), NOT(), COUNT(), etc.
+4. For text operations: CONCATENATE(), LEN(), LEFT(), RIGHT(), MID()
+5. For dates: TODAY(), NOW(), DAYS(), YEAR(), MONTH(), DAY()
+6. Example formulas: 
+   - SUM({Cost}, {Labor})
+   - IF({Status} = "Complete", {Budget}, 0)
+   - ROUND({Budget} * 0.1, 2)
+   - CONCATENATE({First Name}, " ", {Last Name})
+
+Current formula: ${currentFormula || "None"}
+
+Generate a formula for: ${message}`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message }
+        ],
+        max_tokens: 150,
+        temperature: 0.1
+      });
+
+      const formula = response.choices[0].message.content?.trim() || "";
+      
+      res.json({ 
+        formula: formula,
+        message: `Generated formula: ${formula}`
+      });
+    } catch (error: any) {
+      console.error("Error generating formula:", error);
+      res.status(500).json({ 
+        message: "Sorry, I had trouble generating a formula. Please try again or write it manually.",
+        formula: ""
+      });
     }
   });
   

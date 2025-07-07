@@ -297,6 +297,16 @@ const MondayBoard = () => {
 
   // Separate state for AI input and formula builder
   const [aiInput, setAiInput] = useState("");
+  
+  // Simple Formula Builder state (replacement for complex system)
+  const [simpleFormulaBuilder, setSimpleFormulaBuilder] = useState({
+    isOpen: false,
+    columnId: null,
+    currentFormula: "",
+    columnName: "",
+    chatHistory: [],
+    isProcessing: false
+  });
 
   // Toast helper function
   const showToast = (message, type = "info") => {
@@ -882,7 +892,86 @@ const MondayBoard = () => {
     }));
   };
 
+  // Simple formula application for new builder
+  const applySimpleFormula = (formula) => {
+    if (!simpleFormulaBuilder.columnId || !formula) {
+      console.log('No column ID or formula to apply');
+      return;
+    }
+    
+    setColumns(prev => prev.map(col => 
+      col.id === simpleFormulaBuilder.columnId 
+        ? { ...col, formula: formula.trim() }
+        : col
+    ));
+    
+    setSimpleFormulaBuilder(prev => ({
+      ...prev,
+      currentFormula: formula.trim()
+    }));
+    
+    showToast("Formula saved successfully!", "success");
+    console.log('Simple formula applied:', formula);
+  };
 
+  // Send message to AI for simple builder
+  const sendSimpleAIMessage = async (message) => {
+    if (!message.trim()) return;
+
+    const userMessage = message.trim();
+    
+    setSimpleFormulaBuilder(prev => ({
+      ...prev,
+      isProcessing: true,
+      chatHistory: [...prev.chatHistory, { type: "user", message: userMessage }]
+    }));
+
+    try {
+      // Create a simple prompt for formula generation
+      const availableColumns = columns.map(col => `${col.name} (${col.type})`).join(", ");
+      const prompt = `Create a formula for "${simpleFormulaBuilder.columnName}" column. Available columns: ${availableColumns}. User request: "${userMessage}". Please respond with just the formula using {Column Name} syntax. For example: SUM({Cost}, {Labor}) or IF({Status} = "Complete", {Budget}, 0)`;
+      
+      const response = await apiRequest('POST', '/api/ai/generate-formula', {
+        message: prompt,
+        availableColumns: columns.map(col => ({ 
+          id: col.id, 
+          name: col.name, 
+          type: col.type
+        })),
+        currentFormula: simpleFormulaBuilder.currentFormula
+      });
+
+      const data = await response.json();
+      
+      // Extract just the formula from the response
+      let formula = data.formula || data.message || "";
+      
+      // Clean up the formula if AI added extra text
+      formula = formula.trim();
+      if (formula.includes('\n')) {
+        formula = formula.split('\n')[0].trim();
+      }
+      
+      setSimpleFormulaBuilder(prev => ({
+        ...prev,
+        isProcessing: false,
+        chatHistory: [...prev.chatHistory, { 
+          type: "assistant", 
+          message: `Here's a formula for "${userMessage}":`,
+          formula: formula
+        }]
+      }));
+    } catch (error) {
+      setSimpleFormulaBuilder(prev => ({
+        ...prev,
+        isProcessing: false,
+        chatHistory: [...prev.chatHistory, { 
+          type: "assistant", 
+          message: "I apologize, but I'm having trouble generating a formula right now. You can try writing it manually using {Column Name} syntax."
+        }]
+      }));
+    }
+  };
 
   // AI Formula Assistant
   const generateFormulaWithAI = async (description) => {
@@ -2098,7 +2187,12 @@ const MondayBoard = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                openFormulaAssistant(column.id, columnFormula);
+                setSimpleFormulaBuilder({
+                  isOpen: true,
+                  columnId: column.id,
+                  currentFormula: columnFormula,
+                  columnName: column.name
+                });
               }}
               className="opacity-0 group-hover:opacity-100 text-purple-600 hover:text-purple-800 transition-all p-0.5 ml-2"
               title="Edit Formula"
@@ -4359,6 +4453,127 @@ const MondayBoard = () => {
 
       {/* Generic Confirm Modal */}
       <ConfirmModal />
+
+      {/* Simple AI Formula Builder */}
+      {simpleFormulaBuilder.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">
+                AI Formula Helper - {simpleFormulaBuilder.columnName}
+              </h3>
+              <button
+                onClick={() => setSimpleFormulaBuilder(prev => ({ ...prev, isOpen: false }))}
+                className="text-gray-500 hover:text-gray-700 text-xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Current Formula Display */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Current Formula:</label>
+              <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded border font-mono text-sm">
+                {simpleFormulaBuilder.currentFormula || "No formula set"}
+              </div>
+            </div>
+            
+            {/* Chat History */}
+            <div className="mb-4 max-h-64 overflow-y-auto">
+              {simpleFormulaBuilder.chatHistory.map((msg, index) => (
+                <div key={index} className={`mb-3 ${msg.type === 'user' ? 'text-right' : 'text-left'}`}>
+                  <div className={`inline-block p-3 rounded-lg max-w-xs ${
+                    msg.type === 'user' 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                  }`}>
+                    <p className="text-sm">{msg.message}</p>
+                    {msg.formula && (
+                      <div className="mt-2 p-2 bg-gray-800 text-green-400 rounded text-xs font-mono">
+                        {msg.formula}
+                        <button
+                          onClick={() => applySimpleFormula(msg.formula)}
+                          className="ml-2 px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                        >
+                          Use This
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {simpleFormulaBuilder.isProcessing && (
+                <div className="text-left mb-3">
+                  <div className="inline-block p-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                      <span className="text-sm">AI is thinking...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Input Area */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Ask AI to create a formula (e.g., 'calculate total cost plus tax')"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    sendSimpleAIMessage(e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+                disabled={simpleFormulaBuilder.isProcessing}
+              />
+              <button
+                onClick={(e) => {
+                  const input = e.target.parentElement.querySelector('input');
+                  if (input.value.trim()) {
+                    sendSimpleAIMessage(input.value);
+                    input.value = '';
+                  }
+                }}
+                disabled={simpleFormulaBuilder.isProcessing}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                Send
+              </button>
+            </div>
+            
+            {/* Manual Formula Input */}
+            <div className="mt-4 border-t pt-4">
+              <label className="block text-sm font-medium mb-2">Or enter formula manually:</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g., SUM({Cost}, {Labor})"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 font-mono text-sm"
+                  defaultValue={simpleFormulaBuilder.currentFormula}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      applySimpleFormula(e.target.value);
+                    }
+                  }}
+                />
+                <button
+                  onClick={(e) => {
+                    const input = e.target.parentElement.querySelector('input');
+                    if (input.value.trim()) {
+                      applySimpleFormula(input.value);
+                    }
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
