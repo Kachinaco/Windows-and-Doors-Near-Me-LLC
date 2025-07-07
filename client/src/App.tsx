@@ -51,7 +51,7 @@ import CrmDashboard from "@/pages/crm-dashboard";
 import DashboardOld from "@/pages/dashboard-old";
 import ExcelProjectManager from "@/pages/excel-project-manager";
 import ProjectPanelClean from "@/pages/project-panel-clean";
-import ProjectTable from "@/pages/project-table";
+import ProjectTable from "@/pages/project-table-minimal";
 import QuoteBroken from "@/pages/quote-broken";
 import SettingsBroken from "@/pages/settings-broken";
 import Analytics from "@/pages/analytics";
