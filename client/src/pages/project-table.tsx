@@ -849,11 +849,15 @@ const MondayBoard = () => {
 
   const handleRenameColumn = async (columnId, newName) => {
     try {
+      // Get the token from localStorage for authentication
+      const token = localStorage.getItem('token');
+      
       // Update the column name in the backend
       const response = await fetch('/api/rename-column', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           columnId,
@@ -868,7 +872,8 @@ const MondayBoard = () => {
         ));
         showToast(`Column renamed to "${newName}"`, "success");
       } else {
-        showToast("Failed to rename column", "error");
+        const errorData = await response.json();
+        showToast(`Failed to rename column: ${errorData.message}`, "error");
       }
     } catch (error) {
       console.error('Error renaming column:', error);
@@ -2471,18 +2476,12 @@ const MondayBoard = () => {
     }, [columnRenameModal.currentName]);
 
     const isDisabled = !name.trim() || name === columnRenameModal.currentName;
-    console.log('Modal debug - name:', name, 'currentName:', columnRenameModal.currentName, 'isDisabled:', isDisabled);
 
     const handleSubmit = () => {
-      console.log('handleSubmit called with name:', name);
-      console.log('columnRenameModal.currentName:', columnRenameModal.currentName);
-      
       if (!name.trim() || name === columnRenameModal.currentName) {
-        console.log('Submit blocked - name empty or unchanged');
         return;
       }
       
-      console.log('Calling callback with name:', name);
       columnRenameModal.callback(name);
       
       setColumnRenameModal({
@@ -2566,10 +2565,7 @@ const MondayBoard = () => {
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  console.log('Rename button clicked!');
-                  handleSubmit();
-                }}
+                onClick={handleSubmit}
                 disabled={isDisabled}
                 className="px-6 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
               >
