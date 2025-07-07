@@ -9,10 +9,10 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
-import { storage } from "./storage-simple";
+import { storage } from "./storage";
 import { Resend } from 'resend';
 import { googleCalendarService } from "./google-calendar";
-// import { crmSync } from "./crm-sync";
+import { crmSync } from "./crm-sync";
 import {
   insertUserSchema,
   loginSchema,
@@ -2983,95 +2983,6 @@ Return JSON format:
       console.error("Error creating sample sub-items:", error);
       res.status(500).json({ message: "Failed to create sample sub-items" });
     }
-  });
-
-  // Board management API endpoints for persistent storage
-  let boardData: { [boardId: string]: any[] } = {
-    '1': [], // Main Board
-    '2': [], // Sales Pipeline
-    '3': [], // Lead Management
-    '4': [], // Event Sales Leads
-    '5': [], // Employee Schedule
-    '6': [], // Performance Reviews
-  };
-
-  // Get board items
-  app.get("/api/boards/:boardId/items", authenticateToken, (req: AuthenticatedRequest, res) => {
-    const { boardId } = req.params;
-    const items = boardData[boardId] || [];
-    res.json(items);
-  });
-
-  // Add board item
-  app.post("/api/boards/:boardId/items", authenticateToken, (req: AuthenticatedRequest, res) => {
-    const { boardId } = req.params;
-    const { group_name = "Main Group" } = req.body;
-    
-    if (!boardData[boardId]) {
-      boardData[boardId] = [];
-    }
-
-    const newItem = {
-      id: Date.now(),
-      board_id: parseInt(boardId),
-      group_name,
-      values: {
-        item: `New Item ${boardData[boardId].length + 1}`,
-        people: "",
-        location: "",
-        phone: "",
-        status: "not-started",
-        measure_date: "",
-        delivery_date: "",
-        install_date: ""
-      },
-      folders: [],
-      created_at: new Date(),
-      updated_at: new Date()
-    };
-
-    boardData[boardId].push(newItem);
-    res.json(newItem);
-  });
-
-  // Update board item
-  app.put("/api/boards/:boardId/items/:itemId", authenticateToken, (req: AuthenticatedRequest, res) => {
-    const { boardId, itemId } = req.params;
-    const updates = req.body;
-    
-    if (!boardData[boardId]) {
-      return res.status(404).json({ error: "Board not found" });
-    }
-
-    const itemIndex = boardData[boardId].findIndex(item => item.id === parseInt(itemId));
-    if (itemIndex === -1) {
-      return res.status(404).json({ error: "Item not found" });
-    }
-
-    boardData[boardId][itemIndex] = {
-      ...boardData[boardId][itemIndex],
-      ...updates,
-      updated_at: new Date()
-    };
-
-    res.json(boardData[boardId][itemIndex]);
-  });
-
-  // Delete board item
-  app.delete("/api/boards/:boardId/items/:itemId", authenticateToken, (req: AuthenticatedRequest, res) => {
-    const { boardId, itemId } = req.params;
-    
-    if (!boardData[boardId]) {
-      return res.status(404).json({ error: "Board not found" });
-    }
-
-    const itemIndex = boardData[boardId].findIndex(item => item.id === parseInt(itemId));
-    if (itemIndex === -1) {
-      return res.status(404).json({ error: "Item not found" });
-    }
-
-    boardData[boardId].splice(itemIndex, 1);
-    res.json({ success: true });
   });
 
   const httpServer = createServer(app);
