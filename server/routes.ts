@@ -1462,34 +1462,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Clean the input data to remove any Unicode characters that might cause issues
-      const cleanText = (text: string) => text.replace(/[^\x00-\x7F]/g, "");
+      const cleanText = (text: string) => text.replace(/[^\x00-\x7F]/g, "").trim();
+      
+      // Clean the API key as well to ensure no Unicode characters
+      const cleanApiKey = process.env.OPENAI_API_KEY.replace(/[^\x00-\x7F]/g, "").trim();
       
       const { default: OpenAI } = await import('openai');
       const openai = new OpenAI({ 
-        apiKey: process.env.OPENAI_API_KEY,
+        apiKey: cleanApiKey,
         dangerouslyAllowBrowser: false
       });
 
-      // Simple, clean system prompt
-      const systemPrompt = `You are an AI Formula Assistant for a project management system. Help users create formulas for their columns.
+      // Simple, clean system prompt with ASCII-only characters
+      const systemPrompt = cleanText(`You are an AI Formula Assistant. Help users create formulas.
 
 Available columns: ${availableColumns.map((col: any) => `${col.name} (${col.id})`).join(', ')}
 
-When creating formulas:
-- Use column IDs like: ${availableColumns.map((col: any) => col.id).join(', ')}
-- Support basic operators: +, -, *, /, %
-- Support functions: MAX(), MIN(), ABS(), ROUND(), IF()
-- Use parentheses for grouping
-- Always explain what the formula does
+Use column IDs like: ${availableColumns.map((col: any) => col.id).join(', ')}
+Support operators: +, -, *, /, %
+Support functions: MAX(), MIN(), ABS(), ROUND(), IF()
 
-Current formula: ${currentFormula || "None"}
+Current formula: ${cleanText(currentFormula || "None")}
 
-Return your response in JSON format with:
+Return JSON format:
 {
-  "explanation": "Your conversational explanation of the formula",
-  "formula": "The actual formula code",
-  "suggestions": ["Optional array of alternative suggestions"]
-}`;
+  "explanation": "Explain the formula",
+  "formula": "The formula code",
+  "suggestions": ["Alternative options"]
+}`);
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
