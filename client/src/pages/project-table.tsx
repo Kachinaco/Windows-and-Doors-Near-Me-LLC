@@ -240,6 +240,7 @@ const MondayBoard = () => {
   const [newItemCounter, setNewItemCounter] = useState(4);
   const [newFolderCounter, setNewFolderCounter] = useState(4000);
   const [newSubItemCounter, setNewSubItemCounter] = useState(40000);
+  const [collaborationState, setCollaborationState] = useState({});
 
   // Updates modal state
   const [updatesModal, setUpdatesModal] = useState({
@@ -3941,7 +3942,7 @@ const MondayBoard = () => {
                 <div className="flex items-center space-x-2 bg-blue-50 px-3 py-1 rounded-full">
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                   <span className="text-xs font-medium text-blue-700">
-                    Editing {columns.find(c => c.id === editingCell.column)?.name}
+                    Editing {columns.find(c => c.id === editingCell.field)?.name}
                   </span>
                 </div>
               )}
