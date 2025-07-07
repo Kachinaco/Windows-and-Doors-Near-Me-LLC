@@ -22,7 +22,6 @@ import ProjectsPage from "@/pages/projects";
 import SimpleExcelManager from "@/pages/simple-excel-manager";
 import MondayBoard from "@/pages/monday-board";
 import ProjectPanel from "@/pages/project-panel";
-import OverflowPage from "@/pages/overflow";
 import PipelinePage from "@/pages/pipeline";
 import LeadsPage from "@/pages/leads";
 import SchedulingPage from "@/pages/scheduling";
@@ -109,7 +108,7 @@ function Router() {
       <Route path="/blog" component={Blog} />
       <Route path="/dashboard-old" component={DashboardOld} />
       <Route path="/excel-project-manager" component={ExcelProjectManager} />
-      <Route path="/overflow" component={OverflowPage} />
+      <Route path="/project-table" component={ProjectTable} />
       <Route path="/quote-broken" component={QuoteBroken} />
       <Route path="/settings-broken" component={SettingsBroken} />
       <Route path="/simple-excel-manager" component={SimpleExcelManager} />
