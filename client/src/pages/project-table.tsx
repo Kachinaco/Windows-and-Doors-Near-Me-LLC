@@ -1804,7 +1804,7 @@ const MondayBoard = () => {
                     onChange={(e) => setAiInput(e.target.value)}
                     placeholder="Ask me anything about formulas... (e.g., 'Calculate remaining budget')"
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    onKeyDown={(e) => {
+                    onKeyPress={(e) => {
                       if (e.key === 'Enter' && !formulaAssistant.isProcessing && aiInput.trim()) {
                         e.preventDefault();
                         sendMessageToAI(aiInput);
@@ -1812,6 +1812,7 @@ const MondayBoard = () => {
                       }
                     }}
                     disabled={formulaAssistant.isProcessing}
+                    autoComplete="off"
                   />
                   <button
                     onClick={() => {
@@ -1888,13 +1889,12 @@ const MondayBoard = () => {
                         key={col.id}
                         onClick={() => {
                           const currentInput = localInput;
-                          const newInput = currentInput ? `${currentInput} + ${col.id}` : col.id;
+                          const newInput = currentInput ? `${currentInput} + ${col.name}` : col.name;
                           setLocalInput(newInput);
                         }}
                         className="w-full text-left text-xs px-2 py-1 bg-white dark:bg-gray-800 rounded border hover:bg-green-50 hover:border-green-300 transition-colors cursor-pointer"
                       >
-                        <span className="font-mono text-green-600 dark:text-green-400">{col.id}</span>
-                        <span className="text-gray-500 ml-1">({col.name})</span>
+                        <span className="text-green-600 dark:text-green-400">{col.name}</span>
                       </button>
                     ))}
                     {columns.filter(col => col.type === 'number' || col.type === 'progress' || col.id === 'progress').length === 0 && (
