@@ -3098,7 +3098,6 @@ const MondayBoard = () => {
   };
 
   return (
-    <>
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Dashboard Header */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
@@ -4387,11 +4386,8 @@ const MondayBoard = () => {
             </div>
           </div>
         )}
-          </div>
-        )}
-      </div>
 
-      {/* Side Panel */}
+        {/* Side Panel */}
       {sidePanelOpen && selectedMainItem && (
         <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
@@ -4885,7 +4881,6 @@ const MondayBoard = () => {
           </div>
         </div>
         )}
-    </div>
 
       {/* AI Formula Assistant */}
       <AIFormulaAssistant />
@@ -4907,7 +4902,7 @@ const MondayBoard = () => {
 
       {/* Edit Labels Modal */}
       <EditLabelsModal />
-    </>
+    </div>
   );
 };
 

@@ -80,7 +80,7 @@ import {
   UniqueIdentifier,
   useDroppable,
 } from '@dnd-kit/core';
-import FullMondayBoard from "@/pages/project-table";
+import FullMondayBoard from "@/pages/project-table-minimal";
 import {
   SortableContext,
   useSortable,
