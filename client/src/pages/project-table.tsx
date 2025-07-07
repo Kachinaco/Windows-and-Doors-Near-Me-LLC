@@ -709,6 +709,11 @@ const MondayBoard = () => {
         timestamp: Date.now(),
       },
     ]);
+
+    // Force component re-render to recalculate formulas
+    setTimeout(() => {
+      setBoardItems((prev) => [...prev]);
+    }, 50);
   }, []);
 
   const handleAddItem = (groupName = "New Leads") => {
@@ -1677,7 +1682,18 @@ const MondayBoard = () => {
             if (columnMatches) {
               columnMatches.forEach(match => {
                 const columnName = match.slice(1, -1); // Remove { and }
-                const columnValue = item[columnName.toLowerCase()] || 0;
+                let columnValue = 0;
+                
+                // Map column names to actual data fields
+                if (columnName === 'Numbers') {
+                  columnValue = item.values?.numbers || parseFloat(item.values?.Numbers) || 0;
+                } else if (columnName === 'Progress') {
+                  columnValue = item.values?.progress || parseFloat(item.values?.Progress) || 0;
+                } else {
+                  // Try to find the value in item.values using the column name
+                  columnValue = item.values?.[columnName] || item.values?.[columnName.toLowerCase()] || 0;
+                }
+                
                 expression = expression.replace(match, columnValue);
               });
               
