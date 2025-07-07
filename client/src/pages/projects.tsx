@@ -42,10 +42,33 @@ import {
   Plus,
   MessageSquare,
   FileText,
-  GripVertical
+  GripVertical,
+  ChevronRight,
+  ChevronDown,
+  Folder,
+  Trash2,
+  Hash,
+  Tag,
+  Check,
+  Mail,
+  BarChart3,
+  Undo2,
+  UserPlus,
+  X,
+  Heart,
+  Paperclip,
+  Smile,
+  AtSign,
+  MessageCircle,
+  Save,
+  Timer,
+  Globe,
+  FolderPlus,
+  MoreHorizontal,
+  Edit,
+  Copy
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import MondayBoard from "./project-table";
 import {
   DndContext,
   DragEndEvent,
@@ -265,6 +288,290 @@ function DroppableFolder({
     </div>
   );
 }
+
+// Monday.com Board Component - Inline version
+const MondayBoardInline = () => {
+  // Mock team members
+  const [teamMembers] = useState([
+    { id: 1, firstName: "John", lastName: "Doe" },
+    { id: 2, firstName: "Jane", lastName: "Smith" },
+    { id: 3, firstName: "Bob", lastName: "Wilson" },
+    { id: 4, firstName: "Alice", lastName: "Johnson" },
+  ]);
+
+  // Board columns configuration
+  const [columns, setColumns] = useState([
+    { id: "item", name: "Main Item", type: "text", order: 1 },
+    { id: "subitems", name: "Folders", type: "subitems", order: 2 },
+    { id: "status", name: "Status", type: "status", order: 3 },
+    { id: "priority", name: "Priority", type: "dropdown", order: 4, options: ["Low", "Medium", "High", "Critical"] },
+    { id: "assignedTo", name: "People", type: "people", order: 5 },
+    { id: "dueDate", name: "Due Date", type: "date", order: 6 },
+    { id: "progress", name: "Progress", type: "progress", order: 7 },
+  ]);
+
+  // Board data
+  const [boardItems, setBoardItems] = useState([
+    {
+      id: 1,
+      values: {
+        item: "Kitchen Renovation Project",
+        status: "in progress",
+        priority: "High",
+        assignedTo: "John Smith, Sarah Wilson",
+        dueDate: "2025-07-15",
+        progress: 65,
+      },
+      name: "Kitchen Renovation Project",
+      status: { id: "in-progress", color: "#0066CC", label: "In Progress" },
+      assignedTo: ["John Smith", "Sarah Wilson"],
+      dueDate: "2025-07-15",
+      progress: 65,
+      group: "Active Projects",
+      folders: [
+        {
+          id: 1,
+          name: "Preparation Phase",
+          items: [
+            { id: 1, name: "Site Survey", status: "completed", priority: "High", assignedTo: "John Smith", dueDate: "2025-07-01", progress: 100 },
+            { id: 2, name: "Material Ordering", status: "in progress", priority: "Medium", assignedTo: "Sarah Wilson", dueDate: "2025-07-08", progress: 60 },
+          ]
+        },
+        {
+          id: 2,
+          name: "Installation Phase",
+          items: [
+            { id: 3, name: "Cabinet Installation", status: "not started", priority: "High", assignedTo: "Bob Wilson", dueDate: "2025-07-20", progress: 0 },
+            { id: 4, name: "Countertop Installation", status: "not started", priority: "Medium", assignedTo: "Alice Johnson", dueDate: "2025-07-25", progress: 0 },
+          ]
+        }
+      ]
+    },
+    {
+      id: 2,
+      values: {
+        item: "Bathroom Remodel",
+        status: "planning",
+        priority: "Medium",
+        assignedTo: "Alice Johnson",
+        dueDate: "2025-08-01",
+        progress: 25,
+      },
+      name: "Bathroom Remodel",
+      status: { id: "planning", color: "#FFA500", label: "Planning" },
+      assignedTo: ["Alice Johnson"],
+      dueDate: "2025-08-01",
+      progress: 25,
+      group: "Planning",
+      folders: [
+        {
+          id: 3,
+          name: "Design Phase",
+          items: [
+            { id: 5, name: "Design Consultation", status: "completed", priority: "High", assignedTo: "Alice Johnson", dueDate: "2025-07-05", progress: 100 },
+            { id: 6, name: "3D Rendering", status: "in progress", priority: "Medium", assignedTo: "John Smith", dueDate: "2025-07-12", progress: 40 },
+          ]
+        }
+      ]
+    }
+  ]);
+
+  const [expandedFolders, setExpandedFolders] = useState(new Set());
+
+  const toggleFolder = (itemId, folderId) => {
+    const key = `${itemId}-${folderId}`;
+    setExpandedFolders(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      'not started': '#C4C4C4',
+      'planning': '#FFA500',
+      'in progress': '#0066CC',
+      'completed': '#00C875',
+      'on hold': '#FF6B6B'
+    };
+    return colors[status] || '#C4C4C4';
+  };
+
+  const getPriorityColor = (priority) => {
+    const colors = {
+      'Low': '#00C875',
+      'Medium': '#FFA500',
+      'High': '#FF6B6B',
+      'Critical': '#FF0000'
+    };
+    return colors[priority] || '#C4C4C4';
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-white p-4">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-4 mb-4">
+          <h1 className="text-2xl font-bold">Project Management Board</h1>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-400">📊 Total Projects</span>
+            <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm">{boardItems.length}</span>
+          </div>
+        </div>
+        
+        {/* Column Headers */}
+        <div className="grid grid-cols-12 gap-2 mb-4 bg-gray-800 p-3 rounded-lg">
+          <div className="col-span-3 text-sm font-medium text-gray-300">Item</div>
+          <div className="col-span-1 text-sm font-medium text-gray-300">Folders</div>
+          <div className="col-span-2 text-sm font-medium text-gray-300">Status</div>
+          <div className="col-span-2 text-sm font-medium text-gray-300">Priority</div>
+          <div className="col-span-2 text-sm font-medium text-gray-300">People</div>
+          <div className="col-span-1 text-sm font-medium text-gray-300">Due Date</div>
+          <div className="col-span-1 text-sm font-medium text-gray-300">Progress</div>
+        </div>
+      </div>
+
+      {/* Board Items */}
+      <div className="space-y-4">
+        {boardItems.map((item) => (
+          <div key={item.id} className="bg-gray-800 rounded-lg p-4">
+            {/* Main Item Row */}
+            <div className="grid grid-cols-12 gap-2 items-center mb-3">
+              <div className="col-span-3">
+                <div className="font-medium text-white">{item.name}</div>
+              </div>
+              <div className="col-span-1">
+                <div className="flex items-center gap-1">
+                  <Folder className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-400">{item.folders?.length || 0}</span>
+                </div>
+              </div>
+              <div className="col-span-2">
+                <div 
+                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                  style={{ backgroundColor: getStatusColor(item.status.id), color: 'white' }}
+                >
+                  {item.status.label}
+                </div>
+              </div>
+              <div className="col-span-2">
+                <div 
+                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                  style={{ backgroundColor: getPriorityColor(item.values.priority), color: 'white' }}
+                >
+                  {item.values.priority}
+                </div>
+              </div>
+              <div className="col-span-2">
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-300">{item.assignedTo.join(', ')}</span>
+                </div>
+              </div>
+              <div className="col-span-1">
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-300">{item.dueDate}</span>
+                </div>
+              </div>
+              <div className="col-span-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-12 bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full"
+                      style={{ width: `${item.progress}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm text-gray-300">{item.progress}%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Folders */}
+            {item.folders && item.folders.map((folder) => (
+              <div key={folder.id} className="ml-4 mt-3 border-l-2 border-gray-700 pl-4">
+                <div 
+                  className="flex items-center gap-2 cursor-pointer hover:bg-gray-700 p-2 rounded"
+                  onClick={() => toggleFolder(item.id, folder.id)}
+                >
+                  {expandedFolders.has(`${item.id}-${folder.id}`) ? (
+                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                  )}
+                  <Folder className="h-4 w-4 text-blue-400" />
+                  <span className="text-sm font-medium text-gray-300">{folder.name}</span>
+                  <span className="text-xs text-gray-500">({folder.items.length} items)</span>
+                </div>
+
+                {/* Folder Items */}
+                {expandedFolders.has(`${item.id}-${folder.id}`) && (
+                  <div className="mt-2 space-y-2">
+                    {folder.items.map((subItem) => (
+                      <div key={subItem.id} className="grid grid-cols-12 gap-2 items-center py-2 pl-6 bg-gray-750 rounded">
+                        <div className="col-span-3 text-sm text-gray-300">{subItem.name}</div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-2">
+                          <div 
+                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                            style={{ backgroundColor: getStatusColor(subItem.status), color: 'white' }}
+                          >
+                            {subItem.status}
+                          </div>
+                        </div>
+                        <div className="col-span-2">
+                          <div 
+                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                            style={{ backgroundColor: getPriorityColor(subItem.priority), color: 'white' }}
+                          >
+                            {subItem.priority}
+                          </div>
+                        </div>
+                        <div className="col-span-2">
+                          <div className="flex items-center gap-1">
+                            <Users className="h-3 w-3 text-gray-400" />
+                            <span className="text-xs text-gray-300">{subItem.assignedTo}</span>
+                          </div>
+                        </div>
+                        <div className="col-span-1">
+                          <span className="text-xs text-gray-300">{subItem.dueDate}</span>
+                        </div>
+                        <div className="col-span-1">
+                          <div className="flex items-center gap-1">
+                            <div className="w-8 bg-gray-600 rounded-full h-1">
+                              <div 
+                                className="bg-blue-400 h-1 rounded-full"
+                                style={{ width: `${subItem.progress}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-xs text-gray-300">{subItem.progress}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {/* Add New Item */}
+      <div className="mt-6 bg-gray-800 rounded-lg p-4">
+        <button className="flex items-center gap-2 text-gray-400 hover:text-white hover:bg-gray-700 px-4 py-2 rounded transition-colors">
+          <Plus className="h-4 w-4" />
+          Add new project...
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default function ProjectsPage() {
   const { user, logout } = useAuth();
@@ -928,11 +1235,7 @@ export default function ProjectsPage() {
               <div className="p-4 bg-blue-50 dark:bg-blue-900 rounded-lg mb-4">
                 <p className="text-blue-700 dark:text-blue-300">Table View Mode Active</p>
               </div>
-              <div className="p-8 bg-white dark:bg-gray-900 rounded-lg border">
-                <h2 className="text-2xl font-bold mb-4">Monday.com Style Project Management</h2>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">Loading project management interface...</p>
-                <MondayBoard />
-              </div>
+              <MondayBoardInline />
             </div>
           ) : stageFilter ? (
             // Stage-filtered view
