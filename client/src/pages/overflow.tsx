@@ -1281,13 +1281,22 @@ const MondayBoard = () => {
   }, [updateBoardItemMutation]);
 
   const handleAddItem = (groupName = "New Leads") => {
+    console.log('Creating new item with group:', groupName);
+    
     const itemData = {
       group_name: groupName,
-      item: "",
     };
     
-    createBoardItemMutation.mutate(itemData);
-    showToast("New item added successfully!", "success");
+    createBoardItemMutation.mutate(itemData, {
+      onSuccess: (data) => {
+        console.log('Item created successfully:', data);
+        showToast("New item added successfully!", "success");
+      },
+      onError: (error) => {
+        console.error('Failed to create item:', error);
+        showToast("Failed to create item. Please try again.", "error");
+      }
+    });
   };
 
   const handleAddFolder = (projectId) => {
