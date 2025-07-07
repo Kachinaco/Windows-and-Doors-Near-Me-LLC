@@ -45,7 +45,7 @@ import {
   GripVertical
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import MondayBoard from "./project-table";
+import MondayBoard from "./overflow";
 import {
   DndContext,
   DragEndEvent,
