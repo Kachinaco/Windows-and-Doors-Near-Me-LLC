@@ -924,7 +924,16 @@ export default function ProjectsPage() {
         <div className="space-y-6">
           {viewMode === 'table' ? (
             // Monday.com Table View
-            <MondayBoard />
+            <div className="w-full">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900 rounded-lg mb-4">
+                <p className="text-blue-700 dark:text-blue-300">Table View Mode Active</p>
+              </div>
+              <div className="p-8 bg-white dark:bg-gray-900 rounded-lg border">
+                <h2 className="text-2xl font-bold mb-4">Monday.com Style Project Management</h2>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">Loading project management interface...</p>
+                <MondayBoard />
+              </div>
+            </div>
           ) : stageFilter ? (
             // Stage-filtered view
             <Card id={`stage-${stageFilter}`}>
