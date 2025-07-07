@@ -45,6 +45,7 @@ import {
   GripVertical
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import MondayBoard from "./project-table";
 import {
   DndContext,
   DragEndEvent,
@@ -272,6 +273,7 @@ export default function ProjectsPage() {
   const [location] = useLocation();
   const [sortColumn, setSortColumn] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [viewMode, setViewMode] = useState<'folders' | 'table'>('folders');
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const { toast } = useToast();
   
@@ -731,7 +733,28 @@ export default function ProjectsPage() {
             </p>
           </div>
 
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <div className="flex items-center gap-4">
+            {/* View Toggle Buttons */}
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 flex">
+              <Button
+                variant={viewMode === 'folders' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('folders')}
+                className="rounded-md"
+              >
+                📁 Folders
+              </Button>
+              <Button
+                variant={viewMode === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('table')}
+                className="rounded-md"
+              >
+                📊 Table
+              </Button>
+            </div>
+
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-blue-600 hover:bg-blue-700">
                 <PlusCircle className="h-4 w-4 mr-2" />
@@ -895,10 +918,14 @@ export default function ProjectsPage() {
             </DialogContent>
           </Dialog>
         </div>
+        </div>
 
         {/* Project Tables */}
         <div className="space-y-6">
-          {stageFilter ? (
+          {viewMode === 'table' ? (
+            // Monday.com Table View
+            <MondayBoard />
+          ) : stageFilter ? (
             // Stage-filtered view
             <Card id={`stage-${stageFilter}`}>
               <CardHeader className="pb-3">
