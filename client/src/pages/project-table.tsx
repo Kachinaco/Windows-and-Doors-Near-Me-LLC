@@ -1756,9 +1756,9 @@ const MondayBoard = () => {
 
     React.useEffect(() => {
       if (formulaAssistant.isOpen) {
-        setLocalInput("");
+        setLocalInput(formulaAssistant.currentFormula || "");
       }
-    }, [formulaAssistant.isOpen]);
+    }, [formulaAssistant.isOpen, formulaAssistant.currentFormula]);
 
     if (!formulaAssistant.isOpen) return null;
 
@@ -1838,20 +1838,19 @@ const MondayBoard = () => {
                 <div className="flex space-x-2">
                   <input
                     type="text"
-                    value={aiInput}
+                    value={formulaAssistant.userInput}
                     onChange={(e) => {
-                      console.log("AI Input changed:", e.target.value);
-                      setAiInput(e.target.value);
+                      setFormulaAssistant(prev => ({
+                        ...prev,
+                        userInput: e.target.value
+                      }));
                     }}
                     placeholder="Ask me anything about formulas... (e.g., 'Calculate remaining budget')"
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     onKeyDown={(e) => {
-                      console.log("Key pressed:", e.key, "Current input:", aiInput);
-                      if (e.key === 'Enter' && !formulaAssistant.isProcessing && aiInput.trim()) {
+                      if (e.key === 'Enter' && !formulaAssistant.isProcessing && formulaAssistant.userInput.trim()) {
                         e.preventDefault();
-                        console.log("Sending message to AI:", aiInput);
-                        sendMessageToAI(aiInput);
-                        setAiInput("");
+                        sendMessageToAI(formulaAssistant.userInput);
                       }
                     }}
                     disabled={formulaAssistant.isProcessing}
@@ -1859,10 +1858,11 @@ const MondayBoard = () => {
                   />
                   <button
                     onClick={() => {
-                      sendMessageToAI(aiInput);
-                      setAiInput("");
+                      if (formulaAssistant.userInput.trim()) {
+                        sendMessageToAI(formulaAssistant.userInput);
+                      }
                     }}
-                    disabled={formulaAssistant.isProcessing || !aiInput.trim()}
+                    disabled={formulaAssistant.isProcessing || !formulaAssistant.userInput.trim()}
                     className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {formulaAssistant.isProcessing ? 'Thinking...' : 'Send'}
